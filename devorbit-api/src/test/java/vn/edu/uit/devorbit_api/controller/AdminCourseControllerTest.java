@@ -38,14 +38,14 @@ class AdminCourseControllerTest {
             "SE104", "Nhap mon Test", 3, null, null, null, null
         );
         CourseDetailResponse response = new CourseDetailResponse(
-            1L, "SE104", "Nhap mon Test", null, null, null, List.of()
+            1L, "SE104", "Nhap mon Test", null, null, null, 3, List.of()
         );
         when(courseService.createCourse(any())).thenReturn(response);
 
         mockMvc.perform(post("/api/admin/courses")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                    {"code":"SE104","name":"Nhap mon Test","credits":3}
+                    {"code":"SE104","name":"Nhap mon Test","credits":3,"subjectType":"Chuyen nganh"}
                 """))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(1L))
@@ -59,14 +59,14 @@ class AdminCourseControllerTest {
             "SE104", "Nhap mon Test Updated", 3, null, null, null, null
         );
         CourseDetailResponse response = new CourseDetailResponse(
-            1L, "SE104", "Nhap mon Test Updated", null, null, null, List.of()
+            1L, "SE104", "Nhap mon Test Updated", null, null, null, 3, List.of()
         );
         when(courseService.updateCourse(any(), any())).thenReturn(response);
 
         mockMvc.perform(put("/api/admin/courses/1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                    {"code":"SE104","name":"Nhap mon Test Updated","credits":3}
+                    {"code":"SE104","name":"Nhap mon Test Updated","credits":3,"subjectType":"Chuyen nganh"}
                 """))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.name").value("Nhap mon Test Updated"));

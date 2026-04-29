@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface TechStackRepository extends JpaRepository<TechStack, Long> {
     List<TechStack> findByRepoId(Long repoId);
+
+    void deleteByRepoId(Long repoId);
 }

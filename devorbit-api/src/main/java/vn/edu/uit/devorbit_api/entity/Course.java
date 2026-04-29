@@ -27,5 +27,12 @@ public class Course {
 
     @Column(name = "loaimonhoc", nullable = false, length = 50)
     private String loaiMonHoc;
+
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
+
+    @Column(name = "is_active")
+    @Builder.Default
+    private boolean active = true;
 }
 

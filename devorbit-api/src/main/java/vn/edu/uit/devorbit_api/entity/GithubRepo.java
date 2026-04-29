@@ -28,5 +28,19 @@ public class GithubRepo {
     @Column(name = "subject_id", length = 20)
     private String subjectId;
 
+    @Column(name = "display_name", length = 255)
+    private String displayName;
+
+    @Column(name = "primary_language", length = 100)
+    private String primaryLanguage;
+
+    @Column(name = "is_active")
+    @Builder.Default
+    private boolean active = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "course_id")
+    private Course course;
+
     private int stars;
 }

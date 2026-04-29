@@ -7,6 +7,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import vn.edu.uit.devorbit_api.dto.publicapi.CourseSummaryResponse;
 import vn.edu.uit.devorbit_api.service.CourseService;
+import vn.edu.uit.devorbit_api.service.JwtService;
 
 import java.util.List;
 
@@ -23,6 +24,9 @@ class PublicCourseControllerTest {
 
     @MockitoBean
     private CourseService courseService;
+
+    @MockitoBean
+    private JwtService jwtService;
 
     @Test
     void shouldReturnCourseSummaries() throws Exception {

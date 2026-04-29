@@ -7,6 +7,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import vn.edu.uit.devorbit_api.dto.publicapi.RepoSummaryResponse;
 import vn.edu.uit.devorbit_api.service.GithubRepoService;
+import vn.edu.uit.devorbit_api.service.JwtService;
 
 import java.util.List;
 
@@ -23,6 +24,9 @@ class PublicRepoControllerTest {
 
     @MockitoBean
     private GithubRepoService githubRepoService;
+
+    @MockitoBean
+    private JwtService jwtService;
 
     @Test
     void shouldReturnReposByCourse() throws Exception {

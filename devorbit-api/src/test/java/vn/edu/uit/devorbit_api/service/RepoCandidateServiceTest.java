@@ -11,7 +11,7 @@ import vn.edu.uit.devorbit_api.repository.RepoCandidateRepository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(properties = {
-    "app.jwt.secret=test-secret-key-test-secret-key",
+    "app.jwt.secret=test-secret-key-that-is-long-enough-32",
     "app.github.token=test-token"
 })
 @Transactional

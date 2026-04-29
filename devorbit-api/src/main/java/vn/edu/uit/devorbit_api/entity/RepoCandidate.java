@@ -29,4 +29,7 @@ public class RepoCandidate {
 
     @Enumerated(EnumType.STRING)
     private RepoCandidateStatus status;
+
+    @Column(name = "review_note", columnDefinition = "TEXT")
+    private String reviewNote;
 }

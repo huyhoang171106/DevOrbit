@@ -9,6 +9,7 @@ import vn.edu.uit.devorbit_api.entity.GithubRepo;
 import vn.edu.uit.devorbit_api.entity.RepoCandidate;
 import vn.edu.uit.devorbit_api.entity.RepoCandidateStatus;
 import vn.edu.uit.devorbit_api.entity.TechStack;
+import vn.edu.uit.devorbit_api.exception.BadRequestException;
 import vn.edu.uit.devorbit_api.exception.NotFoundException;
 import vn.edu.uit.devorbit_api.repository.GithubRepoRepository;
 import vn.edu.uit.devorbit_api.repository.RepoCandidateRepository;
@@ -34,6 +35,10 @@ public class RepoCandidateService {
         RepoCandidate candidate = repoCandidateRepository.findById(candidateId)
             .orElseThrow(() -> new NotFoundException("Candidate not found: " + candidateId));
 
+        if (candidate.getStatus() != RepoCandidateStatus.NEW) {
+            throw new BadRequestException("Candidate is already " + candidate.getStatus().name().toLowerCase());
+        }
+
         GithubRepo repo = githubRepoRepository
             .findByGithubUrlAndCourseId(candidate.getGithubUrl(), candidate.getCourse().getId())
             .orElseGet(GithubRepo::new);
@@ -47,6 +52,10 @@ public class RepoCandidateService {
 
         githubRepoRepository.save(repo);
 
+        if (repo.getId() != null) {
+            techStackRepository.deleteByRepoId(repo.getId());
+        }
+
         if (request.techStacks() != null) {
             for (String stackName : request.techStacks()) {
                 TechStack techStack = TechStack.builder()
@@ -57,6 +66,7 @@ public class RepoCandidateService {
             }
         }
 
+        candidate.setReviewNote(request.reviewNote());
         candidate.setStatus(RepoCandidateStatus.APPROVED);
         repoCandidateRepository.save(candidate);
 
@@ -67,6 +77,10 @@ public class RepoCandidateService {
     public RepoCandidateResponse rejectCandidate(Long candidateId) {
         RepoCandidate candidate = repoCandidateRepository.findById(candidateId)
             .orElseThrow(() -> new NotFoundException("Candidate not found: " + candidateId));
+
+        if (candidate.getStatus() != RepoCandidateStatus.NEW) {
+            throw new BadRequestException("Candidate is already " + candidate.getStatus().name().toLowerCase());
+        }
 
         candidate.setStatus(RepoCandidateStatus.REJECTED);
         repoCandidateRepository.save(candidate);

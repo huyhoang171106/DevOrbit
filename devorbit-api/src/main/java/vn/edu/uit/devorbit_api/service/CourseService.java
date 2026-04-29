@@ -1,6 +1,7 @@
 package vn.edu.uit.devorbit_api.service;
 
 import lombok.RequiredArgsConstructor;
+import vn.edu.uit.devorbit_api.dto.admin.AdminCourseUpsertRequest;
 import vn.edu.uit.devorbit_api.dto.publicapi.CourseDetailResponse;
 import vn.edu.uit.devorbit_api.dto.publicapi.CourseSummaryResponse;
 import vn.edu.uit.devorbit_api.entity.Course;
@@ -36,6 +37,44 @@ public class CourseService {
     public CourseDetailResponse getCourseDetail(Long id) {
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Course not found with id: " + id));
+        return mapToDetail(course);
+    }
+
+    public CourseDetailResponse createCourse(AdminCourseUpsertRequest request) {
+        Course course = Course.builder()
+                .maMH(request.code())
+                .tenMH(request.name())
+                .soTC(request.credits() != null ? request.credits() : 0)
+                .lt(request.lectureHours() != null ? request.lectureHours() : 0)
+                .th(request.practiceHours() != null ? request.practiceHours() : 0)
+                .loaiMonHoc(request.subjectType())
+                .description(request.description())
+                .active(true)
+                .build();
+        return mapToDetail(courseRepository.save(course));
+    }
+
+    public CourseDetailResponse updateCourse(Long id, AdminCourseUpsertRequest request) {
+        Course course = courseRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Course not found: " + id));
+        course.setMaMH(request.code());
+        course.setTenMH(request.name());
+        course.setSoTC(request.credits() != null ? request.credits() : 0);
+        course.setLt(request.lectureHours() != null ? request.lectureHours() : 0);
+        course.setTh(request.practiceHours() != null ? request.practiceHours() : 0);
+        course.setLoaiMonHoc(request.subjectType());
+        course.setDescription(request.description());
+        return mapToDetail(courseRepository.save(course));
+    }
+
+    public void deactivateCourse(Long id) {
+        Course course = courseRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Course not found: " + id));
+        course.setActive(false);
+        courseRepository.save(course);
+    }
+
+    private CourseDetailResponse mapToDetail(Course course) {
         return new CourseDetailResponse(
                 course.getId(),
                 course.getMaMH(),

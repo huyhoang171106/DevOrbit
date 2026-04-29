@@ -1,6 +1,9 @@
 spring:
   application:
     name: devorbit-api
+  sql:
+    init:
+      mode: always
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/devorbit_db}
     username: ${DATABASE_USERNAME:postgres}

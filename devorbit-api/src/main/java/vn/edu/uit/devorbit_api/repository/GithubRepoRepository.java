@@ -10,6 +10,8 @@ import java.util.List;
 public interface GithubRepoRepository extends JpaRepository<GithubRepo, Long> {
     List<GithubRepo> findBySubjectId(String subjectId);
 
+    List<GithubRepo> findByActiveTrue();
+
     List<GithubRepo> findByCourseIdAndActiveTrue(Long courseId);
 
     Optional<GithubRepo> findByGithubUrlAndCourseId(String githubUrl, Long courseId);

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import vn.edu.uit.devorbit_api.dto.publicapi.RepoSummaryResponse;
 import vn.edu.uit.devorbit_api.service.GithubRepoService;
@@ -17,7 +18,13 @@ public class PublicRepoController {
     private final GithubRepoService githubRepoService;
 
     @GetMapping("/courses/{courseId}/repos")
-    public List<RepoSummaryResponse> getReposByCourse(@PathVariable Long courseId) {
+    public List<RepoSummaryResponse> getReposByCourse(
+        @PathVariable Long courseId,
+        @RequestParam(required = false) String techStack
+    ) {
+        if (techStack != null && !techStack.isBlank()) {
+            return githubRepoService.getApprovedReposByCourseAndTechStack(courseId, techStack);
+        }
         return githubRepoService.getApprovedReposByCourse(courseId);
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import vn.edu.uit.devorbit_api.dto.publicapi.RepoSummaryResponse;
+import vn.edu.uit.devorbit_api.dto.publicapi.TechStackResponse;
 import vn.edu.uit.devorbit_api.service.GithubRepoService;
 import vn.edu.uit.devorbit_api.service.JwtService;
 
@@ -37,5 +38,17 @@ class PublicRepoControllerTest {
         mockMvc.perform(get("/api/courses/1/repos"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].displayName").value("My Repo"));
+    }
+
+    @Test
+    void shouldFilterReposByTechStackQueryParam() throws Exception {
+        when(githubRepoService.getApprovedReposByCourseAndTechStack(1L, "java"))
+            .thenReturn(List.of(new RepoSummaryResponse(
+                1L, "My Repo", "A Java repo", "https://github.com/test/repo", "Java", 10, List.of()
+            )));
+
+        mockMvc.perform(get("/api/courses/1/repos").param("techStack", "java"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].primaryLanguage").value("Java"));
     }
 }

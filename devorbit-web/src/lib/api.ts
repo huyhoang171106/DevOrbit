@@ -38,3 +38,39 @@ export async function apiDelete(path: string): Promise<void> {
     throw new Error(`Request failed: ${response.status}`)
   }
 }
+
+export async function apiAdminGet<T>(path: string, token: string): Promise<T> {
+  const response = await fetch(`${apiBaseUrl}${path}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!response.ok) throw new Error(`Request failed: ${response.status}`)
+  return response.json() as Promise<T>
+}
+
+export async function apiAdminPost<T>(path: string, token: string, body: unknown): Promise<T> {
+  const response = await fetch(`${apiBaseUrl}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body),
+  })
+  if (!response.ok) throw new Error(`Request failed: ${response.status}`)
+  return response.json() as Promise<T>
+}
+
+export async function apiAdminPut<T>(path: string, token: string, body: unknown): Promise<T> {
+  const response = await fetch(`${apiBaseUrl}${path}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body),
+  })
+  if (!response.ok) throw new Error(`Request failed: ${response.status}`)
+  return response.json() as Promise<T>
+}
+
+export async function apiAdminDelete(path: string, token: string): Promise<void> {
+  const response = await fetch(`${apiBaseUrl}${path}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!response.ok) throw new Error(`Request failed: ${response.status}`)
+}

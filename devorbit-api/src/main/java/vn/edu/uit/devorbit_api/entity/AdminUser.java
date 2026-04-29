@@ -21,5 +21,6 @@ public class AdminUser {
     private String passwordHash;
 
     @Column(nullable = false)
-    private boolean active;
+    @Builder.Default
+    private boolean active = true;
 }

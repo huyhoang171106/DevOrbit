@@ -16,25 +16,25 @@ export function ScanForm({ onSubmit, loading }: ScanFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-lg border bg-white p-6 shadow-sm">
+    <form onSubmit={handleSubmit} className="glass-card space-y-5 p-6">
       <div>
-        <label className="block text-sm font-medium text-gray-700">Course ID</label>
+        <label className="label">Course ID</label>
         <input
           type="number"
           value={courseId}
           onChange={(e) => setCourseId(e.target.value)}
-          className="mt-1 w-full rounded border px-3 py-2 text-sm"
+          className="input-field"
           placeholder="e.g. 1"
           required
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">Search Query</label>
+        <label className="label">Search Query</label>
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="mt-1 w-full rounded border px-3 py-2 text-sm"
+          className="input-field"
           placeholder="e.g. react course repository"
           required
         />
@@ -42,7 +42,7 @@ export function ScanForm({ onSubmit, loading }: ScanFormProps) {
       <button
         type="submit"
         disabled={loading}
-        className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+        className="btn-primary w-full"
       >
         {loading ? 'Scanning...' : 'Scan GitHub'}
       </button>

@@ -1,17 +1,17 @@
-const TOKEN_KEY = 'devorbit_admin_token'
+const TOKEN_KEY = 'devorbit-admin-token'
 
-export function getToken(): string | null {
+export function getAdminToken(): string | null {
   return localStorage.getItem(TOKEN_KEY)
 }
 
-export function setToken(token: string): void {
+export function saveAdminToken(token: string): void {
   localStorage.setItem(TOKEN_KEY, token)
 }
 
-export function clearToken(): void {
+export function clearAdminToken(): void {
   localStorage.removeItem(TOKEN_KEY)
 }
 
 export function isAuthenticated(): boolean {
-  return getToken() !== null
+  return localStorage.getItem(TOKEN_KEY) !== null
 }

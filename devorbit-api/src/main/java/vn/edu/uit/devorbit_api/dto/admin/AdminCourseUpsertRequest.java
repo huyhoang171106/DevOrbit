@@ -1,11 +1,14 @@
 package vn.edu.uit.devorbit_api.dto.admin;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 public record AdminCourseUpsertRequest(
-    String code,
-    String name,
-    Integer credits,
+    @NotBlank String code,
+    @NotBlank String name,
+    @NotNull Integer credits,
     Integer lectureHours,
     Integer practiceHours,
-    String subjectType,
+    @NotBlank String subjectType,
     String description
 ) {}

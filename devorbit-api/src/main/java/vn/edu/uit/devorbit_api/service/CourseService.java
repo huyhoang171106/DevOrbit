@@ -57,7 +57,6 @@ public class CourseService {
     public CourseDetailResponse updateCourse(Long id, AdminCourseUpsertRequest request) {
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Course not found: " + id));
-        course.setMaMH(request.code());
         course.setTenMH(request.name());
         course.setSoTC(request.credits() != null ? request.credits() : 0);
         course.setLt(request.lectureHours() != null ? request.lectureHours() : 0);
@@ -82,6 +81,7 @@ public class CourseService {
                 course.getDescription(),
                 course.getLt(),
                 course.getTh(),
+                course.getSoTC(),
                 githubRepoService.getApprovedReposByCourse(course.getId())
         );
     }

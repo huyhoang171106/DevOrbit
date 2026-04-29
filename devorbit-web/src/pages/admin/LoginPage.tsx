@@ -27,40 +27,51 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm rounded-lg bg-white p-6 shadow-md">
-        <h1 className="mb-6 text-xl font-bold text-gray-900">Admin Login</h1>
-        {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
-        <div className="space-y-4">
+    <div className="flex min-h-[70vh] items-center justify-center">
+      <div className="glass-card w-full max-w-sm p-8">
+        <div className="mb-6 text-center">
+          <svg className="mx-auto mb-3 h-10 w-10 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <circle cx="12" cy="12" r="5" />
+            <circle cx="12" cy="12" r="8" strokeDasharray="3 3" opacity="0.4" />
+            <circle cx="12" cy="12" r="11" strokeDasharray="2 4" opacity="0.2" />
+          </svg>
+          <h1 className="text-xl font-bold font-heading text-slate-100">Admin Login</h1>
+        </div>
+        {error && (
+          <div className="mb-4 rounded-xl bg-red-500/10 px-4 py-2.5 text-sm text-red-400">
+            {error}
+          </div>
+        )}
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Username</label>
+            <label className="label">Username</label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="mt-1 w-full rounded border px-3 py-2 text-sm"
+              className="input-field"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Password</label>
+            <label className="label">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full rounded border px-3 py-2 text-sm"
+              className="input-field"
               required
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+            className="btn-primary w-full"
           >
             {loading ? 'Logging in...' : 'Log In'}
           </button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   )
 }

@@ -7,47 +7,52 @@ type ApprovedRepoTableProps = {
 
 export function ApprovedRepoTable({ repos, onDeactivate }: ApprovedRepoTableProps) {
   return (
-    <div className="overflow-x-auto rounded-lg border bg-white shadow-sm">
+    <div className="glass-card overflow-hidden">
       <table className="min-w-full text-sm">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-4 py-3 text-left font-medium text-gray-600">Name</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-600">Language</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-600">Stars</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-600">Tech Stacks</th>
-            <th className="px-4 py-3 text-left font-medium text-gray-600">Actions</th>
+        <thead>
+          <tr className="border-b border-white/5">
+            <th className="table-header">Name</th>
+            <th className="table-header">Language</th>
+            <th className="table-header">Stars</th>
+            <th className="table-header">Tech Stacks</th>
+            <th className="table-header">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y">
+        <tbody className="divide-y divide-white/5">
           {repos.length === 0 && (
             <tr>
-              <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+              <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
                 No approved repos.
               </td>
             </tr>
           )}
-          {repos.map((r) => (
-            <tr key={r.id} className="even:bg-gray-50">
-              <td className="px-4 py-3 font-medium">{r.displayName}</td>
-              <td className="px-4 py-3">
-                <span className="rounded bg-gray-100 px-2 py-0.5 text-xs font-medium">
-                  {r.primaryLanguage}
+          {repos.map((r, i) => (
+            <tr key={r.id} className={i % 2 === 1 ? 'bg-white/[0.02]' : ''}>
+              <td className="table-cell font-medium text-slate-100">{r.displayName}</td>
+              <td className="table-cell">
+                {r.primaryLanguage && (
+                  <span className="badge-language">{r.primaryLanguage}</span>
+                )}
+              </td>
+              <td className="table-cell">
+                <span className="flex items-center gap-1 text-slate-300">
+                  <svg className="h-3.5 w-3.5 text-amber-400" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                  </svg>
+                  {r.stars}
                 </span>
               </td>
-              <td className="px-4 py-3">&#9733; {r.stars}</td>
-              <td className="px-4 py-3">
+              <td className="table-cell">
                 <div className="flex flex-wrap gap-1">
                   {r.techStacks.map((s) => (
-                    <span key={s} className="rounded bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
-                      {s}
-                    </span>
+                    <span key={s} className="badge-stack">{s}</span>
                   ))}
                 </div>
               </td>
-              <td className="px-4 py-3">
+              <td className="table-cell">
                 <button
                   onClick={() => onDeactivate(r.id)}
-                  className="rounded bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700"
+                  className="btn-danger px-3 py-1 text-xs"
                 >
                   Deactivate
                 </button>

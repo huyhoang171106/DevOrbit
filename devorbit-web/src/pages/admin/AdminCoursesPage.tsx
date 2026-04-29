@@ -88,44 +88,45 @@ export function AdminCoursesPage() {
     setDialogOpen(true)
   }
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Loading...</div>
+  if (loading) return (
+    <div className="flex items-center justify-center py-20">
+      <div className="text-sm text-slate-500 animate-pulse">Loading...</div>
+    </div>
+  )
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Courses</h1>
-        <button
-          onClick={openCreate}
-          className="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-        >
+    <div>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="page-title">Courses</h1>
+        <button onClick={openCreate} className="btn-primary">
           Create Course
         </button>
       </div>
-      <div className="overflow-x-auto rounded-lg border bg-white shadow-sm">
+      <div className="glass-card overflow-hidden">
         <table className="min-w-full text-sm">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-3 text-left font-medium text-gray-600">Code</th>
-              <th className="px-4 py-3 text-left font-medium text-gray-600">Name</th>
-              <th className="px-4 py-3 text-left font-medium text-gray-600">Actions</th>
+          <thead>
+            <tr className="border-b border-white/5">
+              <th className="table-header">Code</th>
+              <th className="table-header">Name</th>
+              <th className="table-header">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y">
-            {courses.map((c) => (
-              <tr key={c.id} className="even:bg-gray-50">
-                <td className="px-4 py-3 font-medium">{c.code}</td>
-                <td className="px-4 py-3">{c.name}</td>
-                <td className="px-4 py-3">
+          <tbody className="divide-y divide-white/5">
+            {courses.map((c, i) => (
+              <tr key={c.id} className={i % 2 === 1 ? 'bg-white/[0.02]' : ''}>
+                <td className="table-cell font-medium text-slate-100">{c.code}</td>
+                <td className="table-cell text-slate-300">{c.name}</td>
+                <td className="table-cell">
                   <div className="flex gap-2">
                     <button
                       onClick={() => openEdit(c)}
-                      className="rounded bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-200"
+                      className="btn-ghost px-3 py-1 text-xs"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDeactivate(c.id)}
-                      className="rounded bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700"
+                      className="btn-danger px-3 py-1 text-xs"
                     >
                       Deactivate
                     </button>

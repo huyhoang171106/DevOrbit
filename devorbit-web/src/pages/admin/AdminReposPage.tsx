@@ -40,11 +40,15 @@ export function AdminReposPage() {
     }
   }
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Loading...</div>
+  if (loading) return (
+    <div className="flex items-center justify-center py-20">
+      <div className="text-sm text-slate-500 animate-pulse">Loading...</div>
+    </div>
+  )
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Approved Repositories</h1>
+    <div>
+      <h1 className="page-title mb-6">Approved Repositories</h1>
       <ApprovedRepoTable repos={repos} onDeactivate={handleDeactivate} />
     </div>
   )

@@ -14,12 +14,23 @@ export function CourseListPage() {
       .finally(() => setLoading(false))
   }, [])
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Loading courses...</div>
+  if (loading) return (
+    <div className="flex items-center justify-center py-20">
+      <div className="text-sm text-slate-500 animate-pulse">Loading courses...</div>
+    </div>
+  )
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Courses</h1>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div>
+      <div className="mb-8 flex items-center gap-3">
+        <svg className="h-8 w-8 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <circle cx="12" cy="12" r="5" />
+          <circle cx="12" cy="12" r="8" strokeDasharray="3 3" opacity="0.4" />
+          <circle cx="12" cy="12" r="11" strokeDasharray="2 4" opacity="0.2" />
+        </svg>
+        <h1 className="page-title">Courses</h1>
+      </div>
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {courses.map((c) => (
           <CourseCard key={c.id} course={c} />
         ))}

@@ -1,3 +1,5 @@
 package vn.edu.uit.devorbit_api.dto.admin;
 
-public record GithubScanRequest(Long courseId, String query) {}
+import jakarta.validation.constraints.NotNull;
+
+public record GithubScanRequest(@NotNull Long courseId, @NotNull String query) {}

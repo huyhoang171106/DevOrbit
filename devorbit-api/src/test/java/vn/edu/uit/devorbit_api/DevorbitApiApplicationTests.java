@@ -9,7 +9,7 @@ import vn.edu.uit.devorbit_api.repository.CourseRepository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(properties = {
-    "app.jwt.secret=test-jwt-secret",
+    "app.jwt.secret=test-jwt-secret-key-that-is-long-enough",
     "app.github.token=test-github-token"
 })
 class DevorbitApiApplicationTests {

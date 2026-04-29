@@ -11,7 +11,7 @@ import lombok.*;
 public class Course {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @Column(name = "mamh", unique = true, nullable = false, length = 20)
     private String maMH;

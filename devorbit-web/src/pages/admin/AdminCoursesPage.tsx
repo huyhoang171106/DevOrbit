@@ -1,41 +1,23 @@
-import { useEffect, useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 import { apiGet, apiAdminPost, apiAdminPut, apiAdminDelete } from '../../lib/api'
-import { getAdminToken, isAuthenticated } from '../../lib/auth'
+import { getAdminToken } from '../../lib/auth'
+import { useRequireAuth, useApiFetch } from '../../lib/hooks'
 import { CourseFormDialog, type CourseFormData } from '../../components/admin/CourseFormDialog'
 import type { CourseSummary, CourseDetail } from '../../types/api'
 
 export function AdminCoursesPage() {
-  const navigate = useNavigate()
-  const [courses, setCourses] = useState<CourseSummary[]>([])
-  const [loading, setLoading] = useState(true)
+  useRequireAuth()
+  const token = getAdminToken()!
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<CourseFormData | null>(null)
   const [editingId, setEditingId] = useState<number | null>(null)
 
-  const token = getAdminToken()
-
-  useEffect(() => {
-    if (!isAuthenticated()) navigate('/admin/login')
-  }, [navigate])
-
-  const fetchCourses = useCallback(async () => {
-    try {
-      const data = await apiGet<CourseSummary[]>('/api/courses')
-      setCourses(data)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    fetchCourses()
-  }, [fetchCourses])
+  const { data: courses, loading, refetch: fetchCourses } = useApiFetch(
+    () => apiGet<CourseSummary[]>('/api/courses'),
+    [],
+  )
 
   async function handleCreate(data: CourseFormData) {
-    if (!token) return
     try {
       await apiAdminPost('/api/admin/courses', token, data)
       setDialogOpen(false)
@@ -46,7 +28,7 @@ export function AdminCoursesPage() {
   }
 
   async function handleUpdate(data: CourseFormData) {
-    if (!token || !editingId) return
+    if (!editingId) return
     try {
       await apiAdminPut(`/api/admin/courses/${editingId}`, token, data)
       setDialogOpen(false)
@@ -58,7 +40,6 @@ export function AdminCoursesPage() {
   }
 
   async function handleDeactivate(id: number) {
-    if (!token) return
     if (!confirm('Deactivate this course?')) return
     try {
       await apiAdminDelete(`/api/admin/courses/${id}`, token)
@@ -125,7 +106,7 @@ export function AdminCoursesPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
-            {courses.map((c, i) => (
+            {(courses ?? []).map((c, i) => (
               <tr key={c.id} className={i % 2 === 1 ? 'bg-white/[0.02]' : ''}>
                 <td className="table-cell font-medium text-slate-100">{c.code}</td>
                 <td className="table-cell text-slate-300">{c.name}</td>

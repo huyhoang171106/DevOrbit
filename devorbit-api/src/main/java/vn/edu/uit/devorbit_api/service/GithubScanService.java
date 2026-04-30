@@ -2,11 +2,9 @@ package vn.edu.uit.devorbit_api.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
-import vn.edu.uit.devorbit_api.config.GithubProperties;
 import vn.edu.uit.devorbit_api.dto.admin.GithubScanRequest;
 import vn.edu.uit.devorbit_api.dto.admin.RepoCandidateResponse;
 import vn.edu.uit.devorbit_api.entity.Course;
@@ -27,26 +25,17 @@ public class GithubScanService {
 
     private final RepoCandidateRepository repoCandidateRepository;
     private final CourseRepository courseRepository;
-    private final GithubProperties githubProperties;
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
 
     public GithubScanService(RepoCandidateRepository repoCandidateRepository,
-                             CourseRepository courseRepository,
-                             GithubProperties githubProperties,
-                             ObjectMapper objectMapper) {
+                              CourseRepository courseRepository,
+                              WebClient githubWebClient,
+                              ObjectMapper objectMapper) {
         this.repoCandidateRepository = repoCandidateRepository;
         this.courseRepository = courseRepository;
-        this.githubProperties = githubProperties;
+        this.webClient = githubWebClient;
         this.objectMapper = objectMapper;
-        if (githubProperties.token() == null || githubProperties.token().isBlank()) {
-            throw new IllegalStateException("GITHUB_TOKEN environment variable is not set. GitHub API scan is unavailable.");
-        }
-        this.webClient = WebClient.builder()
-            .baseUrl("https://api.github.com")
-            .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + githubProperties.token())
-            .defaultHeader(HttpHeaders.USER_AGENT, "DevOrbit/1.0")
-            .build();
     }
 
     @Transactional

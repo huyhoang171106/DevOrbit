@@ -1,27 +1,23 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 import { apiAdminPost } from '../../lib/api'
-import { getAdminToken, isAuthenticated } from '../../lib/auth'
+import { getAdminToken } from '../../lib/auth'
+import { useRequireAuth } from '../../lib/hooks'
 import { ScanForm } from '../../components/admin/ScanForm'
 import type { RepoCandidate } from '../../types/api'
 
 export function AdminScanPage() {
-  const navigate = useNavigate()
+  useRequireAuth()
+  const token = getAdminToken()!
   const [candidates, setCandidates] = useState<RepoCandidate[]>([])
-  const [loading, setLoading] = useState(false)
+  const [scanning, setScanning] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const token = getAdminToken()
-
-  useEffect(() => {
-    if (!isAuthenticated()) navigate('/admin/login')
-  }, [navigate])
 
   async function handleScan(courseId: number, query: string) {
-    setLoading(true)
+    setScanning(true)
     setError(null)
     setCandidates([])
     try {
-      const res = await apiAdminPost<RepoCandidate[]>('/api/admin/github/scan', token!, {
+      const res = await apiAdminPost<RepoCandidate[]>('/api/admin/github/scan', token, {
         courseId,
         query,
       })
@@ -30,14 +26,14 @@ export function AdminScanPage() {
       setError('Scan failed.')
       console.error(err)
     } finally {
-      setLoading(false)
+      setScanning(false)
     }
   }
 
   return (
     <div className="mx-auto max-w-2xl">
       <h1 className="page-title mb-8">Scan GitHub for Repositories</h1>
-      <ScanForm onSubmit={handleScan} loading={loading} />
+      <ScanForm onSubmit={handleScan} loading={scanning} />
       {error && (
         <div className="mt-4 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
           {error}
@@ -70,7 +66,7 @@ export function AdminScanPage() {
           </ul>
         </div>
       )}
-      {!loading && !error && candidates.length === 0 && (
+      {!scanning && !error && candidates.length === 0 && (
         <p className="mt-6 text-center text-sm text-slate-500">
           No candidates yet. Run a scan to find repositories.
         </p>

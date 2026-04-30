@@ -1,76 +1,45 @@
 export const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? ''
 
-export async function apiGet<T>(path: string): Promise<T> {
-  const response = await fetch(`${apiBaseUrl}${path}`)
+type RequestOptions = {
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
+  token?: string
+  body?: unknown
+}
+
+async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  const headers: Record<string, string> = {}
+  if (options.body) headers['Content-Type'] = 'application/json'
+  if (options.token) headers['Authorization'] = `Bearer ${options.token}`
+
+  const response = await fetch(`${apiBaseUrl}${path}`, {
+    method: options.method ?? 'GET',
+    headers,
+    body: options.body ? JSON.stringify(options.body) : undefined,
+  })
+
   if (!response.ok) {
     throw new Error(`Request failed: ${response.status}`)
   }
-  return response.json() as Promise<T>
-}
 
-export async function apiPost<T>(path: string, body: unknown): Promise<T> {
-  const response = await fetch(`${apiBaseUrl}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
-  if (!response.ok) {
-    throw new Error(`Request failed: ${response.status}`)
+  // DELETE returns 204 No Content — no body to parse
+  if (options.method === 'DELETE' || response.status === 204) {
+    return undefined as T
   }
+
   return response.json() as Promise<T>
 }
 
-export async function apiPut<T>(path: string, body: unknown): Promise<T> {
-  const response = await fetch(`${apiBaseUrl}${path}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
-  if (!response.ok) {
-    throw new Error(`Request failed: ${response.status}`)
-  }
-  return response.json() as Promise<T>
-}
+// --- Public API ---
+export const apiGet = <T>(path: string) => request<T>(path)
+export const apiPost = <T>(path: string, body: unknown) => request<T>(path, { method: 'POST', body })
+export const apiPut = <T>(path: string, body: unknown) => request<T>(path, { method: 'PUT', body })
+export const apiDelete = (path: string) => request<void>(path, { method: 'DELETE' })
 
-export async function apiDelete(path: string): Promise<void> {
-  const response = await fetch(`${apiBaseUrl}${path}`, { method: 'DELETE' })
-  if (!response.ok) {
-    throw new Error(`Request failed: ${response.status}`)
-  }
-}
-
-export async function apiAdminGet<T>(path: string, token: string): Promise<T> {
-  const response = await fetch(`${apiBaseUrl}${path}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`)
-  return response.json() as Promise<T>
-}
-
-export async function apiAdminPost<T>(path: string, token: string, body: unknown): Promise<T> {
-  const response = await fetch(`${apiBaseUrl}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify(body),
-  })
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`)
-  return response.json() as Promise<T>
-}
-
-export async function apiAdminPut<T>(path: string, token: string, body: unknown): Promise<T> {
-  const response = await fetch(`${apiBaseUrl}${path}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify(body),
-  })
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`)
-  return response.json() as Promise<T>
-}
-
-export async function apiAdminDelete(path: string, token: string): Promise<void> {
-  const response = await fetch(`${apiBaseUrl}${path}`, {
-    method: 'DELETE',
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`)
-}
+// --- Admin API (authenticated) ---
+export const apiAdminGet = <T>(path: string, token: string) => request<T>(path, { token })
+export const apiAdminPost = <T>(path: string, token: string, body: unknown) =>
+  request<T>(path, { method: 'POST', token, body })
+export const apiAdminPut = <T>(path: string, token: string, body: unknown) =>
+  request<T>(path, { method: 'PUT', token, body })
+export const apiAdminDelete = (path: string, token: string) =>
+  request<void>(path, { method: 'DELETE', token })

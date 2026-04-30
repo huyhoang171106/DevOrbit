@@ -1,6 +1,5 @@
-import { useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
-import { isAuthenticated } from '../../lib/auth'
+import { Link } from 'react-router-dom'
+import { useRequireAuth } from '../../lib/hooks'
 
 const links = [
   {
@@ -50,11 +49,7 @@ const links = [
 ]
 
 export function AdminDashboardPage() {
-  const navigate = useNavigate()
-
-  useEffect(() => {
-    if (!isAuthenticated()) navigate('/admin/login')
-  }, [navigate])
+  useRequireAuth()
 
   return (
     <div>

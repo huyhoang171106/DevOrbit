@@ -1,36 +1,20 @@
-import { useEffect, useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { apiAdminGet, apiAdminPost } from '../../lib/api'
-import { getAdminToken, isAuthenticated } from '../../lib/auth'
+import { useState } from 'react'
+import { apiAdminPost } from '../../lib/api'
+import { getAdminToken } from '../../lib/auth'
+import { useRequireAuth, useApiFetch } from '../../lib/hooks'
 import { CandidateTable } from '../../components/admin/CandidateTable'
 import { ApproveModal } from '../../components/admin/ApproveModal'
 import type { RepoCandidate } from '../../types/api'
 
 export function AdminCandidatesPage() {
-  const navigate = useNavigate()
-  const [candidates, setCandidates] = useState<RepoCandidate[]>([])
-  const [loading, setLoading] = useState(true)
+  useRequireAuth()
+  const token = getAdminToken()!
   const [approvingId, setApprovingId] = useState<number | null>(null)
-  const token = getAdminToken()
 
-  useEffect(() => {
-    if (!isAuthenticated()) navigate('/admin/login')
-  }, [navigate])
-
-  const fetchCandidates = useCallback(async () => {
-    try {
-      const data = await apiAdminGet<RepoCandidate[]>('/api/admin/repo-candidates', token!)
-      setCandidates(data)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
-  }, [token])
-
-  useEffect(() => {
-    fetchCandidates()
-  }, [fetchCandidates])
+  const { data: candidates, loading, refetch: fetchCandidates } = useApiFetch(
+    () => apiAdminGet<RepoCandidate[]>('/api/admin/repo-candidates', token),
+    [token],
+  )
 
   async function handleApprove(id: number) {
     setApprovingId(id)
@@ -38,7 +22,7 @@ export function AdminCandidatesPage() {
 
   async function handleConfirmApprove(id: number, description: string, techStacks: string[], reviewNote: string) {
     try {
-      await apiAdminPost(`/api/admin/repo-candidates/${id}/approve`, token!, {
+      await apiAdminPost(`/api/admin/repo-candidates/${id}/approve`, token, {
         description,
         techStacks,
         reviewNote,
@@ -52,7 +36,7 @@ export function AdminCandidatesPage() {
 
   async function handleReject(id: number) {
     try {
-      await apiAdminPost(`/api/admin/repo-candidates/${id}/reject`, token!, {})
+      await apiAdminPost(`/api/admin/repo-candidates/${id}/reject`, token, {})
       fetchCandidates()
     } catch (err) {
       console.error(err)
@@ -60,7 +44,7 @@ export function AdminCandidatesPage() {
   }
 
   const selectedCandidate = approvingId != null
-    ? candidates.find((c) => c.id === approvingId) ?? null
+    ? (candidates ?? []).find((c) => c.id === approvingId) ?? null
     : null
 
   if (loading) return (
@@ -73,7 +57,7 @@ export function AdminCandidatesPage() {
     <div>
       <h1 className="page-title mb-6">Repo Candidates</h1>
       <CandidateTable
-        candidates={candidates}
+        candidates={candidates ?? []}
         onApprove={handleApprove}
         onReject={handleReject}
       />

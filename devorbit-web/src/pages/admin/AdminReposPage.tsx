@@ -1,40 +1,23 @@
-import { useEffect, useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRequireAuth, useApiFetch } from '../../lib/hooks'
 import { apiAdminGet, apiAdminDelete } from '../../lib/api'
-import { getAdminToken, isAuthenticated } from '../../lib/auth'
+import { getAdminToken } from '../../lib/auth'
 import { ApprovedRepoTable } from '../../components/admin/ApprovedRepoTable'
 import type { RepoSummary } from '../../types/api'
 
 export function AdminReposPage() {
-  const navigate = useNavigate()
-  const [repos, setRepos] = useState<RepoSummary[]>([])
-  const [loading, setLoading] = useState(true)
-  const token = getAdminToken()
+  useRequireAuth()
+  const token = getAdminToken()!
 
-  useEffect(() => {
-    if (!isAuthenticated()) navigate('/admin/login')
-  }, [navigate])
-
-  const fetchRepos = useCallback(async () => {
-    try {
-      const data = await apiAdminGet<RepoSummary[]>('/api/admin/repos', token!)
-      setRepos(data)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
-  }, [token])
-
-  useEffect(() => {
-    fetchRepos()
-  }, [fetchRepos])
+  const { data: repos, loading, refetch } = useApiFetch(
+    () => apiAdminGet<RepoSummary[]>('/api/admin/repos', token),
+    [token],
+  )
 
   async function handleDeactivate(id: number) {
     if (!confirm('Deactivate this repo?')) return
     try {
-      await apiAdminDelete(`/api/admin/repos/${id}`, token!)
-      fetchRepos()
+      await apiAdminDelete(`/api/admin/repos/${id}`, token)
+      refetch()
     } catch (err) {
       console.error(err)
     }
@@ -49,7 +32,7 @@ export function AdminReposPage() {
   return (
     <div>
       <h1 className="page-title mb-6">Approved Repositories</h1>
-      <ApprovedRepoTable repos={repos} onDeactivate={handleDeactivate} />
+      <ApprovedRepoTable repos={repos ?? []} onDeactivate={handleDeactivate} />
     </div>
   )
 }

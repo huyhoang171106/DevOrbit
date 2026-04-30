@@ -11,33 +11,40 @@ import com.google.gson.reflect.TypeToken
 
 class DevOrbitRepository(context: Context) {
     private val api = NetworkModule.apiService
-    private val cacheStore = CacheStore(context)
-    private val authSessionStore = AuthSessionStore(context)
+    private val cache = CacheStore(context)
+    private val auth = AuthSessionStore(context)
     private val gson = Gson()
 
-    suspend fun getCourses(): Result<List<CourseSummary>> = runCatching {
-        val courses = api.getCourses()
-        cacheStore.saveCoursesJson(gson.toJson(courses))
-        courses
-    }.recoverCatching {
-        cacheStore.getCoursesJson()?.let { json ->
-            gson.fromJson<List<CourseSummary>>(json, object : TypeToken<List<CourseSummary>>() {}.type)
-        } ?: throw it
-    }
+    suspend fun getCourses(): Result<List<CourseSummary>> =
+        fetchWithCache(
+            fetch = { api.getCourses() },
+            saveCache = { cache.saveCoursesJson(gson.toJson(it)) },
+            loadCache = { cache.getCoursesJson() },
+        )
 
-    suspend fun getRepos(courseId: Long): Result<List<RepoSummary>> = runCatching {
-        val repos = api.getRepos(courseId)
-        cacheStore.saveReposJson(courseId, gson.toJson(repos))
-        repos
-    }.recoverCatching {
-        cacheStore.getReposJson(courseId)?.let { json ->
-            gson.fromJson<List<RepoSummary>>(json, object : TypeToken<List<RepoSummary>>() {}.type)
-        } ?: throw it
-    }
+    suspend fun getRepos(courseId: Long): Result<List<RepoSummary>> =
+        fetchWithCache(
+            fetch = { api.getRepos(courseId) },
+            saveCache = { cache.saveReposJson(courseId, gson.toJson(it)) },
+            loadCache = { cache.getReposJson(courseId) },
+        )
 
     suspend fun loginStudent(studentCode: String, password: String): Result<StudentAuthResponse> = runCatching {
         val session = api.studentLogin(StudentLoginRequest(studentCode, password))
-        authSessionStore.saveStudentSession(session.token, session.studentCode, session.fullName, session.email)
+        auth.saveStudentSession(session.token, session.studentCode, session.fullName, session.email)
         session
+    }
+
+    private inline fun <reified T> fetchWithCache(
+        fetch: suspend () -> T,
+        saveCache: (T) -> Unit,
+        loadCache: () -> String?,
+    ): Result<T> = runCatching {
+        val data = fetch()
+        saveCache(data)
+        data
+    }.recoverCatching {
+        val json = loadCache()
+        if (json != null) gson.fromJson<T>(json, object : TypeToken<T>() {}.type) else throw it
     }
 }

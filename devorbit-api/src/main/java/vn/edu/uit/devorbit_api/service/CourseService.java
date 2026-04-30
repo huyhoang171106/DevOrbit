@@ -16,15 +16,6 @@ public class CourseService {
     private final CourseRepository courseRepository;
     private final GithubRepoService githubRepoService;
 
-    public List<Course> getAllCourses() {
-        return courseRepository.findAll();
-    }
-
-    public Course getCourseByMaMH(String maMH) {
-        return courseRepository.findByMaMH(maMH)
-                .orElseThrow(() -> new NotFoundException("Course not found with code: " + maMH));
-    }
-
     public List<CourseSummaryResponse> getActiveCourseSummaries() {
         return courseRepository.findByActiveTrue().stream()
                 .map(course -> new CourseSummaryResponse(

@@ -6,7 +6,9 @@ import org.springframework.stereotype.Service;
 import vn.edu.uit.devorbit_api.dto.student.StudentAuthResponse;
 import vn.edu.uit.devorbit_api.dto.student.StudentLoginRequest;
 import vn.edu.uit.devorbit_api.dto.student.StudentProfileResponse;
+import vn.edu.uit.devorbit_api.dto.student.StudentRegisterRequest;
 import vn.edu.uit.devorbit_api.entity.StudentUser;
+import vn.edu.uit.devorbit_api.exception.BadRequestException;
 import vn.edu.uit.devorbit_api.exception.UnauthorizedException;
 import vn.edu.uit.devorbit_api.repository.StudentUserRepository;
 
@@ -25,6 +27,25 @@ public class StudentAuthService {
             throw new UnauthorizedException("Invalid student code or password");
         }
 
+        String token = jwtService.generateToken(student.getStudentCode(), "STUDENT");
+        return new StudentAuthResponse(token, student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail());
+    }
+
+    public StudentAuthResponse register(StudentRegisterRequest request) {
+        if (studentUserRepository.findByStudentCode(request.studentCode()).isPresent()) {
+            throw new BadRequestException("Student code already exists");
+        }
+        if (studentUserRepository.findByEmail(request.email()).isPresent()) {
+            throw new BadRequestException("Email already exists");
+        }
+
+        StudentUser student = studentUserRepository.save(StudentUser.builder()
+                .studentCode(request.studentCode().trim())
+                .fullName(request.fullName().trim())
+                .email(request.email().trim().toLowerCase())
+                .passwordHash(passwordEncoder.encode(request.password()))
+                .active(true)
+                .build());
         String token = jwtService.generateToken(student.getStudentCode(), "STUDENT");
         return new StudentAuthResponse(token, student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail());
     }

@@ -25,6 +25,7 @@ DevOrbit là một hệ thống full-stack được xây dựng nhân dịp kỷ
 | Chi tiết môn học | Xem danh sách repository của một môn, lọc theo tech stack |
 | Kho mã nguồn | Xem thông tin repo: tên, mô tả, ngôn ngữ, số sao, tech stack |
 | Liên kết GitHub | Mở repository trực tiếp trên GitHub |
+| Danh sách tech stack | Có endpoint toàn cục để lấy tech stack và lọc repo theo môn |
 
 ### 🔐 Quản trị (Admin — yêu cầu JWT)
 
@@ -32,9 +33,9 @@ DevOrbit là một hệ thống full-stack được xây dựng nhân dịp kỷ
 |-----------|-------|
 | Đăng nhập | Xác thực bằng username/password, nhận JWT |
 | Quản lý môn học | Thêm, sửa, xoá (soft-delete) môn học |
-| Quét GitHub | Nhập course ID + query, backend gọi GitHub Search API, lưu candidate |
-| Duyệt candidate | Xem danh sách candidate pending, duyệt (kèm mô tả & tech stack) hoặc từ chối |
-| Quản lý repo đã duyệt | Xem danh sách, xoá (soft-delete) repo |
+| Quét GitHub | Nhập course ID + query, backend gọi GitHub Search API và lưu candidate kèm metadata |
+| Duyệt candidate | Xem danh sách pending, duyệt hoặc từ chối candidate |
+| Quản lý repo đã duyệt | Xem danh sách, sửa và xoá (soft-delete) repo |
 
 ### 👤 Sinh viên (Student — yêu cầu đăng ký & JWT) — Phase 2
 
@@ -51,6 +52,7 @@ DevOrbit là một hệ thống full-stack được xây dựng nhân dịp kỷ
 - Danh sách môn học (offline-first với SharedPreferences cache)
 - Chi tiết môn học + danh sách repo + lọc tech stack
 - Chi tiết repo + mở trên GitHub
+- Danh sách bookmark và hành động bookmark repo
 
 ---
 
@@ -60,10 +62,6 @@ DevOrbit là một hệ thống full-stack được xây dựng nhân dịp kỷ
 
 | Tính năng | Ghi chú |
 |-----------|---------|
-| `GET /api/tech-stacks` | Endpoint toàn cục danh sách tech stack (spec yêu cầu) |
-| `GET /api/admin/courses` | Endpoint danh sách khoá cho admin (hiện đang dùng chung public) |
-| Join table `repo_tech_stacks` | Quan hệ nhiều-nhiều giữa repo và tech stack (hiện đang dùng one-to-many) |
-| Candidate bổ sung field | `RepoCandidate` còn thiếu: `description`, `primary_language`, `topics`, `stars`, `forks`, `last_pushed_at`, `readme_excerpt` |
 | Lịch quét định kỳ | Scheduled scanning (đã xác định là non-goal MVP, chưa implement) |
 | Knowledge graph / Roadmap | Phase 2+ (chưa triển khai) |
 | Notes / Social vote | Phase 2+ (chưa triển khai) |
@@ -73,18 +71,12 @@ DevOrbit là một hệ thống full-stack được xây dựng nhân dịp kỷ
 
 | Tính năng | Ghi chú |
 |-----------|---------|
-| Test | Chưa có test runner hoặc test nào cho web |
-| Edit/update repo | `AdminReposPage` chỉ có deactivate, chưa có edit |
-| Router riêng | Routing đang inline trong `App.tsx`, chưa tách `router.tsx` |
-| Homepage | `/` redirect sang `/courses`, chưa có trang chủ riêng |
+| Test coverage | Đã có Vitest, nhưng chưa có test case thực tế cho UI |
 
 ### Mobile App
 
 | Tính năng | Ghi chú |
 |-----------|---------|
-| Đăng ký | API có hỗ trợ nhưng mobile chưa có màn hình đăng ký |
-| Bookmark | API + web có hỗ trợ, mobile chưa có |
-| Deserialization mismatch | `techStacks` API trả về object `[{name:"..."}]`, mobile kỳ vọng `List<String>` → sẽ crash |
 | ViewModel | State đang quản lý trong composable (`remember`), chưa dùng ViewModel |
 | DI framework | Đang dùng singleton thủ công, chưa có Hilt/Dagger |
 | Gradle wrapper (Linux) | Chỉ có `gradlew.bat`, thiếu `gradlew` cho môi trường Unix |
@@ -93,9 +85,7 @@ DevOrbit là một hệ thống full-stack được xây dựng nhân dịp kỷ
 
 | Vấn đề | Ghi chú |
 |--------|---------|
-| JWT secret mặc định | `default-jwt-secret-key-long-enough-256bits` trong docker-compose, cần override bằng env var khi production |
-| DB password plaintext | `huyhoang` trong docker-compose, chỉ nên dùng cho local dev |
-| Test integration | Cần DB thật để chạy Spring Boot test (hiện đang dùng PostgreSQL trên localhost) |
+| Test integration | Cần DB thật để chạy Spring Boot test (mặc định local dùng PostgreSQL qua Docker Compose) |
 
 ---
 

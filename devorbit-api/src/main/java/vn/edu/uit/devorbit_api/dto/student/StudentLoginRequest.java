@@ -1,3 +1,8 @@
 package vn.edu.uit.devorbit_api.dto.student;
 
-public record StudentLoginRequest(String studentCode, String password) {}
+import jakarta.validation.constraints.NotBlank;
+
+public record StudentLoginRequest(
+    @NotBlank String studentCode,
+    @NotBlank String password
+) {}

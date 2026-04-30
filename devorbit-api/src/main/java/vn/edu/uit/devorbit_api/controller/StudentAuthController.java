@@ -1,5 +1,6 @@
 package vn.edu.uit.devorbit_api.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +20,7 @@ public class StudentAuthController {
     private final StudentAuthService studentAuthService;
 
     @PostMapping("/login")
-    public StudentAuthResponse login(@RequestBody StudentLoginRequest request) {
+    public StudentAuthResponse login(@RequestBody @Valid StudentLoginRequest request) {
         return studentAuthService.login(request);
     }
 

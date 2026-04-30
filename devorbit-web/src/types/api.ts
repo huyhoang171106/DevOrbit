@@ -12,6 +12,7 @@ export type CourseDetail = {
   credits: number
   theoryHours: number | null
   practiceHours: number | null
+  subjectType: string | null
   repos: RepoSummary[]
 }
 

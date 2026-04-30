@@ -38,7 +38,7 @@ class AdminCourseControllerTest {
             "SE104", "Nhap mon Test", 3, null, null, null, null
         );
         CourseDetailResponse response = new CourseDetailResponse(
-            1L, "SE104", "Nhap mon Test", null, null, null, 3, List.of()
+            1L, "SE104", "Nhap mon Test", null, null, null, 3, null, List.of()
         );
         when(courseService.createCourse(any())).thenReturn(response);
 
@@ -59,7 +59,7 @@ class AdminCourseControllerTest {
             "SE104", "Nhap mon Test Updated", 3, null, null, null, null
         );
         CourseDetailResponse response = new CourseDetailResponse(
-            1L, "SE104", "Nhap mon Test Updated", null, null, null, 3, List.of()
+            1L, "SE104", "Nhap mon Test Updated", null, null, null, 3, null, List.of()
         );
         when(courseService.updateCourse(any(), any())).thenReturn(response);
 

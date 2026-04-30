@@ -44,10 +44,10 @@ export function CandidateTable({ candidates, onApprove, onReject }: CandidateTab
               <td className="table-cell">
                 {c.status === 'APPROVED' && <span className="badge-approved">{c.status}</span>}
                 {c.status === 'REJECTED' && <span className="badge-rejected">{c.status}</span>}
-                {c.status === 'PENDING' && <span className="badge-new">{c.status}</span>}
+                {c.status === 'NEW' && <span className="badge-new">{c.status}</span>}
               </td>
               <td className="table-cell">
-                {c.status === 'PENDING' && (
+                {c.status === 'NEW' && (
                   <div className="flex gap-2">
                     <button
                       onClick={() => onApprove(c.id)}

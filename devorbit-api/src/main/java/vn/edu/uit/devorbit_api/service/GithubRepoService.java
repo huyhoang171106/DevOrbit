@@ -41,7 +41,7 @@ public class GithubRepoService {
     }
 
     public List<RepoSummaryResponse> getApprovedReposByCourseAndTechStack(Long courseId, String techStack) {
-        return githubRepoRepository.findByCourseIdAndActiveTrueAndPrimaryLanguage(courseId, techStack).stream()
+        return githubRepoRepository.findByCourseIdAndActiveTrueAndTechStack(courseId, techStack).stream()
                 .map(this::mapToRepoSummary)
                 .toList();
     }

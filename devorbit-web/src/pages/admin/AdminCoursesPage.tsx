@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { apiGet, apiAdminPost, apiAdminPut, apiAdminDelete } from '../../lib/api'
 import { getAdminToken, isAuthenticated } from '../../lib/auth'
 import { CourseFormDialog, type CourseFormData } from '../../components/admin/CourseFormDialog'
-import type { CourseSummary } from '../../types/api'
+import type { CourseSummary, CourseDetail } from '../../types/api'
 
 export function AdminCoursesPage() {
   const navigate = useNavigate()
@@ -68,17 +68,30 @@ export function AdminCoursesPage() {
     }
   }
 
-  function openEdit(c: CourseSummary) {
+  async function openEdit(c: CourseSummary) {
     setEditingId(c.id)
-    setEditing({
-      code: c.code,
-      name: c.name,
-      credits: 0,
-      lectureHours: 0,
-      practiceHours: 0,
-      subjectType: '',
-      description: '',
-    })
+    try {
+      const detail = await apiGet<CourseDetail>(`/api/courses/${c.id}`)
+      setEditing({
+        code: detail.code,
+        name: detail.name,
+        credits: detail.credits,
+        lectureHours: detail.theoryHours ?? 0,
+        practiceHours: detail.practiceHours ?? 0,
+        subjectType: detail.subjectType ?? '',
+        description: detail.description ?? '',
+      })
+    } catch {
+      setEditing({
+        code: c.code,
+        name: c.name,
+        credits: 0,
+        lectureHours: 0,
+        practiceHours: 0,
+        subjectType: '',
+        description: '',
+      })
+    }
     setDialogOpen(true)
   }
 

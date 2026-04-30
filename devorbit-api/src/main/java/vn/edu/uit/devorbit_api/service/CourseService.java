@@ -82,6 +82,7 @@ public class CourseService {
                 course.getLt(),
                 course.getTh(),
                 course.getSoTC(),
+                course.getLoaiMonHoc(),
                 githubRepoService.getApprovedReposByCourse(course.getId())
         );
     }

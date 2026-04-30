@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { apiGet } from '../../lib/api'
+import { apiGet, apiStudentPost } from '../../lib/api'
+import { getStudentToken } from '../../lib/auth'
 import { RepoCard } from '../../components/student/RepoCard'
 import { RepoFilterBar } from '../../components/student/RepoFilterBar'
 import type { RepoSummary } from '../../types/api'
@@ -10,6 +11,7 @@ export function CourseDetailPage() {
   const [repos, setRepos] = useState<RepoSummary[]>([])
   const [filtered, setFiltered] = useState<RepoSummary[]>([])
   const [loading, setLoading] = useState(true)
+  const [savedRepoId, setSavedRepoId] = useState<number | null>(null)
 
   useEffect(() => {
     if (!courseId) return
@@ -30,6 +32,16 @@ export function CourseDetailPage() {
     } else {
       setFiltered(repos.filter((r) => r.techStacks.includes(stack)))
     }
+  }
+
+  async function saveRepo(repoId: number) {
+    const token = getStudentToken()
+    if (!token) {
+      window.location.href = '/student/login'
+      return
+    }
+    await apiStudentPost('/api/student/bookmarks', token, { targetType: 'REPO', targetId: repoId })
+    setSavedRepoId(repoId)
   }
 
   if (loading) return (
@@ -60,7 +72,16 @@ export function CourseDetailPage() {
       )}
       <div className="space-y-4">
         {filtered.map((r) => (
-          <RepoCard key={r.id} repo={r} />
+          <div key={r.id} className="relative">
+            <RepoCard repo={r} />
+            <button
+              type="button"
+              onClick={() => void saveRepo(r.id)}
+              className="absolute right-4 top-4 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-xs font-semibold text-cyan-300 hover:bg-cyan-400/20"
+            >
+              {savedRepoId === r.id ? 'Saved' : 'Save'}
+            </button>
+          </div>
         ))}
       </div>
       {filtered.length === 0 && (

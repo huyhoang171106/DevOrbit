@@ -29,13 +29,19 @@ public class GithubScanService {
     private final CourseRepository courseRepository;
     private final GithubProperties githubProperties;
     private final WebClient webClient;
+    private final ObjectMapper objectMapper;
 
     public GithubScanService(RepoCandidateRepository repoCandidateRepository,
                              CourseRepository courseRepository,
-                             GithubProperties githubProperties) {
+                             GithubProperties githubProperties,
+                             ObjectMapper objectMapper) {
         this.repoCandidateRepository = repoCandidateRepository;
         this.courseRepository = courseRepository;
         this.githubProperties = githubProperties;
+        this.objectMapper = objectMapper;
+        if (githubProperties.token() == null || githubProperties.token().isBlank()) {
+            throw new IllegalStateException("GITHUB_TOKEN environment variable is not set. GitHub API scan is unavailable.");
+        }
         this.webClient = WebClient.builder()
             .baseUrl("https://api.github.com")
             .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + githubProperties.token())
@@ -55,11 +61,13 @@ public class GithubScanService {
                 .queryParam("per_page", 10)
                 .build())
             .retrieve()
+            .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                resp -> resp.bodyToMono(String.class)
+                    .map(body -> new BadRequestException("GitHub API error (" + resp.statusCode() + "): " + body)))
             .bodyToMono(String.class)
             .block(Duration.ofSeconds(30));
 
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode root = mapper.readTree(json);
+        JsonNode root = objectMapper.readTree(json);
         JsonNode items = root.get("items");
 
         Set<String> existingUrls = new HashSet<>(repoCandidateRepository.findGithubUrlByCourseId(request.courseId()));

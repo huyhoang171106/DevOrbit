@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import vn.edu.uit.devorbit.mobile.model.CourseSummary
 import vn.edu.uit.devorbit.mobile.repository.DevOrbitRepository
@@ -14,7 +15,8 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun CourseListScreen(onCourseClick: (CourseSummary) -> Unit) {
-    val repository = remember { DevOrbitRepository() }
+    val context = LocalContext.current
+    val repository = remember { DevOrbitRepository(context) }
     val scope = rememberCoroutineScope()
     var courses by remember { mutableStateOf<List<CourseSummary>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }

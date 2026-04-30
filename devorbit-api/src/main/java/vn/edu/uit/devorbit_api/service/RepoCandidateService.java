@@ -56,14 +56,14 @@ public class RepoCandidateService {
             techStackRepository.deleteByRepoId(repo.getId());
         }
 
-        if (request.techStacks() != null) {
-            for (String stackName : request.techStacks()) {
-                TechStack techStack = TechStack.builder()
+        if (request.techStacks() != null && !request.techStacks().isEmpty()) {
+            List<TechStack> techStacks = request.techStacks().stream()
+                .map(stackName -> TechStack.builder()
                     .name(stackName)
                     .repo(repo)
-                    .build();
-                techStackRepository.save(techStack);
-            }
+                    .build())
+                .toList();
+            techStackRepository.saveAll(techStacks);
         }
 
         candidate.setReviewNote(request.reviewNote());

@@ -3,6 +3,8 @@ package vn.edu.uit.devorbit_api.service;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import vn.edu.uit.devorbit_api.config.JwtProperties;
 
@@ -13,6 +15,9 @@ import java.util.Date;
 @Service
 public class JwtService {
 
+    private static final Logger log = LoggerFactory.getLogger(JwtService.class);
+    private static final String DEFAULT_SECRET_SENTINEL = "default-jwt-secret-key-long-enough-256bits";
+
     private final JwtProperties jwtProperties;
     private final SecretKey secretKey;
 
@@ -21,6 +26,12 @@ public class JwtService {
         this.secretKey = Keys.hmacShaKeyFor(
                 jwtProperties.secret().getBytes(StandardCharsets.UTF_8)
         );
+        if (DEFAULT_SECRET_SENTINEL.equals(jwtProperties.secret())) {
+            log.warn("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            log.warn("! JWT secret is set to the default value!                     ");
+            log.warn("! Set JWT_SECRET environment variable in production!           ");
+            log.warn("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        }
     }
 
     public String generateToken(String username) {

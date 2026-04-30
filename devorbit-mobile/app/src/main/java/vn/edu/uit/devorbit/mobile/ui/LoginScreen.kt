@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import vn.edu.uit.devorbit.mobile.repository.DevOrbitRepository
 import kotlinx.coroutines.launch
@@ -26,7 +27,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
         Spacer(Modifier.height(16.dp))
         OutlinedTextField(studentCode, { studentCode = it }, label = { Text("Student code") }, modifier = Modifier.fillMaxWidth())
         Spacer(Modifier.height(12.dp))
-        OutlinedTextField(password, { password = it }, label = { Text("Password") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(password, { password = it }, label = { Text("Password") }, modifier = Modifier.fillMaxWidth(), visualTransformation = PasswordVisualTransformation())
         Spacer(Modifier.height(16.dp))
         Button(
             onClick = {

@@ -12,5 +12,6 @@ public record CourseDetailResponse(
     Integer theoryHours,
     Integer practiceHours,
     Integer credits,
+    String subjectType,
     List<RepoSummaryResponse> repos
 ) {}

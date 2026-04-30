@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import vn.edu.uit.devorbit_api.dto.student.StudentAuthResponse;
 import vn.edu.uit.devorbit_api.dto.student.StudentLoginRequest;
 import vn.edu.uit.devorbit_api.dto.student.StudentProfileResponse;
+import vn.edu.uit.devorbit_api.dto.student.StudentRegisterRequest;
 import vn.edu.uit.devorbit_api.service.StudentAuthService;
 
 @RestController
@@ -22,6 +23,11 @@ public class StudentAuthController {
     @PostMapping("/login")
     public StudentAuthResponse login(@RequestBody @Valid StudentLoginRequest request) {
         return studentAuthService.login(request);
+    }
+
+    @PostMapping("/register")
+    public StudentAuthResponse register(@RequestBody @Valid StudentRegisterRequest request) {
+        return studentAuthService.register(request);
     }
 
     @GetMapping("/me")

@@ -2,6 +2,7 @@ package vn.edu.uit.devorbit_api.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -26,16 +27,14 @@ public class GithubScanService {
     private final RepoCandidateRepository repoCandidateRepository;
     private final CourseRepository courseRepository;
     private final WebClient webClient;
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public GithubScanService(RepoCandidateRepository repoCandidateRepository,
-                              CourseRepository courseRepository,
-                              WebClient githubWebClient,
-                              ObjectMapper objectMapper) {
+                               CourseRepository courseRepository,
+                               WebClient githubWebClient) {
         this.repoCandidateRepository = repoCandidateRepository;
         this.courseRepository = courseRepository;
         this.webClient = githubWebClient;
-        this.objectMapper = objectMapper;
     }
 
     @Transactional
@@ -56,7 +55,12 @@ public class GithubScanService {
             .bodyToMono(String.class)
             .block(Duration.ofSeconds(30));
 
-        JsonNode root = objectMapper.readTree(json);
+        JsonNode root;
+        try {
+            root = objectMapper.readTree(json);
+        } catch (JsonProcessingException e) {
+            throw new BadRequestException("Invalid GitHub API response");
+        }
         JsonNode items = root.get("items");
 
         Set<String> existingUrls = new HashSet<>(repoCandidateRepository.findGithubUrlByCourseId(request.courseId()));

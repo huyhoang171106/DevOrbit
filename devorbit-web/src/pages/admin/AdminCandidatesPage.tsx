@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { apiAdminPost } from '../../lib/api'
+import { apiAdminGet, apiAdminPost } from '../../lib/api'
 import { getAdminToken } from '../../lib/auth'
 import { useRequireAuth, useApiFetch } from '../../lib/hooks'
 import { CandidateTable } from '../../components/admin/CandidateTable'

@@ -69,6 +69,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <Link to="/courses" className="text-sm text-slate-400 transition-colors hover:text-slate-200">
               Courses
             </Link>
+            <Link to="/student/bookmarks" className="text-sm text-slate-400 transition-colors hover:text-slate-200">
+              My Learning
+            </Link>
             <Link to="/admin/login" className="text-sm text-slate-400 transition-colors hover:text-slate-200">
               Admin
             </Link>

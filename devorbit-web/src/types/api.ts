@@ -42,3 +42,23 @@ export type LoginRequest = {
 export type LoginResponse = {
   token: string
 }
+
+export type StudentAuthResponse = {
+  token: string
+  id: number
+  studentCode: string
+  fullName: string
+  email: string
+}
+
+export type BookmarkTargetType = 'COURSE' | 'REPO'
+
+export type StudentBookmark = {
+  id: number
+  targetType: BookmarkTargetType
+  targetId: number
+  title: string
+  subtitle: string | null
+  url: string
+  createdAt: string
+}

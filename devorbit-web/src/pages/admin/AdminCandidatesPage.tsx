@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom'
 import { apiAdminGet, apiAdminPost } from '../../lib/api'
 import { getAdminToken, isAuthenticated } from '../../lib/auth'
 import { CandidateTable } from '../../components/admin/CandidateTable'
+import { ApproveModal } from '../../components/admin/ApproveModal'
 import type { RepoCandidate } from '../../types/api'
 
 export function AdminCandidatesPage() {
   const navigate = useNavigate()
   const [candidates, setCandidates] = useState<RepoCandidate[]>([])
   const [loading, setLoading] = useState(true)
+  const [approvingId, setApprovingId] = useState<number | null>(null)
   const token = getAdminToken()
 
   useEffect(() => {
@@ -31,8 +33,17 @@ export function AdminCandidatesPage() {
   }, [fetchCandidates])
 
   async function handleApprove(id: number) {
+    setApprovingId(id)
+  }
+
+  async function handleConfirmApprove(id: number, description: string, techStacks: string[], reviewNote: string) {
     try {
-      await apiAdminPost(`/api/admin/repo-candidates/${id}/approve`, token!, {})
+      await apiAdminPost(`/api/admin/repo-candidates/${id}/approve`, token!, {
+        description,
+        techStacks,
+        reviewNote,
+      })
+      setApprovingId(null)
       fetchCandidates()
     } catch (err) {
       console.error(err)
@@ -48,6 +59,10 @@ export function AdminCandidatesPage() {
     }
   }
 
+  const selectedCandidate = approvingId != null
+    ? candidates.find((c) => c.id === approvingId) ?? null
+    : null
+
   if (loading) return (
     <div className="flex items-center justify-center py-20">
       <div className="text-sm text-slate-500 animate-pulse">Loading...</div>
@@ -62,6 +77,15 @@ export function AdminCandidatesPage() {
         onApprove={handleApprove}
         onReject={handleReject}
       />
+      {selectedCandidate && (
+        <ApproveModal
+          candidate={selectedCandidate}
+          onConfirm={(description, techStacks, reviewNote) =>
+            handleConfirmApprove(selectedCandidate.id, description, techStacks, reviewNote)
+          }
+          onClose={() => setApprovingId(null)}
+        />
+      )}
     </div>
   )
 }

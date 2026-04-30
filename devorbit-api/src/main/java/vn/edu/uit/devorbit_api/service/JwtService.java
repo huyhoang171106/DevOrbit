@@ -24,9 +24,14 @@ public class JwtService {
     }
 
     public String generateToken(String username) {
+        return generateToken(username, "ADMIN");
+    }
+
+    public String generateToken(String username, String tokenType) {
         long now = System.currentTimeMillis();
         return Jwts.builder()
                 .subject(username)
+                .claim("type", tokenType)
                 .issuedAt(new Date(now))
                 .expiration(new Date(now + jwtProperties.expirationMinutes() * 60 * 1000))
                 .signWith(secretKey)

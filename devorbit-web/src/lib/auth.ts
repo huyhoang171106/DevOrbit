@@ -15,3 +15,7 @@ export function clearAdminToken(): void {
 export function isAuthenticated(): boolean {
   return localStorage.getItem(TOKEN_KEY) !== null
 }
+
+export function logout(): void {
+  clearAdminToken()
+}

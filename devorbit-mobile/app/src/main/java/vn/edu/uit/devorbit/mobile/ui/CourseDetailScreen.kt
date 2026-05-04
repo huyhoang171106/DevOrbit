@@ -15,11 +15,11 @@ fun CourseDetailScreen(
     onBack: () -> Unit,
     onRepoClick: (RepoSummary) -> Unit
 ) {
-    val allTechStacks = repos.flatMap { it.techStacks }.distinct().sorted()
+    val allTechStacks = repos.flatMap { it.techStacks }.distinctBy { it.name }.map { it.name }.sorted()
     var selectedTechStack by remember { mutableStateOf<String?>(null) }
 
     val filteredRepos = if (selectedTechStack != null) {
-        repos.filter { it.techStacks.contains(selectedTechStack) }
+        repos.filter { repo -> repo.techStacks.any { it.name == selectedTechStack } }
     } else repos
 
     Column(modifier = Modifier.fillMaxSize()) {

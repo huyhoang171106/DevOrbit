@@ -8,8 +8,8 @@ type ApproveModalProps = {
 }
 
 export function ApproveModal({ candidate, onConfirm, onClose }: ApproveModalProps) {
-  const [description, setDescription] = useState('')
-  const [techStacks, setTechStacks] = useState('')
+  const [description, setDescription] = useState(candidate.description ?? '')
+  const [techStacks, setTechStacks] = useState([candidate.primaryLanguage, candidate.topics].filter(Boolean).join(', '))
   const [reviewNote, setReviewNote] = useState('')
 
   function handleSubmit(e: React.FormEvent) {
@@ -22,68 +22,93 @@ export function ApproveModal({ candidate, onConfirm, onClose }: ApproveModalProp
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-slate-900 p-6 shadow-2xl">
-        <h2 className="text-lg font-semibold text-slate-100 mb-1">
-          Approve Repository
-        </h2>
-        <p className="text-sm text-slate-400 mb-5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+      <div className="card-base w-full max-w-lg p-6 shadow-2xl">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="heading-5 text-ink">
+            Approve Repository
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-1 text-steel hover:bg-surface-soft hover:text-ink transition-colors"
+          >
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <p className="body-sm text-steel mb-5">
           {candidate.githubOwner}/{candidate.githubName}
         </p>
 
+        <div className="mb-5 rounded-xl border border-hairline bg-surface p-4 text-xs text-steel">
+          <div className="flex items-center gap-3">
+            <span className="inline-flex items-center gap-1 text-steel">
+              <svg className="h-3.5 w-3.5 text-steel" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+              {candidate.stars}
+            </span>
+            <span>{candidate.forks} forks</span>
+            {candidate.lastPushedAt && <span>· pushed {new Date(candidate.lastPushedAt).toLocaleDateString()}</span>}
+          </div>
+          {candidate.readmeExcerpt && (
+            <p className="mt-3 line-clamp-4 text-steel leading-relaxed">{candidate.readmeExcerpt}</p>
+          )}
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">
-              Description
-            </label>
+            <label className="label">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-cyan-500/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
+              className="input-field"
               placeholder="A brief description of this repository..."
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">
-              Tech Stacks
-            </label>
+            <label className="label">Tech Stacks</label>
             <input
               type="text"
               value={techStacks}
               onChange={(e) => setTechStacks(e.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-cyan-500/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
+              className="input-field"
               placeholder="e.g. React, Spring Boot, PostgreSQL"
             />
-            <p className="mt-1 text-xs text-slate-500">Separate with commas</p>
+            <p className="mt-1.5 text-xs text-steel">Separate with commas</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">
-              Review Note
-            </label>
+            <label className="label">Review Note</label>
             <input
               type="text"
               value={reviewNote}
               onChange={(e) => setReviewNote(e.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:border-cyan-500/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/20"
+              className="input-field"
               placeholder="Optional note about this candidate"
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl px-4 py-2 text-sm font-medium text-slate-400 transition-colors hover:bg-white/5 hover:text-slate-200"
+              className="btn-secondary"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="rounded-xl bg-green-500/10 px-5 py-2 text-sm font-medium text-green-400 transition-all duration-200 hover:bg-green-500/20 hover:text-green-300"
+              className="btn-primary"
             >
+              <svg className="h-4 w-4 mr-2 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
               Confirm Approval
             </button>
           </div>

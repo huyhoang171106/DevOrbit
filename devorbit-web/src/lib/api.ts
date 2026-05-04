@@ -18,7 +18,8 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   })
 
   if (!response.ok) {
-    throw new Error(`Request failed: ${response.status}`)
+    const body = await response.text().catch(() => '')
+    throw new Error(body || `Request failed: ${response.status}`)
   }
 
   // DELETE returns 204 No Content — no body to parse
@@ -26,7 +27,20 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     return undefined as T
   }
 
-  return response.json() as Promise<T>
+  return normalizeResponse(await response.json()) as T
+}
+
+function normalizeResponse(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(normalizeResponse)
+  if (!value || typeof value !== 'object') return value
+  const record = { ...(value as Record<string, unknown>) }
+  if (Array.isArray(record.techStacks)) {
+    record.techStacks = record.techStacks.map((stack) =>
+      typeof stack === 'string' ? stack : String((stack as { name?: string }).name ?? ''),
+    ).filter(Boolean)
+  }
+  if (Array.isArray(record.repos)) record.repos = record.repos.map(normalizeResponse)
+  return record
 }
 
 // --- Public API ---

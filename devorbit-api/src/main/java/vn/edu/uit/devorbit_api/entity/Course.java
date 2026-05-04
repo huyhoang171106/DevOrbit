@@ -11,6 +11,7 @@ import lombok.*;
 public class Course {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "stt")
     private Long id;
 
     @Column(name = "mamh", unique = true, nullable = false, length = 20)
@@ -27,12 +28,5 @@ public class Course {
 
     @Column(name = "loaimonhoc", nullable = false, length = 50)
     private String loaiMonHoc;
-
-    @Column(name = "description", columnDefinition = "TEXT")
-    private String description;
-
-    @Column(name = "is_active")
-    @Builder.Default
-    private boolean active = true;
 }
 

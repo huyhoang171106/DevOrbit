@@ -8,6 +8,7 @@ import vn.edu.uit.devorbit_api.dto.admin.RepoCandidateResponse;
 import vn.edu.uit.devorbit_api.service.GithubScanService;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/github")
@@ -19,5 +20,16 @@ public class AdminGithubController {
     @PostMapping("/scan")
     public List<RepoCandidateResponse> scan(@RequestBody @Valid GithubScanRequest request) {
         return githubScanService.scan(request);
+    }
+
+    @PostMapping("/scan-all")
+    public Map<String, String> scanAll() {
+        new Thread(() -> githubScanService.scanAll()).start();
+        return Map.of("message", "Bulk scan started in background");
+    }
+
+    @GetMapping("/scan-logs")
+    public List<String> getScanLogs() {
+        return githubScanService.getScanLogs();
     }
 }

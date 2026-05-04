@@ -17,7 +17,16 @@ public class CourseService {
     private final GithubRepoService githubRepoService;
 
     public List<CourseSummaryResponse> getActiveCourseSummaries() {
-        return courseRepository.findByActiveTrue().stream()
+        return courseRepository.findAll().stream()
+                .map(course -> new CourseSummaryResponse(
+                        course.getId(),
+                        course.getMaMH(),
+                        course.getTenMH()))
+                .toList();
+    }
+
+    public List<CourseSummaryResponse> getAllCourseSummaries() {
+        return courseRepository.findAll().stream()
                 .map(course -> new CourseSummaryResponse(
                         course.getId(),
                         course.getMaMH(),
@@ -31,6 +40,12 @@ public class CourseService {
         return mapToDetail(course);
     }
 
+    public CourseDetailResponse getAdminCourseDetail(Long id) {
+        Course course = courseRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Course not found with id: " + id));
+        return mapToDetail(course);
+    }
+
     public CourseDetailResponse createCourse(AdminCourseUpsertRequest request) {
         Course course = Course.builder()
                 .maMH(request.code())
@@ -39,8 +54,6 @@ public class CourseService {
                 .lt(request.lectureHours() != null ? request.lectureHours() : 0)
                 .th(request.practiceHours() != null ? request.practiceHours() : 0)
                 .loaiMonHoc(request.subjectType())
-                .description(request.description())
-                .active(true)
                 .build();
         return mapToDetail(courseRepository.save(course));
     }
@@ -53,15 +66,13 @@ public class CourseService {
         course.setLt(request.lectureHours() != null ? request.lectureHours() : 0);
         course.setTh(request.practiceHours() != null ? request.practiceHours() : 0);
         course.setLoaiMonHoc(request.subjectType());
-        course.setDescription(request.description());
         return mapToDetail(courseRepository.save(course));
     }
 
     public void deactivateCourse(Long id) {
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Course not found: " + id));
-        course.setActive(false);
-        courseRepository.save(course);
+        courseRepository.delete(course);
     }
 
     private CourseDetailResponse mapToDetail(Course course) {
@@ -69,7 +80,7 @@ public class CourseService {
                 course.getId(),
                 course.getMaMH(),
                 course.getTenMH(),
-                course.getDescription(),
+                null,
                 course.getLt(),
                 course.getTh(),
                 course.getSoTC(),

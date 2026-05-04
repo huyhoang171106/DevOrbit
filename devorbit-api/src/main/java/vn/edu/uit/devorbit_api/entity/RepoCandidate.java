@@ -27,6 +27,24 @@ public class RepoCandidate {
     @Column(nullable = false)
     private String githubUrl;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(length = 100)
+    private String primaryLanguage;
+
+    @Column(columnDefinition = "TEXT")
+    private String topics;
+
+    private Integer stars;
+
+    private Integer forks;
+
+    private String lastPushedAt;
+
+    @Column(columnDefinition = "TEXT")
+    private String readmeExcerpt;
+
     @Enumerated(EnumType.STRING)
     private RepoCandidateStatus status;
 

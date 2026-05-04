@@ -43,7 +43,7 @@ fun RepoListSection(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.padding(top = 8.dp)
                     ) {
-                        if (repo.primaryLanguage.isNotBlank()) {
+            if (repo.primaryLanguage.isNotBlank()) {
                             SuggestionChip(
                                 onClick = {},
                                 label = { Text(repo.primaryLanguage) }
@@ -52,7 +52,7 @@ fun RepoListSection(
                         repo.techStacks.forEach { stack ->
                             AssistChip(
                                 onClick = {},
-                                label = { Text(stack) }
+                                label = { Text(stack.name) }
                             )
                         }
                     }

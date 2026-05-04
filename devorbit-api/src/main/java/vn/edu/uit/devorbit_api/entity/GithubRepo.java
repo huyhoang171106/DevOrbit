@@ -1,6 +1,8 @@
 package vn.edu.uit.devorbit_api.entity;
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "github_repos")
@@ -42,5 +44,14 @@ public class GithubRepo {
     @JoinColumn(name = "course_id")
     private Course course;
 
-    private int stars;
+    @ManyToMany
+    @JoinTable(
+            name = "repo_tech_stacks",
+            joinColumns = @JoinColumn(name = "repo_id"),
+            inverseJoinColumns = @JoinColumn(name = "tech_stack_id")
+    )
+    @Builder.Default
+    private Set<TechStack> techStacks = new LinkedHashSet<>();
+
+    private Integer stars;
 }

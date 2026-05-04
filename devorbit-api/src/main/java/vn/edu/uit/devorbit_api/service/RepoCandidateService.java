@@ -8,12 +8,10 @@ import vn.edu.uit.devorbit_api.dto.admin.RepoCandidateResponse;
 import vn.edu.uit.devorbit_api.entity.GithubRepo;
 import vn.edu.uit.devorbit_api.entity.RepoCandidate;
 import vn.edu.uit.devorbit_api.entity.RepoCandidateStatus;
-import vn.edu.uit.devorbit_api.entity.TechStack;
 import vn.edu.uit.devorbit_api.exception.BadRequestException;
 import vn.edu.uit.devorbit_api.exception.NotFoundException;
 import vn.edu.uit.devorbit_api.repository.GithubRepoRepository;
 import vn.edu.uit.devorbit_api.repository.RepoCandidateRepository;
-import vn.edu.uit.devorbit_api.repository.TechStackRepository;
 
 import java.util.List;
 
@@ -22,7 +20,7 @@ import java.util.List;
 public class RepoCandidateService {
     private final RepoCandidateRepository repoCandidateRepository;
     private final GithubRepoRepository githubRepoRepository;
-    private final TechStackRepository techStackRepository;
+    private final GithubRepoService githubRepoService;
 
     public List<RepoCandidateResponse> getPendingCandidates() {
         return repoCandidateRepository.findByStatus(RepoCandidateStatus.NEW).stream()
@@ -46,25 +44,19 @@ public class RepoCandidateService {
         repo.setGithubUrl(candidate.getGithubUrl());
         repo.setRepoName(candidate.getGithubName());
         repo.setDisplayName(candidate.getGithubName());
-        repo.setDescription(request.description());
+        repo.setDescription(request.description() != null ? request.description() : candidate.getDescription());
+        repo.setPrimaryLanguage(candidate.getPrimaryLanguage());
+        repo.setStars(candidate.getStars());
         repo.setCourse(candidate.getCourse());
         repo.setActive(true);
 
-        githubRepoRepository.save(repo);
-
-        if (repo.getId() != null) {
-            techStackRepository.deleteByRepoId(repo.getId());
-        }
-
         if (request.techStacks() != null && !request.techStacks().isEmpty()) {
-            List<TechStack> techStacks = request.techStacks().stream()
-                .map(stackName -> TechStack.builder()
-                    .name(stackName)
-                    .repo(repo)
-                    .build())
-                .toList();
-            techStackRepository.saveAll(techStacks);
+            repo.setTechStacks(githubRepoService.resolveTechStacks(request.techStacks()));
+        } else if (candidate.getPrimaryLanguage() != null && !candidate.getPrimaryLanguage().isBlank()) {
+            repo.setTechStacks(githubRepoService.resolveTechStacks(List.of(candidate.getPrimaryLanguage())));
         }
+
+        githubRepoRepository.save(repo);
 
         candidate.setReviewNote(request.reviewNote());
         candidate.setStatus(RepoCandidateStatus.APPROVED);

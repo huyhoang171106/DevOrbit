@@ -9,12 +9,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import vn.edu.uit.devorbit.mobile.model.CourseSummary
 import vn.edu.uit.devorbit.mobile.model.RepoSummary
+import vn.edu.uit.devorbit.mobile.model.BookmarkTargetType
 import vn.edu.uit.devorbit.mobile.repository.AuthSessionStore
 import vn.edu.uit.devorbit.mobile.repository.DevOrbitRepository
 import kotlinx.coroutines.launch
 
-enum class Screen { LOGIN, COURSES, DETAIL, REPO_DETAIL }
+enum class Screen { LOGIN, COURSES, DETAIL, REPO_DETAIL, BOOKMARKS }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DevOrbitApp() {
     val context = LocalContext.current
@@ -28,7 +30,12 @@ fun DevOrbitApp() {
     var isLoadingRepos by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        TopAppBar(title = { Text(sessionStore.getDisplayName() ?: "DevOrbit") })
+        TopAppBar(
+            title = { Text(sessionStore.getDisplayName() ?: "DevOrbit") },
+            actions = {
+                if (currentScreen != Screen.LOGIN) TextButton(onClick = { currentScreen = Screen.BOOKMARKS }) { Text("Bookmarks") }
+            }
+        )
 
         Box(modifier = Modifier.fillMaxSize()) {
             when (currentScreen) {
@@ -55,8 +62,18 @@ fun DevOrbitApp() {
                     }
                 )
                 Screen.REPO_DETAIL -> selectedRepo?.let { repo ->
-                    RepoDetailScreen(repo = repo, onBack = { currentScreen = Screen.DETAIL })
+                    RepoDetailScreen(
+                        repo = repo,
+                        onBack = { currentScreen = Screen.DETAIL },
+                        onBookmark = {
+                            scope.launch { repository.saveBookmark(BookmarkTargetType.REPO, repo.id) }
+                        }
+                    )
                 }
+                Screen.BOOKMARKS -> BookmarksScreen(
+                    repository = repository,
+                    onBack = { currentScreen = Screen.COURSES }
+                )
             }
 
             if (isLoadingRepos) {

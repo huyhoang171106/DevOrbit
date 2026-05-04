@@ -15,7 +15,8 @@ import vn.edu.uit.devorbit.mobile.model.RepoSummary
 @Composable
 fun RepoDetailScreen(
     repo: RepoSummary,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onBookmark: () -> Unit = {}
 ) {
     val context = LocalContext.current
 
@@ -53,7 +54,7 @@ fun RepoDetailScreen(
                 )
             }
             Text(
-                text = "${repo.stars} ★",
+                text = "${repo.stars ?: 0} ★",
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.align(Alignment.CenterVertically)
             )
@@ -62,12 +63,18 @@ fun RepoDetailScreen(
         if (repo.techStacks.isNotEmpty()) {
             Spacer(Modifier.height(12.dp))
             Text(
-                text = "Tech Stacks: ${repo.techStacks.joinToString(", ")}",
+                text = "Tech Stacks: ${repo.techStacks.joinToString(", ") { it.name }}",
                 style = MaterialTheme.typography.bodyMedium
             )
         }
 
         Spacer(Modifier.height(24.dp))
+
+        Button(onClick = onBookmark) {
+            Text("Bookmark")
+        }
+
+        Spacer(Modifier.height(8.dp))
 
         Button(
             onClick = {

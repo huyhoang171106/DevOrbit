@@ -17,4 +17,7 @@ public interface RepoCandidateRepository extends JpaRepository<RepoCandidate, Lo
 
     @Query("SELECT r.githubUrl FROM RepoCandidate r WHERE r.course.id = :courseId")
     List<String> findGithubUrlByCourseId(Long courseId);
+
+    @Query("SELECT r.githubUrl FROM RepoCandidate r")
+    List<String> findAllGithubUrls();
 }

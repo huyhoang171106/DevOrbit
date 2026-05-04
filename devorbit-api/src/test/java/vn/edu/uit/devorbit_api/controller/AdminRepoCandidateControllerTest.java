@@ -36,7 +36,7 @@ class AdminRepoCandidateControllerTest {
     @Test
     void shouldApproveCandidate() throws Exception {
         when(repoCandidateService.approveCandidate(eq(10L), any()))
-            .thenReturn(new RepoCandidateResponse(10L, "owner", "repo", "https://github.com/owner/repo", "APPROVED"));
+            .thenReturn(new RepoCandidateResponse(10L, "owner", "repo", "https://github.com/owner/repo", "APPROVED", null, null, null, 0, 0, null, null));
 
         mockMvc.perform(post("/api/admin/repo-candidates/10/approve")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -50,7 +50,7 @@ class AdminRepoCandidateControllerTest {
     @Test
     void shouldListPendingCandidates() throws Exception {
         when(repoCandidateService.getPendingCandidates())
-            .thenReturn(List.of(new RepoCandidateResponse(10L, "owner", "repo", "https://github.com/owner/repo", "NEW")));
+            .thenReturn(List.of(new RepoCandidateResponse(10L, "owner", "repo", "https://github.com/owner/repo", "NEW", null, null, null, 0, 0, null, null)));
 
         mockMvc.perform(get("/api/admin/repo-candidates"))
             .andExpect(status().isOk())
@@ -60,7 +60,7 @@ class AdminRepoCandidateControllerTest {
     @Test
     void shouldRejectCandidate() throws Exception {
         when(repoCandidateService.rejectCandidate(eq(10L)))
-            .thenReturn(new RepoCandidateResponse(10L, "owner", "repo", "https://github.com/owner/repo", "REJECTED"));
+            .thenReturn(new RepoCandidateResponse(10L, "owner", "repo", "https://github.com/owner/repo", "REJECTED", null, null, null, 0, 0, null, null));
 
         mockMvc.perform(post("/api/admin/repo-candidates/10/reject"))
             .andExpect(status().isOk())

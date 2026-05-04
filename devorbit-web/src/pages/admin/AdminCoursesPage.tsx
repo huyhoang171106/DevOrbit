@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { apiGet, apiAdminPost, apiAdminPut, apiAdminDelete } from '../../lib/api'
 import { getAdminToken } from '../../lib/auth'
 import { useRequireAuth, useApiFetch } from '../../lib/hooks'
@@ -8,6 +9,7 @@ import type { CourseSummary, CourseDetail } from '../../types/api'
 export function AdminCoursesPage() {
   useRequireAuth()
   const token = getAdminToken()!
+  const navigate = useNavigate()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<CourseFormData | null>(null)
   const [editingId, setEditingId] = useState<number | null>(null)
@@ -82,45 +84,77 @@ export function AdminCoursesPage() {
     setDialogOpen(true)
   }
 
-  if (loading) return (
-    <div className="flex items-center justify-center py-20">
-      <div className="text-sm text-slate-500 animate-pulse">Loading...</div>
-    </div>
-  )
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-[96px]">
+        <div className="flex items-center gap-3 body-sm text-steel">
+          <svg className="h-5 w-5 animate-spin text-brand-green" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          Loading courses...
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="page-title">Courses</h1>
-        <button onClick={openCreate} className="btn-primary">
+    <div className="w-full max-w-[1280px] mx-auto px-[32px] py-[64px]">
+      <div className="mb-[32px] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="display-sm text-ink mb-1">Courses</h1>
+          <p className="body-sm text-steel">Manage your course catalog.</p>
+        </div>
+        <button onClick={openCreate} className="btn-primary self-start">
+          <svg className="mr-1.5 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
           Create Course
         </button>
       </div>
-      <div className="glass-card overflow-hidden">
+
+      <div className="card-base overflow-hidden border border-hairline p-0">
         <table className="min-w-full text-sm">
           <thead>
-            <tr className="border-b border-white/5">
-              <th className="table-header">Code</th>
-              <th className="table-header">Name</th>
-              <th className="table-header">Actions</th>
+            <tr className="border-b border-hairline bg-surface-soft">
+              <th className="table-header text-left font-medium text-steel py-3 px-4">Code</th>
+              <th className="table-header text-left font-medium text-steel py-3 px-4">Name</th>
+              <th className="table-header text-right font-medium text-steel py-3 px-4">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/5">
-            {(courses ?? []).map((c, i) => (
-              <tr key={c.id} className={i % 2 === 1 ? 'bg-white/[0.02]' : ''}>
-                <td className="table-cell font-medium text-slate-100">{c.code}</td>
-                <td className="table-cell text-slate-300">{c.name}</td>
-                <td className="table-cell">
-                  <div className="flex gap-2">
+          <tbody className="divide-y divide-hairline bg-canvas">
+            {(courses ?? []).length === 0 && (
+              <tr>
+                <td colSpan={3} className="px-4 py-10 text-center text-steel body-sm">
+                  No courses found.
+                </td>
+              </tr>
+            )}
+            {(courses ?? []).map((c) => (
+              <tr key={c.id} className="transition-colors hover:bg-surface-soft">
+                <td className="table-cell py-3 px-4">
+                  <span className="badge-tag">
+                    {c.code}
+                  </span>
+                </td>
+                <td className="table-cell text-ink py-3 px-4">{c.name}</td>
+                <td className="table-cell text-right py-3 px-4">
+                  <div className="flex items-center justify-end gap-2">
+                    <button
+                      onClick={() => navigate(`/admin/courses/${c.id}/resources`)}
+                      className="btn-secondary !py-1 !px-2 !text-xs !bg-surface"
+                    >
+                      Resources
+                    </button>
                     <button
                       onClick={() => openEdit(c)}
-                      className="btn-ghost px-3 py-1 text-xs"
+                      className="btn-secondary !py-1 !px-2 !text-xs !bg-surface"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDeactivate(c.id)}
-                      className="btn-danger px-3 py-1 text-xs"
+                      className="btn-secondary !py-1 !px-2 !text-xs !bg-surface !text-danger-11 hover:!bg-danger-3 border border-danger-6"
                     >
                       Deactivate
                     </button>
@@ -131,6 +165,7 @@ export function AdminCoursesPage() {
           </tbody>
         </table>
       </div>
+
       <CourseFormDialog
         open={dialogOpen}
         onClose={() => { setDialogOpen(false); setEditing(null); setEditingId(null) }}

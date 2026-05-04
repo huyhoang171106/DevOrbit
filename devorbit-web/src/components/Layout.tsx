@@ -1,88 +1,128 @@
-import { useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 
-function StarField() {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+import { ThemeToggle } from './ThemeToggle'
 
-  useEffect(() => {
-    const canvas = canvasRef.current!
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')!
-
-    canvas.width = window.innerWidth
-    canvas.height = window.innerHeight
-
-    const stars: { x: number; y: number; r: number; a: number; s: number }[] = []
-    for (let i = 0; i < 200; i++) {
-      stars.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        r: Math.random() * 1.5 + 0.3,
-        a: Math.random() * 0.8 + 0.2,
-        s: Math.random() * 0.02 + 0.005,
-      })
-    }
-
-    let frame: number
-    function animate() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-      for (const star of stars) {
-        star.a = Math.sin(Date.now() * star.s) * 0.4 + 0.6
-        ctx.beginPath()
-        ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(255, 255, 255, ${star.a})`
-        ctx.fill()
-      }
-      frame = requestAnimationFrame(animate)
-    }
-    animate()
-
-    const handleResize = () => {
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
-    }
-    window.addEventListener('resize', handleResize)
-    return () => {
-      cancelAnimationFrame(frame)
-      window.removeEventListener('resize', handleResize)
-    }
-  }, [])
-
-  return <canvas ref={canvasRef} className="fixed inset-0 z-0 pointer-events-none" />
-}
+const navLinks = [
+  { to: '/courses', label: 'Courses' },
+  { to: '/student/bookmarks', label: 'My Learning' },
+]
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const location = useLocation()
+  const [mobileOpen, setMobileOpen] = useState(false)
+
   return (
-    <div className="relative min-h-screen">
-      <StarField />
-      <nav className="relative z-10 border-b border-white/5 bg-[#070b15]/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <Link to="/" className="flex items-center gap-2 text-lg font-bold font-heading text-amber-400">
-            <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="5" />
-              <circle cx="12" cy="12" r="8" strokeDasharray="3 3" opacity="0.4" />
-              <circle cx="12" cy="12" r="11" strokeDasharray="2 4" opacity="0.2" />
-            </svg>
-            DevOrbit
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link to="/courses" className="text-sm text-slate-400 transition-colors hover:text-slate-200">
-              Courses
+    <div className="relative min-h-screen flex flex-col bg-canvas text-charcoal font-inter dark:bg-canvas-dark dark:text-on-dark">
+      {/* Top Navigation */}
+      <nav className="sticky top-0 z-50 w-full bg-canvas border-b border-hairline-soft h-[64px] dark:bg-canvas-dark dark:border-hairline-dark">
+        <div className="mx-auto flex h-full max-w-[1440px] items-center justify-between px-8">
+          <div className="flex items-center gap-8">
+            <Link to="/" className="flex items-center gap-2 text-[18px] font-semibold text-ink transition-opacity hover:opacity-80 dark:text-on-dark">
+              DevOrbit
             </Link>
-            <Link to="/student/bookmarks" className="text-sm text-slate-400 transition-colors hover:text-slate-200">
-              My Learning
-            </Link>
-            <Link to="/admin/login" className="text-sm text-slate-400 transition-colors hover:text-slate-200">
+
+            {/* Desktop nav */}
+            <div className="hidden md:flex items-center gap-4">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className={`text-[14px] font-medium transition-colors ${
+                    location.pathname === link.to || location.pathname.startsWith(link.to + '/')
+                      ? 'text-ink dark:text-on-dark'
+                      : 'text-steel hover:text-ink dark:text-muted dark:hover:text-on-dark'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="hidden md:flex items-center gap-4">
+            <ThemeToggle />
+            <Link to="/admin/login" className="text-[14px] font-medium text-steel hover:text-ink transition-colors dark:text-muted dark:hover:text-on-dark">
               Admin
             </Link>
+            <Link to="/courses" className="btn-primary">
+              Get Started
+            </Link>
           </div>
+
+          {/* Mobile hamburger */}
+          <button
+            type="button"
+            className="md:hidden p-2 text-steel hover:text-ink transition-colors"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle menu"
+          >
+            <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              {mobileOpen ? (
+                <path d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
         </div>
+
+        {/* Mobile menu */}
+        {mobileOpen && (
+          <div className="md:hidden border-b border-hairline-soft bg-canvas px-6 py-4 space-y-4 dark:border-hairline-dark dark:bg-canvas-dark">
+            {navLinks.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                onClick={() => setMobileOpen(false)}
+                className={`block text-[14px] font-medium transition-colors ${
+                  location.pathname === link.to || location.pathname.startsWith(link.to + '/')
+                    ? 'text-ink dark:text-on-dark'
+                    : 'text-steel hover:text-ink dark:text-muted dark:hover:text-on-dark'
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
+            <div className="pt-4 flex flex-col gap-3">
+               <div className="flex items-center justify-between">
+                 <span className="text-[14px] font-medium text-steel dark:text-muted">Appearance</span>
+                 <ThemeToggle />
+               </div>
+               <Link 
+                  to="/admin/login" 
+                  onClick={() => setMobileOpen(false)}
+                  className="text-[14px] font-medium text-steel hover:text-ink transition-colors dark:text-muted dark:hover:text-on-dark"
+                >
+                  Admin
+               </Link>
+               <Link 
+                  to="/courses" 
+                  onClick={() => setMobileOpen(false)}
+                  className="btn-primary w-full"
+                >
+                  Get Started
+                </Link>
+            </div>
+          </div>
+        )}
       </nav>
-      <main className="relative z-10 mx-auto max-w-6xl px-4 py-8">
+
+      {/* Main content */}
+      <main className="relative z-10 flex-1 w-full">
         {children}
       </main>
-      <footer className="relative z-10 border-t border-white/5 py-6 text-center text-xs text-slate-600">
-        DevOrbit &mdash; UIT Knowledge Repository Explorer
+
+      {/* Footer */}
+      <footer className="relative z-10 bg-canvas border-t border-hairline py-[64px] px-[32px] dark:bg-canvas-dark dark:border-hairline-dark">
+        <div className="mx-auto max-w-[1440px] flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-[16px] font-medium text-ink dark:text-on-dark">
+            DevOrbit
+          </div>
+          <p className="text-[14px] text-steel dark:text-muted">
+            UIT Knowledge Repository Explorer &mdash; Built for students, by students.
+          </p>
+        </div>
       </footer>
     </div>
   )

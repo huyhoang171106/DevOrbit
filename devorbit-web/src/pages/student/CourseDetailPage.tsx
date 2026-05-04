@@ -44,48 +44,63 @@ export function CourseDetailPage() {
     setSavedRepoId(repoId)
   }
 
-  if (loading) return (
-    <div className="flex items-center justify-center py-20">
-      <div className="text-sm text-slate-500 animate-pulse">Loading repositories...</div>
-    </div>
-  )
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-[96px]">
+        <div className="flex items-center gap-3 body-sm text-steel">
+          <svg className="h-5 w-5 animate-spin text-brand-green" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          Loading repositories...
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div>
+    <div className="w-full max-w-[800px] mx-auto px-[32px] py-[64px]">
       <Link
         to="/courses"
-        className="mb-6 inline-flex items-center gap-1 text-sm text-slate-400 transition-colors hover:text-amber-400"
+        className="mb-6 inline-flex items-center gap-1.5 rounded-lg py-1.5 body-sm text-steel transition-all duration-200 hover:text-ink"
       >
         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M19 12H5M12 19l-7-7 7-7" />
         </svg>
         Back to Courses
       </Link>
-      <div className="mb-8 flex items-center gap-3">
-        <svg className="h-8 w-8 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M3 3v18h18M7 16l4-8 4 4 4-6" />
-        </svg>
-        <h1 className="page-title">Course Repositories</h1>
+
+      <div className="mb-[40px]">
+        <h1 className="display-sm text-ink mb-2">Course Repositories</h1>
+        <p className="body-md text-steel">Real-world projects mapped to this course.</p>
       </div>
+
       {allStacks.length > 0 && (
         <RepoFilterBar techStacks={allStacks} onFilter={handleFilter} />
       )}
-      <div className="space-y-4">
+
+      <div className="space-y-[16px] mt-8">
         {filtered.map((r) => (
-          <div key={r.id} className="relative">
+          <div key={r.id} className="relative group">
             <RepoCard repo={r} />
             <button
               type="button"
               onClick={() => void saveRepo(r.id)}
-              className="absolute right-4 top-4 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-xs font-semibold text-cyan-300 hover:bg-cyan-400/20"
+              className="absolute right-4 top-4 btn-secondary !py-1 !px-2 !text-xs !bg-surface"
             >
               {savedRepoId === r.id ? 'Saved' : 'Save'}
             </button>
           </div>
         ))}
       </div>
+
       {filtered.length === 0 && (
-        <p className="py-12 text-center text-slate-500">No repositories found.</p>
+        <div className="card-base py-16 text-center text-steel bg-transparent border-dashed border-hairline-soft mt-8">
+          <svg className="mx-auto mb-3 h-10 w-10 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p className="body-md">No repositories found.</p>
+        </div>
       )}
     </div>
   )

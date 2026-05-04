@@ -17,10 +17,10 @@ export function RepoFilterBar({ techStacks, onFilter }: RepoFilterBarProps) {
     <div className="mb-6 flex flex-wrap gap-2">
       <button
         onClick={() => handleClick(null)}
-        className={`rounded-xl px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
+        className={`rounded-xl px-4 py-1.5 text-sm font-medium transition-all duration-200 cursor-pointer ${
           active === null
-            ? 'bg-amber-400/20 text-amber-400 shadow-sm shadow-amber-400/10'
-            : 'bg-white/[0.04] text-slate-400 hover:bg-white/[0.08] hover:text-slate-200'
+            ? 'bg-amber-400/15 text-amber-400 border border-amber-400/20 shadow-sm shadow-amber-400/10'
+            : 'bg-white/[0.04] text-slate-400 border border-white/[0.04] hover:bg-white/[0.08] hover:text-slate-200'
         }`}
       >
         All
@@ -29,10 +29,10 @@ export function RepoFilterBar({ techStacks, onFilter }: RepoFilterBarProps) {
         <button
           key={stack}
           onClick={() => handleClick(stack)}
-          className={`rounded-xl px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
+          className={`rounded-xl px-4 py-1.5 text-sm font-medium transition-all duration-200 cursor-pointer ${
             active === stack
-              ? 'bg-amber-400/20 text-amber-400 shadow-sm shadow-amber-400/10'
-              : 'bg-white/[0.04] text-slate-400 hover:bg-white/[0.08] hover:text-slate-200'
+              ? 'bg-amber-400/15 text-amber-400 border border-amber-400/20 shadow-sm shadow-amber-400/10'
+              : 'bg-white/[0.04] text-slate-400 border border-white/[0.04] hover:bg-white/[0.08] hover:text-slate-200'
           }`}
         >
           {stack}

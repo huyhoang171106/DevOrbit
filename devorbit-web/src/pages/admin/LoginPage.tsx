@@ -27,24 +27,33 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-[70vh] items-center justify-center">
-      <div className="glass-card w-full max-w-sm p-8">
-        <div className="mb-6 text-center">
-          <svg className="mx-auto mb-3 h-10 w-10 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <circle cx="12" cy="12" r="5" />
-            <circle cx="12" cy="12" r="8" strokeDasharray="3 3" opacity="0.4" />
-            <circle cx="12" cy="12" r="11" strokeDasharray="2 4" opacity="0.2" />
-          </svg>
-          <h1 className="text-xl font-bold font-heading text-slate-100">Admin Login</h1>
+    <div className="flex min-h-[65vh] items-center justify-center py-[64px]">
+      <div className="card-base w-full max-w-sm p-[32px]">
+        <div className="mb-[32px] text-center">
+          <div className="mx-auto mb-4 inline-flex rounded-full bg-surface-soft border border-hairline p-3">
+            <svg className="h-6 w-6 text-brand-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <circle cx="12" cy="12" r="5" />
+              <circle cx="12" cy="12" r="8" strokeDasharray="3 3" opacity="0.4" />
+              <circle cx="12" cy="12" r="11" strokeDasharray="2 4" opacity="0.2" />
+            </svg>
+          </div>
+          <h1 className="heading-3 text-ink">Admin Login</h1>
+          <p className="mt-2 body-sm text-steel">Sign in to manage courses and repositories.</p>
         </div>
+
         {error && (
-          <div className="mb-4 rounded-xl bg-red-500/10 px-4 py-2.5 text-sm text-red-400">
+          <div className="mb-5 flex items-center gap-2 rounded-md bg-danger-3 border border-danger-6 px-4 py-3 body-sm text-danger-11 dark:bg-danger-11/10 dark:text-danger-6">
+            <svg className="h-4 w-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 8v4M12 16h.01" />
+            </svg>
             {error}
           </div>
         )}
-        <form onSubmit={handleSubmit} className="space-y-4">
+
+        <form onSubmit={handleSubmit} className="space-y-[16px]">
           <div>
-            <label className="label">Username</label>
+            <label className="label mb-1.5 block">Username</label>
             <input
               type="text"
               value={username}
@@ -54,7 +63,7 @@ export function LoginPage() {
             />
           </div>
           <div>
-            <label className="label">Password</label>
+            <label className="label mb-1.5 block">Password</label>
             <input
               type="password"
               value={password}
@@ -63,12 +72,18 @@ export function LoginPage() {
               required
             />
           </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary w-full"
-          >
-            {loading ? 'Logging in...' : 'Log In'}
+          <button type="submit" disabled={loading} className="btn-primary w-full mt-2">
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Logging in...
+              </span>
+            ) : (
+              'Log In'
+            )}
           </button>
         </form>
       </div>

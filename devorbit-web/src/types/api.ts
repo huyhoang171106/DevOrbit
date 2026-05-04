@@ -22,7 +22,7 @@ export type RepoSummary = {
   description: string
   githubUrl: string
   primaryLanguage: string
-  stars: number
+  stars: number | null
   techStacks: string[]
 }
 
@@ -32,6 +32,16 @@ export type RepoCandidate = {
   githubName: string
   githubUrl: string
   status: string
+  description: string | null
+  primaryLanguage: string | null
+  topics: string | null
+  stars: number
+  forks: number
+  lastPushedAt: string | null
+  readmeExcerpt: string | null
+  courseId?: number
+  courseCode?: string
+  courseName?: string
 }
 
 export type LoginRequest = {
@@ -61,4 +71,165 @@ export type StudentBookmark = {
   subtitle: string | null
   url: string
   createdAt: string
+}
+
+// --- Course Resources ---
+
+export type YoutubePlaylistRequest = {
+  title: string
+  url: string
+  description?: string
+  channelName?: string
+}
+
+export type YoutubePlaylistResponse = {
+  id: number
+  courseId: number
+  title: string
+  url: string
+  description: string | null
+  channelName: string | null
+  createdAt: string
+}
+
+export type ArticleRequest = {
+  title: string
+  url: string
+  author?: string
+  description?: string
+}
+
+export type ArticleResponse = {
+  id: number
+  courseId: number
+  title: string
+  url: string
+  author: string | null
+  description: string | null
+  createdAt: string
+}
+
+export type TutorialRequest = {
+  title: string
+  url: string
+  type?: string
+  description?: string
+}
+
+export type TutorialResponse = {
+  id: number
+  courseId: number
+  title: string
+  url: string
+  type: string | null
+  description: string | null
+  createdAt: string
+}
+
+// --- Roadmaps ---
+
+export type RoadmapRequest = {
+  studentId: number
+  title: string
+  description?: string
+  markdownContent?: string
+  isPublic?: boolean
+}
+
+export type RoadmapResponse = {
+  id: number
+  studentId: number
+  studentCode: string
+  studentName: string
+  title: string
+  description: string | null
+  markdownContent: string | null
+  isPublic: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export type PhaseRequest = {
+  title: string
+  description?: string
+  sortOrder?: number
+}
+
+export type PhaseResponse = {
+  id: number
+  roadmapId: number
+  title: string
+  description: string | null
+  sortOrder: number
+  createdAt: string
+}
+
+export type RoadmapItemTargetType = 'COURSE' | 'REPO'
+
+export type ItemRequest = {
+  targetType: RoadmapItemTargetType
+  targetId: number
+  title?: string
+  note?: string
+  sortOrder?: number
+}
+
+export type ItemResponse = {
+  id: number
+  phaseId: number
+  targetType: RoadmapItemTargetType
+  targetId: number
+  title: string | null
+  note: string | null
+  sortOrder: number
+  createdAt: string
+}
+
+// --- Course Relationships ---
+
+export type CourseRelationType = 'PREREQUISITE' | 'COMPLEMENTARY' | 'COREQUISITE'
+
+export type CourseRelationshipRequest = {
+  courseId: number
+  relatedCourseId: number
+  relationType: CourseRelationType
+}
+
+export type CourseRelationshipResponse = {
+  id: number
+  courseId: number
+  courseCode: string
+  courseName: string
+  relatedCourseId: number
+  relatedCourseCode: string
+  relatedCourseName: string
+  relationType: CourseRelationType
+  createdAt: string
+}
+
+// --- Notes ---
+
+export type NoteTargetType = 'COURSE' | 'REPO' | 'NONE'
+
+export type NoteCodeSnippetResponse = {
+  id: number
+  noteId: number
+  language: string
+  code: string
+  caption: string
+  sortOrder: number
+}
+
+export type NoteResponse = {
+  id: number
+  studentId: number
+  studentCode: string
+  studentName: string
+  title: string
+  contentMarkdown: string
+  targetType: NoteTargetType
+  targetId: number | null
+  createdAt: string
+  updatedAt: string
+  snippets: NoteCodeSnippetResponse[]
 }

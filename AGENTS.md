@@ -1,55 +1,26 @@
-<!-- Generated: 2026-04-30 | Updated: 2026-04-30 -->
-
 # DevOrbit
 
-## Purpose
-DevOrbit is a comprehensive knowledge-management and learning-support platform specifically designed for UIT (University of Information Technology) students. Built for the university's 20th anniversary, it serves as a real production platform rather than a demo project. The platform connects students with educational resources, legacy code repositories, and structured learning pathways to enhance their academic and professional development.
+Root instructions for the whole repo. Keep changes aligned with the package-level `AGENTS.md` files in `devorbit-api/`, `devorbit-web/`, and `devorbit-mobile/`; those override this file for their subtrees.
 
-## Key Files
-| File | Description |
-|------|-------------|
-| `docker-compose.yml` | Multi-service Docker orchestration for the entire application stack |
+## Repo layout
+- `devorbit-api/`: Spring Boot backend (`mvnw.cmd`, Java 21)
+- `devorbit-web/`: React + TypeScript + Vite frontend (`npm`, Vitest)
+- `devorbit-mobile/`: Kotlin Android app (Gradle Kotlin DSL)
+- `docker-compose.yml`: local stack for `db`, `api`, and `web`
 
-## Subdirectories
-| Directory | Purpose |
-|-----------|---------|
-| `devorbit-api/` | Java Spring Boot backend API (see `devorbit-api/AGENTS.md`) |
-| `devorbit-web/` | React web frontend application (see `devorbit-web/AGENTS.md`) |
-| `devorbit-mobile/` | Kotlin Android mobile application (see `devorbit-mobile/AGENTS.md`) |
-| `docs/` | Project documentation and specifications (see `docs/AGENTS.md`) |
-| `org/` | Organization-related content and resources (see `org/AGENTS.md`) |
+## Commands that matter
+- Backend: `cd devorbit-api; .\mvnw.cmd test`
+- Web: `cd devorbit-web; npm run build`; `npm test` runs Vitest
+- Mobile: `cd devorbit-mobile; .\gradlew.bat test` (Windows wrapper only in repo)
+- Full stack local: `docker compose up -d --build`
 
-## For AI Agents
+## Repo-specific gotchas
+- Trust executable config over README text when they differ.
+- Web API base in Docker is `/api`; don’t hardcode a localhost base in code.
+- The backend uses PostgreSQL and JWT env vars from `docker-compose.yml`; don’t reintroduce hard-coded secrets.
+- Mobile API models must match backend response shapes; tech stacks are objects, not raw strings, in current API responses.
+- If you add tests, place them in the package’s native test location and run the narrowest relevant command first.
 
-### Working In This Directory
-- This is a multi-service application with coordinated deployment via Docker Compose
-- All services depend on the PostgreSQL database for data persistence
-- Use the docker-compose.yml for local development and deployment
-- Each service (api, web) has its own Dockerfile in respective directories
-
-### Testing Requirements
-- Run full-stack integration tests using Docker Compose
-- Test database connectivity and migrations before deployment
-- Ensure all services start correctly and communicate properly
-
-### Common Patterns
-- JWT-based authentication across all services
-- PostgreSQL as the primary database
-- RESTful API design in the backend
-- Environment variable configuration for all services
-
-## Dependencies
-
-### Internal
-- `devorbit-api/` - Spring Boot backend with JPA entities and REST controllers
-- `devorbit-web/` - React frontend with Vite build system
-- `devorbit-mobile/` - Kotlin Android app for mobile access
-- `docs/` - Documentation for development and deployment
-
-### External
-- PostgreSQL 16 - Primary database
-- Docker & Docker Compose - Container orchestration
-- JWT - Authentication tokens
-- GitHub API - Repository data ingestion
-
-<!-- MANUAL: -->
+## Use the package instructions
+- Check the matching subdirectory `AGENTS.md` before editing anything there.
+- Keep this root file short; add only repo-wide constraints that an agent would not infer from filenames.

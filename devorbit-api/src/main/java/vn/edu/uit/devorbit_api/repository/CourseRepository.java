@@ -8,6 +8,4 @@ import java.util.Optional;
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Long> {
     Optional<Course> findByMaMH(String maMH);
-
-    List<Course> findByActiveTrue();
 }

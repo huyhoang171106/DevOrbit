@@ -20,6 +20,12 @@ public interface GithubRepoRepository extends JpaRepository<GithubRepo, Long> {
 
     List<GithubRepo> findByCourseIdAndActiveTrueAndPrimaryLanguage(Long courseId, String primaryLanguage);
 
-    @Query("SELECT DISTINCT r FROM GithubRepo r JOIN TechStack t ON t.repo.id = r.id WHERE r.course.id = :courseId AND r.active = true AND t.name = :techStack")
+    @Query("""
+            SELECT DISTINCT r FROM GithubRepo r JOIN r.techStacks t
+            WHERE r.course.id = :courseId AND r.active = true AND lower(t.name) = lower(:techStack)
+            """)
     List<GithubRepo> findByCourseIdAndActiveTrueAndTechStack(@Param("courseId") Long courseId, @Param("techStack") String techStack);
+
+    @Query("SELECT r.githubUrl FROM GithubRepo r")
+    List<String> findAllGithubUrls();
 }

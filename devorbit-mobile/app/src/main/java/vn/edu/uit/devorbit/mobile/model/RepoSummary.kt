@@ -6,6 +6,6 @@ data class RepoSummary(
     val description: String,
     val githubUrl: String,
     val primaryLanguage: String,
-    val stars: Int = 0,
-    val techStacks: List<String> = emptyList()
+    val stars: Int? = null,
+    val techStacks: List<TechStack> = emptyList()
 )

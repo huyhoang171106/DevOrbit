@@ -4,6 +4,7 @@ import { getAdminToken } from '../../lib/auth'
 import { useRequireAuth, useApiFetch } from '../../lib/hooks'
 import { CandidateTable } from '../../components/admin/CandidateTable'
 import { ApproveModal } from '../../components/admin/ApproveModal'
+import { CustomSelect } from '../../components/admin/CustomSelect'
 import type { RepoCandidate } from '../../types/api'
 
 export function AdminCandidatesPage() {
@@ -117,16 +118,16 @@ export function AdminCandidatesPage() {
 
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-3">
-            <label className="text-xs font-medium text-steel">Assignee:</label>
-            <div className="flex bg-surface-soft border border-hairline rounded-lg p-0.5">
+            <label className="text-sm font-semibold text-steel">Assignee:</label>
+            <div className="flex bg-surface-soft border border-hairline rounded-xl p-1 shadow-inner-sm">
               {['all', 'Bảo', 'Bắc', 'An'].map((p) => (
                 <button
                   key={p}
                   onClick={() => setReviewer(p)}
-                  className={`px-3 py-1 text-[11px] font-semibold rounded-md transition-all ${
+                  className={`px-5 py-2 text-[13px] font-bold rounded-lg transition-all ${
                     reviewer === p
-                      ? 'bg-canvas text-brand-green shadow-sm border border-hairline-soft'
-                      : 'text-steel hover:text-ink'
+                      ? 'bg-canvas text-brand-green shadow-md border border-hairline-soft dark:bg-charcoal dark:border-hairline-dark scale-105 z-10'
+                      : 'text-steel hover:text-ink hover:bg-canvas/50'
                   }`}
                 >
                   {p === 'all' ? 'All' : p}
@@ -137,19 +138,15 @@ export function AdminCandidatesPage() {
 
           <div className="h-6 w-px bg-hairline" />
 
-          <div className="flex items-center gap-3">
-            <label className="text-xs font-medium text-steel">Filter by Subject:</label>
-            <select
-              value={selectedSubject}
-              onChange={(e) => setSelectedSubject(e.target.value)}
-              className="input-field !py-1.5 !px-3 !w-[160px] !text-xs cursor-pointer"
-            >
-              <option value="all">All Subjects</option>
-              {uniqueSubjects.map(code => (
-                <option key={code} value={code}>{code}</option>
-              ))}
-            </select>
-          </div>
+          <CustomSelect
+            label="Filter by Subject:"
+            value={selectedSubject}
+            onChange={setSelectedSubject}
+            options={[
+              { value: 'all', label: 'All Subjects' },
+              ...uniqueSubjects.map(code => ({ value: code, label: code }))
+            ]}
+          />
         </div>
       </div>
 

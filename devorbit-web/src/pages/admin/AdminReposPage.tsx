@@ -11,7 +11,7 @@ export function AdminReposPage() {
   const [editingRepo, setEditingRepo] = useState<RepoSummary | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  const { data: repos, loading, refetch } = useApiFetch(
+  const { data: repos, loading, error: fetchError, refetch } = useApiFetch(
     () => apiAdminGet<RepoSummary[]>('/api/admin/repos', token),
     [token],
   )
@@ -71,6 +71,19 @@ export function AdminReposPage() {
         <h1 className="display-sm text-ink mb-1">Approved Repositories</h1>
         <p className="body-sm text-steel">View and manage approved GitHub repositories.</p>
       </div>
+
+      {fetchError && (
+        <div className="mb-6 flex items-center gap-3 rounded-xl border border-danger-6 bg-danger-3 px-5 py-4 body-sm text-danger-11">
+          <svg className="h-5 w-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 8v4M12 16h.01" />
+          </svg>
+          <span className="flex-1">{fetchError}</span>
+          <button onClick={refetch} className="btn-secondary !py-1 !px-3 !text-xs flex-shrink-0">
+            Retry
+          </button>
+        </div>
+      )}
 
       <ApprovedRepoTable repos={repos ?? []} onEdit={setEditingRepo} onDeactivate={handleDeactivate} />
 

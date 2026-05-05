@@ -39,9 +39,16 @@ export type RepoCandidate = {
   forks: number
   lastPushedAt: string | null
   readmeExcerpt: string | null
-  courseId?: number
-  courseCode?: string
-  courseName?: string
+  assignedReviewer: string | null
+  courseId: number | null
+  courseCode: string | null
+  courseName: string | null
+}
+
+export type ReviewerStats = {
+  reviewer: string
+  remaining: number
+  completed: number
 }
 
 export type LoginRequest = {

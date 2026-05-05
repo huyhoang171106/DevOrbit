@@ -2,6 +2,8 @@ package vn.edu.uit.devorbit_api.service;
 
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vn.edu.uit.devorbit_api.dto.admin.ApprovedRepoUpdateRequest;
 import vn.edu.uit.devorbit_api.dto.publicapi.RepoSummaryResponse;
 import vn.edu.uit.devorbit_api.dto.publicapi.TechStackResponse;
@@ -21,6 +23,7 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 public class GithubRepoService {
+    private static final Logger log = LoggerFactory.getLogger(GithubRepoService.class);
     private final GithubRepoRepository githubRepoRepository;
     private final TechStackRepository techStackRepository;
 
@@ -39,7 +42,9 @@ public class GithubRepoService {
     }
 
     public List<RepoSummaryResponse> getAllApprovedRepos() {
-        return githubRepoRepository.findByActiveTrue().stream()
+        List<GithubRepo> repos = githubRepoRepository.findByActiveTrue();
+        log.info("getAllApprovedRepos: found {} active repos", repos.size());
+        return repos.stream()
                 .map(this::mapToRepoSummary)
                 .toList();
     }
@@ -66,7 +71,9 @@ public class GithubRepoService {
             repo.setTechStacks(resolveTechStacks(request.techStacks()));
         }
 
-        return mapToRepoSummary(githubRepoRepository.save(repo));
+        RepoSummaryResponse saved = mapToRepoSummary(githubRepoRepository.save(repo));
+        log.info("updateApprovedRepo: updated repo id={} active={}", repoId, request.active());
+        return saved;
     }
 
     public void deleteApprovedRepo(Long repoId) {
@@ -74,6 +81,7 @@ public class GithubRepoService {
                 .orElseThrow(() -> new NotFoundException("Repo not found: " + repoId));
         repo.setActive(false);
         githubRepoRepository.save(repo);
+        log.info("deleteApprovedRepo: deactivated repo id={}", repoId);
     }
 
     public RepoSummaryResponse mapToRepoSummary(GithubRepo repo) {
@@ -84,18 +92,10 @@ public class GithubRepoService {
                 repo.getGithubUrl(),
                 repo.getPrimaryLanguage(),
                 repo.getStars() != null ? repo.getStars() : 0,
-                getTechStacksForRepo(repo.getId())
+                repo.getTechStacks().stream()
+                        .map(ts -> new TechStackResponse(ts.getName()))
+                        .toList()
         );
-    }
-
-    private List<TechStackResponse> getTechStacksForRepo(Long repoId) {
-        List<TechStack> stacks = techStackRepository.findByRepoIdFromJoinTable(repoId);
-        if (stacks.isEmpty()) {
-            stacks = techStackRepository.findByRepoId(repoId);
-        }
-        return stacks.stream()
-                .map(techStack -> new TechStackResponse(techStack.getName()))
-                .toList();
     }
 
     public Set<TechStack> resolveTechStacks(List<String> stackNames) {

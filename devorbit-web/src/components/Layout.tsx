@@ -13,12 +13,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
-    <div className="relative min-h-screen flex flex-col bg-canvas text-charcoal font-inter dark:bg-canvas-dark dark:text-on-dark">
+    <div className="relative min-h-screen flex flex-col bg-cosmic-base">
       {/* Top Navigation */}
-      <nav className="sticky top-0 z-50 w-full bg-canvas border-b border-hairline-soft h-[64px] dark:bg-canvas-dark dark:border-hairline-dark">
+      <nav className="sticky top-0 z-50 w-full border-b border-glass-border bg-cosmic-base/80 backdrop-blur-[20px] h-[64px]">
         <div className="mx-auto flex h-full max-w-[1440px] items-center justify-between px-8">
           <div className="flex items-center gap-8">
-            <Link to="/" className="flex items-center gap-2 text-[18px] font-semibold text-ink transition-opacity hover:opacity-80 dark:text-on-dark">
+            <Link to="/" className="flex items-center gap-2 text-[18px] font-bold font-heading text-ink transition-opacity hover:opacity-80">
+              <svg className="h-6 w-6 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="5" />
+                <circle cx="12" cy="12" r="8" strokeDasharray="3 3" opacity="0.4" />
+                <circle cx="12" cy="12" r="11" strokeDasharray="2 4" opacity="0.2" />
+              </svg>
               DevOrbit
             </Link>
 
@@ -30,8 +35,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   to={link.to}
                   className={`text-[14px] font-medium transition-colors ${
                     location.pathname === link.to || location.pathname.startsWith(link.to + '/')
-                      ? 'text-ink dark:text-on-dark'
-                      : 'text-steel hover:text-ink dark:text-muted dark:hover:text-on-dark'
+                      ? 'text-ink'
+                      : 'text-ink-muted hover:text-ink'
                   }`}
                 >
                   {link.label}
@@ -42,7 +47,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
           <div className="hidden md:flex items-center gap-4">
             <ThemeToggle />
-            <Link to="/admin/login" className="text-[14px] font-medium text-steel hover:text-ink transition-colors dark:text-muted dark:hover:text-on-dark">
+            <Link to="/admin/login" className="text-[14px] font-medium text-ink-muted hover:text-ink transition-colors">
               Admin
             </Link>
             <Link to="/courses" className="btn-primary">
@@ -53,7 +58,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           {/* Mobile hamburger */}
           <button
             type="button"
-            className="md:hidden p-2 text-steel hover:text-ink transition-colors"
+            className="md:hidden p-2 text-ink-muted hover:text-ink transition-colors"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
@@ -69,7 +74,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
         {/* Mobile menu */}
         {mobileOpen && (
-          <div className="md:hidden border-b border-hairline-soft bg-canvas px-6 py-4 space-y-4 dark:border-hairline-dark dark:bg-canvas-dark">
+          <div className="md:hidden border-b border-glass-border bg-cosmic-base px-6 py-4 space-y-4">
             {navLinks.map((link) => (
               <Link
                 key={link.to}
@@ -77,8 +82,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 onClick={() => setMobileOpen(false)}
                 className={`block text-[14px] font-medium transition-colors ${
                   location.pathname === link.to || location.pathname.startsWith(link.to + '/')
-                    ? 'text-ink dark:text-on-dark'
-                    : 'text-steel hover:text-ink dark:text-muted dark:hover:text-on-dark'
+                    ? 'text-ink'
+                    : 'text-ink-muted hover:text-ink'
                 }`}
               >
                 {link.label}
@@ -86,18 +91,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
             ))}
             <div className="pt-4 flex flex-col gap-3">
                <div className="flex items-center justify-between">
-                 <span className="text-[14px] font-medium text-steel dark:text-muted">Appearance</span>
+                 <span className="text-[14px] font-medium text-ink-muted">Appearance</span>
                  <ThemeToggle />
                </div>
-               <Link 
-                  to="/admin/login" 
+               <Link
+                  to="/admin/login"
                   onClick={() => setMobileOpen(false)}
-                  className="text-[14px] font-medium text-steel hover:text-ink transition-colors dark:text-muted dark:hover:text-on-dark"
+                  className="text-[14px] font-medium text-ink-muted hover:text-ink transition-colors"
                 >
                   Admin
                </Link>
-               <Link 
-                  to="/courses" 
+               <Link
+                  to="/courses"
                   onClick={() => setMobileOpen(false)}
                   className="btn-primary w-full"
                 >
@@ -114,12 +119,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 bg-canvas border-t border-hairline py-[64px] px-[32px] dark:bg-canvas-dark dark:border-hairline-dark">
+      <footer className="border-t border-glass-border py-[64px] px-[32px]">
         <div className="mx-auto max-w-[1440px] flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-[16px] font-medium text-ink dark:text-on-dark">
+          <div className="flex items-center gap-2 text-[16px] font-medium font-heading text-ink">
             DevOrbit
           </div>
-          <p className="text-[14px] text-steel dark:text-muted">
+          <p className="text-[14px] text-ink-muted">
             UIT Knowledge Repository Explorer &mdash; Built for students, by students.
           </p>
         </div>

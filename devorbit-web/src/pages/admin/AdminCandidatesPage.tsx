@@ -5,7 +5,7 @@ import { useRequireAuth, useApiFetch } from '../../lib/hooks'
 import { CandidateTable } from '../../components/admin/CandidateTable'
 import { ApproveModal } from '../../components/admin/ApproveModal'
 import { CustomSelect } from '../../components/admin/CustomSelect'
-import type { RepoCandidate } from '../../types/api'
+import type { RepoCandidate, ReviewerStats } from '../../types/api'
 
 export function AdminCandidatesPage() {
   useRequireAuth()
@@ -13,38 +13,22 @@ export function AdminCandidatesPage() {
   const [approvingId, setApprovingId] = useState<number | null>(null)
   const [selectedSubject, setSelectedSubject] = useState<string>('all')
   const [reviewer, setReviewer] = useState<string>('all')
+  const [approveError, setApproveError] = useState<string | null>(null)
 
   const { data: candidates, loading, refetch: fetchCandidates } = useApiFetch(
-    () => apiAdminGet<RepoCandidate[]>('/api/admin/repo-candidates', token),
+    () => apiAdminGet<RepoCandidate[]>(`/api/admin/repo-candidates?reviewer=${reviewer}`, token),
+    [token, reviewer],
+  )
+
+  const { data: stats, refetch: refetchStats } = useApiFetch(
+    () => apiAdminGet<ReviewerStats[]>('/api/admin/repo-candidates/stats', token),
     [token],
   )
 
-  const { data: courses } = useApiFetch(
-    () => apiAdminGet<any[]>('/api/courses', token),
-    [token]
-  )
-
-  const mappedCandidates = (candidates ?? []).map(c => {
-    let course = (courses ?? []).find(course => course.id === (c as any).courseId)
-    
-    // Smart detection: try to guess from githubName if no explicit course link exists
-    let inferredCode = null
-    if (!course) {
-      // Look for patterns like IT001, CS101, etc. in the name
-      const match = c.githubName.match(/[A-Z]{2,3}\d{3}/i)
-      if (match) {
-        inferredCode = match[0].toUpperCase()
-        // Try to find a course that matches this code exactly
-        const existingCourse = (courses ?? []).find(f => f.code.toUpperCase() === inferredCode)
-        if (existingCourse) course = existingCourse
-      }
-    }
-
-    return {
-      ...c,
-      courseCode: (c as any).courseCode || course?.code || inferredCode
-    }
-  })
+  const mappedCandidates = (candidates ?? []).map(c => ({
+    ...c,
+    courseCode: c.courseCode ?? null,
+  }))
 
   const filteredCandidates = selectedSubject === 'all'
     ? mappedCandidates
@@ -52,20 +36,12 @@ export function AdminCandidatesPage() {
 
   const uniqueSubjects = Array.from(new Set(mappedCandidates.map(c => c.courseCode).filter(Boolean) as string[]))
 
-  // Split logic for 3 reviewers: Bảo (0), Bắc (1), An (2)
-  const finalCandidates = filteredCandidates.filter((_, index) => {
-    if (reviewer === 'all') return true
-    if (reviewer === 'Bảo') return index % 3 === 0
-    if (reviewer === 'Bắc') return index % 3 === 1
-    if (reviewer === 'An') return index % 3 === 2
-    return true
-  })
-
   async function handleApprove(id: number) {
     setApprovingId(id)
   }
 
   async function handleConfirmApprove(id: number, description: string, techStacks: string[], reviewNote: string) {
+    setApproveError(null)
     try {
       await apiAdminPost(`/api/admin/repo-candidates/${id}/approve`, token, {
         description,
@@ -74,23 +50,33 @@ export function AdminCandidatesPage() {
       })
       setApprovingId(null)
       fetchCandidates()
+      refetchStats()
     } catch (err) {
       console.error(err)
+      setApproveError(err instanceof Error ? err.message : String(err))
     }
   }
 
   async function handleReject(id: number) {
+    setApproveError(null)
     try {
       await apiAdminPost(`/api/admin/repo-candidates/${id}/reject`, token, {})
       fetchCandidates()
+      refetchStats()
     } catch (err) {
       console.error(err)
+      setApproveError(err instanceof Error ? err.message : String(err))
     }
   }
 
   const selectedCandidate = approvingId != null
     ? (candidates ?? []).find((c) => c.id === approvingId) ?? null
     : null
+
+  const reviewerRemaining = (stats ?? []).reduce((acc, s) => {
+    acc[s.reviewer] = s.remaining
+    return acc
+  }, {} as Record<string, number>)
 
   if (loading) {
     return (
@@ -131,6 +117,9 @@ export function AdminCandidatesPage() {
                   }`}
                 >
                   {p === 'all' ? 'All' : p}
+                  {p !== 'all' && reviewerRemaining[p] !== undefined && (
+                    <span className="ml-1.5 text-[11px] opacity-70">({reviewerRemaining[p]})</span>
+                  )}
                 </button>
               ))}
             </div>
@@ -150,14 +139,29 @@ export function AdminCandidatesPage() {
         </div>
       </div>
 
+      {approveError && (
+        <div className="mb-4 flex items-center gap-3 rounded-xl border border-danger-6 bg-danger-3 px-5 py-3 body-sm text-danger-11">
+          <svg className="h-5 w-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 8v4M12 16h.01" />
+          </svg>
+          <span className="flex-1">{approveError}</span>
+          <button onClick={() => setApproveError(null)} className="text-danger-11/60 hover:text-danger-11 flex-shrink-0">
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
+
       <div className="mb-4 flex items-center justify-between px-2">
         <div className="text-[11px] text-steel">
-          Showing <strong>{finalCandidates.length}</strong> repositories {reviewer !== 'all' ? `assigned to ${reviewer}` : 'total'}
+          Showing <strong>{filteredCandidates.length}</strong> repositories{reviewer !== 'all' ? ` assigned to ${reviewer}` : ''}
         </div>
       </div>
 
       <CandidateTable
-        candidates={finalCandidates}
+        candidates={filteredCandidates}
         onApprove={handleApprove}
         onReject={handleReject}
       />

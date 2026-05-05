@@ -88,7 +88,7 @@ export function AdminDashboardPage() {
   return (
     <div className="w-full max-w-[1280px] mx-auto px-[32px] py-[64px]">
       <div className="mb-[40px]">
-        <h1 className="display-sm text-ink mb-2">Admin Dashboard</h1>
+        <h1 className="display-sm mb-2">Admin Dashboard</h1>
         <p className="body-md max-w-[600px]">Manage courses, scan GitHub, review repository candidates, and more.</p>
       </div>
 
@@ -99,14 +99,14 @@ export function AdminDashboardPage() {
             to={l.to}
             className="glass-card-hover p-8 block group cursor-pointer"
           >
-            <div className="inline-flex rounded-full border border-glass-border bg-glass-surface p-3 text-ink mb-4 group-hover:text-emerald-400 transition-colors">
+            <div className="inline-flex rounded-full border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-3 text-slate-900 dark:text-slate-100 mb-4 group-hover:text-emerald-500 transition-colors">
               {l.icon}
             </div>
-            <h2 className="heading-4 text-ink mb-2 group-hover:text-emerald-400 transition-colors">
+            <h2 className="heading-4 text-slate-900 dark:text-slate-100 mb-2 group-hover:text-emerald-500 transition-colors">
               {l.label}
             </h2>
             <p className="body-sm mb-4">{l.description}</p>
-            <div className="flex items-center gap-1 body-sm-medium text-emerald-400">
+            <div className="flex items-center gap-1 body-sm-medium text-emerald-500">
               <span>Open</span>
               <svg className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M5 12h14M12 5l7 7-7 7" />

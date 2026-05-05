@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "vn.edu.uit.devorbit.mobile.app-mergeReleaseResources-60:/values-v30/values-v30.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\Hoang\\.gradle\\caches\\8.11.1\\transforms\\6cd136c0f2081d4a5c63b4b89b07569a\\transformed\\material3-release\\res\\values-v30\\values-v30.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "72",
+                        "endOffsets": "123"
+                    }
+                }
+            ]
+        }
+    ]
+}

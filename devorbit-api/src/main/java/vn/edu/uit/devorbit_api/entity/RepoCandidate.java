@@ -50,4 +50,7 @@ public class RepoCandidate {
 
     @Column(name = "review_note", columnDefinition = "TEXT")
     private String reviewNote;
+
+    @Column(name = "assigned_reviewer", length = 50)
+    private String assignedReviewer;
 }

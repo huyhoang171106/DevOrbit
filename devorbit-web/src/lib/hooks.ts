@@ -20,17 +20,21 @@ export function useRequireAuth(): void {
 export function useApiFetch<T>(
   fetchFn: () => Promise<T>,
   deps: React.DependencyList = [],
-): { data: T | null; loading: boolean; refetch: () => void } {
+): { data: T | null; loading: boolean; error: string | null; refetch: () => void } {
   const [data, setData] = useState<T | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const fetch = useCallback(async () => {
     setLoading(true)
+    setError(null)
     try {
       const result = await fetchFn()
       setData(result)
     } catch (err) {
       console.error(err)
+      setError(err instanceof Error ? err.message : String(err))
+      setData(null)
     } finally {
       setLoading(false)
     }
@@ -39,5 +43,5 @@ export function useApiFetch<T>(
 
   useEffect(() => { fetch() }, [fetch])
 
-  return { data, loading, refetch: fetch }
+  return { data, loading, error, refetch: fetch }
 }

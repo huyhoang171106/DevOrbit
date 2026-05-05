@@ -33,10 +33,17 @@ class AdminRepoCandidateControllerTest {
     @MockitoBean
     private JwtService jwtService;
 
+    private RepoCandidateResponse makeCandidateResponse(Long id, String status) {
+        return new RepoCandidateResponse(
+            id, "owner", "repo", "https://github.com/owner/repo", status,
+            null, null, null, 0, 0, null, null, null, null, null, null
+        );
+    }
+
     @Test
     void shouldApproveCandidate() throws Exception {
         when(repoCandidateService.approveCandidate(eq(10L), any()))
-            .thenReturn(new RepoCandidateResponse(10L, "owner", "repo", "https://github.com/owner/repo", "APPROVED", null, null, null, 0, 0, null, null));
+            .thenReturn(makeCandidateResponse(10L, "APPROVED"));
 
         mockMvc.perform(post("/api/admin/repo-candidates/10/approve")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -49,8 +56,8 @@ class AdminRepoCandidateControllerTest {
 
     @Test
     void shouldListPendingCandidates() throws Exception {
-        when(repoCandidateService.getPendingCandidates())
-            .thenReturn(List.of(new RepoCandidateResponse(10L, "owner", "repo", "https://github.com/owner/repo", "NEW", null, null, null, 0, 0, null, null)));
+        when(repoCandidateService.getPendingCandidates(eq("all")))
+            .thenReturn(List.of(makeCandidateResponse(10L, "NEW")));
 
         mockMvc.perform(get("/api/admin/repo-candidates"))
             .andExpect(status().isOk())
@@ -60,7 +67,7 @@ class AdminRepoCandidateControllerTest {
     @Test
     void shouldRejectCandidate() throws Exception {
         when(repoCandidateService.rejectCandidate(eq(10L)))
-            .thenReturn(new RepoCandidateResponse(10L, "owner", "repo", "https://github.com/owner/repo", "REJECTED", null, null, null, 0, 0, null, null));
+            .thenReturn(makeCandidateResponse(10L, "REJECTED"));
 
         mockMvc.perform(post("/api/admin/repo-candidates/10/reject"))
             .andExpect(status().isOk())

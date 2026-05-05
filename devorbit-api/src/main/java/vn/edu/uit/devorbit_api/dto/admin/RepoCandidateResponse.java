@@ -14,7 +14,11 @@ public record RepoCandidateResponse(
     int stars,
     int forks,
     String lastPushedAt,
-    String readmeExcerpt
+    String readmeExcerpt,
+    String assignedReviewer,
+    Long courseId,
+    String courseCode,
+    String courseName
 ) {
     public static RepoCandidateResponse from(RepoCandidate candidate) {
         return new RepoCandidateResponse(
@@ -29,7 +33,11 @@ public record RepoCandidateResponse(
             candidate.getStars(),
             candidate.getForks(),
             candidate.getLastPushedAt(),
-            candidate.getReadmeExcerpt()
+            candidate.getReadmeExcerpt(),
+            candidate.getAssignedReviewer(),
+            candidate.getCourse() != null ? candidate.getCourse().getId() : null,
+            candidate.getCourse() != null ? candidate.getCourse().getMaMH() : null,
+            candidate.getCourse() != null ? candidate.getCourse().getTenMH() : null
         );
     }
 }

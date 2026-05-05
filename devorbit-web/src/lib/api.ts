@@ -15,6 +15,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     method: options.method ?? 'GET',
     headers,
     body: options.body ? JSON.stringify(options.body) : undefined,
+    cache: 'no-cache',
   })
 
   if (!response.ok) {

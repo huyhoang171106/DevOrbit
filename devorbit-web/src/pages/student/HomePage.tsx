@@ -4,33 +4,39 @@ export function HomePage() {
   return (
     <div className="w-full">
       {/* Hero Section */}
-      <section className="w-full bg-gradient-to-b from-hero-sky-from to-hero-sky-to text-on-dark px-[32px] py-[120px] dark:from-hero-dark-from dark:to-hero-dark-to">
-        <div className="mx-auto max-w-[1280px] flex flex-col items-center text-center">
-          <h1 className="hero-display text-on-dark mb-[24px] max-w-[800px]">
+      <section className="relative w-full overflow-hidden px-[32px] py-[120px]">
+        {/* Ambient glow */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute -top-40 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-emerald-500/10 blur-[120px]" />
+          <div className="absolute -bottom-40 left-1/4 h-[400px] w-[400px] rounded-full bg-emerald-500/5 blur-[100px]" />
+        </div>
+
+        <div className="relative mx-auto max-w-[1280px] flex flex-col items-center text-center">
+          <h1 className="hero-display mb-[24px] max-w-[800px]">
             Map courses to the repositories that help you build.
           </h1>
-          <p className="subtitle text-on-dark/90 mb-[40px] max-w-[600px]">
+          <p className="subtitle mb-[40px] max-w-[600px]">
             DevOrbit connects UIT subjects with reviewed legacy code, GitHub projects, and technology stacks so students can learn from real implementations instead of scattered links.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 mb-[80px]">
-            <Link to="/courses" className="btn-accent-green">
+            <Link to="/courses" className="btn-primary">
               Get started
             </Link>
-            <Link to="/admin/login" className="btn-secondary !text-on-dark !border-on-dark/20 hover:!bg-on-dark/10">
+            <Link to="/admin/login" className="btn-secondary">
               Talk to us
             </Link>
           </div>
 
           {/* Product Mockup */}
-          <div className="w-full max-w-[1000px] bg-canvas rounded-[12px] border border-hairline shadow-2xl overflow-hidden dark:bg-charcoal dark:border-hairline-dark">
-             <div className="flex items-center gap-2 border-b border-hairline bg-surface-soft px-4 py-3 dark:bg-canvas-dark/50 dark:border-hairline-dark">
-               <div className="flex gap-1.5">
-                 <div className="h-3 w-3 rounded-full bg-[#ff5f56]" />
-                 <div className="h-3 w-3 rounded-full bg-[#ffbd2e]" />
-                 <div className="h-3 w-3 rounded-full bg-[#27c93f]" />
-               </div>
-             </div>
-             <div className="p-8 grid w-full grid-cols-1 sm:grid-cols-3 gap-6 bg-canvas dark:bg-charcoal">
+          <div className="w-full max-w-[1000px] glass-card overflow-hidden">
+            <div className="flex items-center gap-2 border-b border-glass-border bg-glass-surface-raised px-4 py-3">
+              <div className="flex gap-1.5">
+                <div className="h-3 w-3 rounded-full bg-[#ff5f56]" />
+                <div className="h-3 w-3 rounded-full bg-[#ffbd2e]" />
+                <div className="h-3 w-3 rounded-full bg-[#27c93f]" />
+              </div>
+            </div>
+            <div className="p-8 grid w-full grid-cols-1 sm:grid-cols-3 gap-6">
               {[
                 { label: 'Course catalog', count: 'Explore' },
                 { label: 'Legacy repos', count: 'Learn' },
@@ -38,10 +44,10 @@ export function HomePage() {
               ].map((item) => (
                 <div
                   key={item.label}
-                  className="rounded-[8px] bg-surface p-6 text-center border border-hairline dark:bg-canvas-dark dark:border-hairline-dark"
+                  className="rounded-xl bg-white/[0.03] p-6 text-center border border-white/5"
                 >
                   <div className="heading-4 text-ink mb-2">{item.count}</div>
-                  <div className="body-sm text-steel">{item.label}</div>
+                  <div className="body-sm text-ink-muted">{item.label}</div>
                 </div>
               ))}
             </div>
@@ -89,15 +95,15 @@ export function HomePage() {
           ].map((f) => (
             <div
               key={f.title}
-              className="card-feature"
+              className="glass-card-hover p-8"
             >
-              <div className="inline-flex rounded-full bg-canvas border border-hairline p-3 text-ink mb-6">
+              <div className="inline-flex rounded-full border border-glass-border bg-glass-surface p-3 text-emerald-400 mb-6">
                 {f.icon}
               </div>
               <h3 className="heading-4 text-ink mb-3">
                 {f.title}
               </h3>
-              <p className="body-md text-steel">
+              <p className="body-md text-ink-secondary">
                 {f.desc}
               </p>
             </div>

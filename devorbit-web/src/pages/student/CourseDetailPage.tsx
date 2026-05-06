@@ -47,8 +47,8 @@ export function CourseDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-[96px]">
-        <div className="flex items-center gap-3 body-sm text-steel">
-          <svg className="h-5 w-5 animate-spin text-brand-green" viewBox="0 0 24 24" fill="none">
+        <div className="flex items-center gap-3 body-sm text-ink-secondary">
+          <svg className="h-5 w-5 animate-spin text-emerald-400" viewBox="0 0 24 24" fill="none">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
@@ -62,7 +62,7 @@ export function CourseDetailPage() {
     <div className="w-full max-w-[800px] mx-auto px-[32px] py-[64px]">
       <Link
         to="/courses"
-        className="mb-6 inline-flex items-center gap-1.5 rounded-lg py-1.5 body-sm text-steel transition-all duration-200 hover:text-ink"
+        className="mb-6 inline-flex items-center gap-1.5 rounded-lg py-1.5 body-sm text-ink-secondary transition-all duration-200 hover:text-ink"
       >
         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -72,7 +72,7 @@ export function CourseDetailPage() {
 
       <div className="mb-[40px]">
         <h1 className="display-sm text-ink mb-2">Course Repositories</h1>
-        <p className="body-md text-steel">Real-world projects mapped to this course.</p>
+        <p className="body-md text-ink-secondary">Real-world projects mapped to this course.</p>
       </div>
 
       {allStacks.length > 0 && (
@@ -86,7 +86,7 @@ export function CourseDetailPage() {
             <button
               type="button"
               onClick={() => void saveRepo(r.id)}
-              className="absolute right-4 top-4 btn-secondary !py-1 !px-2 !text-xs !bg-surface"
+              className="absolute right-4 top-4 btn-secondary !py-1 !px-2 !text-xs !bg-glass-surface"
             >
               {savedRepoId === r.id ? 'Saved' : 'Save'}
             </button>
@@ -95,8 +95,8 @@ export function CourseDetailPage() {
       </div>
 
       {filtered.length === 0 && (
-        <div className="card-base py-16 text-center text-steel bg-transparent border-dashed border-hairline-soft mt-8">
-          <svg className="mx-auto mb-3 h-10 w-10 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <div className="glass-card py-16 text-center text-ink-secondary bg-transparent border-dashed border-glass-border mt-8">
+          <svg className="mx-auto mb-3 h-10 w-10 text-ink-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <p className="body-md">No repositories found.</p>

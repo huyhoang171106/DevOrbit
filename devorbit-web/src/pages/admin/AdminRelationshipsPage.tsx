@@ -54,7 +54,7 @@ export function AdminRelationshipsPage() {
       <div className="mb-[32px] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="display-sm text-ink mb-1">Course Relationships</h1>
-          <p className="body-sm text-steel">Define prerequisites, complementary, and corequisite relationships.</p>
+          <p className="body-sm text-ink-secondary">Define prerequisites, complementary, and corequisite relationships.</p>
         </div>
         <button onClick={() => setDialogOpen(true)} className="btn-primary self-start text-sm px-4 py-2">
           <svg className="mr-2 h-4 w-4 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
@@ -74,8 +74,8 @@ export function AdminRelationshipsPage() {
 
       {loading ? (
         <div className="flex items-center justify-center py-[96px]">
-          <div className="flex items-center gap-3 body-sm text-steel">
-            <svg className="h-5 w-5 animate-spin text-brand-green" viewBox="0 0 24 24" fill="none">
+          <div className="flex items-center gap-3 body-sm text-ink-secondary">
+            <svg className="h-5 w-5 animate-spin text-emerald-400" viewBox="0 0 24 24" fill="none">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
@@ -83,39 +83,39 @@ export function AdminRelationshipsPage() {
           </div>
         </div>
       ) : (
-        <div className="card-base overflow-hidden border border-hairline p-0">
+        <div className="glass-card overflow-hidden border border-glass-border p-0">
           <table className="min-w-full text-sm">
             <thead>
-              <tr className="border-b border-hairline bg-surface-soft">
-                <th className="table-header text-left font-medium text-steel py-3 px-4">Course</th>
-                <th className="table-header text-left font-medium text-steel py-3 px-4">Type</th>
-                <th className="table-header text-left font-medium text-steel py-3 px-4">Related Course</th>
-                <th className="table-header text-right font-medium text-steel py-3 px-4">Actions</th>
+              <tr className="border-b border-glass-border bg-glass-surface-raised">
+                <th className="table-header text-left font-medium text-ink-secondary py-3 px-4">Course</th>
+                <th className="table-header text-left font-medium text-ink-secondary py-3 px-4">Type</th>
+                <th className="table-header text-left font-medium text-ink-secondary py-3 px-4">Related Course</th>
+                <th className="table-header text-right font-medium text-ink-secondary py-3 px-4">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-hairline bg-canvas">
+            <tbody className="divide-y divide-glass-border bg-cosmic-surface">
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-4 py-10 text-center body-sm text-steel">No relationships found.</td>
+                  <td colSpan={4} className="px-4 py-10 text-center body-sm text-ink-secondary">No relationships found.</td>
                 </tr>
               )}
               {filtered.map((r) => (
-                <tr key={r.id} className="transition-colors hover:bg-surface-soft">
+                <tr key={r.id} className="transition-colors hover:bg-glass-surface-raised">
                   <td className="table-cell py-3 px-4">
-                    <span className="code-sm text-steel bg-surface border border-hairline-soft px-1.5 py-0.5 rounded-md">{r.courseCode}</span>
+                    <span className="code-sm text-ink-secondary bg-glass-surface border border-glass-border px-1.5 py-0.5 rounded-md">{r.courseCode}</span>
                     <span className="ml-2 body-sm text-ink font-medium">{r.courseName}</span>
                   </td>
                   <td className="table-cell py-3 px-4">
-                    <span className={`badge-tag ${r.relationType === 'PREREQUISITE' ? 'bg-brand-green/10 text-brand-green border-brand-green/20' : 'bg-surface text-steel'}`}>
+                    <span className={`badge-tag ${r.relationType === 'PREREQUISITE' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-glass-surface text-ink-secondary'}`}>
                       {typeLabels[r.relationType] ?? r.relationType}
                     </span>
                   </td>
                   <td className="table-cell py-3 px-4">
-                    <span className="code-sm text-steel bg-surface border border-hairline-soft px-1.5 py-0.5 rounded-md">{r.relatedCourseCode}</span>
+                    <span className="code-sm text-ink-secondary bg-glass-surface border border-glass-border px-1.5 py-0.5 rounded-md">{r.relatedCourseCode}</span>
                     <span className="ml-2 body-sm text-ink font-medium">{r.relatedCourseName}</span>
                   </td>
                   <td className="table-cell text-right py-3 px-4">
-                    <button onClick={() => handleDelete(r.id)} className="btn-secondary !py-1 !px-3 !bg-surface !text-xs !text-danger-11 hover:!bg-danger-3 border border-danger-6">Delete</button>
+                    <button onClick={() => handleDelete(r.id)} className="btn-secondary !py-1 !px-3 !bg-glass-surface !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Delete</button>
                   </td>
                 </tr>
               ))}

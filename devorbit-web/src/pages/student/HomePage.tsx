@@ -5,8 +5,8 @@ export function HomePage() {
     <div className="w-full">
       {/* Hero Section */}
       <section className="relative w-full overflow-hidden px-[32px] py-[120px]">
-        {/* Ambient glow - dark mode only */}
-        <div className="hidden dark:block pointer-events-none absolute inset-0">
+        {/* Ambient glow */}
+        <div className="pointer-events-none absolute inset-0">
           <div className="absolute -top-40 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-emerald-500/10 blur-[120px]" />
           <div className="absolute -bottom-40 left-1/4 h-[400px] w-[400px] rounded-full bg-emerald-500/5 blur-[100px]" />
         </div>
@@ -29,7 +29,7 @@ export function HomePage() {
 
           {/* Product Mockup */}
           <div className="w-full max-w-[1000px] glass-card overflow-hidden">
-            <div className="flex items-center gap-2 border-b border-black/5 dark:border-white/10 bg-black/[0.02] dark:bg-white/[0.02] px-4 py-3">
+            <div className="flex items-center gap-2 border-b border-glass-border bg-glass-surface-raised px-4 py-3">
               <div className="flex gap-1.5">
                 <div className="h-3 w-3 rounded-full bg-[#ff5f56]" />
                 <div className="h-3 w-3 rounded-full bg-[#ffbd2e]" />
@@ -44,10 +44,10 @@ export function HomePage() {
               ].map((item) => (
                 <div
                   key={item.label}
-                  className="rounded-xl bg-black/[0.02] dark:bg-white/[0.03] p-6 text-center border border-black/5 dark:border-white/5"
+                  className="rounded-xl bg-glass-surface-raised p-6 text-center border border-glass-border"
                 >
-                  <div className="heading-4 text-slate-900 dark:text-slate-100 mb-2">{item.count}</div>
-                  <div className="body-sm">{item.label}</div>
+                  <div className="heading-4 text-ink mb-2">{item.count}</div>
+                  <div className="body-sm text-ink-muted">{item.label}</div>
                 </div>
               ))}
             </div>
@@ -58,7 +58,7 @@ export function HomePage() {
       {/* Features section */}
       <section className="mx-auto max-w-[1280px] px-[32px] py-[96px]">
         <div className="mb-[64px] text-center">
-          <h2 className="display-lg">
+          <h2 className="display-lg text-ink">
             From syllabus to source code
           </h2>
         </div>
@@ -97,13 +97,13 @@ export function HomePage() {
               key={f.title}
               className="glass-card-hover p-8"
             >
-              <div className="inline-flex rounded-full border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 p-3 text-emerald-500 mb-6">
+              <div className="inline-flex rounded-full border border-glass-border bg-glass-surface p-3 text-emerald-400 mb-6">
                 {f.icon}
               </div>
-              <h3 className="heading-4 mb-3">
+              <h3 className="heading-4 text-ink mb-3">
                 {f.title}
               </h3>
-              <p className="body-md">
+              <p className="body-md text-ink-secondary">
                 {f.desc}
               </p>
             </div>

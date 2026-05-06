@@ -81,8 +81,8 @@ export function AdminCandidatesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-[96px]">
-        <div className="flex items-center gap-3 body-sm text-steel">
-          <svg className="h-5 w-5 animate-spin text-brand-green" viewBox="0 0 24 24" fill="none">
+        <div className="flex items-center gap-3 body-sm text-ink-secondary">
+          <svg className="h-5 w-5 animate-spin text-emerald-400" viewBox="0 0 24 24" fill="none">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
@@ -97,23 +97,23 @@ export function AdminCandidatesPage() {
       <div className="mb-[32px] flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h1 className="display-sm text-ink mb-1">Repo Candidates</h1>
-          <p className="body-sm text-steel">
+          <p className="body-sm text-ink-secondary">
             Review and approve repositories discovered from GitHub scans.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-3">
-            <label className="text-sm font-semibold text-steel">Assignee:</label>
-            <div className="flex bg-surface-soft border border-hairline rounded-xl p-1 shadow-inner-sm">
+            <label className="text-sm font-semibold text-ink-secondary">Assignee:</label>
+            <div className="flex bg-glass-surface-raised border border-glass-border rounded-xl p-1 shadow-inner-sm">
               {['all', 'Bảo', 'Bắc', 'An'].map((p) => (
                 <button
                   key={p}
                   onClick={() => setReviewer(p)}
                   className={`px-5 py-2 text-[13px] font-bold rounded-lg transition-all ${
                     reviewer === p
-                      ? 'bg-canvas text-brand-green shadow-md border border-hairline-soft dark:bg-charcoal dark:border-hairline-dark scale-105 z-10'
-                      : 'text-steel hover:text-ink hover:bg-canvas/50'
+                      ? 'bg-cosmic-surface text-emerald-400 shadow-md border border-glass-border scale-105 z-10'
+                      : 'text-ink-secondary hover:text-ink hover:bg-cosmic-surface/50'
                   }`}
                 >
                   {p === 'all' ? 'All' : p}
@@ -125,7 +125,7 @@ export function AdminCandidatesPage() {
             </div>
           </div>
 
-          <div className="h-6 w-px bg-hairline" />
+          <div className="h-6 w-px bg-glass-border" />
 
           <CustomSelect
             label="Filter by Subject:"
@@ -140,13 +140,13 @@ export function AdminCandidatesPage() {
       </div>
 
       {approveError && (
-        <div className="mb-4 flex items-center gap-3 rounded-xl border border-danger-6 bg-danger-3 px-5 py-3 body-sm text-danger-11">
+        <div className="mb-4 flex items-center gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-5 py-3 body-sm text-red-400">
           <svg className="h-5 w-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="12" cy="12" r="10" />
             <path d="M12 8v4M12 16h.01" />
           </svg>
           <span className="flex-1">{approveError}</span>
-          <button onClick={() => setApproveError(null)} className="text-danger-11/60 hover:text-danger-11 flex-shrink-0">
+          <button onClick={() => setApproveError(null)} className="text-red-400/60 hover:text-red-400 flex-shrink-0">
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 6L6 18M6 6l12 12" />
             </svg>
@@ -155,7 +155,7 @@ export function AdminCandidatesPage() {
       )}
 
       <div className="mb-4 flex items-center justify-between px-2">
-        <div className="text-[11px] text-steel">
+        <div className="text-[11px] text-ink-secondary">
           Showing <strong>{filteredCandidates.length}</strong> repositories{reviewer !== 'all' ? ` assigned to ${reviewer}` : ''}
         </div>
       </div>

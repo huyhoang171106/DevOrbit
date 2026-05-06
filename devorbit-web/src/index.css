@@ -3,85 +3,107 @@
 @tailwind utilities;
 
 @layer base {
-  html { @apply scroll-smooth; }
-  body {
-    @apply bg-slate-50 font-body text-slate-900 antialiased transition-colors duration-200;
+  :root {
+    --color-cosmic-base: #f0ede8;
+    --color-cosmic-surface: #ffffff;
+    --color-cosmic-elevated: #fafafa;
+    --color-cosmic-border: #e2ddd6;
+    --color-cosmic-border-hover: #d4cfc8;
+    --color-ink: #1a1a2e;
+    --color-ink-secondary: #6b6580;
+    --color-ink-muted: #9f99b0;
+    --color-glass-border: rgba(0,0,0,0.08);
+    --color-glass-border-hover: rgba(16,185,129,0.4);
+    --color-glass-surface: rgba(0,0,0,0.03);
+    --color-glass-surface-hover: rgba(0,0,0,0.06);
+    --color-glass-surface-raised: rgba(0,0,0,0.02);
   }
-  .dark body { color-scheme: dark; }
+
+  .dark {
+    --color-cosmic-base: #070b15;
+    --color-cosmic-surface: #0d1225;
+    --color-cosmic-elevated: #141b33;
+    --color-cosmic-border: #1e2848;
+    --color-cosmic-border-hover: #2a3a66;
+    --color-ink: #e2e8f0;
+    --color-ink-secondary: #94a3b8;
+    --color-ink-muted: #64748b;
+    --color-glass-border: rgba(255,255,255,0.08);
+    --color-glass-border-hover: rgba(16,185,129,0.3);
+    --color-glass-surface: rgba(255,255,255,0.04);
+    --color-glass-surface-hover: rgba(255,255,255,0.07);
+    --color-glass-surface-raised: rgba(255,255,255,0.03);
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+  body {
+    @apply bg-cosmic-base font-body text-ink antialiased;
+    color-scheme: light;
+  }
+  .dark body {
+    color-scheme: dark;
+  }
 }
 
 @layer components {
-  /* Glass card — light mode */
   .glass-card {
-    border: 1px solid rgba(0,0,0,0.08);
-    background: rgba(0,0,0,0.03);
-    @apply rounded-2xl backdrop-blur-[20px] transition-all duration-300;
+    @apply rounded-2xl border border-glass-border bg-glass-surface backdrop-blur-[20px] transition-all duration-300;
   }
-  .dark .glass-card {
-    border-color: rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.04);
-  }
-
   .glass-card-hover {
-    @apply glass-card hover:shadow-lg;
-  }
-  .glass-card-hover:hover {
-    border-color: rgba(16,185,129,0.3);
-    background: rgba(0,0,0,0.05);
-    box-shadow: 0 10px 15px -3px rgba(16,185,129,0.05);
-  }
-  .dark .glass-card-hover:hover {
-    background: rgba(255,255,255,0.07);
+    @apply glass-card hover:border-glass-border-hover hover:bg-glass-surface-hover hover:shadow-lg;
   }
 
   /* Typography */
-  .hero-display { @apply font-heading text-[72px] font-bold leading-[1.05] tracking-[-2px] text-slate-900 dark:text-slate-100; }
-  .display-lg { @apply font-heading text-[56px] font-bold leading-[1.10] tracking-[-1.5px] text-slate-900 dark:text-slate-100; }
-  .display-sm { @apply font-heading text-[32px] font-bold leading-[1.20] tracking-[-0.5px] text-slate-900 dark:text-slate-100; }
-  .heading-1 { @apply font-heading text-[48px] font-bold leading-[1.10] tracking-[-1px] text-slate-900 dark:text-slate-100; }
-  .heading-2 { @apply font-heading text-[36px] font-bold leading-[1.20] tracking-[-0.5px] text-slate-900 dark:text-slate-100; }
-  .heading-3 { @apply font-heading text-[28px] font-bold leading-[1.25] text-slate-900 dark:text-slate-100; }
-  .heading-4 { @apply font-heading text-[22px] font-bold leading-[1.30] text-slate-900 dark:text-slate-100; }
-  .heading-5 { @apply font-heading text-[18px] font-bold leading-[1.40] text-slate-900 dark:text-slate-100; }
-  .subtitle { @apply font-heading text-[18px] leading-[1.50] text-slate-600 dark:text-slate-400; }
-  .body-md { @apply text-[16px] leading-[1.50] text-slate-600 dark:text-slate-400; }
-  .body-sm { @apply text-[14px] leading-[1.50] text-slate-600 dark:text-slate-400; }
-  .body-sm-medium { @apply text-[14px] font-medium leading-[1.50] text-slate-600 dark:text-slate-400; }
+  .hero-display { @apply font-heading text-[72px] font-bold leading-[1.05] tracking-[-2px] text-ink; }
+  .display-lg { @apply font-heading text-[56px] font-bold leading-[1.10] tracking-[-1.5px] text-ink; }
+  .display-sm { @apply font-heading text-[32px] font-bold leading-[1.20] tracking-[-0.5px] text-ink; }
+  .heading-1 { @apply font-heading text-[48px] font-bold leading-[1.10] tracking-[-1px] text-ink; }
+  .heading-2 { @apply font-heading text-[36px] font-bold leading-[1.20] tracking-[-0.5px] text-ink; }
+  .heading-3 { @apply font-heading text-[28px] font-bold leading-[1.25] text-ink; }
+  .heading-4 { @apply font-heading text-[22px] font-bold leading-[1.30] text-ink; }
+  .heading-5 { @apply font-heading text-[18px] font-bold leading-[1.40] text-ink; }
+  .subtitle { @apply font-heading text-[18px] leading-[1.50] text-ink-secondary; }
+  .body-md { @apply text-[16px] leading-[1.50] text-ink-secondary; }
+  .body-sm { @apply text-[14px] leading-[1.50] text-ink-secondary; }
+  .body-sm-medium { @apply text-[14px] font-medium leading-[1.50] text-ink-secondary; }
 
   /* Buttons */
   .btn-primary {
-    @apply inline-flex items-center justify-center bg-emerald-500 text-white font-semibold rounded-full px-6 py-3 text-[14px] transition-all duration-200 hover:bg-emerald-400 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none;
+    @apply inline-flex items-center justify-center bg-emerald-500 text-white font-semibold rounded-full px-6 py-3 text-[14px] transition-all duration-200 hover:bg-emerald-400 hover:shadow-lg hover:shadow-emerald-500/25 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none;
   }
-  .btn-primary:hover { @apply shadow-lg shadow-emerald-500/25; }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center text-slate-900 rounded-full px-6 py-3 text-[14px] font-medium transition-all duration-200 active:scale-[0.97];
-    border: 1px solid rgba(0,0,0,0.08);
-    background: rgba(0,0,0,0.03);
+    @apply inline-flex items-center justify-center bg-glass-surface text-ink border border-glass-border rounded-full px-6 py-3 text-[14px] font-medium transition-all duration-200 hover:bg-glass-surface-hover active:scale-[0.97];
   }
-  .btn-secondary:hover { background: rgba(0,0,0,0.05); }
-  .dark .btn-secondary {
-    color: #e2e8f0;
-    border-color: rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.04);
-  }
-  .dark .btn-secondary:hover { background: rgba(255,255,255,0.07); }
 
   /* Inputs */
   .input-field {
-    @apply w-full rounded-xl px-4 py-3 text-[16px] text-slate-900 placeholder:text-slate-400 transition-all duration-200 focus:outline-none;
-    border: 1px solid rgba(0,0,0,0.08);
-    background: rgba(0,0,0,0.02);
+    @apply w-full rounded-xl border border-glass-border bg-glass-surface-raised px-4 py-3 text-[16px] text-ink placeholder:text-ink-muted transition-all duration-200 focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/20;
   }
-  .input-field:focus { @apply border-emerald-500/50 ring-1 ring-emerald-500/20; }
-  .dark .input-field {
-    color: #e2e8f0;
-    border-color: rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.03);
-  }
-  .dark .input-field::placeholder { color: #64748b; }
-
   .label {
-    @apply mb-1.5 block text-[12px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500;
+    @apply mb-1.5 block text-[12px] font-semibold uppercase tracking-wider text-ink-muted;
   }
+
+  /* Table helpers */
+  .table-header { @apply text-xs font-semibold uppercase tracking-wider text-ink-muted; }
+  .table-cell { @apply text-sm; }
+
+  /* Badge */
+  .badge-tag {
+    @apply inline-flex items-center justify-center rounded-md border border-glass-border bg-glass-surface px-2 py-0.5 text-[11px] font-medium text-ink-secondary;
+  }
+
+  /* Mono code text */
+  .code-sm { @apply font-mono text-[12px]; }
+
+  /* Tertiary button */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center rounded-full px-4 py-2 text-[13px] font-medium text-ink-secondary transition-all duration-200 hover:bg-glass-surface-hover hover:text-ink active:scale-[0.97];
+  }
+
+  /* Page title helpers */
+  .page-title { @apply font-heading text-[28px] font-bold text-ink leading-tight; }
+  .section-subtitle { @apply text-[13px] font-semibold uppercase tracking-widest text-emerald-400; }
 }

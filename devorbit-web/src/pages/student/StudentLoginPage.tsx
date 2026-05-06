@@ -33,25 +33,25 @@ export function StudentLoginPage() {
 
   return (
     <div className="flex min-h-[65vh] items-center justify-center py-[64px]">
-      <div className="card-base w-full max-w-md p-[32px] mx-4">
+      <div className="glass-card w-full max-w-md p-[32px] mx-4">
         <div className="mb-[32px] text-center">
-          <div className="mx-auto mb-[16px] inline-flex rounded-[8px] bg-brand-green/10 p-[12px] border border-brand-green/20">
-            <svg className="h-[24px] w-[24px] text-brand-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <div className="mx-auto mb-[16px] inline-flex rounded-[8px] bg-emerald-500/10 p-[12px] border border-emerald-500/20">
+            <svg className="h-[24px] w-[24px] text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
               <circle cx="12" cy="7" r="4" />
             </svg>
           </div>
-          <p className="body-sm text-brand-green mb-[8px] font-medium tracking-wide uppercase">Phase 2</p>
+          <p className="body-sm text-emerald-400 mb-[8px] font-medium tracking-wide uppercase">Phase 2</p>
           <h1 className="heading-3 text-ink mb-[8px]">
             {mode === 'login' ? 'Student Login' : 'Create Account'}
           </h1>
-          <p className="body-sm text-steel">
+          <p className="body-sm text-ink-secondary">
             Save courses and repositories to continue learning later.
           </p>
         </div>
 
         {error && (
-          <div className="mb-[24px] flex items-center gap-[8px] rounded-md bg-red-50 border border-red-100 px-4 py-3 body-sm text-red-600">
+          <div className="mb-[24px] flex items-center gap-[8px] rounded-md bg-red-500/10 border border-red-500/20 px-4 py-3 body-sm text-red-600 dark:text-red-400">
             <svg className="h-[16px] w-[16px] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="10" />
               <path d="M12 8v4M12 16h.01" />
@@ -124,15 +124,15 @@ export function StudentLoginPage() {
           </button>
         </form>
 
-        <div className="mt-[24px] pt-[24px] border-t border-hairline-soft flex items-center justify-between body-sm">
+        <div className="mt-[24px] pt-[24px] border-t border-glass-border flex items-center justify-between body-sm">
           <button
-            className="text-brand-green hover:text-brand-green/80 font-medium transition-colors cursor-pointer"
+            className="text-emerald-400 hover:text-emerald-400/80 font-medium transition-colors cursor-pointer"
             type="button"
             onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
           >
             {mode === 'login' ? 'Create an account' : 'Use existing account'}
           </button>
-          <Link to="/courses" className="text-steel hover:text-ink transition-colors">
+          <Link to="/courses" className="text-ink-secondary hover:text-ink transition-colors">
             Continue browsing
           </Link>
         </div>

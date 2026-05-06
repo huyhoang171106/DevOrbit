@@ -87,8 +87,8 @@ export function AdminCoursesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-[96px]">
-        <div className="flex items-center gap-3 body-sm text-steel">
-          <svg className="h-5 w-5 animate-spin text-brand-green" viewBox="0 0 24 24" fill="none">
+        <div className="flex items-center gap-3 body-sm text-ink-secondary">
+          <svg className="h-5 w-5 animate-spin text-emerald-400" viewBox="0 0 24 24" fill="none">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
@@ -103,7 +103,7 @@ export function AdminCoursesPage() {
       <div className="mb-[32px] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="display-sm text-ink mb-1">Courses</h1>
-          <p className="body-sm text-steel">Manage your course catalog.</p>
+          <p className="body-sm text-ink-secondary">Manage your course catalog.</p>
         </div>
         <button onClick={openCreate} className="btn-primary self-start">
           <svg className="mr-1.5 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -113,25 +113,25 @@ export function AdminCoursesPage() {
         </button>
       </div>
 
-      <div className="card-base overflow-hidden border border-hairline p-0">
+      <div className="glass-card overflow-hidden border border-glass-border p-0">
         <table className="min-w-full text-sm">
           <thead>
-            <tr className="border-b border-hairline bg-surface-soft">
-              <th className="table-header text-left font-medium text-steel py-3 px-4">Code</th>
-              <th className="table-header text-left font-medium text-steel py-3 px-4">Name</th>
-              <th className="table-header text-right font-medium text-steel py-3 px-4">Actions</th>
+            <tr className="border-b border-glass-border bg-glass-surface-raised">
+              <th className="table-header text-left font-medium text-ink-secondary py-3 px-4">Code</th>
+              <th className="table-header text-left font-medium text-ink-secondary py-3 px-4">Name</th>
+              <th className="table-header text-right font-medium text-ink-secondary py-3 px-4">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-hairline bg-canvas">
+          <tbody className="divide-y divide-glass-border bg-cosmic-surface">
             {(courses ?? []).length === 0 && (
               <tr>
-                <td colSpan={3} className="px-4 py-10 text-center text-steel body-sm">
+                <td colSpan={3} className="px-4 py-10 text-center text-ink-secondary body-sm">
                   No courses found.
                 </td>
               </tr>
             )}
             {(courses ?? []).map((c) => (
-              <tr key={c.id} className="transition-colors hover:bg-surface-soft">
+              <tr key={c.id} className="transition-colors hover:bg-glass-surface-raised">
                 <td className="table-cell py-3 px-4">
                   <span className="badge-tag">
                     {c.code}
@@ -142,19 +142,19 @@ export function AdminCoursesPage() {
                   <div className="flex items-center justify-end gap-2">
                     <button
                       onClick={() => navigate(`/admin/courses/${c.id}/resources`)}
-                      className="btn-secondary !py-1 !px-2 !text-xs !bg-surface"
+                      className="btn-secondary !py-1 !px-2 !text-xs !bg-glass-surface"
                     >
                       Resources
                     </button>
                     <button
                       onClick={() => openEdit(c)}
-                      className="btn-secondary !py-1 !px-2 !text-xs !bg-surface"
+                      className="btn-secondary !py-1 !px-2 !text-xs !bg-glass-surface"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDeactivate(c.id)}
-                      className="btn-secondary !py-1 !px-2 !text-xs !bg-surface !text-danger-11 hover:!bg-danger-3 border border-danger-6"
+                      className="btn-secondary !py-1 !px-2 !text-xs !bg-glass-surface !text-red-400 hover:!bg-red-500/10 border border-red-500/30"
                     >
                       Deactivate
                     </button>

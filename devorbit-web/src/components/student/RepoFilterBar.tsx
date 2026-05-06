@@ -20,7 +20,7 @@ export function RepoFilterBar({ techStacks, onFilter }: RepoFilterBarProps) {
         className={`rounded-xl px-4 py-1.5 text-sm font-medium transition-all duration-200 cursor-pointer ${
           active === null
             ? 'bg-amber-400/15 text-amber-400 border border-amber-400/20 shadow-sm shadow-amber-400/10'
-            : 'bg-white/[0.04] text-slate-400 border border-white/[0.04] hover:bg-white/[0.08] hover:text-slate-200'
+            : 'bg-glass-surface text-ink-muted border border-glass-border hover:bg-glass-surface-hover hover:text-ink'
         }`}
       >
         All
@@ -32,7 +32,7 @@ export function RepoFilterBar({ techStacks, onFilter }: RepoFilterBarProps) {
           className={`rounded-xl px-4 py-1.5 text-sm font-medium transition-all duration-200 cursor-pointer ${
             active === stack
               ? 'bg-amber-400/15 text-amber-400 border border-amber-400/20 shadow-sm shadow-amber-400/10'
-              : 'bg-white/[0.04] text-slate-400 border border-white/[0.04] hover:bg-white/[0.08] hover:text-slate-200'
+              : 'bg-glass-surface text-ink-muted border border-glass-border hover:bg-glass-surface-hover hover:text-ink'
           }`}
         >
           {stack}

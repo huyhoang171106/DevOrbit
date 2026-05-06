@@ -25,15 +25,15 @@ export function CustomSelect({ value, onChange, options, label }: CustomSelectPr
 
   return (
     <div className="relative" ref={containerRef}>
-      {label && <label className="text-xs font-medium text-steel mb-1 block">{label}</label>}
+      {label && <label className="text-xs font-medium text-ink-secondary mb-1 block">{label}</label>}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="input-field !py-1.5 !px-3 !w-[160px] !text-xs cursor-pointer flex items-center justify-between dark:bg-charcoal dark:text-on-dark dark:border-hairline-dark hover:border-brand-green/50 transition-all"
+        className="input-field !py-1.5 !px-3 !w-[160px] !text-xs cursor-pointer flex items-center justify-between transition-all"
       >
         <span className="truncate">{selectedOption?.label || value}</span>
         <svg
-          className={`w-3 h-3 text-steel transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-3 h-3 text-ink-secondary transition-transform ${isOpen ? 'rotate-180' : ''}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -43,7 +43,7 @@ export function CustomSelect({ value, onChange, options, label }: CustomSelectPr
       </button>
 
       {isOpen && (
-        <div className="absolute z-[100] mt-1 w-full bg-white dark:bg-[#1a1a1c] border border-hairline dark:border-hairline-dark rounded-lg shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 backdrop-blur-sm">
+        <div className="absolute z-[100] mt-1 w-full bg-cosmic-surface border border-glass-border rounded-lg shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 backdrop-blur-sm">
           <div className="max-h-[240px] overflow-y-auto py-1">
             {options.map((option) => (
               <button
@@ -54,8 +54,8 @@ export function CustomSelect({ value, onChange, options, label }: CustomSelectPr
                 }}
                 className={`w-full text-left px-3 py-2 text-xs transition-colors ${
                   value === option.value
-                    ? 'bg-brand-green/10 text-brand-green font-medium'
-                    : 'text-ink dark:text-on-dark hover:bg-surface-soft dark:hover:bg-slate/30'
+                    ? 'bg-emerald-500/10 text-emerald-400 font-medium'
+                    : 'text-ink-secondary hover:text-ink hover:bg-glass-surface-raised'
                 }`}
               >
                 {option.label}

@@ -106,7 +106,7 @@ export function AdminScanPage() {
         <div>
           <p className="section-subtitle mb-2">Discovery</p>
           <h1 className="page-title">Scan GitHub for Repositories</h1>
-          <p className="mt-2 text-sm text-slate-400">
+          <p className="mt-2 text-sm text-ink-muted">
             Search GitHub for repositories related to a specific course.
           </p>
         </div>
@@ -130,7 +130,7 @@ export function AdminScanPage() {
       </div>
 
       {successMessage && (
-        <div className="mb-6 flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">
+        <div className="mb-6 flex items-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400">
           <svg className="h-4 w-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
             <polyline points="22 4 12 14.01 9 11.01" />
@@ -143,14 +143,14 @@ export function AdminScanPage() {
 
       {/* Terminal UI */}
       {(bulkScanning || logs.length > 0) && (
-        <div className="mt-8 rounded-2xl border border-white/[0.06] bg-[#0d1117] overflow-hidden shadow-2xl">
-          <div className="px-4 py-2 bg-white/[0.04] border-b border-white/[0.06] flex items-center justify-between">
+        <div className="mt-8 rounded-2xl border border-glass-border bg-[#0d1117] overflow-hidden shadow-2xl">
+          <div className="px-4 py-2 bg-glass-surface border-b border-glass-border flex items-center justify-between">
             <div className="flex gap-1.5">
               <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
               <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
               <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
             </div>
-            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">discovery_terminal</span>
+            <span className="text-[10px] font-mono text-ink-muted uppercase tracking-widest">discovery_terminal</span>
           </div>
           <div 
             ref={terminalRef}
@@ -159,11 +159,11 @@ export function AdminScanPage() {
             {logs.map((log, i) => (
               <div key={i} className="mb-0.5">
                 <span className="text-emerald-500 mr-2">$</span>
-                <span className={log.includes('!!') ? 'text-rose-400' : 'text-slate-300'}>{log}</span>
+                <span className={log.includes('!!') ? 'text-rose-400' : 'text-ink-secondary'}>{log}</span>
               </div>
             ))}
             {bulkScanning && (
-              <div className="flex items-center gap-2 text-slate-500">
+              <div className="flex items-center gap-2 text-ink-muted">
                 <span className="text-emerald-500 mr-2">$</span>
                 <span className="animate-pulse">_</span>
               </div>
@@ -173,7 +173,7 @@ export function AdminScanPage() {
       )}
 
       {error && (
-        <div className="mt-4 flex items-center gap-2 rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
+        <div className="mt-4 flex items-center gap-2 rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-400">
           <svg className="h-4 w-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="12" cy="12" r="10" />
             <path d="M12 8v4M12 16h.01" />
@@ -183,26 +183,26 @@ export function AdminScanPage() {
       )}
 
       {candidates.length > 0 && (
-        <div className="mt-6 rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-white/[0.04]">
-            <h2 className="text-sm font-semibold text-slate-300">
+        <div className="mt-6 rounded-2xl border border-glass-border bg-glass-surface overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-glass-border">
+            <h2 className="text-sm font-semibold text-ink-secondary">
               Found {candidates.length} candidate{candidates.length > 1 ? 's' : ''}
             </h2>
           </div>
-          <ul className="divide-y divide-white/[0.04]">
+          <ul className="divide-y divide-glass-border">
             {candidates.map((c) => (
-              <li key={c.id} className="flex items-center justify-between px-5 py-3.5 transition-colors hover:bg-white/[0.02]">
+              <li key={c.id} className="flex items-center justify-between px-5 py-3.5 transition-colors hover:bg-glass-surface">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-slate-100 truncate">
+                    <span className="text-sm font-medium text-ink truncate">
                       {c.githubOwner}/{c.githubName}
                     </span>
                     <span className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-medium border ${
                       c.status === 'NEW'
-                        ? 'bg-amber-500/10 text-amber-300 border-amber-500/10'
+                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/10'
                         : c.status === 'APPROVED'
-                        ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/10'
-                        : 'bg-rose-500/10 text-rose-300 border-rose-500/10'
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/10'
+                        : 'bg-rose-500/10 text-rose-400 border-rose-500/10'
                     }`}>
                       {c.status}
                     </span>
@@ -213,14 +213,14 @@ export function AdminScanPage() {
                     )}
                   </div>
                   {c.description && (
-                    <p className="mt-1 text-xs text-slate-500 line-clamp-1">{c.description}</p>
+                    <p className="mt-1 text-xs text-ink-muted line-clamp-1">{c.description}</p>
                   )}
                 </div>
                 <a
                   href={c.githubUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="ml-4 flex-shrink-0 text-xs text-cyan-400 hover:text-cyan-300 transition-colors inline-flex items-center gap-1"
+                  className="ml-4 flex-shrink-0 text-xs text-cyan-600 dark:text-cyan-400 hover:text-cyan-500 dark:hover:text-cyan-300 transition-colors inline-flex items-center gap-1"
                 >
                   View
                   <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -235,11 +235,11 @@ export function AdminScanPage() {
 
       {!scanning && !error && candidates.length === 0 && !bulkScanning && logs.length === 0 && (
         <div className="mt-6 text-center py-10">
-          <svg className="mx-auto mb-3 h-10 w-10 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <svg className="mx-auto mb-3 h-10 w-10 text-ink-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <circle cx="11" cy="11" r="8" />
             <path d="M21 21l-4.35-4.35" />
           </svg>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-ink-muted">
             No candidates yet. Run a scan to find repositories.
           </p>
         </div>

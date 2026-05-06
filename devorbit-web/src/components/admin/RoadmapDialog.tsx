@@ -35,10 +35,10 @@ export function RoadmapDialog({ open, onClose, onSubmit, initial, studentOptions
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
       <div className="glass-card w-full max-w-lg p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold font-heading text-slate-100">
+          <h2 className="text-lg font-semibold font-heading text-ink">
             {initial ? 'Edit Roadmap' : 'Create Roadmap'}
           </h2>
-          <button type="button" onClick={onClose} className="rounded-lg p-1 text-slate-500 hover:bg-white/5 hover:text-slate-300 transition-colors">
+          <button type="button" onClick={onClose} className="rounded-lg p-1 text-ink-muted hover:bg-glass-surface-hover hover:text-ink transition-colors">
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
@@ -66,7 +66,7 @@ export function RoadmapDialog({ open, onClose, onSubmit, initial, studentOptions
             <label className="label">Markdown Content</label>
             <textarea name="markdownContent" value={form.markdownContent ?? ''} onChange={handleChange} rows={4} className="input-field font-mono text-xs" />
           </div>
-          <label className="flex items-center gap-2 text-sm text-slate-300">
+          <label className="flex items-center gap-2 text-sm text-ink-secondary">
             <input type="checkbox" name="isPublic" checked={form.isPublic ?? false} onChange={handleChange} className="rounded border-white/10 bg-white/5 text-amber-400 focus:ring-amber-400" />
             Public
           </label>

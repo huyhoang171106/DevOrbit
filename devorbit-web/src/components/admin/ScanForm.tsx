@@ -29,9 +29,9 @@ export function ScanForm({ onSubmit, loading }: ScanFormProps) {
   return (
     <form onSubmit={handleSubmit} className="glass-card space-y-5 p-6">
       <div>
-        <label className="label text-slate-300">Target Course</label>
+        <label className="label text-ink-muted">Target Course</label>
         {fetchingCourses ? (
-          <div className="h-10 w-full animate-pulse rounded-xl bg-white/[0.04]" />
+          <div className="h-10 w-full animate-pulse rounded-xl bg-glass-surface" />
         ) : (
           <select
             value={courseId}
@@ -39,9 +39,9 @@ export function ScanForm({ onSubmit, loading }: ScanFormProps) {
             className="input-field appearance-none cursor-pointer"
             required
           >
-            <option value="" disabled className="bg-slate-900">Select a course to target...</option>
+            <option value="" disabled className="bg-cosmic-surface">Select a course to target...</option>
             {courses.map((c) => (
-              <option key={c.id} value={c.id} className="bg-slate-900">
+              <option key={c.id} value={c.id} className="bg-cosmic-surface">
                 {c.code} - {c.name}
               </option>
             ))}
@@ -49,7 +49,7 @@ export function ScanForm({ onSubmit, loading }: ScanFormProps) {
         )}
       </div>
       <div>
-        <label className="label text-slate-300">Search Query</label>
+        <label className="label text-ink-muted">Search Query</label>
         <input
           type="text"
           value={query}
@@ -74,7 +74,7 @@ export function ScanForm({ onSubmit, loading }: ScanFormProps) {
                   key={s}
                   type="button"
                   onClick={() => setQuery(s)}
-                  className="rounded-full border border-cyan-500/20 bg-cyan-500/5 px-2.5 py-1 text-[11px] font-medium text-cyan-400 transition-colors hover:bg-cyan-500/10 hover:border-cyan-500/30"
+                  className="rounded-full border border-cyan-600/20 dark:border-cyan-500/20 bg-cyan-500/5 px-2.5 py-1 text-[11px] font-medium text-cyan-600 dark:text-cyan-400 transition-colors hover:bg-cyan-500/10 hover:border-cyan-500/30"
                 >
                   {s}
                 </button>

@@ -9,5 +9,6 @@ public record ApprovedRepoUpdateRequest(
     String primaryLanguage,
     Integer stars,
     List<String> techStacks,
-    Boolean active
+    Boolean active,
+    Long courseId
 ) {}

@@ -10,6 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import vn.edu.uit.devorbit.mobile.model.RepoSummary
 
+import vn.edu.uit.devorbit.mobile.ui.components.GlassCard
+
 @Composable
 fun RepoListSection(
     repos: List<RepoSummary>,
@@ -17,42 +19,49 @@ fun RepoListSection(
 ) {
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(repos) { repo ->
-            Card(
+            GlassCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onRepoClick(repo) },
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    .clickable { onRepoClick(repo) }
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column {
                     Text(
                         text = repo.displayName,
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.White
                     )
                     if (repo.description.isNotBlank()) {
+                        Spacer(Modifier.height(4.dp))
                         Text(
                             text = repo.description,
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = Color.White.copy(alpha = 0.7f),
                             maxLines = 2
                         )
                     }
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.padding(top = 8.dp)
+                        modifier = Modifier.padding(top = 12.dp)
                     ) {
-            if (repo.primaryLanguage.isNotBlank()) {
+                        if (repo.primaryLanguage.isNotBlank()) {
                             SuggestionChip(
                                 onClick = {},
-                                label = { Text(repo.primaryLanguage) }
+                                label = { Text(repo.primaryLanguage) },
+                                colors = SuggestionChipDefaults.suggestionChipColors(
+                                    labelColor = Color.White
+                                )
                             )
                         }
-                        repo.techStacks.forEach { stack ->
+                        repo.techStacks.take(2).forEach { stack ->
                             AssistChip(
                                 onClick = {},
-                                label = { Text(stack.name) }
+                                label = { Text(stack.name) },
+                                colors = AssistChipDefaults.assistChipColors(
+                                    labelColor = Color.White
+                                )
                             )
                         }
                     }

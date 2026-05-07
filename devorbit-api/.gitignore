@@ -1,8 +1,7 @@
-HELP.md
 target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/resources/architecture.html
+!**/src/main/resources/openapi.yaml
 
 ### STS ###
 .apt_generated
@@ -25,13 +24,15 @@ target/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
 ### VS Code ###
 .vscode/
 
-### Local env ###
+### Others ###
+*.log
 .env
+.env.local
+.env.*.local
 src/main/resources/application-local.yaml
+**/secrets/**
+**/credentials/**

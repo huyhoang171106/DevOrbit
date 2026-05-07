@@ -7,7 +7,10 @@ export default defineConfig({
     port: 5173,
     allowedHosts: ['nodes-deserve-ian-displays.trycloudflare.com'],
     proxy: {
-      '/api': 'http://localhost:8080'
+      '/api': {
+        target: 'https://devorbit-api.onrender.com',
+        changeOrigin: true,
+      }
     }
   }
 })

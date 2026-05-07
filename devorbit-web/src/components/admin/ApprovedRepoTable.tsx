@@ -13,6 +13,7 @@ export function ApprovedRepoTable({ repos, onEdit, onDeactivate }: ApprovedRepoT
         <thead>
           <tr className="border-b border-glass-border bg-glass-surface">
             <th className="text-left font-medium text-ink-secondary py-3 px-4 dark:text-ink-muted">Name</th>
+            <th className="text-left font-medium text-ink-secondary py-3 px-4 dark:text-ink-muted">Course</th>
             <th className="text-left font-medium text-ink-secondary py-3 px-4 dark:text-ink-muted">Language</th>
             <th className="text-left font-medium text-ink-secondary py-3 px-4 dark:text-ink-muted">Stars</th>
             <th className="text-left font-medium text-ink-secondary py-3 px-4 dark:text-ink-muted">Tech Stacks</th>
@@ -22,7 +23,7 @@ export function ApprovedRepoTable({ repos, onEdit, onDeactivate }: ApprovedRepoT
         <tbody className="divide-y divide-glass-border bg-cosmic-surface">
           {repos.length === 0 && (
             <tr>
-              <td colSpan={5} className="px-4 py-10 text-center text-ink-secondary body-sm">
+              <td colSpan={6} className="px-4 py-10 text-center text-ink-secondary body-sm">
                 <svg className="mx-auto mb-2 h-8 w-8 text-ink-secondary/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path d="M22 12A10 10 0 1 1 12 2a10 10 0 0 1 10 10z" />
                   <path d="M8 14s1.5 2 4 2 4-2 4-2" />
@@ -35,6 +36,9 @@ export function ApprovedRepoTable({ repos, onEdit, onDeactivate }: ApprovedRepoT
           {repos.map((r) => (
             <tr key={r.id} className="transition-colors hover:bg-glass-surface-raised dark:hover:bg-cosmic-elevated/50">
               <td className="text-ink py-3 px-4 font-medium">{r.displayName}</td>
+              <td className="py-3 px-4">
+                <span className="text-ink-secondary body-sm">{r.courseCode ?? r.courseName ?? '-'}</span>
+              </td>
               <td className="py-3 px-4">
                 {r.primaryLanguage && (
                   <span className="inline-flex items-center justify-center bg-glass-surface-raised text-ink-secondary rounded-sm px-1.5 py-0.5 dark:bg-cosmic-elevated dark:text-ink-muted">{r.primaryLanguage}</span>

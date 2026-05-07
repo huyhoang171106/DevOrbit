@@ -11,5 +11,8 @@ public record RepoSummaryResponse(
     String githubUrl,
     String primaryLanguage,
     Integer stars,
-    List<TechStackResponse> techStacks
+    List<TechStackResponse> techStacks,
+    Long courseId,
+    String courseCode,
+    String courseName
 ) {}

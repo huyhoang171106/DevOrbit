@@ -58,10 +58,3 @@ export const apiAdminPut = <T>(path: string, token: string, body: unknown) =>
   request<T>(path, { method: 'PUT', token, body })
 export const apiAdminDelete = (path: string, token: string) =>
   request<void>(path, { method: 'DELETE', token })
-
-// --- Student API (authenticated) ---
-export const apiStudentGet = <T>(path: string, token: string) => request<T>(path, { token })
-export const apiStudentPost = <T>(path: string, token: string, body: unknown) =>
-  request<T>(path, { method: 'POST', token, body })
-export const apiStudentDelete = (path: string, token: string) =>
-  request<void>(path, { method: 'DELETE', token })

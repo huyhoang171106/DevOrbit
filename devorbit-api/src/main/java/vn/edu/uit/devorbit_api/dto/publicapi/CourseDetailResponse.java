@@ -8,10 +8,17 @@ public record CourseDetailResponse(
     Long id,
     String code,
     String name,
+    String nameEn,
     String description,
     Integer theoryHours,
     Integer practiceHours,
     Integer credits,
     String subjectType,
+    Boolean isOpen,
+    String managementUnit,
+    String codeOld,
+    String equivalentMH,
+    String prerequisiteMH,
+    String previousMH,
     List<RepoSummaryResponse> repos
 ) {}

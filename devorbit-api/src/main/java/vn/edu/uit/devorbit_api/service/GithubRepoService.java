@@ -7,9 +7,11 @@ import org.slf4j.LoggerFactory;
 import vn.edu.uit.devorbit_api.dto.admin.ApprovedRepoUpdateRequest;
 import vn.edu.uit.devorbit_api.dto.publicapi.RepoSummaryResponse;
 import vn.edu.uit.devorbit_api.dto.publicapi.TechStackResponse;
+import vn.edu.uit.devorbit_api.entity.Course;
 import vn.edu.uit.devorbit_api.entity.GithubRepo;
 import vn.edu.uit.devorbit_api.entity.TechStack;
 import vn.edu.uit.devorbit_api.exception.NotFoundException;
+import vn.edu.uit.devorbit_api.repository.CourseRepository;
 import vn.edu.uit.devorbit_api.repository.GithubRepoRepository;
 import vn.edu.uit.devorbit_api.repository.TechStackRepository;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ public class GithubRepoService {
     private static final Logger log = LoggerFactory.getLogger(GithubRepoService.class);
     private final GithubRepoRepository githubRepoRepository;
     private final TechStackRepository techStackRepository;
+    private final CourseRepository courseRepository;
 
     public List<GithubRepo> getAllGithubRepo() {
         return githubRepoRepository.findAll();
@@ -71,6 +74,13 @@ public class GithubRepoService {
             repo.setTechStacks(resolveTechStacks(request.techStacks()));
         }
 
+        if (request.courseId() != null) {
+            Course course = courseRepository.findById(request.courseId())
+                    .orElseThrow(() -> new NotFoundException("Course not found: " + request.courseId()));
+            repo.setCourse(course);
+            repo.setSubjectId(course.getMaMH());
+        }
+
         RepoSummaryResponse saved = mapToRepoSummary(githubRepoRepository.save(repo));
         log.info("updateApprovedRepo: updated repo id={} active={}", repoId, request.active());
         return saved;
@@ -85,6 +95,14 @@ public class GithubRepoService {
     }
 
     public RepoSummaryResponse mapToRepoSummary(GithubRepo repo) {
+        Long courseId = null;
+        String courseCode = null;
+        String courseName = null;
+        if (repo.getCourse() != null) {
+            courseId = repo.getCourse().getId();
+            courseCode = repo.getCourse().getMaMH();
+            courseName = repo.getCourse().getTenMH();
+        }
         return new RepoSummaryResponse(
                 repo.getId(),
                 repo.getDisplayName(),
@@ -94,7 +112,10 @@ public class GithubRepoService {
                 repo.getStars() != null ? repo.getStars() : 0,
                 repo.getTechStacks().stream()
                         .map(ts -> new TechStackResponse(ts.getName()))
-                        .toList()
+                        .toList(),
+                courseId,
+                courseCode,
+                courseName
         );
     }
 

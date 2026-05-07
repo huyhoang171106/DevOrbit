@@ -20,6 +20,9 @@ public class Course {
     @Column(name = "tenmh", nullable = false, length = 255)
     private String tenMH;
 
+    @Column(name = "tenmh_en", length = 255)
+    private String tenMH_EN;
+
     @Column(name = "sotc")
     private int soTC;
 
@@ -28,5 +31,22 @@ public class Course {
 
     @Column(name = "loaimonhoc", nullable = false, length = 50)
     private String loaiMonHoc;
-}
 
+    @Column(name = "is_open")
+    private boolean isOpen;
+
+    @Column(name = "management_unit", length = 100)
+    private String managementUnit;
+
+    @Column(name = "mamh_old", length = 50)
+    private String maMH_Old;
+
+    @Column(name = "equivalent_mh")
+    private String equivalentMH;
+
+    @Column(name = "prerequisite_mh")
+    private String prerequisiteMH;
+
+    @Column(name = "previous_mh")
+    private String previousMH;
+}

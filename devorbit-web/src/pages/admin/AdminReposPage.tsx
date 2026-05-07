@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRequireAuth, useApiFetch } from '../../lib/hooks'
 import { apiAdminGet, apiAdminDelete, apiAdminPut } from '../../lib/api'
 import { getAdminToken } from '../../lib/auth'
 import { ApprovedRepoTable } from '../../components/admin/ApprovedRepoTable'
-import type { RepoSummary } from '../../types/api'
+import type { RepoSummary, CourseSummary } from '../../types/api'
 
 export function AdminReposPage() {
   useRequireAuth()
@@ -15,6 +15,14 @@ export function AdminReposPage() {
     () => apiAdminGet<RepoSummary[]>('/api/admin/repos', token),
     [token],
   )
+
+  const [allCourses, setAllCourses] = useState<CourseSummary[]>([])
+
+  useEffect(() => {
+    apiAdminGet<CourseSummary[]>('/api/admin/courses', token)
+      .then(setAllCourses)
+      .catch(() => {})
+  }, [token])
 
   async function handleDeactivate(id: number) {
     if (!confirm('Deactivate this repo?')) return
@@ -43,6 +51,7 @@ export function AdminReposPage() {
         stars: Number(data.get('stars') ?? 0),
         active: data.get('active') === 'on',
         techStacks: String(data.get('techStacks') ?? '').split(',').map((s) => s.trim()).filter(Boolean),
+        courseId: data.get('courseId') ? Number(data.get('courseId')) : null,
       })
       setEditingRepo(null)
       refetch()
@@ -148,6 +157,16 @@ export function AdminReposPage() {
             <div>
               <label className="label mb-1.5 block">Tech Stacks (comma separated)</label>
               <input name="techStacks" defaultValue={editingRepo.techStacks.join(', ')} className="input-field" placeholder="React, Spring Boot" />
+            </div>
+
+            <div>
+              <label className="label mb-1.5 block">Course</label>
+              <select name="courseId" defaultValue={editingRepo.courseId ?? ''} className="input-field">
+                <option value="">None (no course)</option>
+                {allCourses.map((c) => (
+                  <option key={c.id} value={c.id}>{c.code} — {c.name}</option>
+                ))}
+              </select>
             </div>
 
             <label className="flex items-center gap-2.5 body-sm text-ink-secondary cursor-pointer mt-4">

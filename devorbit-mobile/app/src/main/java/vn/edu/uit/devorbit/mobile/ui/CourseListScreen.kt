@@ -13,51 +13,36 @@ import vn.edu.uit.devorbit.mobile.model.CourseSummary
 import vn.edu.uit.devorbit.mobile.repository.DevOrbitRepository
 import kotlinx.coroutines.launch
 
+import vn.edu.uit.devorbit.mobile.ui.components.GlassCard
+
 @Composable
-fun CourseListScreen(onCourseClick: (CourseSummary) -> Unit) {
-    val context = LocalContext.current
-    val repository = remember { DevOrbitRepository(context) }
-    val scope = rememberCoroutineScope()
-    var courses by remember { mutableStateOf<List<CourseSummary>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
-    var error by remember { mutableStateOf<String?>(null) }
-
-    LaunchedEffect(Unit) {
-        repository.getCourses().onSuccess {
-            courses = it
-            isLoading = false
-        }.onFailure {
-            error = it.message
-            isLoading = false
-        }
-    }
-
-    when {
-        isLoading -> Box(Modifier.fillMaxSize()) { CircularProgressIndicator() }
-        error != null -> Text("Error: $error")
-        else -> LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(courses) { course ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onCourseClick(course) },
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = course.code,
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = course.name,
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                    }
+fun CourseListScreen(
+    courses: List<CourseSummary>,
+    onCourseClick: (CourseSummary) -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        items(courses) { course ->
+            GlassCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onCourseClick(course) }
+            ) {
+                Column {
+                    Text(
+                        text = course.code,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = course.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.White
+                    )
                 }
             }
         }

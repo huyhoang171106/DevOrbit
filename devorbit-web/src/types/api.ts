@@ -8,11 +8,18 @@ export type CourseDetail = {
   id: number
   code: string
   name: string
+  nameEn: string | null
   description: string | null
   credits: number
   theoryHours: number | null
   practiceHours: number | null
   subjectType: string | null
+  isOpen: boolean
+  managementUnit: string | null
+  codeOld: string | null
+  equivalentMH: string | null
+  prerequisiteMH: string | null
+  previousMH: string | null
   repos: RepoSummary[]
 }
 
@@ -24,6 +31,9 @@ export type RepoSummary = {
   primaryLanguage: string
   stars: number | null
   techStacks: string[]
+  courseId: number | null
+  courseCode: string | null
+  courseName: string | null
 }
 
 export type RepoCandidate = {
@@ -58,14 +68,6 @@ export type LoginRequest = {
 
 export type LoginResponse = {
   token: string
-}
-
-export type StudentAuthResponse = {
-  token: string
-  id: number
-  studentCode: string
-  fullName: string
-  email: string
 }
 
 export type BookmarkTargetType = 'COURSE' | 'REPO'

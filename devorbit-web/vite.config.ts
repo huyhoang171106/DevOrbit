@@ -8,7 +8,7 @@ export default defineConfig({
     allowedHosts: ['nodes-deserve-ian-displays.trycloudflare.com'],
     proxy: {
       '/api': {
-        target: 'https://devorbit-api.onrender.com',
+        target: 'http://localhost:8080',
         changeOrigin: true,
       }
     }

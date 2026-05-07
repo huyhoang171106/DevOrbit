@@ -6,7 +6,10 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import vn.edu.uit.devorbit_api.dto.publicapi.CourseSummaryResponse;
+import vn.edu.uit.devorbit_api.service.CourseArticleService;
 import vn.edu.uit.devorbit_api.service.CourseService;
+import vn.edu.uit.devorbit_api.service.CourseTutorialService;
+import vn.edu.uit.devorbit_api.service.CourseYoutubePlaylistService;
 import vn.edu.uit.devorbit_api.service.JwtService;
 
 import java.util.List;
@@ -27,6 +30,15 @@ class PublicCourseControllerTest {
 
     @MockitoBean
     private JwtService jwtService;
+
+    @MockitoBean
+    private CourseTutorialService tutorialService;
+
+    @MockitoBean
+    private CourseYoutubePlaylistService playlistService;
+
+    @MockitoBean
+    private CourseArticleService articleService;
 
     @Test
     void shouldReturnCourseSummaries() throws Exception {

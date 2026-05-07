@@ -1,0 +1,56 @@
+# Dependencies
+node_modules/
+dist/
+target/
+build/
+.gradle/
+*.class
+*.jar
+*.war
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# GitNexus & Agents
+.gitnexus
+.agent
+.claude
+.codebuddy
+.codex
+.commandcode
+.continue
+.cursor
+.gemini
+.kilo
+.kiro
+.omc
+.opencode
+.playwright-mcp
+.qoder
+.roo
+.sisyphus
+.superpowers
+.trae
+.windsurf
+
+# OS
+Thumbs.db
+
+# Misc
+onnxruntime-linux-x64-1.17.1/
+onnxruntime-linux-x64-1.17.1.tgz

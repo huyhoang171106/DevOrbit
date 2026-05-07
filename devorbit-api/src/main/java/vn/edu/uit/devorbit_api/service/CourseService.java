@@ -17,21 +17,11 @@ public class CourseService {
     private final GithubRepoService githubRepoService;
 
     public List<CourseSummaryResponse> getActiveCourseSummaries() {
-        return courseRepository.findAll().stream()
-                .map(course -> new CourseSummaryResponse(
-                        course.getId(),
-                        course.getMaMH(),
-                        course.getTenMH()))
-                .toList();
+        return courseRepository.findAllWithRepoCountSortedByRepoCount();
     }
 
     public List<CourseSummaryResponse> getAllCourseSummaries() {
-        return courseRepository.findAll().stream()
-                .map(course -> new CourseSummaryResponse(
-                        course.getId(),
-                        course.getMaMH(),
-                        course.getTenMH()))
-                .toList();
+        return courseRepository.findAllWithRepoCountSortedByRepoCount();
     }
 
     public CourseDetailResponse getCourseDetail(Long id) {

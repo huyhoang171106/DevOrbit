@@ -2,7 +2,6 @@
 import { HomePage } from './pages/student/HomePage'
 import { CourseListPage } from './pages/student/CourseListPage'
 import { CourseDetailPage } from './pages/student/CourseDetailPage'
-import { StudentLoginPage } from './pages/student/StudentLoginPage'
 import { StudentBookmarksPage } from './pages/student/StudentBookmarksPage'
 import { LoginPage } from './pages/admin/LoginPage'
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage'
@@ -21,7 +20,6 @@ export function AppRoutes() {
       <Route path="/" element={<HomePage />} />
       <Route path="/courses" element={<CourseListPage />} />
       <Route path="/courses/:courseId" element={<CourseDetailPage />} />
-      <Route path="/student/login" element={<StudentLoginPage />} />
       <Route path="/student/bookmarks" element={<StudentBookmarksPage />} />
       <Route path="/admin/login" element={<LoginPage />} />
       <Route path="/admin" element={<AdminDashboardPage />} />

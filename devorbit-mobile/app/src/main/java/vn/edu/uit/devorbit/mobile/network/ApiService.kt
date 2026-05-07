@@ -1,19 +1,11 @@
 package vn.edu.uit.devorbit.mobile.network
 
 import retrofit2.http.GET
-import retrofit2.http.Header
 import retrofit2.http.Path
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.POST
-import vn.edu.uit.devorbit.mobile.model.BookmarkRequest
-import vn.edu.uit.devorbit.mobile.model.BookmarkResponse
-import vn.edu.uit.devorbit.mobile.model.BookmarkTargetType
-import vn.edu.uit.devorbit.mobile.model.CourseSummary
-import vn.edu.uit.devorbit.mobile.model.RepoSummary
-import vn.edu.uit.devorbit.mobile.model.StudentAuthResponse
-import vn.edu.uit.devorbit.mobile.model.StudentLoginRequest
-import vn.edu.uit.devorbit.mobile.model.StudentRegisterRequest
+import vn.edu.uit.devorbit.mobile.model.*
 
 interface ApiService {
     @GET("/api/courses")
@@ -24,22 +16,19 @@ interface ApiService {
         @Path("courseId") courseId: Long,
     ): List<RepoSummary>
 
-    @POST("/api/student/login")
-    suspend fun studentLogin(@Body request: StudentLoginRequest): StudentAuthResponse
+    @GET("/api/courses/{id}/tutorials")
+    suspend fun getTutorials(@Path("id") courseId: Long): List<CourseTutorial>
 
-    @POST("/api/student/register")
-    suspend fun studentRegister(@Body request: StudentRegisterRequest): StudentAuthResponse
+    @GET("/api/courses/{id}/videos")
+    suspend fun getVideos(@Path("id") courseId: Long): List<CourseYoutubePlaylist>
 
-    @GET("/api/student/bookmarks")
-    suspend fun getBookmarks(@Header("Authorization") authorization: String): List<BookmarkResponse>
+    @GET("/api/courses/{id}/articles")
+    suspend fun getArticles(@Path("id") courseId: Long): List<CourseArticle>
 
-    @POST("/api/student/bookmarks")
-    suspend fun saveBookmark(@Header("Authorization") authorization: String, @Body request: BookmarkRequest): BookmarkResponse
+    // AI Features
+    @GET("/api/ai/repo/{repoId}/summary")
+    suspend fun getAiSummary(@Path("repoId") repoId: Long): AiResponse
 
-    @DELETE("/api/student/bookmarks/{targetType}/{targetId}")
-    suspend fun deleteBookmark(
-        @Header("Authorization") authorization: String,
-        @Path("targetType") targetType: BookmarkTargetType,
-        @Path("targetId") targetId: Long,
-    )
+    @GET("/api/ai/repo/{repoId}/advice")
+    suspend fun getAiAdvice(@Path("repoId") repoId: Long): AiResponse
 }

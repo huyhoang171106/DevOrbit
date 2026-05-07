@@ -1,23 +1,19 @@
 import { useEffect, useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
-import { apiStudentGet } from '../../lib/api'
-import { getStudentToken } from '../../lib/auth'
+import { Link, useNavigate } from 'react-router-dom'
+import { apiGet } from '../../lib/api'
 import type { StudentBookmark } from '../../types/api'
 
 export function StudentBookmarksPage() {
-  const token = getStudentToken()
+  const navigate = useNavigate()
   const [bookmarks, setBookmarks] = useState<StudentBookmark[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!token) return
-    apiStudentGet<StudentBookmark[]>('/api/student/bookmarks', token)
+    apiGet<StudentBookmark[]>('/api/student/bookmarks')
       .then(setBookmarks)
-      .catch(console.error)
+      .catch(() => navigate('/courses'))
       .finally(() => setLoading(false))
-  }, [token])
-
-  if (!token) return <Navigate to="/student/login" replace />
+  }, [])
 
   if (loading) {
     return (

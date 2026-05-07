@@ -28,7 +28,7 @@ export function CourseCard({ course }: { course: CourseSummary }) {
 
       <div className="mt-auto pt-4 flex items-center justify-between border-t border-glass-border group-hover:border-emerald-500/20 transition-colors duration-500">
         <span className="text-[12px] font-bold uppercase tracking-widest text-ink-muted group-hover:text-emerald-500/80 transition-colors">
-          View Details
+          {course.repoCount} {course.repoCount === 1 ? 'Repository' : 'Repositories'}
         </span>
         <div className="h-8 w-8 rounded-full bg-glass-surface flex items-center justify-center transition-all duration-500 group-hover:bg-emerald-500 group-hover:text-white">
           <svg className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">

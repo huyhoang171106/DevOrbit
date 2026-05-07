@@ -2,6 +2,7 @@ export type CourseSummary = {
   id: number
   code: string
   name: string
+  repoCount: number
 }
 
 export type CourseDetail = {

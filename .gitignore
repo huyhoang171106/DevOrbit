@@ -30,6 +30,8 @@ yarn-error.log*
 brain/
 .gsd/
 .agent/
+.agents/
+.gitnexus/
 .claude/
 .gemini/
 .trae/

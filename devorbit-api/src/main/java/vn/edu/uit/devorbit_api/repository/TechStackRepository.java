@@ -22,5 +22,8 @@ public interface TechStackRepository extends JpaRepository<TechStack, Long> {
     @Query("SELECT t FROM TechStack t WHERE t.repo.id = :repoId ORDER BY t.name")
     List<TechStack> findByRepoId(Long repoId);
 
+    @Query("SELECT t.name FROM GithubRepo r JOIN r.techStacks t GROUP BY t.name ORDER BY COUNT(r) DESC")
+    List<String> findTop10TechStacksByUsage();
+
     void deleteByRepoId(Long repoId);
 }

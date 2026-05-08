@@ -5,7 +5,7 @@ import { ThemeToggle } from './ThemeToggle'
 
 const navLinks = [
   { to: '/courses', label: 'Courses' },
-  { to: '/student/bookmarks', label: 'My Learning' },
+  { to: '/knowledge-graph', label: 'Knowledge Graph' },
 ]
 
 export function Layout({ children }: { children: React.ReactNode }) {

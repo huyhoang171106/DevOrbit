@@ -1,42 +1,66 @@
 import { Link } from 'react-router-dom'
 import type { CourseSummary } from '../../types/api'
+import { getCourseColor, colorMap } from '../../lib/colors'
 
 export function CourseCard({ course }: { course: CourseSummary }) {
+  const themeColor = getCourseColor(course.code)
+  const colors = colorMap[themeColor]
+
   return (
     <Link
       to={`/courses/${course.id}`}
-      className="glass-card flex flex-col group h-full cursor-pointer border-opacity-50 hover:border-emerald-500/30 hover:bg-glass-surface-hover hover:shadow-[0_20px_50px_rgba(16,185,129,0.1)] transition-all duration-500 p-6"
+      className={`glass-card-glow group relative flex flex-col h-full cursor-pointer overflow-hidden border-opacity-30 ${colors.borderHover} hover:bg-glass-surface-hover hover:shadow-2xl transition-all duration-700 p-7`}
     >
-      <div className="flex justify-between items-start mb-6">
-        <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 group-hover:bg-emerald-500/20 transition-colors duration-500">
-          <svg className="h-5 w-5 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+      {/* Decorative gradient corner */}
+      <div className={`absolute top-0 right-0 w-32 h-32 ${colors.bgLight} blur-3xl rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-opacity-20 transition-all duration-700`} />
+      
+      <div className="relative z-10 flex justify-between items-start mb-8">
+        <div className={`h-12 w-12 rounded-2xl ${colors.bgLight} flex items-center justify-center border ${colors.border} ${colors.bgHover} group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-sm ${colors.shadow}`}>
+          <svg className={`h-6 w-6 ${colors.text}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18c-2.305 0-4.408.867-6 2.292m0-14.25v14.25" />
           </svg>
         </div>
-        <span className="badge-tag !bg-emerald-500/5 !border-emerald-500/10 !text-emerald-500/80 font-bold tracking-wider">
-          {course.code}
-        </span>
+        <div className="flex flex-col items-end gap-1">
+          <span className={`inline-flex items-center gap-1.5 rounded-full ${colors.bgLight} border ${colors.border} px-3.5 py-1.5 text-[10px] font-black tracking-widest ${colors.text} group-hover:bg-opacity-20 transition-all duration-500`}>
+            <span className={`h-1.5 w-1.5 rounded-full ${colors.bg} animate-pulse`} />
+            {course.code}
+          </span>
+        </div>
       </div>
 
-      <h3 className="heading-4 text-ink mb-3 line-clamp-2 group-hover:text-emerald-500 transition-colors duration-500">
-        {course.name}
-      </h3>
-      
-      <p className="body-sm text-ink-secondary mb-6 line-clamp-2 opacity-80 group-hover:opacity-100 transition-opacity">
-        Explore detailed repositories, interactive roadmaps, and academic resources for this course.
-      </p>
+      <div className="relative z-10 space-y-4 mb-8">
+        <h3 className={`heading-3 text-ink ${colors.text} opacity-90 group-hover:opacity-100 transition-colors duration-500 line-clamp-2 leading-tight`}>
+          {course.name}
+        </h3>
 
-      <div className="mt-auto pt-4 flex items-center justify-between border-t border-glass-border group-hover:border-emerald-500/20 transition-colors duration-500">
-        <span className="text-[12px] font-bold uppercase tracking-widest text-ink-muted group-hover:text-emerald-500/80 transition-colors">
-          {course.repoCount} {course.repoCount === 1 ? 'Repository' : 'Repositories'}
-        </span>
-        <div className="h-8 w-8 rounded-full bg-glass-surface flex items-center justify-center transition-all duration-500 group-hover:bg-emerald-500 group-hover:text-white">
-          <svg className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
+        <p className="body-sm text-ink-secondary line-clamp-2 opacity-70 group-hover:opacity-100 transition-opacity duration-500 leading-relaxed">
+          Unlock specialized repositories and interconnected knowledge maps for this subject area.
+        </p>
+      </div>
+
+      <div className="mt-auto relative z-10 pt-5 flex items-center justify-between border-t border-glass-border ${colors.borderHover} transition-colors duration-500">
+        <div className="flex items-center gap-4">
+          <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.15em] text-ink-muted ${colors.text} group-hover:opacity-100 transition-colors`}>
+            <svg className="h-3.5 w-3.5 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z" />
+              <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16" />
+            </svg>
+            {course.repoCount} {course.repoCount === 1 ? 'Source' : 'Sources'}
+          </span>
+        </div>
+        
+        <div className={`flex items-center gap-2 ${colors.text} opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-500`}>
+          <span className="text-[10px] font-black uppercase tracking-tighter">Explore</span>
+          <div className={`h-8 w-8 rounded-full ${colors.bg} text-white flex items-center justify-center shadow-lg shadow-emerald-500/25 scale-90 group-hover:scale-100 transition-all duration-500`}>
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </div>
         </div>
       </div>
     </Link>
   )
 }
+
+
 

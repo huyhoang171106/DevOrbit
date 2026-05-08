@@ -7,10 +7,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import vn.edu.uit.devorbit_api.dto.publicapi.CourseDetailResponse;
 import vn.edu.uit.devorbit_api.dto.publicapi.CourseSummaryResponse;
+import vn.edu.uit.devorbit_api.dto.publicapi.KnowledgeGraphResponse;
 import vn.edu.uit.devorbit_api.service.CourseService;
 import vn.edu.uit.devorbit_api.service.CourseTutorialService;
 import vn.edu.uit.devorbit_api.service.CourseYoutubePlaylistService;
 import vn.edu.uit.devorbit_api.service.CourseArticleService;
+import vn.edu.uit.devorbit_api.service.KnowledgeGraphService;
 
 import java.util.List;
 
@@ -22,10 +24,16 @@ public class PublicCourseController {
     private final CourseTutorialService tutorialService;
     private final CourseYoutubePlaylistService playlistService;
     private final CourseArticleService articleService;
+    private final KnowledgeGraphService knowledgeGraphService;
 
     @GetMapping
     public List<CourseSummaryResponse> getCourses() {
         return courseService.getActiveCourseSummaries();
+    }
+
+    @GetMapping("/graph")
+    public KnowledgeGraphResponse getGraph() {
+        return knowledgeGraphService.getGraph();
     }
 
     @GetMapping("/{id}")

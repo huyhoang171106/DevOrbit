@@ -19,10 +19,12 @@ Kotlin Android application for the DevOrbit platform, providing mobile access fo
 ## Subdirectories
 | Directory | Purpose |
 |-----------|---------|
-| `app/src/main/java/vn/edu/uit/devorbit/mobile/model/` | Data models (Course, Repo, Auth, TechStack) |
+| `app/src/main/java/vn/edu/uit/devorbit/mobile/model/` | Data models (Course, Repo, TechStack, Ai, Knowledge) |
 | `app/src/main/java/vn/edu/uit/devorbit/mobile/network/` | API client and network configuration |
 | `app/src/main/java/vn/edu/uit/devorbit/mobile/repository/` | Data repositories with caching |
 | `app/src/main/java/vn/edu/uit/devorbit/mobile/ui/` | UI screens and composables |
+| `app/src/main/java/vn/edu/uit/devorbit/mobile/ui/viewmodel/` | ViewModel classes (CourseViewModel, AiTutorViewModel) |
+| `app/src/main/java/vn/edu/uit/devorbit/mobile/ui/components/` | Reusable UI components (GlassCard, CosmicBackground) |
 | `app/src/main/res/` | Android resources (layouts, drawables, values) |
 | `gradle/` | Gradle wrapper files |
 
@@ -37,16 +39,19 @@ Kotlin Android application for the DevOrbit platform, providing mobile access fo
 
 ### Testing Requirements
 - Test on multiple Android versions
-- Verify offline functionality
+- Verify offline functionality (SharedPreferences cache)
 - Test API integration and error handling
-- Check authentication persistence
+- Verify deserialization of API responses (especially TechStack objects)
+- Check ViewModel state management
 
 ### Common Patterns
 - Jetpack Compose for UI development
 - Repository pattern for data access
 - Kotlin coroutines for async operations
-- SharedPreferences/DataStore for local storage
+- SharedPreferences for offline caching (CacheStore)
 - Retrofit/OkHttp for network calls
+- Hilt for dependency injection (DataModule)
+- ViewModel + StateFlow for reactive state
 
 ## Dependencies
 
@@ -58,8 +63,9 @@ Kotlin Android application for the DevOrbit platform, providing mobile access fo
 - Kotlin - Programming language
 - Jetpack Compose - UI framework
 - Retrofit - HTTP client
-- Room - Local database (likely)
-- Hilt/Dagger - Dependency injection
+- Hilt - Dependency injection (DataModule)
+- SharedPreferences - Local caching (CacheStore)
+- Jetpack ViewModel + StateFlow - Reactive state
 - Kotlin Coroutines - Async programming
 
 <!-- MANUAL: -->

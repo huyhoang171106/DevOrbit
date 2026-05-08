@@ -84,7 +84,36 @@ fun RepoDetailScreen(
             )
         }
 
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(16.dp))
+
+        // TECH STACKS SECTION
+        if (repo.techStacks.isNotEmpty()) {
+            Text(
+                "Tech Stacks",
+                style = MaterialTheme.typography.labelLarge,
+                color = Color.White.copy(alpha = 0.7f),
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                repo.techStacks.forEach { techStack ->
+                    SuggestionChip(
+                        onClick = {},
+                        label = { Text(techStack.name) },
+                        colors = SuggestionChipDefaults.suggestionChipColors(
+                            containerColor = Color.White.copy(alpha = 0.1f),
+                            labelColor = Color.White
+                        )
+                    )
+                }
+            }
+            Spacer(Modifier.height(24.dp))
+        } else {
+            Spacer(Modifier.height(24.dp))
+        }
 
         // AI SMART INSIGHTS SECTION
         Text(

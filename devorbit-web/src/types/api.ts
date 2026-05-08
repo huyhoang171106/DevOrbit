@@ -195,6 +195,27 @@ export type ItemResponse = {
   createdAt: string
 }
 
+// --- Knowledge Graph ---
+
+export type GraphNode = {
+  id: number
+  name: string
+  code: string
+  val: number
+  level: number
+}
+
+export type GraphLink = {
+  source: number
+  target: number
+  type: 'PREREQUISITE' | 'COMPLEMENTARY' | 'COREQUISITE'
+}
+
+export type GraphResponse = {
+  nodes: GraphNode[]
+  links: GraphLink[]
+}
+
 // --- Course Relationships ---
 
 export type CourseRelationType = 'PREREQUISITE' | 'COMPLEMENTARY' | 'COREQUISITE'
@@ -242,4 +263,11 @@ export type NoteResponse = {
   createdAt: string
   updatedAt: string
   snippets: NoteCodeSnippetResponse[]
+}
+
+// --- AI ---
+
+export type AiResponse = {
+  content: string
+  type: 'SUMMARY' | 'TUTOR_ADVICE'
 }

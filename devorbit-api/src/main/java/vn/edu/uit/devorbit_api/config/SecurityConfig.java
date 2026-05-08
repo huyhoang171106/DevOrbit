@@ -1,5 +1,6 @@
 package vn.edu.uit.devorbit_api.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -21,6 +22,9 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
+    private String allowedOrigins;
+
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
@@ -36,9 +40,13 @@ public class SecurityConfig {
                 .requestMatchers("/api/admin/auth/**").permitAll()
                 .requestMatchers("/api/courses/**").permitAll()
                 .requestMatchers("/api/repos/**").permitAll()
+                .requestMatchers("/api/ai/**").permitAll()
+                .requestMatchers("/api/discovery/**").permitAll()
+                .requestMatchers("/api/tech-stacks/**").permitAll()
+                .requestMatchers("/api/health").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                .requestMatchers("/api/admin/**").authenticated()
-                .anyRequest().permitAll())
+                .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
+                .anyRequest().denyAll())
             .addFilterBefore(jwtAuthenticationFilter,
                 UsernamePasswordAuthenticationFilter.class);
 
@@ -53,7 +61,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("*"));
+        config.setAllowedOriginPatterns(List.of(allowedOrigins.split(",")));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

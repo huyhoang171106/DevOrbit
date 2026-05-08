@@ -21,10 +21,13 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.StreamSupport;
 
 @Service
 public class GithubScanService {
+
+    private static final int MAX_LOG_ENTRIES = 2000;
 
     private final RepoCandidateRepository repoCandidateRepository;
     private final GithubRepoRepository githubRepoRepository;
@@ -32,6 +35,7 @@ public class GithubScanService {
     private final WebClient webClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final List<String> scanLogs = java.util.Collections.synchronizedList(new ArrayList<>());
+    private final AtomicBoolean scanRunning = new AtomicBoolean(false);
 
     public GithubScanService(RepoCandidateRepository repoCandidateRepository,
                                GithubRepoRepository githubRepoRepository,
@@ -52,6 +56,7 @@ public class GithubScanService {
     }
 
     private void addLog(String message) {
+        if (scanLogs.size() >= MAX_LOG_ENTRIES) return;
         String timestamp = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"));
         scanLogs.add("[" + timestamp + "] " + message);
     }
@@ -137,58 +142,70 @@ public class GithubScanService {
         return results;
     }
 
-    public void scanAll() {
-        clearLogs();
-        addLog("Starting DEEP bulk scan for all courses...");
-        
-        // Fetch all existing URLs ONCE at the start for maximum efficiency
-        Set<String> existingUrls = new HashSet<>();
-        existingUrls.addAll(repoCandidateRepository.findAllGithubUrls());
-        existingUrls.addAll(githubRepoRepository.findAllGithubUrls());
-        
-        List<Course> allCourses = courseRepository.findAll();
-        addLog("Found " + allCourses.size() + " courses to process. Each will be scanned with 4 variations.");
-        
-        int totalFound = 0;
-        for (int i = 0; i < allCourses.size(); i++) {
-            Course course = allCourses.get(i);
-            String code = course.getMaMH();
-            String name = course.getTenMH();
-            
-            // Skip MA and SS courses
-            if (code != null && (code.startsWith("MA") || code.startsWith("SS"))) {
-                addLog(String.format("[%d/%d] Skipping non-tech course %s: %s", i + 1, allCourses.size(), code, name));
-                continue;
-            }
-            
-            // Define variations
-            String[] variations = {
-                code,                             // Variation 1: Code only
-                code + " " + name,                // Variation 2: Code + Name
-                name + " repository",             // Variation 3: Name + "repository"
-                name + " project"                 // Variation 4: Name + "project"
-            };
+    public boolean isScanRunning() {
+        return scanRunning.get();
+    }
 
-            addLog(String.format("[%d/%d] >>> Processing %s: %s", i + 1, allCourses.size(), code, name));
+    public void scanAll() {
+        if (!scanRunning.compareAndSet(false, true)) {
+            addLog("A scan is already in progress — ignoring duplicate request.");
+            return;
+        }
+        try {
+            clearLogs();
+            addLog("Starting DEEP bulk scan for all courses...");
             
-            for (int v = 0; v < variations.length; v++) {
-                String query = variations[v];
-                try {
-                    addLog(String.format("  (%d/4) Searching: \"%s\"", v + 1, query));
-                    List<RepoCandidateResponse> found = scanCourse(course.getId(), query, existingUrls);
-                    if (!found.isEmpty()) {
-                        addLog("    + Found " + found.size() + " new candidates");
-                        totalFound += found.size();
+            // Fetch all existing URLs ONCE at the start for maximum efficiency
+            Set<String> existingUrls = new HashSet<>();
+            existingUrls.addAll(repoCandidateRepository.findAllGithubUrls());
+            existingUrls.addAll(githubRepoRepository.findAllGithubUrls());
+            
+            List<Course> allCourses = courseRepository.findAll();
+            addLog("Found " + allCourses.size() + " courses to process. Each will be scanned with 4 variations.");
+            
+            int totalFound = 0;
+            for (int i = 0; i < allCourses.size(); i++) {
+                Course course = allCourses.get(i);
+                String code = course.getMaMH();
+                String name = course.getTenMH();
+                
+                // Skip MA and SS courses
+                if (code != null && (code.startsWith("MA") || code.startsWith("SS"))) {
+                    addLog(String.format("[%d/%d] Skipping non-tech course %s: %s", i + 1, allCourses.size(), code, name));
+                    continue;
+                }
+                
+                // Define variations
+                String[] variations = {
+                    code,                             // Variation 1: Code only
+                    code + " " + name,                // Variation 2: Code + Name
+                    name + " repository",             // Variation 3: Name + "repository"
+                    name + " project"                 // Variation 4: Name + "project"
+                };
+
+                addLog(String.format("[%d/%d] >>> Processing %s: %s", i + 1, allCourses.size(), code, name));
+                
+                for (int v = 0; v < variations.length; v++) {
+                    String query = variations[v];
+                    try {
+                        addLog(String.format("  (%d/4) Searching: \"%s\"", v + 1, query));
+                        List<RepoCandidateResponse> found = scanCourse(course.getId(), query, existingUrls);
+                        if (!found.isEmpty()) {
+                            addLog("    + Found " + found.size() + " new candidates");
+                            totalFound += found.size();
+                        }
+                        
+                        // Essential delay to respect GitHub Search API (authenticated limit: 30 requests/min)
+                        Thread.sleep(2500);
+                    } catch (Exception e) {
+                        addLog("    !! Error with variation \"" + query + "\": " + e.getMessage());
                     }
-                    
-                    // Essential delay to respect GitHub Search API (authenticated limit: 30 requests/min)
-                    Thread.sleep(2500);
-                } catch (Exception e) {
-                    addLog("    !! Error with variation \"" + query + "\": " + e.getMessage());
                 }
             }
+            addLog("DEEP Bulk scan completed. Total new candidates found across all variations: " + totalFound);
+        } finally {
+            scanRunning.set(false);
         }
-        addLog("DEEP Bulk scan completed. Total new candidates found across all variations: " + totalFound);
     }
 
     private String readTopics(JsonNode topics) {

@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"java -cp gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain test\",\"description\":\"Test Gradle build after fixing Kotlin compilation errors\"}",
-  "error": "Exit code 1\n> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED\r\n> Task :app:preBuild UP-TO-DATE\r\n> Task :app:preDebugBuild UP-TO-DATE\r\n> Task :app:generateDebugBuildConfig UP-TO-DATE\r\n> Task :app:checkDebugAarMetadata UP-TO-DATE\r\n> Task :app:generateDebugResValues UP-TO-DATE\r\n> Task :app:mapDebugSourceSetPaths UP-TO-DATE\r\n> Task :app:generateDebugResources UP-TO-DATE\r\n> Task :app:mergeDebugResources UP-TO-DATE\r\n> Task :app:packageDebugResources UP-TO-DATE\r\n> Task :app:parseDebugLocal...",
-  "timestamp": "2026-04-30T11:57:01.975Z",
-  "retry_count": 1
-}

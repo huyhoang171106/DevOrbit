@@ -19,6 +19,7 @@ import java.util.List;
 public class CourseRelationshipService {
     private final CourseRelationshipRepository repository;
     private final CourseRepository courseRepository;
+    private final KnowledgeGraphService knowledgeGraphService;
 
     public List<CourseRelationshipResponse> getByCourse(Long courseId) {
         return repository.findByCourseIdOrRelatedCourseIdOrderByCreatedAtAsc(courseId, courseId).stream()
@@ -49,7 +50,9 @@ public class CourseRelationshipService {
                 .relatedCourse(related)
                 .relationType(request.relationType())
                 .build();
-        return toResponse(repository.save(entity));
+        CourseRelationshipResponse response = toResponse(repository.save(entity));
+        knowledgeGraphService.evictGraphCache();
+        return response;
     }
 
     @Transactional
@@ -57,6 +60,7 @@ public class CourseRelationshipService {
         CourseRelationship entity = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Relationship not found: " + id));
         repository.delete(entity);
+        knowledgeGraphService.evictGraphCache();
     }
 
     private CourseRelationshipResponse toResponse(CourseRelationship entity) {

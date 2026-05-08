@@ -14,25 +14,25 @@ export function RepoFilterBar({ techStacks, onFilter }: RepoFilterBarProps) {
   }
 
   return (
-    <div className="mb-6 flex flex-wrap gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <button
         onClick={() => handleClick(null)}
-        className={`rounded-xl px-4 py-1.5 text-sm font-medium transition-all duration-200 cursor-pointer ${
+        className={`px-5 py-2 rounded-xl text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300 cursor-pointer ${
           active === null
-            ? 'bg-amber-400/15 text-amber-400 border border-amber-400/20 shadow-sm shadow-amber-400/10'
-            : 'bg-glass-surface text-ink-muted border border-glass-border hover:bg-glass-surface-hover hover:text-ink'
+            ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/25 border border-emerald-400'
+            : 'bg-glass-surface text-ink-muted border border-glass-border hover:border-emerald-500/30 hover:text-ink'
         }`}
       >
-        All
+        All Nodes
       </button>
       {techStacks.map((stack) => (
         <button
           key={stack}
           onClick={() => handleClick(stack)}
-          className={`rounded-xl px-4 py-1.5 text-sm font-medium transition-all duration-200 cursor-pointer ${
+          className={`px-5 py-2 rounded-xl text-[11px] font-black uppercase tracking-[0.15em] transition-all duration-300 cursor-pointer ${
             active === stack
-              ? 'bg-amber-400/15 text-amber-400 border border-amber-400/20 shadow-sm shadow-amber-400/10'
-              : 'bg-glass-surface text-ink-muted border border-glass-border hover:bg-glass-surface-hover hover:text-ink'
+              ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/25 border border-emerald-400'
+              : 'bg-glass-surface text-ink-muted border border-glass-border hover:border-emerald-500/30 hover:text-ink'
           }`}
         >
           {stack}
@@ -41,3 +41,4 @@ export function RepoFilterBar({ techStacks, onFilter }: RepoFilterBarProps) {
     </div>
   )
 }
+

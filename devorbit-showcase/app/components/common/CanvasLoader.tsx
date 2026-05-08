@@ -37,10 +37,12 @@ const CanvasLoader = (props: { children: React.ReactNode }) => {
   };
 
   useGSAP(() => {
-    if (progress === 100) {
-      gsap.to('.base-canvas', { opacity: 1, duration: 3, delay: 1 });
-    }
-  }, [progress]);
+    gsap.to('.base-canvas', { 
+      opacity: 1, 
+      duration: 1.5, 
+      delay: 0.5 
+    });
+  }, []);
 
   useGSAP(() => {
     gsap.to(ref.current, {
@@ -73,7 +75,7 @@ const CanvasLoader = (props: { children: React.ReactNode }) => {
           <Suspense fallback={null}>
             <ambientLight intensity={0.5} />
 
-            <ScrollControls pages={4} damping={0.4} maxSpeed={1} distance={1} style={{ zIndex: 1 }}>
+            <ScrollControls pages={4} damping={0.4} maxSpeed={1}>
               {props.children}
               <Preloader />
             </ScrollControls>
@@ -84,10 +86,9 @@ const CanvasLoader = (props: { children: React.ReactNode }) => {
         </Canvas>
         <ProgressLoader progress={progress} />
       </div>
-      <AwwardsBadge />
-      <ThemeSwitcher />
-      <ScrollHint />
-    </div>
+        <ThemeSwitcher />
+        <ScrollHint />
+      </div>
   );
 };
 

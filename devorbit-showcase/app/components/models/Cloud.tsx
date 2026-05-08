@@ -17,6 +17,7 @@ const CloudContainer = () => {
         volume={2}
         speed={0.2}
         fade={5}
+        color="#00AEEF"
         />
       <Cloud
         seed={3}
@@ -29,7 +30,9 @@ const CloudContainer = () => {
         scale={1}
         volume={2}
         fade={3}
-        speed={0.1}/>
+        speed={0.1}
+        color="#005696"
+        />
 
       <Cloud
         seed={4}
@@ -41,7 +44,9 @@ const CloudContainer = () => {
         smallestVolume={2}
         scale={2}
         speed={0.2}
-        volume={3}/>
+        volume={3}
+        color="#005696"
+        />
 
       <Cloud
         seed={5}
@@ -54,7 +59,9 @@ const CloudContainer = () => {
         scale={2}
         volume={2}
         fade={0.1}
-        speed={0.1}/>
+        speed={0.1}
+        color="#00AEEF"
+        />
 
       <Cloud
         seed={6}
@@ -67,7 +74,9 @@ const CloudContainer = () => {
         scale={4}
         volume={3}
         fade={0.1}
-        speed={0.1}/>
+        speed={0.1}
+        color="#005696"
+        />
 
       <Cloud
         seed={7}
@@ -80,7 +89,9 @@ const CloudContainer = () => {
         scale={3}
         volume={3}
         fade={0.1}
-        speed={0.1}/>
+        speed={0.1}
+        color="#00AEEF"
+        />
     </Clouds>);
 }
 

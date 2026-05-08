@@ -40,9 +40,9 @@ const Experience = () => {
   });
 
   const getTitle = () => {
-    const title = 'experience'.toUpperCase();
+    const title = 'LỊCH SỬ 20 NĂM'.toUpperCase();
     return title.split('').map((char, i) => {
-      const diff = isMobile ? 0.4 : 0.8;
+      const diff = isMobile ? 0.3 : 0.6;
       return (
         <Text key={i} {...fontProps} position={[i * diff, 2, 1]}>{char}</Text>
       );
@@ -61,14 +61,14 @@ const Experience = () => {
         </group>
 
         <group position={[0, -1, 0]} ref={groupRef}>
-          <GridTile title='WORK AND EDUCATION'
+          <GridTile title='HÀNH TRÌNH UIT'
             id="work"
             color='#b9c6d6'
             textAlign='left'
             position={new THREE.Vector3(isMobile ? -1 : -2, 0, isMobile ? 0.4 : 0)}>
             <Work/>
           </GridTile>
-          <GridTile title='SIDE PROJECTS'
+          <GridTile title='THÀNH TỰU NỔI BẬT'
             id="projects"
             color='#bdd1e3'
             textAlign='right'

@@ -26,27 +26,39 @@ yarn-debug.log*
 yarn-error.log*
 *.log
 
-# GitNexus & Agents
-.gitnexus
-.agent
-.claude
-.codebuddy
-.codex
-.commandcode
+# Agent & Workspace Data
+brain/
+.gsd/
+.agent/
+.claude/
+.gemini/
+.trae/
+.windsurf/
+.omc/
+.codebuddy/
+.codex/
+.commandcode/
 .continue
 .cursor
-.gemini
 .kilo
 .kiro
-.omc
-.opencode
+.sisyphus
+.superpowers
 .playwright-mcp
 .qoder
 .roo
-.sisyphus
-.superpowers
-.trae
-.windsurf
+
+# Build & Cache
+build/
+.gradle/
+target/
+dist/
+node_modules/
+.next/
+*.class
+*.jar
+*.war
+tsconfig.tsbuildinfo
 
 # OS
 Thumbs.db

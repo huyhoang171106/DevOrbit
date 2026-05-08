@@ -73,7 +73,11 @@ public class CourseService {
         return mapToDetail(courseRepository.save(course));
     }
 
-    public void deactivateCourse(Long id) {
+    /**
+     * WARNING: This performs a hard delete. If soft-delete is needed,
+     * add an 'active' column to the courses table first.
+     */
+    public void deleteCourse(Long id) {
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Course not found: " + id));
         courseRepository.delete(course);

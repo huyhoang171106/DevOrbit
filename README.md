@@ -77,7 +77,12 @@ DevOrbit là một hệ thống full-stack được xây dựng nhân dịp kỷ
 
 | Tính năng | Ghi chú |
 |-----------|---------|
-| ViewModel | State đang quản lý trong composable (`remember`), chưa dùng ViewModel |
+| Hilt DI | ✅ Đã có DataModule với Retrofit, OkHttp, Repository injection |
+| ViewModel | ✅ Đã có CourseViewModel và AiTutorViewModel |
+| AI Insights | ✅ Màn hình RepoDetailScreen có AI summary và tutor advice |
+| Login / Register | ❌ Đã xóa khỏi codebase (restructure) |
+| Bookmarks | ❌ Đã xóa khỏi codebase (restructure) |
+| Tech Stack UI | ❌ Models khớp API, nhưng chưa hiển thị trên UI |
 | DI framework | Đang dùng singleton thủ công, chưa có Hilt/Dagger |
 | Gradle wrapper (Linux) | Chỉ có `gradlew.bat`, thiếu `gradlew` cho môi trường Unix |
 
@@ -252,7 +257,7 @@ devorbit/
 | Public browsing | ✅ Hoàn thành | Course list → repo list → tech stack filter → GitHub link |
 | Student auth + bookmark | ✅ Hoàn thành (Phase 2) | Register, login, JWT, bookmark course/repo, list/delete |
 | Web frontend | ✅ Hoàn thành | 10 routes, 9 pages, 9 components, end-to-end với API |
-| Mobile app | ⚠️ Cơ bản hoàn thành | Thiếu bookmark, registration, có lỗi deserialization tech stacks |
+| Mobile app | ⚠️ Cơ bản hoàn thành | Đã có Hilt DI, ViewModel, AI insights. Thiếu màn hình login/register/bookmark (đã xóa trong restructuring). Tech stack models khớp API, còn thiếu UI hiển thị tech stacks. |
 | Infrastructure | ✅ Hoàn thành | Docker Compose 3 services, health checks, nginx proxy |
 | Tests | ⚠️ Backend có, Web/Mobile chưa | 14 tests backend (controller + service), web 0, mobile 0 |
 
@@ -265,11 +270,11 @@ devorbit/
 - ✅ Phase 2 (một phần): Tài khoản sinh viên, bookmark
 
 ### Tương lai gợi ý
-1. Fix mobile deserialization tech stacks
-2. Thêm màn hình đăng ký + bookmark cho mobile
+1. Thêm tech stack UI vào RepoDetailScreen (đã có models, thiếu display)
+2. Thêm lại màn hình đăng ký + bookmark cho mobile (đã xóa trong restructure)
 3. Bổ sung test cho web (Vitest / Playwright)
-4. Thêm ViewModel + DI (Hilt) cho mobile
-5. Knowledge graph và roadmap
+4. Knowledge graph và roadmap
+5. Ghi chú cá nhân (notes)
 6. Ghi chú cá nhân (notes)
 7. Vote / đánh giá repository
 8. Lịch quét GitHub định kỳ

@@ -62,6 +62,6 @@ React web frontend for the DevOrbit platform, providing user interfaces for both
 - Vite - Build tool
 - Tailwind CSS - Styling
 - React Router DOM - Navigation
-- Axios - HTTP client (likely in api.ts)
+- Native fetch API - HTTP client (src/lib/api.ts)
 
 <!-- MANUAL: -->

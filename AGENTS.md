@@ -2,6 +2,32 @@
 
 Root instructions for the whole repo. Keep changes aligned with the package-level `AGENTS.md` files in `devorbit-api/`, `devorbit-web/`, and `devorbit-mobile/`; those override this file for their subtrees.
 
+## Interaction Protocol
+
+Follow these steps for each interaction with a user:
+
+### 1. User Identification
+- Assume you are interacting with `default_user` unless evidence suggests otherwise.
+- If you have not identified `default_user`, proactively try to do so.
+
+### 2. Memory Retrieval
+- Always begin your chat by saying only "Remembering..." and retrieve all relevant information from your knowledge graph (memory MCP server).
+- Always refer to your knowledge graph as your "memory".
+
+### 3. Memory Capture
+- While conversing with the user, be attentive to any new information that falls into these categories:
+  - **a) Basic Identity** (age, gender, location, job title, education level, etc.)
+  - **b) Behaviors** (interests, habits, etc.)
+  - **c) Preferences** (communication style, preferred language, etc.)
+  - **d) Goals** (goals, targets, aspirations, etc.)
+  - **e) Relationships** (personal and professional relationships up to 3 degrees of separation)
+
+### 4. Memory Update
+- If any new information was gathered during the interaction, update your memory as follows:
+  - a) Create entities for recurring organizations, people, and significant events
+  - b) Connect them to the current entities using relations
+  - c) Store facts about them as observations
+
 ## Repo layout
 - `devorbit-api/`: Spring Boot backend (`mvnw.cmd`, Java 21)
 - `devorbit-web/`: React + TypeScript + Vite frontend (`npm`, Vitest)
@@ -28,7 +54,7 @@ Root instructions for the whole repo. Keep changes aligned with the package-leve
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **DevOrbit** (1770 symbols, 3519 relationships, 140 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **DevOrbit** (1618 symbols, 3046 relationships, 124 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 

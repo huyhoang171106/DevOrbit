@@ -39,8 +39,8 @@ public class AdminCourseController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deactivate(@PathVariable Long id) {
-        courseService.deactivateCourse(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        courseService.deleteCourse(id);
         return ResponseEntity.noContent().build();
     }
 }

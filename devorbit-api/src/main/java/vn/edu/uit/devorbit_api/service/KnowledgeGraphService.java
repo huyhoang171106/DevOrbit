@@ -24,12 +24,12 @@ public class KnowledgeGraphService {
         List<CourseSummaryResponse> courses = courseService.getActiveCourseSummaries();
         List<CourseRelationshipResponse> relationships = relationshipService.getAll();
 
-        // Build nodes with default level 0
-        List<KnowledgeGraphResponse.GraphNode> nodes = courses.stream()
+        // Build nodes with default level 0 and score 0
+        List<KnowledgeGraphResponse.GraphNode> initialNodes = courses.stream()
             .map(c -> new KnowledgeGraphResponse.GraphNode(
                 c.id(), c.name(), c.code(),
                 12.0 + (c.repoCount() != null ? c.repoCount() * 1.5 : 0),
-                0
+                0, 0.0
             ))
             .collect(Collectors.toList());
 
@@ -41,17 +41,21 @@ public class KnowledgeGraphService {
             .collect(Collectors.toList());
 
         // Calculate topological levels using Kahn's algorithm (BFS) — O(V + E)
-        Map<Long, Integer> levels = calculateLevels(nodes, links);
+        Map<Long, Integer> levels = calculateLevels(initialNodes, links);
 
-        // Attach computed levels to nodes
-        List<KnowledgeGraphResponse.GraphNode> nodesWithLevels = nodes.stream()
+        // Calculate Impact Scores (GOD tier simulation)
+        Map<Long, Double> impactScores = calculateImpactScores(initialNodes, links);
+
+        // Attach computed levels and scores to nodes
+        List<KnowledgeGraphResponse.GraphNode> nodesWithMetadata = initialNodes.stream()
             .map(n -> new KnowledgeGraphResponse.GraphNode(
                 n.id(), n.name(), n.code(), n.val(),
-                levels.getOrDefault(n.id(), 0)
+                levels.getOrDefault(n.id(), 0),
+                impactScores.getOrDefault(n.id(), 0.0)
             ))
             .collect(Collectors.toList());
 
-        return new KnowledgeGraphResponse(nodesWithLevels, links);
+        return new KnowledgeGraphResponse(nodesWithMetadata, links);
     }
 
     /**
@@ -121,5 +125,82 @@ public class KnowledgeGraphService {
         }
 
         return levels;
+    }
+
+    /**
+     * Calculates the impact score for each node based on the user's formula:
+     * impact = unlocked_courses * 0.4 + downstream_depth * 0.3 + bottleneck_factor * 0.3
+     */
+    private Map<Long, Double> calculateImpactScores(
+            List<KnowledgeGraphResponse.GraphNode> nodes,
+            List<KnowledgeGraphResponse.GraphLink> links) {
+
+        Map<Long, List<Long>> adjacency = new HashMap<>();
+        Map<Long, Integer> outDegree = new HashMap<>();
+
+        for (KnowledgeGraphResponse.GraphNode node : nodes) {
+            adjacency.put(node.id(), new ArrayList<>());
+            outDegree.put(node.id(), 0);
+        }
+
+        for (KnowledgeGraphResponse.GraphLink link : links) {
+            if (link.type() != CourseRelationType.PREREQUISITE) continue;
+            if (!adjacency.containsKey(link.source()) || !adjacency.containsKey(link.target())) continue;
+            adjacency.get(link.source()).add(link.target());
+            outDegree.merge(link.source(), 1, Integer::sum);
+        }
+
+        Map<Long, Double> rawScores = new HashMap<>();
+        double maxRaw = 0.1; // Prevent division by zero
+
+        for (KnowledgeGraphResponse.GraphNode node : nodes) {
+            int unlockedCount = countReachable(node.id(), adjacency);
+            int depth = calculateMaxDepth(node.id(), adjacency, new HashMap<>());
+            int bottleneck = outDegree.get(node.id());
+
+            double score = (unlockedCount * 0.4) + (depth * 0.3) + (bottleneck * 0.3);
+            rawScores.put(node.id(), score);
+            maxRaw = Math.max(maxRaw, score);
+        }
+
+        // Normalize to 0.0 - 10.0
+        Map<Long, Double> normalized = new HashMap<>();
+        for (Map.Entry<Long, Double> entry : rawScores.entrySet()) {
+            normalized.put(entry.getKey(), (entry.getValue() / maxRaw) * 10.0);
+        }
+
+        return normalized;
+    }
+
+    private int countReachable(Long startNodeId, Map<Long, List<Long>> adjacency) {
+        Set<Long> visited = new HashSet<>();
+        Queue<Long> queue = new LinkedList<>();
+        queue.add(startNodeId);
+        visited.add(startNodeId);
+
+        int count = 0;
+        while (!queue.isEmpty()) {
+            Long current = queue.poll();
+            for (Long neighbor : adjacency.getOrDefault(current, List.of())) {
+                if (!visited.contains(neighbor)) {
+                    visited.add(neighbor);
+                    queue.add(neighbor);
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    private int calculateMaxDepth(Long nodeId, Map<Long, List<Long>> adjacency, Map<Long, Integer> memo) {
+        if (memo.containsKey(nodeId)) return memo.get(nodeId);
+
+        int max = 0;
+        for (Long neighbor : adjacency.getOrDefault(nodeId, List.of())) {
+            max = Math.max(max, 1 + calculateMaxDepth(neighbor, adjacency, memo));
+        }
+
+        memo.put(nodeId, max);
+        return max;
     }
 }

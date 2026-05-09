@@ -7,8 +7,8 @@
 ---
 
 **Project:** DevOrbit
-**Generated:** 2026-05-07 23:44:54
-**Category:** Luxury/Premium Brand
+**Generated:** 2026-05-09 17:54:59
+**Category:** Pet Tech App
 
 ---
 
@@ -18,25 +18,19 @@
 
 | Role | Hex | CSS Variable |
 |------|-----|--------------|
-| Primary | `#7C3AED` | `--color-primary` |
-| Secondary | `#A78BFA` | `--color-secondary` |
-| CTA/Accent | `#F43F5E` | `--color-cta` |
-| Background | `#0F0F23` | `--color-background` |
-| Text | `#E2E8F0` | `--color-text` |
+| Primary | `#E11D48` | `--color-primary` |
+| Secondary | `#FB7185` | `--color-secondary` |
+| CTA/Accent | `#2563EB` | `--color-cta` |
+| Background | `#FFF1F2` | `--color-background` |
+| Text | `#881337` | `--color-text` |
 
-**Color Notes:** Neon purple + rose action
+**Color Notes:** Vibrant rose + engagement blue
 
 ### Typography
 
-- **Heading Font:** EB Garamond
-- **Body Font:** Crimson Text
-- **Mood:** academic, old-school, university, research, serious, traditional
-- **Google Fonts:** [EB Garamond + Crimson Text](https://fonts.google.com/share?selection.family=Crimson+Text:wght@400;600;700|EB+Garamond:wght@400;500;600;700;800)
-
-**CSS Import:**
-```css
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=EB+Garamond:wght@400;500;600;700;800&display=swap');
-```
+- **Heading Font:** Inter
+- **Body Font:** Inter
+- **Mood:** Friendly + Playful typography
 
 ### Spacing Variables
 
@@ -68,7 +62,7 @@
 ```css
 /* Primary Button */
 .btn-primary {
-  background: #F43F5E;
+  background: #2563EB;
   color: white;
   padding: 12px 24px;
   border-radius: 8px;
@@ -85,8 +79,8 @@
 /* Secondary Button */
 .btn-secondary {
   background: transparent;
-  color: #7C3AED;
-  border: 2px solid #7C3AED;
+  color: #E11D48;
+  border: 2px solid #E11D48;
   padding: 12px 24px;
   border-radius: 8px;
   font-weight: 600;
@@ -99,7 +93,7 @@
 
 ```css
 .card {
-  background: #0F0F23;
+  background: #FFF1F2;
   border-radius: 12px;
   padding: 24px;
   box-shadow: var(--shadow-md);
@@ -125,9 +119,9 @@
 }
 
 .input:focus {
-  border-color: #7C3AED;
+  border-color: #E11D48;
   outline: none;
-  box-shadow: 0 0 0 3px #7C3AED20;
+  box-shadow: 0 0 0 3px #E11D4820;
 }
 ```
 
@@ -153,13 +147,13 @@
 
 ## Style Guidelines
 
-**Style:** Liquid Glass
+**Style:** Claymorphism
 
-**Keywords:** Flowing glass, morphing, smooth transitions, fluid effects, translucent, animated blur, iridescent, chromatic aberration
+**Keywords:** Soft 3D, chunky, playful, toy-like, bubbly, thick borders (3-4px), double shadows, rounded (16-24px)
 
-**Best For:** Premium SaaS, high-end e-commerce, creative platforms, branding experiences, luxury portfolios
+**Best For:** Educational apps, children's apps, SaaS platforms, creative tools, fun-focused, onboarding, casual games
 
-**Key Effects:** Morphing elements (SVG/CSS), fluid animations (400-600ms curves), dynamic blur (backdrop-filter), color transitions
+**Key Effects:** Inner+outer shadows (subtle, no hard lines), soft press (200ms ease-out), fluffy elements, smooth transitions
 
 ### Page Pattern
 
@@ -176,8 +170,8 @@
 
 ## Anti-Patterns (Do NOT Use)
 
-- ❌ Cheap visuals
-- ❌ Fast animations
+- ❌ Generic design
+- ❌ No personality
 
 ### Additional Forbidden Patterns
 

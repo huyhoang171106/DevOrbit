@@ -56,18 +56,18 @@ export function AdminScanPage() {
   }, [logs])
 
   async function handleScanAll() {
-    if (!window.confirm('This will scan all courses on GitHub. It takes about 2-3 minutes to finish in the background. Continue?')) return
+    if (!window.confirm('Hành động này sẽ quét tất cả các môn học trên GitHub. Quá trình này mất khoảng 2-3 phút để hoàn thành trong nền. Tiếp tục?')) return
 
     setBulkScanning(true)
     setError(null)
     setSuccessMessage(null)
-    setLogs(['[System] Initializing connection...'])
+    setLogs(['[Hệ thống] Đang khởi tạo kết nối...'])
 
     try {
       await apiAdminPost('/api/admin/github/scan-all', token, {})
-      setSuccessMessage('Bulk scan started! You can track the progress in the console below.')
+      setSuccessMessage('Đã bắt đầu quét toàn bộ! Bạn có thể theo dõi tiến độ trong bảng điều khiển bên dưới.')
     } catch (err) {
-      setError('Failed to start bulk scan.')
+      setError('Không thể bắt đầu quét toàn bộ.')
       setBulkScanning(false)
       console.error(err)
     }
@@ -93,7 +93,7 @@ export function AdminScanPage() {
 
       setCandidates(mappedResults)
     } catch (err) {
-      setError('Scan failed.')
+      setError('Quét thất bại.')
       console.error(err)
     } finally {
       setScanning(false)
@@ -104,10 +104,10 @@ export function AdminScanPage() {
     <div className="mx-auto max-w-2xl pb-20">
       <div className="mb-8 flex items-start justify-between">
         <div>
-          <p className="section-subtitle mb-2">Discovery</p>
-          <h1 className="page-title">Scan GitHub for Repositories</h1>
+          <p className="section-subtitle mb-2">Khám phá</p>
+          <h1 className="page-title">Quét GitHub tìm Repository</h1>
           <p className="mt-2 text-sm text-ink-muted">
-            Search GitHub for repositories related to a specific course.
+            Tìm kiếm các repository trên GitHub liên quan đến một môn học cụ thể.
           </p>
         </div>
         <button
@@ -125,7 +125,7 @@ export function AdminScanPage() {
               <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
             </svg>
           )}
-          Scan All Courses
+          Scan toàn bộ môn học
         </button>
       </div>
 
@@ -186,7 +186,7 @@ export function AdminScanPage() {
         <div className="mt-6 rounded-2xl border border-glass-border bg-glass-surface overflow-hidden">
           <div className="px-5 py-3.5 border-b border-glass-border">
             <h2 className="text-sm font-semibold text-ink-secondary">
-              Found {candidates.length} candidate{candidates.length > 1 ? 's' : ''}
+              Tìm thấy {candidates.length} ứng viên
             </h2>
           </div>
           <ul className="divide-y divide-glass-border">
@@ -221,7 +221,7 @@ export function AdminScanPage() {
                   rel="noopener noreferrer"
                   className="ml-4 flex-shrink-0 text-xs text-cyan-400 hover:text-cyan-300 transition-colors inline-flex items-center gap-1"
                 >
-                  View
+                  Xem
                   <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" />
                   </svg>
@@ -239,7 +239,7 @@ export function AdminScanPage() {
             <path d="M21 21l-4.35-4.35" />
           </svg>
           <p className="text-sm text-ink-muted">
-            No candidates yet. Run a scan to find repositories.
+            Chưa có ứng viên nào. Hãy chạy scan để tìm repository.
           </p>
         </div>
       )}

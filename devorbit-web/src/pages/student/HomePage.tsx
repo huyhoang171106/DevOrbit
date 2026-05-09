@@ -53,7 +53,7 @@ export function HomePage() {
 
             <div className="clay-card-hover group relative bg-clay-surface border-[4px] border-clay-border overflow-hidden aspect-[4/5] flex flex-col">
               <div className="h-full bg-blue-500 p-10 flex flex-col justify-end border-b-[4px] border-clay-border">
-                <h3 className="text-[48px] font-black text-white leading-[0.8] italic uppercase">REVIEW</h3>
+                <h3 className="text-[48px] font-black text-white leading-[0.8] italic uppercase">ĐÁNH GIÁ</h3>
                 <div className="mt-4 text-[12px] font-black uppercase tracking-[0.2em] text-white/70">Quy trình kiểm duyệt</div>
               </div>
               <div className="h-24 bg-clay-surface flex items-center justify-center">
@@ -124,7 +124,7 @@ export function HomePage() {
       {/* Discovery section */}
       <section className="mx-auto max-w-[1440px] px-[32px] py-[160px] bg-clay-bg border-t-[4px] border-clay-border">
         <div className="text-center mb-24">
-          <div className="text-clay-primary font-black uppercase tracking-[0.4em] mb-4 text-[14px]">Live Orbit Feed</div>
+          <div className="text-clay-primary font-black uppercase tracking-[0.4em] mb-4 text-[14px]">Dòng thời gian mới nhất</div>
           <h2 className="text-[64px] font-black uppercase italic text-clay-text">KHÁM PHÁ MỚI NHẤT</h2>
         </div>
         <DiscoveryFeed />

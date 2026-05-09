@@ -27,12 +27,14 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
     color: "white",
     anchorX: textAlign,
     fillOpacity: 2 - 2 * diff,
+    lineHeight: 1.2,
+    letterSpacing: -0.02,
   }), [textAlign, diff]);
 
   const titleProps = useMemo(() => ({
     ...textProps,
     fontSize: 0.6,
-    maxWidth: 3,
+    maxWidth: 10,
   }), [textProps]);
 
   return (
@@ -42,19 +44,19 @@ const TimelinePoint = ({ point, diff }: { point: WorkTimelinePoint, diff: number
         <Edges color="white" lineWidth={1.5} />
       </Box>
       <group>
-        <group position={getPoint}>
-          <Text {...textProps} fontSize={0.3} position={[-diff / 2, 0.4, 0]}>
-            {point.year}
-          </Text>
-          <group position={[0, -0.2, 0]}>
-            <Text {...titleProps} fontSize={0.6} maxWidth={4} position={[0, -diff / 2, 0]} anchorY="top">
-              {point.title}
+          <group position={getPoint}>
+            <Text {...textProps} font="./dancing-script.ttf" fontSize={0.3} position={[-diff / 2, 0.4, 0]}>
+              {point.year}
             </Text>
-            <Text {...textProps} fontSize={0.25} position={[0, -1.2 - diff, 0]} anchorY="top">
-              {point.subtitle}
-            </Text>
+            <group position={[0, -diff, 0]}>
+              <Text {...titleProps} font="./dancing-script.ttf" anchorY="top" position={[0, 0, 0]}>
+                {point.title}
+              </Text>
+              <Text {...textProps} font="./dancing-script.ttf" fontSize={0.25} maxWidth={10} position={[0, -0.8, 0]} anchorY="top">
+                {point.subtitle}
+              </Text>
+            </group>
           </group>
-        </group>
       </group>
     </group>
   );

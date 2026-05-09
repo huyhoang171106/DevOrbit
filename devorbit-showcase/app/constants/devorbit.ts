@@ -1,0 +1,68 @@
+import { DevOrbitFeature } from "../types";
+
+export const DEVORBIT_FEATURES: DevOrbitFeature[] = [
+  {
+    title: 'Course Catalog',
+    subtitle: 'DANH MỤC MÔN HỌC',
+    description: 'Tra cứu toàn bộ môn học UIT kèm kho mã nguồn tham khảo, lọc theo mã số hoặc tên môn.',
+    icon: '📚',
+    color: '#10b981',
+    gradient: '#10b981 → #059669',
+  },
+  {
+    title: 'Repo Directory',
+    subtitle: 'KHO MÃ NGUỒN',
+    description: 'Hàng ngàn repository được phân loại theo môn học, hiển thị chi tiết tech stack và đánh giá.',
+    icon: '💻',
+    color: '#6366f1',
+    gradient: '#6366f1 → #4f46e5',
+  },
+  {
+    title: 'Knowledge Graph',
+    subtitle: 'ĐỒ THỊ TRI THỨC',
+    description: 'Trực quan hoá mạng lưới môn học, xem nhanh các mối quan hệ tiên quyết và kiến thức bổ trợ.',
+    icon: '🧠',
+    color: '#8b5cf6',
+    gradient: '#8b5cf6 → #7c3aed',
+  },
+  {
+    title: 'AI Tutor',
+    subtitle: 'TRỢ LÝ THÔNG MINH',
+    description: 'AI phân tích mã nguồn và đưa ra lộ trình học tập, giải thích logic phức tạp tức thì.',
+    icon: '🤖',
+    color: '#f59e0b',
+    gradient: '#f59e0b → #d97706',
+  },
+  {
+    title: 'Discovery Feed',
+    subtitle: 'KHÁM PHÁ XU HƯỚNG',
+    description: 'Cập nhật repo mới nhất và công nghệ đang thịnh hành trong cộng đồng sinh viên UIT.',
+    icon: '✨',
+    color: '#22d3ee',
+    gradient: '#22d3ee → #06b6d4',
+  },
+  {
+    title: 'Learning Roadmaps',
+    subtitle: 'LỘ TRÌNH HỌC TẬP',
+    description: 'Xây dựng kế hoạch học tập cá nhân hóa, gắn liền với các dự án thực tế qua từng giai đoạn.',
+    icon: '🗺️',
+    color: '#f43f5e',
+    gradient: '#f43f5e → #e11d48',
+  },
+  {
+    title: 'Bookmarks',
+    subtitle: 'KHO LƯU TRỮ CÁ NHÂN',
+    description: 'Lưu lại các môn học và repository quan trọng để truy cập nhanh chóng bất cứ lúc nào.',
+    icon: '🔖',
+    color: '#14b8a6',
+    gradient: '#14b8a6 → #0d9488',
+  },
+  {
+    title: 'Admin Pipeline',
+    subtitle: 'KIỂM DUYỆT NỘI DUNG',
+    description: 'Hệ thống quản lý và phê duyệt repository đóng góp từ cộng đồng, đảm bảo chất lượng học thuật.',
+    icon: '⚙️',
+    color: '#f97316',
+    gradient: '#f97316 → #ea580c',
+  },
+];

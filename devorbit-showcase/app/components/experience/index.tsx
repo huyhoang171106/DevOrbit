@@ -15,7 +15,7 @@ const Experience = () => {
   const isActive = usePortalStore((state) => !!state.activePortalId);
 
   const fontProps = {
-    font: "./soria-font.ttf",
+    font: "./dancing-script.ttf",
     fontSize: 0.4,
     color: 'white',
   };
@@ -68,9 +68,9 @@ const Experience = () => {
             position={new THREE.Vector3(isMobile ? -1 : -2, 0, isMobile ? 0.4 : 0)}>
             <Work/>
           </GridTile>
-          <GridTile title='THÀNH TỰU NỔI BẬT'
+          <GridTile title='HỆ SINH THÁI DEVORBIT'
             id="projects"
-            color='#bdd1e3'
+            color='#a5b4fc'
             textAlign='right'
             position={new THREE.Vector3(isMobile ? 1 : 2, 0, 0)}>
             <Projects/>

@@ -128,7 +128,7 @@ const GridTile = (props: GridTileProps) => {
   }
 
   const fontProps: Partial<TextProps> = {
-    font: "./soria-font.ttf",
+    font: "./dancing-script.ttf",
     maxWidth: 2,
     anchorX: 'center',
     anchorY: 'bottom',

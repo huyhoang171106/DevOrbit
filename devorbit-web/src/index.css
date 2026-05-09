@@ -4,35 +4,30 @@
 
 @layer base {
   :root {
-    --color-cosmic-base: #f0ede8;
-    --color-cosmic-surface: #ffffff;
-    --color-cosmic-elevated: #fafafa;
-    --color-cosmic-border: #e2ddd6;
-    --color-cosmic-border-hover: #d4cfc8;
-    --color-ink: #1a1a2e;
-    --color-ink-secondary: #6b6580;
-    --color-ink-muted: #9f99b0;
-    --color-glass-border: rgba(0, 0, 0, 0.08);
-    --color-glass-border-hover: rgba(16, 185, 129, 0.4);
-    --color-glass-surface: rgba(0, 0, 0, 0.03);
-    --color-glass-surface-hover: rgba(0, 0, 0, 0.06);
-    --color-glass-surface-raised: rgba(0, 0, 0, 0.02);
-  }
+    /* DARK MODE ONLY — Consolidated Claymorphism + Glass/Cosmic Palette */
+    --color-clay-bg: #0a0e1a;
+    --color-clay-surface: #111827;
+    --color-clay-primary: #2563eb;
+    --color-clay-secondary: #1d4ed8;
+    --color-clay-accent: #10b981;
+    --color-clay-text: #f1f5f9;
+    --color-clay-text-muted: #cbd5e1;
+    --color-clay-border: #334155;
+    --color-clay-shadow-outer: rgba(0, 0, 0, 0.6);
+    --color-clay-shadow-inner: rgba(255, 255, 255, 0.05);
+    --clay-radius: 20px;
+    --clay-border-width: 3px;
 
-  .dark {
-    --color-cosmic-base: #070b15;
-    --color-cosmic-surface: #0d1225;
-    --color-cosmic-elevated: #141b33;
-    --color-cosmic-border: #1e2848;
-    --color-cosmic-border-hover: #2a3a66;
-    --color-ink: #e2e8f0;
-    --color-ink-secondary: #94a3b8;
-    --color-ink-muted: #64748b;
-    --color-glass-border: rgba(255, 255, 255, 0.08);
-    --color-glass-border-hover: rgba(16, 185, 129, 0.3);
-    --color-glass-surface: rgba(255, 255, 255, 0.04);
-    --color-glass-surface-hover: rgba(255, 255, 255, 0.07);
-    --color-glass-surface-raised: rgba(255, 255, 255, 0.03);
+    /* Glass/Cosmic aliases — map to clay palette for consistency */
+    --color-glass-surface: var(--color-clay-surface);
+    --color-glass-surface-raised: #1e293b;
+    --color-glass-surface-hover: #1e293b;
+    --color-glass-border: var(--color-clay-border);
+    --color-cosmic-surface: var(--color-clay-bg);
+    --color-cosmic-elevated: var(--color-glass-surface-raised);
+    --color-ink: var(--color-clay-text);
+    --color-ink-secondary: var(--color-clay-text-muted);
+    --color-ink-muted: #94a3b8;
   }
 
   html {
@@ -40,135 +35,219 @@
   }
 
   body {
-    @apply bg-cosmic-base font-body text-ink antialiased;
-    color-scheme: light;
-  }
-
-  .dark body {
+    @apply bg-clay-bg font-body text-clay-text antialiased;
     color-scheme: dark;
   }
 }
 
 @layer components {
+  /* === Core Claymorphism Classes === */
+
+  .clay-card {
+    @apply rounded-[24px] border-[3px] border-clay-border bg-clay-surface transition-all duration-300;
+    box-shadow: 8px 8px 0px 0px var(--color-clay-shadow-outer),
+      inset 4px 4px 8px 0px var(--color-clay-shadow-inner);
+  }
+
+  .clay-card-hover {
+    @apply clay-card hover:-translate-y-1 hover:translate-x-1;
+    box-shadow: 8px 8px 0px 0px var(--color-clay-shadow-outer),
+      inset 4px 4px 8px 0px var(--color-clay-shadow-inner);
+  }
+
+  .clay-card-hover:hover {
+    box-shadow: 12px 12px 0px 0px var(--color-clay-shadow-outer),
+      inset 4px 4px 8px 0px var(--color-clay-shadow-inner);
+  }
+
+  .clay-card-vibrant {
+    @apply clay-card bg-clay-primary text-white border-clay-border;
+    box-shadow: 8px 8px 0px 0px var(--color-clay-shadow-outer),
+      inset 4px 4px 8px 0px var(--color-clay-shadow-inner);
+  }
+
+  /* === Glass/Cosmic Backward Compat === */
+
   .glass-card {
-    @apply rounded-2xl border border-glass-border bg-glass-surface backdrop-blur-[20px] shadow-sm transition-all duration-300;
+    @apply rounded-[16px] border border-glass-border bg-glass-surface transition-all duration-300;
   }
 
   .glass-card-hover {
-    @apply glass-card hover:border-glass-border-hover hover:bg-glass-surface-hover hover:shadow-lg;
+    @apply glass-card hover:bg-glass-surface-hover hover:-translate-y-0.5;
+    border-color: transparent;
+  }
+
+  .glass-card-hover:hover {
+    border-color: rgba(37, 99, 235, 0.3);
   }
 
   .glass-card-glow {
-    @apply glass-card relative overflow-hidden;
+    @apply glass-card;
+    box-shadow: 0 4px 20px -8px rgba(16, 185, 129, 0.08);
   }
 
-  .glass-card-glow::before {
-    content: '';
-    @apply absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-500;
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(99, 102, 241, 0.04) 50%, transparent 100%);
+  .bg-glass-surface {
+    background-color: var(--color-glass-surface);
   }
 
-  .glass-card-glow:hover::before {
-    @apply opacity-100;
+  .bg-glass-surface-raised {
+    background-color: var(--color-glass-surface-raised);
+  }
+
+  .bg-glass-surface-hover {
+    background-color: var(--color-glass-surface-hover);
+  }
+
+  .border-glass-border {
+    border-color: var(--color-glass-border);
+  }
+
+  .bg-cosmic-surface {
+    background-color: var(--color-cosmic-surface);
+  }
+
+  .bg-cosmic-elevated {
+    background-color: var(--color-cosmic-elevated);
+  }
+
+  .text-ink {
+    color: var(--color-ink);
+  }
+
+  .text-ink-secondary {
+    color: var(--color-ink-secondary);
+  }
+
+  .text-ink-muted {
+    color: var(--color-ink-muted);
+  }
+
+  .text-clay-text {
+    color: var(--color-clay-text);
+  }
+
+  .text-clay-text-muted {
+    color: var(--color-clay-text-muted);
+  }
+
+  .bg-clay-bg {
+    background-color: var(--color-clay-bg);
+  }
+
+  .bg-clay-surface {
+    background-color: var(--color-clay-surface);
+  }
+
+  .bg-clay-primary {
+    background-color: var(--color-clay-primary);
+  }
+
+  .border-clay-border {
+    border-color: var(--color-clay-border);
   }
 
   /* Typography */
   .hero-display {
-    @apply font-heading text-[72px] font-bold leading-[1.05] tracking-[-2px] text-ink;
+    @apply font-heading text-[72px] font-extrabold leading-[1.25] tracking-normal text-clay-text uppercase;
+    text-shadow: 4px 4px 0px var(--color-clay-secondary);
   }
 
   .display-lg {
-    @apply font-heading text-[56px] font-bold leading-[1.10] tracking-[-1.5px] text-ink;
+    @apply font-heading text-[56px] font-extrabold leading-[1.25] tracking-normal text-clay-text;
   }
 
   .display-sm {
-    @apply font-heading text-[32px] font-bold leading-[1.20] tracking-[-0.5px] text-ink;
+    @apply font-heading text-[32px] font-extrabold leading-[1.3] tracking-normal text-clay-text;
   }
 
   .heading-1 {
-    @apply font-heading text-[48px] font-bold leading-[1.10] tracking-[-1px] text-ink;
+    @apply font-heading text-[48px] font-extrabold leading-[1.2] tracking-normal text-clay-text;
   }
 
   .heading-2 {
-    @apply font-heading text-[36px] font-bold leading-[1.20] tracking-[-0.5px] text-ink;
+    @apply font-heading text-[36px] font-extrabold leading-[1.2] tracking-normal text-clay-text;
   }
 
   .heading-3 {
-    @apply font-heading text-[28px] font-bold leading-[1.25] text-ink;
+    @apply font-heading text-[28px] font-bold leading-[1.3] text-clay-text;
   }
 
   .heading-4 {
-    @apply font-heading text-[22px] font-bold leading-[1.30] text-ink;
+    @apply font-heading text-[22px] font-bold leading-[1.4] text-clay-text;
   }
 
   .heading-5 {
-    @apply font-heading text-[18px] font-bold leading-[1.40] text-ink;
+    @apply font-heading text-[18px] font-bold leading-[1.40] text-clay-text;
   }
 
   .subtitle {
-    @apply font-heading text-[18px] leading-[1.50] text-ink-secondary;
+    @apply font-heading text-[20px] font-semibold leading-[1.50] text-clay-text-muted;
   }
 
   .body-md {
-    @apply text-[16px] leading-[1.50] text-ink-secondary;
+    @apply text-[16px] font-semibold leading-[1.60] text-clay-text-muted;
   }
 
   .body-sm {
-    @apply text-[14px] leading-[1.50] text-ink-secondary;
-  }
-
-  .body-sm-medium {
-    @apply text-[14px] font-medium leading-[1.50] text-ink-secondary;
+    @apply text-[15px] font-semibold leading-[1.60] text-clay-text-muted;
   }
 
   /* Buttons */
   .btn-primary {
-    @apply inline-flex items-center justify-center bg-emerald-500 text-white font-semibold rounded-full px-6 py-3 text-[14px] transition-all duration-200 hover:bg-emerald-400 hover:shadow-lg hover:shadow-emerald-500/25 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none;
+    @apply inline-flex items-center justify-center bg-clay-primary text-white font-black rounded-2xl px-8 py-4 text-[16px] border-[3px] border-clay-border transition-all duration-200 uppercase tracking-wider;
+    box-shadow: 4px 4px 0px 0px var(--color-clay-shadow-outer);
+  }
+
+  .btn-primary:hover {
+    @apply -translate-y-0.5 translate-x-0.5;
+    box-shadow: none;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center bg-glass-surface text-ink border border-glass-border rounded-full px-6 py-3 text-[14px] font-medium transition-all duration-200 hover:bg-glass-surface-hover active:scale-[0.97];
+    @apply inline-flex items-center justify-center bg-glass-surface text-clay-text border-[3px] border-clay-border rounded-2xl px-8 py-4 text-[16px] font-black transition-all duration-200 uppercase tracking-wider;
+    box-shadow: 4px 4px 0px 0px var(--color-clay-shadow-outer);
+  }
+
+  .btn-secondary:hover {
+    @apply -translate-y-0.5 translate-x-0.5;
+    box-shadow: none;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center text-clay-text font-bold rounded-xl px-4 py-2 text-[14px] transition-all duration-200 hover:bg-glass-surface-hover;
   }
 
   /* Inputs */
   .input-field {
-    @apply w-full rounded-xl border border-glass-border bg-glass-surface-raised px-4 py-3 text-[16px] text-ink placeholder:text-ink-muted transition-all duration-200 focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/20;
+    @apply w-full rounded-2xl border-[3px] border-clay-border bg-clay-surface px-5 py-4 text-[18px] font-bold text-clay-text placeholder:text-ink-muted transition-all duration-200 focus:outline-none;
+    box-shadow: inset 4px 4px 0px 0px rgba(0, 0, 0, 0.2);
   }
 
   .label {
-    @apply mb-1.5 block text-[12px] font-semibold uppercase tracking-wider text-ink-muted;
+    @apply mb-2 block text-[14px] font-black uppercase tracking-widest text-clay-text;
   }
 
-  /* Table helpers */
-  .table-header {
-    @apply text-xs font-semibold uppercase tracking-wider text-ink-muted;
-  }
-
-  .table-cell {
-    @apply text-sm;
-  }
-
-  /* Badge */
+  /* Badges */
   .badge-tag {
-    @apply inline-flex items-center justify-center rounded-md border border-glass-border bg-glass-surface px-2 py-0.5 text-[11px] font-medium text-ink-secondary;
-  }
-
-  /* Mono code text */
-  .code-sm {
-    @apply font-mono text-[12px];
-  }
-
-  /* Tertiary button */
-  .btn-ghost {
-    @apply inline-flex items-center justify-center rounded-full px-4 py-2 text-[13px] font-medium text-ink-secondary transition-all duration-200 hover:bg-glass-surface-hover hover:text-ink active:scale-[0.97];
+    @apply inline-flex items-center justify-center rounded-lg border-[2px] border-clay-border bg-clay-surface px-3 py-1 text-[12px] font-black text-clay-text uppercase;
   }
 
   /* Page title helpers */
   .page-title {
-    @apply font-heading text-[28px] font-bold text-ink leading-tight;
+    @apply font-heading text-[44px] font-extrabold text-clay-text leading-snug uppercase italic tracking-normal;
+    /* Removed text-stroke as it causes rendering issues with Vietnamese fonts */
   }
 
   .section-subtitle {
-    @apply text-[13px] font-semibold uppercase tracking-widest text-emerald-400;
+    @apply text-[14px] font-black uppercase tracking-[0.2em] text-clay-accent mb-4;
+  }
+
+  /* Table helpers */
+  .table-header {
+    @apply text-[13px] font-black uppercase tracking-widest text-clay-text;
+  }
+
+  .table-cell {
+    @apply text-[15px] font-medium text-clay-text-muted;
   }
 }

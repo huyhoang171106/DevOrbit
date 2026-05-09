@@ -7,6 +7,6 @@ public record KnowledgeGraphResponse(
     List<GraphNode> nodes,
     List<GraphLink> links
 ) {
-    public record GraphNode(Long id, String name, String code, double val, int level) {}
+    public record GraphNode(Long id, String name, String code, double val, int level, double impactScore) {}
     public record GraphLink(Long source, Long target, CourseRelationType type) {}
 }

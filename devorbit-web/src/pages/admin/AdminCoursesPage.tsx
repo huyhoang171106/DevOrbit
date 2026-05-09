@@ -102,7 +102,7 @@ export function AdminCoursesPage() {
     <div className="w-full max-w-[1280px] mx-auto px-[32px] py-[64px]">
       <div className="mb-[32px] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="display-sm text-ink mb-1">Courses</h1>
+          <h1 className="display-sm text-clay-text mb-1">Courses</h1>
           <p className="body-sm text-ink-secondary">Manage your course catalog.</p>
         </div>
         <button onClick={openCreate} className="btn-primary self-start">
@@ -137,7 +137,7 @@ export function AdminCoursesPage() {
                     {c.code}
                   </span>
                 </td>
-                <td className="table-cell text-ink py-3 px-4">{c.name}</td>
+                <td className="table-cell text-clay-text py-3 px-4">{c.name}</td>
                 <td className="table-cell text-right py-3 px-4">
                   <div className="flex items-center justify-end gap-2">
                     <button

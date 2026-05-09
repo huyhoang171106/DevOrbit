@@ -1,17 +1,11 @@
 import { GoogleAnalytics } from "@next/third-parties/google";
 import type { Metadata, Viewport } from "next";
-import { Playfair_Display, Be_Vietnam_Pro } from 'next/font/google';
+import { Dancing_Script } from 'next/font/google';
 import "./globals.css";
 
-const playfair = Playfair_Display({
+const dancingScript = Dancing_Script({
   subsets: ['latin', 'vietnamese'],
-  variable: '--font-soria',
-});
-
-const beVietnam = Be_Vietnam_Pro({
-  weight: ['400', '700'],
-  subsets: ['latin', 'vietnamese'],
-  variable: '--font-vercetti',
+  variable: '--font-dancing-script',
 });
 
 export const metadata: Metadata = {
@@ -68,12 +62,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="overscroll-y-none">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&display=swap" rel="stylesheet" />
+      </head>
       <body
-        className={`${playfair.variable} ${beVietnam.variable} font-sans antialiased`}
+        className={`${dancingScript.variable} font-sans antialiased`}
       >
         {children}
+        <GoogleAnalytics gaId={'G-7WD4HM3XRE'}/>
       </body>
-      <GoogleAnalytics gaId={'G-7WD4HM3XRE'}/>
     </html>
   );
 }

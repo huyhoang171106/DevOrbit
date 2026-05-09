@@ -34,7 +34,7 @@ const Hero = () => {
 
   return (
     <>
-      <Text position={[0, 2, -10]} {...fontProps} ref={titleRef}>UIT: 20 Years of Innovation</Text>
+      <Text position={[0, 2, -10]} {...fontProps} font="./dancing-script.ttf" ref={titleRef}>UIT: 20 Years of Innovation</Text>
       <StarsContainer />
       <CloudContainer/>
       <group position={[0, -25, 5.69]}>

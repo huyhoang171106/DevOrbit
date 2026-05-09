@@ -70,3 +70,11 @@ onnxruntime-linux-x64-1.17.1/
 onnxruntime-linux-x64-1.17.1.tgz
 devorbit-api/HELP.md
 devorbit-api/gsd-template/
+
+# Python Cache
+**/__pycache__/
+*.pyc
+
+# Agent Internal
+**/.pi/
+**/.harness-backup/

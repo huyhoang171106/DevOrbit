@@ -88,7 +88,7 @@ export function AdminDashboardPage() {
   return (
     <div className="w-full max-w-[1280px] mx-auto px-[32px] py-[64px]">
       <div className="mb-[40px]">
-        <h1 className="display-sm text-ink mb-2">Admin Dashboard</h1>
+        <h1 className="display-sm text-clay-text mb-2">Admin Dashboard</h1>
         <p className="body-md max-w-[600px]">Manage courses, scan GitHub, review repository candidates, and more.</p>
       </div>
 
@@ -99,10 +99,10 @@ export function AdminDashboardPage() {
             to={l.to}
             className="glass-card-hover p-8 block group cursor-pointer"
           >
-            <div className="inline-flex rounded-full border border-glass-border bg-glass-surface p-3 text-ink mb-4 group-hover:text-emerald-400 transition-colors">
+            <div className="inline-flex rounded-full border border-glass-border bg-glass-surface p-3 text-clay-text mb-4 group-hover:text-emerald-400 transition-colors">
               {l.icon}
             </div>
-            <h2 className="heading-4 text-ink mb-2 group-hover:text-emerald-400 transition-colors">
+            <h2 className="heading-4 text-clay-text mb-2 group-hover:text-emerald-400 transition-colors">
               {l.label}
             </h2>
             <p className="body-sm mb-4">{l.description}</p>

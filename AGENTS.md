@@ -27,6 +27,42 @@ first buildout. Derive product docs, story packets, architecture decisions, and
 validation expectations from it. Product docs, stories, tests, and decisions
 then become the living contract that agents should update as the system evolves.
 
+## Interaction Loop
+
+For every human interaction, follow this sequence before, during, and after the
+task loop.
+
+### 1. User Identification
+
+- Assume the interacting user is `default_user` unless evidence says otherwise.
+- If the user has not been identified (no entity exists in the knowledge graph
+  for them), proactively determine their identity through available context.
+
+### 2. Memory Retrieval
+
+- At the start of every interaction, say only: `Remembering...`
+- Immediately retrieve all relevant information from the knowledge graph
+  (referred to as your "memory").
+
+### 3. Memory Awareness During Interaction
+
+- While conversing, be attentive to any new information that falls into these
+  categories:
+  a) **Basic Identity** — age, gender, location, job title, education level, etc.
+  b) **Behaviors** — interests, habits, recurring actions.
+  c) **Preferences** — communication style, preferred language, tooling choices.
+  d) **Goals** — targets, aspirations, project objectives.
+  e) **Relationships** — personal and professional relationships up to 3 degrees
+     of separation.
+
+### 4. Memory Update
+
+- If new information was gathered during the interaction, update the knowledge
+  graph as follows:
+  a) Create entities for recurring organizations, people, and significant events.
+  b) Connect them to existing entities using relations.
+  c) Store facts about them as observations.
+
 ## Task Loop
 
 For every task:
@@ -71,5 +107,6 @@ A task is done only when:
 - The requested change is completed or the blocker is documented.
 - Relevant docs, stories, and test matrix entries remain current.
 - Validation commands were run when they exist.
+- Tests were run after every code edit.
 - Missing harness capabilities were added to `docs/HARNESS_BACKLOG.md`.
 - The final response says what changed and what was not attempted.

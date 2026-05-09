@@ -8,22 +8,22 @@ type CandidateTableProps = {
 
 export function CandidateTable({ candidates, onApprove, onReject }: CandidateTableProps) {
   return (
-    <div className="glass-card overflow-x-auto border border-glass-border p-0">
+    <div className="glass-card overflow-x-auto border border-clay-border p-0">
       <table className="min-w-full text-sm">
         <thead>
-          <tr className="border-b border-glass-border bg-glass-surface-raised">
-            <th className="table-header text-left font-medium text-ink-secondary py-3 px-4 w-[280px]">Repository</th>
-            <th className="table-header text-left font-medium text-ink-secondary py-3 px-4 w-[100px]">Subject</th>
-            <th className="table-header text-left font-medium text-ink-secondary py-3 px-4 w-[350px]">URL</th>
-            <th className="table-header text-left font-medium text-ink-secondary py-3 px-4 w-[120px]">Status</th>
-            <th className="table-header text-right font-medium text-ink-secondary py-3 px-4 w-[180px]">Actions</th>
+          <tr className="border-b border-clay-border bg-glass-surface-raised">
+            <th className="table-header text-left font-medium text-clay-text-muted py-3 px-4 w-[280px]">Repository</th>
+            <th className="table-header text-left font-medium text-clay-text-muted py-3 px-4 w-[100px]">Subject</th>
+            <th className="table-header text-left font-medium text-clay-text-muted py-3 px-4 w-[350px]">URL</th>
+            <th className="table-header text-left font-medium text-clay-text-muted py-3 px-4 w-[120px]">Status</th>
+            <th className="table-header text-right font-medium text-clay-text-muted py-3 px-4 w-[180px]">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-glass-border bg-cosmic-surface">
+        <tbody className="divide-y divide-clay-border bg-clay-bg">
           {candidates.length === 0 && (
             <tr>
-              <td colSpan={5} className="px-4 py-10 text-center body-sm text-ink-secondary">
-                <svg className="mx-auto mb-2 h-8 w-8 text-ink-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <td colSpan={5} className="px-4 py-10 text-center body-sm text-clay-text-muted">
+                <svg className="mx-auto mb-2 h-8 w-8 text-clay-text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path d="M9 12l2 2 4-4" />
                   <circle cx="12" cy="12" r="10" />
                 </svg>
@@ -34,16 +34,16 @@ export function CandidateTable({ candidates, onApprove, onReject }: CandidateTab
           {candidates.map((c) => (
             <tr key={c.id} className="transition-colors hover:bg-glass-surface-raised">
               <td className="table-cell py-3 px-4 max-w-[280px]">
-                <div className="font-medium text-ink body-sm break-words">{c.githubName}</div>
-                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-ink-secondary">
-                  {c.primaryLanguage && <span className="badge-tag bg-glass-surface text-ink-secondary">{c.primaryLanguage}</span>}
-                  <span className="inline-flex items-center gap-1 text-ink-secondary">
-                    <svg className="h-3 w-3 text-ink-secondary" viewBox="0 0 24 24" fill="currentColor">
+                <div className="font-medium text-clay-text body-sm break-words">{c.githubName}</div>
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-clay-text-muted">
+                  {c.primaryLanguage && <span className="badge-tag bg-clay-surface text-clay-text-muted">{c.primaryLanguage}</span>}
+                  <span className="inline-flex items-center gap-1 text-clay-text-muted">
+                    <svg className="h-3 w-3 text-clay-text-muted" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                     </svg>
                     {c.stars}
                   </span>
-                  <span className="text-ink-secondary">{c.forks} forks</span>
+                  <span className="text-clay-text-muted">{c.forks} forks</span>
                 </div>
               </td>
               <td className="table-cell py-3 px-4">
@@ -52,7 +52,7 @@ export function CandidateTable({ candidates, onApprove, onReject }: CandidateTab
                     {c.courseCode}
                   </span>
                 ) : (
-                  <span className="text-xs text-ink-muted italic">N/A</span>
+                  <span className="text-xs text-clay-text-muted italic">N/A</span>
                 )}
               </td>
               <td className="table-cell py-3 px-4 max-w-[350px]">
@@ -72,8 +72,8 @@ export function CandidateTable({ candidates, onApprove, onReject }: CandidateTab
                 <div className="flex flex-col gap-1">
                   {c.status === 'APPROVED' && <span className="badge-tag w-fit bg-emerald-500/10 text-emerald-400 border-emerald-500/20">{c.status}</span>}
                   {c.status === 'REJECTED' && <span className="badge-tag w-fit bg-red-500/10 text-red-400 border-red-500/30">{c.status}</span>}
-                  {c.status === 'NEW' && <span className="badge-tag w-fit bg-glass-surface text-ink-secondary">{c.status}</span>}
-                  {c.lastPushedAt && <div className="text-[11px] text-ink-secondary">Pushed {new Date(c.lastPushedAt).toLocaleDateString()}</div>}
+                  {c.status === 'NEW' && <span className="badge-tag w-fit bg-clay-surface text-clay-text-muted">{c.status}</span>}
+                  {c.lastPushedAt && <div className="text-[11px] text-clay-text-muted">Pushed {new Date(c.lastPushedAt).toLocaleDateString()}</div>}
                 </div>
               </td>
               <td className="table-cell text-right py-3 px-4">
@@ -90,7 +90,7 @@ export function CandidateTable({ candidates, onApprove, onReject }: CandidateTab
                     </button>
                     <button
                       onClick={() => onReject(c.id)}
-                      className="btn-secondary !py-1.5 !px-3 !text-xs !bg-glass-surface !text-red-400 hover:!bg-red-500/10 border border-red-500/30"
+                      className="btn-secondary !py-1.5 !px-3 !text-xs !bg-clay-surface !text-red-400 hover:!bg-red-500/10 border border-red-500/30"
                     >
                       <svg className="h-3.5 w-3.5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M18 6L6 18M6 6l12 12" />

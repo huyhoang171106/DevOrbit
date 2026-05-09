@@ -19,7 +19,7 @@ implemented until tests or validation evidence exist.
 
 | Story | Contract | Unit | Integration | E2E | Platform | Status | Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| TBD | Add rows when story packets are created | no | no | no | no | planned | none |
+| US-015 | Simulation Engine | pass | pass | no | no | in_progress | [Plan 1.1 Summary](file:///C:/Users/Hoang/.gemini/antigravity/brain/31790508-f06b-45f3-a162-ec4b3b74509b/artifacts/plan_1_1_summary.md) |
 
 ## Evidence Rules
 

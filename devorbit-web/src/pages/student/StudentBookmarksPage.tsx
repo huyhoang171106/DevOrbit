@@ -33,7 +33,7 @@ export function StudentBookmarksPage() {
     <div className="w-full max-w-[1280px] mx-auto px-[32px] py-[64px]">
       <div className="mb-[32px]">
         <p className="body-sm text-emerald-400 mb-[8px] font-medium tracking-wide uppercase">My Learning</p>
-        <h1 className="display-sm text-ink">Bookmarks</h1>
+        <h1 className="display-sm text-clay-text">Bookmarks</h1>
         <p className="mt-[8px] max-w-2xl body-sm text-ink-secondary">
           Your saved Phase-2 learning items. Public browsing remains available without login.
         </p>
@@ -41,10 +41,10 @@ export function StudentBookmarksPage() {
 
       {bookmarks.length === 0 ? (
         <div className="glass-card p-[48px] text-center">
-          <svg className="mx-auto mb-[16px] h-[48px] w-[48px] text-ink-secondary/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <svg className="mx-auto mb-[16px] h-[48px] w-[48px] text-ink-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
           </svg>
-          <p className="body-md font-medium text-ink">No bookmarks yet.</p>
+          <p className="body-md font-medium text-clay-text">No bookmarks yet.</p>
           <p className="mt-1 body-sm text-ink-secondary">Save a course or repository from the catalog.</p>
           <Link to="/courses" className="btn-secondary mt-[24px] inline-flex">
             Browse Courses
@@ -63,7 +63,7 @@ export function StudentBookmarksPage() {
               <span className="badge-tag uppercase tracking-wider font-semibold bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
                 {bookmark.targetType}
               </span>
-              <h2 className="mt-[16px] heading-4 text-ink group-hover:text-emerald-400 transition-colors">
+              <h2 className="mt-[16px] heading-4 text-clay-text group-hover:text-emerald-400 transition-colors">
                 {bookmark.title}
               </h2>
               {bookmark.subtitle && (
@@ -82,7 +82,7 @@ export function StudentBookmarksPage() {
 
       <Link
         to="/courses"
-        className="mt-[32px] inline-flex items-center gap-[6px] rounded-[6px] px-3 py-1.5 body-sm font-medium text-ink-secondary transition-colors hover:bg-glass-surface-raised hover:text-ink"
+        className="mt-[32px] inline-flex items-center gap-[6px] rounded-[6px] px-3 py-1.5 body-sm font-medium text-ink-secondary transition-colors hover:bg-glass-surface-raised hover:text-clay-text"
       >
         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M19 12H5M12 19l-7-7 7-7" />

@@ -13,7 +13,7 @@ export function RepoDetailPage() {
   useEffect(() => {
     if (!repoId) return
     setLoading(true)
-    
+
     Promise.all([
       apiGet<RepoSummary>(`/api/repos/${repoId}`),
       apiGet<AiResponse>(`/api/ai/repo/${repoId}/summary`),
@@ -39,7 +39,7 @@ export function RepoDetailPage() {
           </div>
           <div className="flex flex-col items-center">
             <p className="text-[12px] font-black text-emerald-500 tracking-[0.4em] uppercase mb-2">Analyzing Node</p>
-            <p className="heading-4 text-ink animate-pulse tracking-wide font-bold">RESOURCE SYNCHRONIZATION</p>
+            <p className="heading-4 text-clay-text animate-pulse tracking-wide font-bold">RESOURCE SYNCHRONIZATION</p>
           </div>
         </div>
       </div>
@@ -54,7 +54,7 @@ export function RepoDetailPage() {
             <path d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008h-.008v-.008z" />
           </svg>
         </div>
-        <h1 className="display-sm mb-4">Resource Not Located</h1>
+        <h1 className="display-sm text-clay-text mb-4">Resource Not Located</h1>
         <p className="body-md text-ink-muted mb-10 max-w-sm mx-auto">
           The academic resource node you are looking for does not exist in the current knowledge matrix.
         </p>
@@ -95,7 +95,7 @@ export function RepoDetailPage() {
                     <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.5)]" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Repository Node</span>
                   </div>
-                  <h1 className="hero-display text-4xl md:text-6xl leading-tight tracking-tight">{repo.displayName}</h1>
+                  <h1 className="hero-display !text-4xl md:!text-6xl">{repo.displayName}</h1>
                 </div>
 
                 {repo.stars !== null && repo.stars > 0 && (
@@ -112,7 +112,7 @@ export function RepoDetailPage() {
               </div>
 
               <div className="max-w-3xl mb-12">
-                <p className="body-md text-xl text-ink leading-relaxed opacity-90">
+                <p className="body-md text-xl text-ink-secondary leading-relaxed">
                   {repo.description || "Comprehensive implementation of course concepts and standardized academic modules."}
                 </p>
               </div>
@@ -151,7 +151,7 @@ export function RepoDetailPage() {
                     <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
                   </svg>
                 </div>
-                <h3 className="heading-3 text-white mb-6 flex items-center gap-4">
+                <h3 className="heading-3 text-clay-text mb-6 flex items-center gap-4">
                   Node Analysis
                 </h3>
                 <div className="prose prose-invert prose-sm">
@@ -170,7 +170,7 @@ export function RepoDetailPage() {
                     <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
                   </svg>
                 </div>
-                <h3 className="heading-3 text-white mb-6 flex items-center gap-4">
+                <h3 className="heading-3 text-clay-text mb-6 flex items-center gap-4">
                   Academic Strategy
                 </h3>
                 <div className="prose prose-invert prose-sm">
@@ -186,4 +186,3 @@ export function RepoDetailPage() {
     </div>
   )
 }
-

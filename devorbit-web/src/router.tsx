@@ -4,6 +4,7 @@ import { CourseListPage } from './pages/student/CourseListPage'
 import { CourseDetailPage } from './pages/student/CourseDetailPage'
 import { KnowledgeGraphPage } from './pages/student/KnowledgeGraphPage'
 import { RepoDetailPage } from './pages/student/RepoDetailPage'
+import { PhotographPage } from './pages/student/PhotographPage'
 import { LoginPage } from './pages/admin/LoginPage'
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage'
 import { AdminCoursesPage } from './pages/admin/AdminCoursesPage'
@@ -22,6 +23,7 @@ export function AppRoutes() {
       <Route path="/courses" element={<CourseListPage />} />
       <Route path="/courses/:courseId" element={<CourseDetailPage />} />
       <Route path="/knowledge-graph" element={<KnowledgeGraphPage />} />
+      <Route path="/photograph" element={<PhotographPage />} />
       <Route path="/repos/:repoId" element={<RepoDetailPage />} />
       <Route path="/admin/login" element={<LoginPage />} />
       <Route path="/admin" element={<AdminDashboardPage />} />

@@ -60,8 +60,8 @@ class PublicCourseControllerTest {
     @Test
     void shouldReturnKnowledgeGraph() throws Exception {
         var graphNodes = List.of(
-            new KnowledgeGraphResponse.GraphNode(1L, "Test Course", "T101", 12.0, 0),
-            new KnowledgeGraphResponse.GraphNode(2L, "Advanced Test", "T201", 13.5, 1)
+            new KnowledgeGraphResponse.GraphNode(1L, "Test Course", "T101", 12.0, 0, 0.0),
+            new KnowledgeGraphResponse.GraphNode(2L, "Advanced Test", "T201", 13.5, 1, 0.0)
         );
         var graphLinks = List.of(
             new KnowledgeGraphResponse.GraphLink(1L, 2L, CourseRelationType.PREREQUISITE)

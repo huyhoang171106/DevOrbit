@@ -72,7 +72,7 @@ export function RepoCard({ repo }: { repo: RepoSummary }) {
           </span>
         ))}
         {repo.techStacks?.length > 3 && (
-          <span className="text-[10px] font-black text-ink-muted uppercase tracking-tighter">+{repo.techStacks.length - 3} more</span>
+          <span className="text-[10px] font-black text-ink-muted uppercase tracking-tighter">+{repo.techStacks.length - 3} khác</span>
         )}
       </div>
 

@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom'
 const navLinks = [
   { to: '/courses', label: 'Môn Học' },
   { to: '/knowledge-graph', label: 'Sơ Đồ Kiến Thức' },
-  { to: '/photograph', label: 'Hình Ảnh' },
+  { to: '/photograph', label: 'Photobooth' },
 ]
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -92,14 +92,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 onClick={() => setMobileOpen(false)}
                 className="block px-6 py-4 text-[16px] font-black uppercase tracking-widest text-center text-ink-muted"
               >
-                Admin Access
+                Truy cập Quản trị
               </Link>
               <Link
                 to="/courses"
                 onClick={() => setMobileOpen(false)}
                 className="btn-primary w-full text-center py-5"
               >
-                Join the Orbit
+                Khám phá ngay
               </Link>
             </div>
           </div>

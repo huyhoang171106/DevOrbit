@@ -19,7 +19,7 @@ export function KnowledgeGraphPage() {
           </div>
           <div className="flex flex-col items-center">
             <p className="text-[12px] font-black text-emerald-500 tracking-[0.4em] uppercase mb-2">Architecting</p>
-            <p className="heading-3 text-ink animate-pulse tracking-widest font-bold">NEURAL NETWORK</p>
+            <p className="heading-3 text-clay-text animate-pulse tracking-widest font-bold">NEURAL NETWORK</p>
           </div>
         </div>
       </div>
@@ -28,9 +28,9 @@ export function KnowledgeGraphPage() {
 
   if (error) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', color: '#666' }}>
-        <h2>Failed to load knowledge graph</h2>
-        <p>{error instanceof Error ? error.message : 'An unexpected error occurred'}</p>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', color: '#94a3b8' }}>
+        <h2 className="text-clay-text">Failed to load knowledge graph</h2>
+        <p className="text-ink-secondary">{error instanceof Error ? error.message : 'An unexpected error occurred'}</p>
         <button onClick={() => window.location.reload()} style={{ marginTop: '16px', padding: '8px 24px', cursor: 'pointer' }}>
           Retry
         </button>
@@ -55,7 +55,7 @@ export function KnowledgeGraphPage() {
           </div>
 
           <h1 className="display-sm text-white mb-4 leading-tight">Academic Ecosystem</h1>
-          <p className="body-sm text-white/60 mb-8 leading-relaxed">
+          <p className="body-sm text-ink-secondary mb-8 leading-relaxed">
             A dynamic, interactive visualization of the UIT course network. Analyze dependencies and synchronize your learning path across the academic landscape.
           </p>
 
@@ -63,29 +63,29 @@ export function KnowledgeGraphPage() {
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <div className="h-1.5 w-4 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-white/50">Root Level</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-ink-muted">Root Level</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="h-1.5 w-4 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-white/50">Secondary</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-ink-muted">Secondary</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="h-1.5 w-4 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-white/50">Intermediate</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-ink-muted">Intermediate</span>
               </div>
             </div>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <div className="h-1.5 w-4 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.8)]" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-white/50">Advanced</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-ink-muted">Advanced</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="h-1.5 w-4 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-white/50">Specialized</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-ink-muted">Specialized</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="h-1.5 w-4 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-white/50">Deep Nodes</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-ink-muted">Deep Nodes</span>
               </div>
             </div>
           </div>
@@ -95,14 +95,14 @@ export function KnowledgeGraphPage() {
               <div className="h-1 w-10 bg-emerald-500/30 rounded-full group-hover/legend:bg-emerald-500 transition-colors" />
               <div className="flex flex-col">
                 <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500/80">Prerequisite</span>
-                <span className="text-[8px] text-white/30 font-medium tracking-wide">Mandatory dependency path</span>
+                <span className="text-[8px] text-ink-muted font-medium tracking-wide">Mandatory dependency path</span>
               </div>
             </div>
             <div className="flex items-center gap-4 group/legend">
               <div className="h-0.5 w-10 border-t border-dashed border-white/30" />
               <div className="flex flex-col">
-                <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Complementary</span>
-                <span className="text-[8px] text-white/30 font-medium tracking-wide">Recommended sync node</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-ink-muted">Complementary</span>
+                <span className="text-[8px] text-ink-muted font-medium tracking-wide">Recommended sync node</span>
               </div>
             </div>
           </div>
@@ -116,7 +116,7 @@ export function KnowledgeGraphPage() {
       </div>
 
       <div className="absolute bottom-8 right-8 z-20 flex flex-col items-end gap-3 pointer-events-none animate-in fade-in slide-in-from-right-8 duration-1000">
-        <div className="glass-card px-5 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-white/40 border-white/5 backdrop-blur-md">
+        <div className="glass-card px-5 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-ink-muted border-glass-border backdrop-blur-md">
           Scroll: Zoom • Drag: Move • Click: View Node
         </div>
       </div>

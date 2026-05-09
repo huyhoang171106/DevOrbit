@@ -63,10 +63,10 @@ export function CourseKnowledgeGraph({ courseId }: { courseId: number }) {
                   className="flex items-center justify-between p-4 rounded-2xl bg-glass-surface border border-glass-border hover:border-emerald-500/40 hover:bg-emerald-500/[0.03] hover:shadow-[0_8px_20px_-8px_rgba(16,185,129,0.15)] transition-all duration-300 group/item cursor-pointer"
                 >
                   <div className="min-w-0">
-                    <div className="text-xs font-black text-ink group-hover/item:text-emerald-500 transition-colors mb-0.5 tracking-tight">
+                    <div className="text-xs font-black text-clay-text group-hover/item:text-emerald-500 transition-colors mb-0.5 tracking-tight">
                       {r.courseId === courseId ? r.relatedCourseCode : r.courseCode}
                     </div>
-                    <div className="text-[10px] text-ink-secondary truncate font-medium group-hover/item:text-ink transition-colors">
+                    <div className="text-[10px] text-ink-secondary truncate font-medium group-hover/item:text-clay-text transition-colors">
                       {r.courseId === courseId ? r.relatedCourseName : r.courseName}
                     </div>
                   </div>
@@ -96,10 +96,10 @@ export function CourseKnowledgeGraph({ courseId }: { courseId: number }) {
                   className="flex items-center justify-between p-4 rounded-2xl bg-glass-surface border border-glass-border hover:border-indigo-500/40 hover:bg-indigo-500/[0.03] hover:shadow-[0_8px_20px_-8px_rgba(99,102,241,0.15)] transition-all duration-300 group/item cursor-pointer"
                 >
                   <div className="min-w-0">
-                    <div className="text-xs font-black text-ink group-hover/item:text-indigo-400 transition-colors mb-0.5 tracking-tight">
+                    <div className="text-xs font-black text-clay-text group-hover/item:text-indigo-400 transition-colors mb-0.5 tracking-tight">
                       {r.courseId === courseId ? r.relatedCourseCode : r.courseCode}
                     </div>
-                    <div className="text-[10px] text-ink-secondary truncate font-medium group-hover/item:text-ink transition-colors">
+                    <div className="text-[10px] text-ink-secondary truncate font-medium group-hover/item:text-clay-text transition-colors">
                       {r.courseId === courseId ? r.relatedCourseName : r.courseName}
                     </div>
                   </div>
@@ -129,10 +129,10 @@ export function CourseKnowledgeGraph({ courseId }: { courseId: number }) {
                   className="flex items-center justify-between p-4 rounded-2xl bg-glass-surface border border-glass-border hover:border-amber-500/40 hover:bg-amber-500/[0.03] hover:shadow-[0_8px_20px_-8px_rgba(245,158,11,0.15)] transition-all duration-300 group/item cursor-pointer"
                 >
                   <div className="min-w-0">
-                    <div className="text-xs font-black text-ink group-hover/item:text-amber-500 transition-colors mb-0.5 tracking-tight">
+                    <div className="text-xs font-black text-clay-text group-hover/item:text-amber-500 transition-colors mb-0.5 tracking-tight">
                       {r.courseId === courseId ? r.relatedCourseCode : r.courseCode}
                     </div>
-                    <div className="text-[10px] text-ink-secondary truncate font-medium group-hover/item:text-ink transition-colors">
+                    <div className="text-[10px] text-ink-secondary truncate font-medium group-hover/item:text-clay-text transition-colors">
                       {r.courseId === courseId ? r.relatedCourseName : r.courseName}
                     </div>
                   </div>
@@ -156,4 +156,3 @@ export function CourseKnowledgeGraph({ courseId }: { courseId: number }) {
     </div>
   )
 }
-

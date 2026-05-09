@@ -13,6 +13,7 @@ import vn.edu.uit.devorbit_api.service.CourseTutorialService;
 import vn.edu.uit.devorbit_api.service.CourseYoutubePlaylistService;
 import vn.edu.uit.devorbit_api.service.JwtService;
 import vn.edu.uit.devorbit_api.service.KnowledgeGraphService;
+import vn.edu.uit.devorbit_api.entity.CourseRelationType;
 
 import java.util.List;
 
@@ -63,7 +64,7 @@ class PublicCourseControllerTest {
             new KnowledgeGraphResponse.GraphNode(2L, "Advanced Test", "T201", 13.5, 1)
         );
         var graphLinks = List.of(
-            new KnowledgeGraphResponse.GraphLink(1L, 2L, "PREREQUISITE")
+            new KnowledgeGraphResponse.GraphLink(1L, 2L, CourseRelationType.PREREQUISITE)
         );
         when(knowledgeGraphService.getGraph()).thenReturn(
             new KnowledgeGraphResponse(graphNodes, graphLinks)

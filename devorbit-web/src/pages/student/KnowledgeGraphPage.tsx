@@ -60,8 +60,8 @@ export function KnowledgeGraphPage() {
             <div className="absolute inset-0 rounded-full border-t-4 border-emerald-500 animate-spin shadow-[0_0_20px_rgba(16,185,129,0.4)]" />
           </div>
           <div className="flex flex-col items-center">
-            <p className="text-[12px] font-black text-emerald-500 tracking-[0.4em] uppercase mb-2">Architecting</p>
-            <p className="heading-3 text-clay-text animate-pulse tracking-widest font-bold">NEURAL NETWORK</p>
+            <p className="text-[12px] font-black text-emerald-500 tracking-[0.4em] uppercase mb-2">Đang thiết lập</p>
+            <p className="heading-3 text-clay-text animate-pulse tracking-widest font-bold">MẠNG LƯỚI KIẾN THỨC</p>
           </div>
         </div>
       </div>
@@ -71,10 +71,10 @@ export function KnowledgeGraphPage() {
   if (error) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', color: '#94a3b8' }}>
-        <h2 className="text-clay-text">Failed to load knowledge graph</h2>
-        <p className="text-ink-secondary">{error instanceof Error ? error.message : 'An unexpected error occurred'}</p>
+        <h2 className="text-clay-text">Không thể tải sơ đồ kiến thức</h2>
+        <p className="text-ink-secondary">{error instanceof Error ? error.message : 'Đã xảy ra lỗi không xác định'}</p>
         <button onClick={() => window.location.reload()} style={{ marginTop: '16px', padding: '8px 24px', cursor: 'pointer' }}>
-          Retry
+          Thử lại
         </button>
       </div>
     )
@@ -93,41 +93,41 @@ export function KnowledgeGraphPage() {
         <div className="glass-card-glow p-8 border-emerald-500/20 backdrop-blur-2xl">
           <div className="inline-flex items-center gap-3 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-6">
             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500">Live Knowledge Matrix</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500">Ma trận kiến thức trực tuyến</span>
           </div>
 
-          <h1 className="display-sm text-white mb-4 leading-tight">Academic Ecosystem</h1>
+          <h1 className="display-sm text-white mb-4 leading-tight">Hệ sinh thái học thuật</h1>
           <p className="body-sm text-ink-secondary mb-8 leading-relaxed">
-            A dynamic, interactive visualization of the UIT course network. Analyze dependencies and synchronize your learning path across the academic landscape.
+            Một hình ảnh trực quan, sống động về mạng lưới các môn học tại UIT. Phân tích các mối liên hệ và đồng bộ hóa lộ trình học tập của bạn.
           </p>
 
           <div className="grid grid-cols-2 gap-4 mb-8">
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <div className="h-1.5 w-4 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-ink-muted">Root Level</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-ink-muted">Cơ sở</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="h-1.5 w-4 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-ink-muted">Secondary</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-ink-muted">Cơ sở ngành</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="h-1.5 w-4 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-ink-muted">Intermediate</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-ink-muted">Trung cấp</span>
               </div>
             </div>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <div className="h-1.5 w-4 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.8)]" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-ink-muted">Advanced</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-ink-muted">Nâng cao</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="h-1.5 w-4 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-ink-muted">Specialized</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-ink-muted">Chuyên ngành</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="h-1.5 w-4 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-ink-muted">Deep Nodes</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-ink-muted">Chuyên sâu</span>
               </div>
             </div>
           </div>
@@ -136,15 +136,15 @@ export function KnowledgeGraphPage() {
             <div className="flex items-center gap-4 group/legend">
               <div className="h-1 w-10 bg-emerald-500/30 rounded-full group-hover/legend:bg-emerald-500 transition-colors" />
               <div className="flex flex-col">
-                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500/80">Prerequisite</span>
-                <span className="text-[8px] text-ink-muted font-medium tracking-wide">Mandatory dependency path</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500/80">Môn tiên quyết</span>
+                <span className="text-[8px] text-ink-muted font-medium tracking-wide">Mối liên hệ bắt buộc</span>
               </div>
             </div>
             <div className="flex items-center gap-4 group/legend">
               <div className="h-0.5 w-10 border-t border-dashed border-white/30" />
               <div className="flex flex-col">
-                <span className="text-[10px] font-black uppercase tracking-widest text-ink-muted">Complementary</span>
-                <span className="text-[8px] text-ink-muted font-medium tracking-wide">Recommended sync node</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-ink-muted">Bổ sung</span>
+                <span className="text-[8px] text-ink-muted font-medium tracking-wide">Được khuyến nghị</span>
               </div>
             </div>
           </div>
@@ -162,14 +162,14 @@ export function KnowledgeGraphPage() {
               }`}
             >
               {isSimulationMode ? <Activity className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-              {isSimulationMode ? 'Exit Simulation' : 'Enter Simulation'}
+              {isSimulationMode ? 'Thoát giả lập' : 'Bật chế độ giả lập'}
             </button>
             
             {isSimulationMode && (
               <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
                 <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 backdrop-blur-sm">
                   <div className="flex items-center justify-between mb-4">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-ink-muted">Simulation Metrics</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-ink-muted">Chỉ số giả lập</span>
                     <button 
                       onClick={() => setFailedNodes(new Set())}
                       className="text-ink-muted hover:text-white transition-colors"
@@ -181,14 +181,14 @@ export function KnowledgeGraphPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
                       <span className="text-[20px] font-bold text-white">{blockedNodes.size}</span>
-                      <span className="text-[8px] font-black uppercase tracking-widest text-ink-muted">Blocked Courses</span>
+                      <span className="text-[8px] font-black uppercase tracking-widest text-ink-muted">Môn học bị ảnh hưởng</span>
                     </div>
                     <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-2">
                         <span className="text-[20px] font-bold text-rose-500">+{delayEstimate}</span>
-                        <span className="text-[10px] text-rose-500 font-bold uppercase">Sem</span>
+                        <span className="text-[10px] text-rose-500 font-bold uppercase">Kỳ</span>
                       </div>
-                      <span className="text-[8px] font-black uppercase tracking-widest text-ink-muted">Graduation Delay</span>
+                      <span className="text-[8px] font-black uppercase tracking-widest text-ink-muted">Độ trễ tốt nghiệp</span>
                     </div>
                   </div>
                 </div>
@@ -197,20 +197,20 @@ export function KnowledgeGraphPage() {
                   <div className="flex items-start gap-3 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20">
                     <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
                     <p className="text-[10px] text-rose-200 leading-relaxed font-medium">
-                      High risk detected. The current failure pattern blocks key prerequisites for your graduation path.
+                      Rủi ro cao. Mô hình thất bại hiện tại làm gián đoạn các môn tiên quyết quan trọng cho việc tốt nghiệp.
                     </p>
                   </div>
                 )}
 
                 <p className="text-[9px] text-ink-muted italic text-center px-4">
-                  Click on any course node to simulate a failure and observe the impact propagation.
+                  Nhấn vào bất kỳ môn học nào để giả định việc không hoàn thành và xem mức độ ảnh hưởng lan truyền.
                 </p>
               </div>
             )}
 
             {!isSimulationMode && (
               <Link to="/courses" className="btn-secondary text-[11px] px-6 py-2.5 uppercase tracking-[0.2em] text-center">
-                Catalog View
+                Xem danh mục
               </Link>
             )}
           </div>
@@ -219,7 +219,7 @@ export function KnowledgeGraphPage() {
 
       <div className="absolute bottom-8 right-8 z-20 flex flex-col items-end gap-3 pointer-events-none animate-in fade-in slide-in-from-right-8 duration-1000">
         <div className="glass-card px-5 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-ink-muted border-glass-border backdrop-blur-md">
-          Scroll: Zoom • Drag: Move • Click: View Node
+          Cuộn: Phóng to • Kéo: Di chuyển • Nhấn: Xem môn học
         </div>
       </div>
 
@@ -305,6 +305,7 @@ export function KnowledgeGraphPage() {
               glowColor = 'rgba(244, 63, 94, 0.4)';
               glowColorMuted = 'rgba(244, 63, 94, 0.1)';
           }
+        }
 
           // Draw outer glow (Scale based on impact in heatmap mode)
           const glowSize = (node.val + 2) + (isSimulationMode ? impactFactor * 6 : 0);

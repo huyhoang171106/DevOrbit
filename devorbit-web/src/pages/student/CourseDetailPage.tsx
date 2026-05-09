@@ -47,8 +47,8 @@ export function CourseDetailPage() {
             <div className="absolute inset-0 rounded-full border-t-4 border-emerald-500 animate-spin shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
           </div>
           <div className="flex flex-col items-center">
-            <p className="text-[12px] font-black text-emerald-500 tracking-[0.3em] uppercase mb-2">Quantizing</p>
-            <p className="heading-4 text-clay-text animate-pulse tracking-wide">ACADEMIC CORE</p>
+            <p className="text-[12px] font-black text-emerald-500 tracking-[0.3em] uppercase mb-2">Đang xử lý</p>
+            <p className="heading-4 text-clay-text animate-pulse tracking-wide">DỮ LIỆU MÔN HỌC</p>
           </div>
         </div>
       </div>
@@ -63,9 +63,9 @@ export function CourseDetailPage() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
           </svg>
         </div>
-        <h2 className="display-sm text-clay-text mb-4">Course vanished into the void</h2>
-        <p className="body-md text-ink-muted mb-8 max-w-md">We couldn't locate this specific academic node in our database.</p>
-        <Link to="/courses" className="btn-primary px-8">Return to Universe</Link>
+        <h2 className="display-sm text-clay-text mb-4">Môn học đã biến mất vào hư không</h2>
+        <p className="body-md text-ink-muted mb-8 max-w-md">Chúng tôi không thể tìm thấy dữ liệu về môn học này trong hệ thống.</p>
+        <Link to="/courses" className="btn-primary px-8">Quay lại danh sách</Link>
       </div>
     )
   }
@@ -89,7 +89,7 @@ export function CourseDetailPage() {
             <svg className="h-4 w-4 text-ink-muted group-hover:text-emerald-500 transition-colors group-hover:-translate-x-0.5 duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
-            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-ink-secondary group-hover:text-clay-text transition-colors">Catalog</span>
+            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-ink-secondary group-hover:text-clay-text transition-colors">Danh mục</span>
           </Link>
           <div className="h-1 w-1 rounded-full bg-ink-muted/30" />
           <span className="text-[11px] font-bold text-emerald-500 uppercase tracking-widest">{course.code}</span>
@@ -103,7 +103,7 @@ export function CourseDetailPage() {
                 <div className="flex -space-x-2">
                   <div className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse" />
                 </div>
-                <span className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-500/80">Academic Core Operational</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-500/80">Dữ liệu cốt lõi đang hoạt động</span>
               </div>
 
               <h1 className="hero-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl mb-6 leading-[1.1] tracking-tight">
@@ -127,14 +127,14 @@ export function CourseDetailPage() {
 
             <div className="flex flex-row lg:flex-col flex-wrap gap-4 min-w-[200px]">
               <div className="glass-card-glow flex-1 lg:flex-none px-8 py-6 border-emerald-500/10 hover:border-emerald-500/30 transition-all duration-500 flex flex-col items-center justify-center min-w-[140px]">
-                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500 mb-2">Credits</div>
+                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500 mb-2">Số tín chỉ</div>
                 <div className="heading-1 text-clay-text group-hover:scale-110 transition-transform">{course.credits}</div>
                 <div className="mt-2 h-1 w-8 bg-emerald-500/20 rounded-full overflow-hidden">
                   <div className="h-full bg-emerald-500 rounded-full w-2/3 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
                 </div>
               </div>
               <div className="glass-card-glow flex-1 lg:flex-none px-8 py-6 border-indigo-500/10 hover:border-indigo-500/30 transition-all duration-500 flex flex-col items-center justify-center min-w-[140px]">
-                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-2">Sources</div>
+                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-2">Nguồn tài liệu</div>
                 <div className="heading-1 text-clay-text">{repos.length}</div>
                 <div className="mt-2 flex gap-1">
                   {[1, 2, 3].map(i => <div key={i} className="h-1 w-2 rounded-full bg-indigo-500/30" />)}
@@ -146,10 +146,10 @@ export function CourseDetailPage() {
           {/* Precision Stats Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mt-16">
             {[
-              { label: 'Theory Load', value: `${course.theoryHours || 0} Hours`, icon: 'book', color: 'emerald' },
-              { label: 'Practical Lab', value: `${course.practiceHours || 0} Hours`, icon: 'code', color: 'indigo' },
-              { label: 'Subject Type', value: course.subjectType || 'Specialized', icon: 'tag', color: 'amber' },
-              { label: 'Department', value: course.managementUnit || 'Science', icon: 'building', color: 'violet' }
+              { label: 'Thời lượng Lý thuyết', value: `${course.theoryHours || 0} Tiết`, icon: 'book', color: 'emerald' },
+              { label: 'Thời lượng Thực hành', value: `${course.practiceHours || 0} Tiết`, icon: 'code', color: 'indigo' },
+              { label: 'Loại học phần', value: course.subjectType || 'Chuyên ngành', icon: 'tag', color: 'amber' },
+              { label: 'Đơn vị quản lý', value: course.managementUnit || 'Khoa', icon: 'building', color: 'violet' }
             ].map((stat, i) => (
               <div
                 key={i}
@@ -177,12 +177,12 @@ export function CourseDetailPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10">
                 <h2 className="heading-3 flex items-center gap-4">
                   <span className="h-10 w-1.5 bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.3)]" />
-                  Knowledge Matrix
+                  Ma trận kiến thức
                 </h2>
                 <div className="px-4 py-2 rounded-xl bg-glass-surface border border-glass-border flex items-center gap-3">
                   <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                   <span className="text-[11px] font-black uppercase tracking-widest text-ink-muted">
-                    {filtered.length} Nodes Found
+                    Tìm thấy {filtered.length} kết quả
                   </span>
                 </div>
               </div>
@@ -212,9 +212,9 @@ export function CourseDetailPage() {
                       <path d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196 7.5 7.5 0 0010.607 10.607z" />
                     </svg>
                   </div>
-                  <h3 className="heading-3 text-clay-text mb-3">No matching nodes</h3>
+                  <h3 className="heading-3 text-clay-text mb-3">Không tìm thấy kết quả</h3>
                   <p className="body-md text-ink-muted max-w-sm mx-auto leading-relaxed">
-                    The current parameters did not return any results. Adjust filters to continue exploration.
+                    Các tham số hiện tại không trả về kết quả nào. Hãy điều chỉnh bộ lọc để tiếp tục khám phá.
                   </p>
                 </div>
               )}
@@ -239,18 +239,18 @@ export function CourseDetailPage() {
                       <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0012 18.75c-1.03 0-1.9-.4-2.59-1.177l-.547-.547z" />
                     </svg>
                   </div>
-                  <h4 className="heading-5 text-emerald-500 uppercase tracking-[0.1em]">Academic Insight</h4>
+                  <h4 className="heading-5 text-emerald-500 uppercase tracking-[0.1em]">Góc nhìn học thuật</h4>
                 </div>
 
                 <p className="body-sm leading-[1.8] text-ink-secondary italic relative">
                   <span className="absolute -top-4 -left-2 text-4xl text-emerald-500/20 font-serif">"</span>
-                  Bridging the gap between conceptual architecture and practical implementation. Analyze the repository nodes to understand industry-standard applications of this core curriculum.
+                  Thu hẹp khoảng cách giữa lý thuyết kiến trúc và triển khai thực tế. Phân tích các repository để hiểu cách áp dụng các kiến thức cốt lõi vào thực tiễn theo tiêu chuẩn công nghiệp.
                 </p>
 
                 <div className="mt-8 pt-8 border-t border-glass-border flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-ink-muted">Verified Resource</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-ink-muted">Nguồn tin cậy</span>
                   </div>
                   <svg className="h-5 w-5 text-ink-muted opacity-30" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
@@ -264,13 +264,13 @@ export function CourseDetailPage() {
                   <svg className="h-4 w-4 mr-3 text-ink-muted group-hover:text-indigo-400 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
                   </svg>
-                  Bookmark Course
+                  Đánh dấu môn học
                 </button>
                 <button className="w-full btn-secondary py-4 group justify-start px-6">
                   <svg className="h-4 w-4 mr-3 text-ink-muted group-hover:text-emerald-400 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
                   </svg>
-                  Share Repository
+                  Chia sẻ Repository
                 </button>
               </div>
             </section>

@@ -19,7 +19,8 @@ implemented until tests or validation evidence exist.
 
 | Story | Contract | Unit | Integration | E2E | Platform | Status | Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| US-015 | Simulation Engine | pass | pass | no | no | in_progress | [Plan 1.1 Summary](file:///C:/Users/Hoang/.gemini/antigravity/brain/31790508-f06b-45f3-a162-ec4b3b74509b/artifacts/plan_1_1_summary.md) |
+| US-015 | Simulation Engine | pass | pass | no | no | implemented | [Plan 1.3 Summary](file:///C:/Users/Hoang/.gemini/antigravity/brain/31790508-f06b-45f3-a162-ec4b3b74509b/artifacts/plan_1_3_summary.md) |
+| US-016 | Photobooth Upload | - | - | - | Browser | planned | - |
 
 ## Evidence Rules
 

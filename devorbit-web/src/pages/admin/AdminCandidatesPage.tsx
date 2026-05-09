@@ -86,7 +86,7 @@ export function AdminCandidatesPage() {
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
-          Loading candidates...
+          Đang tải danh sách ứng viên...
         </div>
       </div>
     )
@@ -96,15 +96,15 @@ export function AdminCandidatesPage() {
     <div className="w-full max-w-[1440px] mx-auto px-[32px] py-[64px]">
       <div className="mb-[32px] flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="display-sm text-clay-text mb-1">Repo Candidates</h1>
+          <h1 className="display-sm text-clay-text mb-1">Ứng viên Repository</h1>
           <p className="body-sm text-ink-secondary">
-            Review and approve repositories discovered from GitHub scans.
+            Kiểm duyệt và phê duyệt các repository được phát hiện từ quét GitHub.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-3">
-            <label className="text-sm font-semibold text-ink-secondary">Assignee:</label>
+            <label className="text-sm font-semibold text-ink-secondary">Người phụ trách:</label>
             <div className="flex bg-glass-surface-raised border border-glass-border rounded-xl p-1 shadow-inner-sm">
               {['all', 'Bảo', 'Bắc', 'An'].map((p) => (
                 <button
@@ -115,7 +115,7 @@ export function AdminCandidatesPage() {
                       : 'text-ink-secondary hover:text-clay-text hover:bg-cosmic-surface/50'
                     }`}
                 >
-                  {p === 'all' ? 'All' : p}
+                  {p === 'all' ? 'Tất cả' : p}
                   {p !== 'all' && reviewerRemaining[p] !== undefined && (
                     <span className="ml-1.5 text-[11px] opacity-70">({reviewerRemaining[p]})</span>
                   )}
@@ -127,11 +127,11 @@ export function AdminCandidatesPage() {
           <div className="h-6 w-px bg-glass-border" />
 
           <CustomSelect
-            label="Filter by Subject:"
+            label="Lọc theo môn học:"
             value={selectedSubject}
             onChange={setSelectedSubject}
             options={[
-              { value: 'all', label: 'All Subjects' },
+              { value: 'all', label: 'Tất cả môn học' },
               ...uniqueSubjects.map(code => ({ value: code, label: code }))
             ]}
           />
@@ -155,7 +155,7 @@ export function AdminCandidatesPage() {
 
       <div className="mb-4 flex items-center justify-between px-2">
         <div className="text-[11px] text-ink-secondary">
-          Showing <strong>{filteredCandidates.length}</strong> repositories{reviewer !== 'all' ? ` assigned to ${reviewer}` : ''}
+          Hiển thị <strong>{filteredCandidates.length}</strong> repositories{reviewer !== 'all' ? ` được giao cho ${reviewer}` : ''}
         </div>
       </div>
 

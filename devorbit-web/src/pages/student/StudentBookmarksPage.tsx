@@ -23,7 +23,7 @@ export function StudentBookmarksPage() {
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
-          Loading bookmarks...
+          Đang tải đánh dấu...
         </div>
       </div>
     )
@@ -32,10 +32,10 @@ export function StudentBookmarksPage() {
   return (
     <div className="w-full max-w-[1280px] mx-auto px-[32px] py-[64px]">
       <div className="mb-[32px]">
-        <p className="body-sm text-emerald-400 mb-[8px] font-medium tracking-wide uppercase">My Learning</p>
-        <h1 className="display-sm text-clay-text">Bookmarks</h1>
+        <p className="body-sm text-emerald-400 mb-[8px] font-medium tracking-wide uppercase">Lộ trình học tập</p>
+        <h1 className="display-sm text-clay-text">Đã đánh dấu</h1>
         <p className="mt-[8px] max-w-2xl body-sm text-ink-secondary">
-          Your saved Phase-2 learning items. Public browsing remains available without login.
+          Các mục học tập bạn đã lưu. Bạn vẫn có thể duyệt công khai mà không cần đăng nhập.
         </p>
       </div>
 
@@ -44,10 +44,10 @@ export function StudentBookmarksPage() {
           <svg className="mx-auto mb-[16px] h-[48px] w-[48px] text-ink-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
           </svg>
-          <p className="body-md font-medium text-clay-text">No bookmarks yet.</p>
-          <p className="mt-1 body-sm text-ink-secondary">Save a course or repository from the catalog.</p>
+          <p className="body-md font-medium text-clay-text">Chưa có đánh dấu nào.</p>
+          <p className="mt-1 body-sm text-ink-secondary">Lưu một khóa học hoặc repository từ danh mục.</p>
           <Link to="/courses" className="btn-secondary mt-[24px] inline-flex">
-            Browse Courses
+            Duyệt khóa học
           </Link>
         </div>
       ) : (
@@ -70,7 +70,7 @@ export function StudentBookmarksPage() {
                 <p className="mt-[4px] body-sm text-ink-secondary">{bookmark.subtitle}</p>
               )}
               <div className="mt-[16px] flex items-center gap-[4px] code-sm text-ink-secondary group-hover:text-emerald-400 transition-colors font-medium">
-                <span>Visit</span>
+                <span>Truy cập</span>
                 <svg className="h-[14px] w-[14px] transition-transform group-hover:translate-x-[2px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
@@ -87,7 +87,7 @@ export function StudentBookmarksPage() {
         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M19 12H5M12 19l-7-7 7-7" />
         </svg>
-        Back to Courses
+        Quay lại khóa học
       </Link>
     </div>
   )

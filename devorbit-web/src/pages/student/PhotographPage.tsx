@@ -11,10 +11,10 @@ export function PhotographPage() {
         <div className="relative z-10 max-w-4xl w-full text-center space-y-8">
           <div className="space-y-4">
             <h1 className="text-5xl md:text-7xl font-bold font-heading text-clay-text tracking-tight">
-              Photograph <span className="text-emerald-400">Gallery</span>
+              Trải nghiệm <span className="text-emerald-400">Photobooth</span>
             </h1>
             <p className="text-xl md:text-2xl text-ink-muted max-w-2xl mx-auto font-body">
-              A curated collection of moments and perspectives captured through the lens of DevOrbit.
+              Bộ sưu tập những khoảnh khắc được ghi lại qua ống kính của DevOrbit.
             </p>
           </div>
 
@@ -34,7 +34,7 @@ export function PhotographPage() {
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 p-6">
                   <div className="h-1 w-0 bg-emerald-400 group-hover:w-full transition-all duration-500 rounded-full" />
-                  <p className="mt-4 text-sm font-medium text-ink-muted tracking-widest uppercase">Coming Soon</p>
+                  <p className="mt-4 text-sm font-medium text-ink-muted tracking-widest uppercase">Sắp ra mắt</p>
                 </div>
               </div>
             ))}
@@ -42,7 +42,7 @@ export function PhotographPage() {
 
           <div className="pt-16">
             <button className="btn-primary">
-              Explore Collection
+              Khám phá bộ sưu tập
             </button>
           </div>
         </div>

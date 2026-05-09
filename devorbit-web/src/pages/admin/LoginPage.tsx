@@ -20,7 +20,7 @@ export function LoginPage() {
       saveAdminToken(res.token)
       navigate('/admin')
     } catch {
-      setError('Login failed. Check your credentials.')
+      setError('Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản.')
     } finally {
       setLoading(false)
     }
@@ -37,8 +37,8 @@ export function LoginPage() {
               <circle cx="12" cy="12" r="11" strokeDasharray="2 4" opacity="0.2" />
             </svg>
           </div>
-          <h1 className="heading-3 text-clay-text">Admin Login</h1>
-          <p className="mt-2 body-sm">Sign in to manage courses and repositories.</p>
+          <h1 className="heading-3 text-clay-text">Quản trị viên</h1>
+          <p className="mt-2 body-sm">Đăng nhập để quản lý môn học và kho mã nguồn.</p>
         </div>
 
         {error && (
@@ -53,7 +53,7 @@ export function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-[16px]">
           <div>
-            <label className="label">Username</label>
+            <label className="label">Tài khoản</label>
             <input
               type="text"
               value={username}
@@ -63,7 +63,7 @@ export function LoginPage() {
             />
           </div>
           <div>
-            <label className="label">Password</label>
+            <label className="label">Mật khẩu</label>
             <input
               type="password"
               value={password}
@@ -79,10 +79,10 @@ export function LoginPage() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                Logging in...
+                Đang đăng nhập...
               </span>
             ) : (
-              'Log In'
+              'Đăng nhập'
             )}
           </button>
         </form>

@@ -25,7 +25,7 @@ export function AdminReposPage() {
   }, [token])
 
   async function handleDeactivate(id: number) {
-    if (!confirm('Deactivate this repo?')) return
+    if (!confirm('Hủy kích hoạt repo này?')) return
     try {
       await apiAdminDelete(`/api/admin/repos/${id}`, token)
       refetch()
@@ -39,7 +39,7 @@ export function AdminReposPage() {
     const data = new FormData(form)
     const githubUrl = String(data.get('githubUrl') ?? '').trim()
     if (!githubUrl.startsWith('https://github.com/')) {
-      setError('GitHub URL must start with https://github.com/')
+      setError('URL GitHub phải bắt đầu bằng https://github.com/')
       return
     }
     try {
@@ -68,7 +68,7 @@ export function AdminReposPage() {
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
-          Loading repositories...
+          Đang tải danh sách repository...
         </div>
       </div>
     )
@@ -77,8 +77,8 @@ export function AdminReposPage() {
   return (
     <div className="w-full max-w-[1280px] mx-auto px-[32px] py-[64px]">
       <div className="mb-[32px]">
-        <h1 className="display-sm text-clay-text mb-1">Approved Repositories</h1>
-        <p className="body-sm text-ink-secondary">View and manage approved GitHub repositories.</p>
+        <h1 className="display-sm text-clay-text mb-1">Repository đã duyệt</h1>
+        <p className="body-sm text-ink-secondary">Xem và quản lý các repository GitHub đã được phê duyệt.</p>
       </div>
 
       {fetchError && (
@@ -89,7 +89,7 @@ export function AdminReposPage() {
           </svg>
           <span className="flex-1">{fetchError}</span>
           <button onClick={refetch} className="btn-secondary !py-1 !px-3 !text-xs flex-shrink-0">
-            Retry
+            Thử lại
           </button>
         </div>
       )}
@@ -106,7 +106,7 @@ export function AdminReposPage() {
             }}
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="heading-4 text-clay-text">Edit Repository</h2>
+              <h2 className="heading-4 text-clay-text">Sửa Repository</h2>
               <button
                 type="button"
                 onClick={() => setEditingRepo(null)}
@@ -129,13 +129,13 @@ export function AdminReposPage() {
             )}
 
             <div>
-              <label className="label mb-1.5 block">Display Name</label>
-              <input name="displayName" defaultValue={editingRepo.displayName} required className="input-field" placeholder="Display name" />
+              <label className="label mb-1.5 block">Tên hiển thị</label>
+              <input name="displayName" defaultValue={editingRepo.displayName} required className="input-field" placeholder="Tên hiển thị" />
             </div>
 
             <div>
-              <label className="label mb-1.5 block">Description</label>
-              <textarea name="description" defaultValue={editingRepo.description ?? ''} rows={3} className="input-field" placeholder="Description" />
+              <label className="label mb-1.5 block">Mô tả</label>
+              <textarea name="description" defaultValue={editingRepo.description ?? ''} rows={3} className="input-field" placeholder="Mô tả" />
             </div>
 
             <div>
@@ -145,8 +145,8 @@ export function AdminReposPage() {
 
             <div className="grid gap-[16px] md:grid-cols-2">
               <div>
-                <label className="label mb-1.5 block">Primary Language</label>
-                <input name="primaryLanguage" defaultValue={editingRepo.primaryLanguage ?? ''} className="input-field" placeholder="Primary language" />
+                <label className="label mb-1.5 block">Ngôn ngữ chính</label>
+                <input name="primaryLanguage" defaultValue={editingRepo.primaryLanguage ?? ''} className="input-field" placeholder="Ngôn ngữ chính" />
               </div>
               <div>
                 <label className="label mb-1.5 block">Stars</label>
@@ -155,14 +155,14 @@ export function AdminReposPage() {
             </div>
 
             <div>
-              <label className="label mb-1.5 block">Tech Stacks (comma separated)</label>
+              <label className="label mb-1.5 block">Tech Stacks (phân tách bằng dấu phẩy)</label>
               <input name="techStacks" defaultValue={editingRepo.techStacks.join(', ')} className="input-field" placeholder="React, Spring Boot" />
             </div>
 
             <div>
-              <label className="label mb-1.5 block">Course</label>
+              <label className="label mb-1.5 block">Môn học</label>
               <select name="courseId" defaultValue={editingRepo.courseId ?? ''} className="input-field">
-                <option value="">None (no course)</option>
+                <option value="">Không có (không thuộc môn học nào)</option>
                 {allCourses.map((c) => (
                   <option key={c.id} value={c.id}>{c.code} — {c.name}</option>
                 ))}
@@ -171,15 +171,15 @@ export function AdminReposPage() {
 
             <label className="flex items-center gap-2.5 body-sm text-ink-secondary cursor-pointer mt-4">
               <input name="active" type="checkbox" defaultChecked className="h-4 w-4 rounded border-glass-border text-emerald-400 focus:ring-emerald-500/20" />
-              Active
+              Hoạt động
             </label>
 
             <div className="flex justify-end gap-3 pt-4 mt-4 border-t border-glass-border">
               <button type="button" onClick={() => setEditingRepo(null)} className="btn-secondary !bg-glass-surface">
-                Cancel
+                Hủy
               </button>
               <button type="submit" className="btn-primary">
-                Save Changes
+                Lưu thay đổi
               </button>
             </div>
           </form>

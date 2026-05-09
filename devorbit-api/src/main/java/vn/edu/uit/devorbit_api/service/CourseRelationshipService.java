@@ -1,12 +1,14 @@
 package vn.edu.uit.devorbit_api.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.uit.devorbit_api.dto.admin.CourseRelationshipRequest;
 import vn.edu.uit.devorbit_api.dto.admin.CourseRelationshipResponse;
 import vn.edu.uit.devorbit_api.entity.Course;
 import vn.edu.uit.devorbit_api.entity.CourseRelationship;
+import vn.edu.uit.devorbit_api.event.RelationshipChangedEvent;
 import vn.edu.uit.devorbit_api.exception.BadRequestException;
 import vn.edu.uit.devorbit_api.exception.NotFoundException;
 import vn.edu.uit.devorbit_api.repository.CourseRelationshipRepository;
@@ -19,7 +21,7 @@ import java.util.List;
 public class CourseRelationshipService {
     private final CourseRelationshipRepository repository;
     private final CourseRepository courseRepository;
-    private final KnowledgeGraphService knowledgeGraphService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public List<CourseRelationshipResponse> getByCourse(Long courseId) {
         return repository.findByCourseIdOrRelatedCourseIdOrderByCreatedAtAsc(courseId, courseId).stream()
@@ -51,7 +53,7 @@ public class CourseRelationshipService {
                 .relationType(request.relationType())
                 .build();
         CourseRelationshipResponse response = toResponse(repository.save(entity));
-        knowledgeGraphService.evictGraphCache();
+        eventPublisher.publishEvent(new RelationshipChangedEvent(response.id()));
         return response;
     }
 
@@ -60,7 +62,7 @@ public class CourseRelationshipService {
         CourseRelationship entity = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Relationship not found: " + id));
         repository.delete(entity);
-        knowledgeGraphService.evictGraphCache();
+        eventPublisher.publishEvent(new RelationshipChangedEvent(id));
     }
 
     private CourseRelationshipResponse toResponse(CourseRelationship entity) {

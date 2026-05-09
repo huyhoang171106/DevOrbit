@@ -148,16 +148,16 @@
 
   /* Typography */
   .hero-display {
-    @apply font-heading text-[72px] font-extrabold leading-[1.25] tracking-normal text-clay-text uppercase;
+    @apply font-heading text-[72px] font-extrabold leading-[1.3] tracking-normal text-clay-text uppercase;
     text-shadow: 4px 4px 0px var(--color-clay-secondary);
   }
 
   .display-lg {
-    @apply font-heading text-[56px] font-extrabold leading-[1.25] tracking-normal text-clay-text;
+    @apply font-heading text-[56px] font-extrabold leading-[1.3] tracking-normal text-clay-text;
   }
 
   .display-sm {
-    @apply font-heading text-[32px] font-extrabold leading-[1.3] tracking-normal text-clay-text;
+    @apply font-heading text-[32px] font-extrabold leading-[1.4] tracking-normal text-clay-text;
   }
 
   .heading-1 {

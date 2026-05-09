@@ -4,8 +4,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        heading: ['Sora', 'Inter', 'sans-serif'],
-        body: ['DM Sans', 'Inter', 'sans-serif'],
+        heading: ['"Be Vietnam Pro"', 'Inter', 'sans-serif'],
+        body: ['Inter', 'sans-serif'],
         mono: ['Geist Mono', 'monospace'],
       },
       colors: {

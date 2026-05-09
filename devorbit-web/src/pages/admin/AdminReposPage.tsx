@@ -21,7 +21,7 @@ export function AdminReposPage() {
   useEffect(() => {
     apiAdminGet<CourseSummary[]>('/api/admin/courses', token)
       .then(setAllCourses)
-      .catch(() => {})
+      .catch(() => { })
   }, [token])
 
   async function handleDeactivate(id: number) {
@@ -77,7 +77,7 @@ export function AdminReposPage() {
   return (
     <div className="w-full max-w-[1280px] mx-auto px-[32px] py-[64px]">
       <div className="mb-[32px]">
-        <h1 className="display-sm text-ink mb-1">Approved Repositories</h1>
+        <h1 className="display-sm text-clay-text mb-1">Approved Repositories</h1>
         <p className="body-sm text-ink-secondary">View and manage approved GitHub repositories.</p>
       </div>
 
@@ -97,20 +97,20 @@ export function AdminReposPage() {
       <ApprovedRepoTable repos={repos ?? []} onEdit={setEditingRepo} onDeactivate={handleDeactivate} />
 
       {editingRepo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/50 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-clay-bg/80 p-4 backdrop-blur-sm">
           <form
-            className="w-full max-w-2xl space-y-[16px] rounded-[12px] border border-glass-border bg-cosmic-surface p-[32px] shadow-[0_24px_48px_-8px_rgba(0,0,0,0.12)]"
+            className="w-full max-w-2xl space-y-[16px] rounded-[12px] border border-glass-border bg-cosmic-surface p-[32px] shadow-[0_24px_48px_-8px_rgba(0,0,0,0.5)]"
             onSubmit={(e) => {
               e.preventDefault()
               void handleSave(editingRepo, e.currentTarget)
             }}
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="heading-4 text-ink">Edit Repository</h2>
+              <h2 className="heading-4 text-clay-text">Edit Repository</h2>
               <button
                 type="button"
                 onClick={() => setEditingRepo(null)}
-                className="rounded-lg p-1 text-ink-secondary hover:bg-glass-surface-raised hover:text-ink transition-colors"
+                className="rounded-lg p-1 text-ink-secondary hover:bg-glass-surface-raised hover:text-clay-text transition-colors"
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M6 18L18 6M6 6l12 12" />
@@ -119,7 +119,7 @@ export function AdminReposPage() {
             </div>
 
             {error && (
-              <div className="flex items-center gap-2 rounded-md border border-red-100 bg-red-50 px-4 py-2.5 body-sm text-red-600">
+              <div className="flex items-center gap-2 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-2.5 body-sm text-red-400">
                 <svg className="h-4 w-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="10" />
                   <path d="M12 8v4M12 16h.01" />
@@ -137,7 +137,7 @@ export function AdminReposPage() {
               <label className="label mb-1.5 block">Description</label>
               <textarea name="description" defaultValue={editingRepo.description ?? ''} rows={3} className="input-field" placeholder="Description" />
             </div>
-            
+
             <div>
               <label className="label mb-1.5 block">GitHub URL</label>
               <input name="githubUrl" defaultValue={editingRepo.githubUrl} required className="input-field" placeholder="GitHub URL" />
@@ -170,7 +170,7 @@ export function AdminReposPage() {
             </div>
 
             <label className="flex items-center gap-2.5 body-sm text-ink-secondary cursor-pointer mt-4">
-              <input name="active" type="checkbox" defaultChecked className="h-4 w-4 rounded border-glass-border text-emerald-400 focus:ring-brand-green/20" />
+              <input name="active" type="checkbox" defaultChecked className="h-4 w-4 rounded border-glass-border text-emerald-400 focus:ring-emerald-500/20" />
               Active
             </label>
 

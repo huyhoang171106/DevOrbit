@@ -48,7 +48,7 @@ export function CourseDetailPage() {
           </div>
           <div className="flex flex-col items-center">
             <p className="text-[12px] font-black text-emerald-500 tracking-[0.3em] uppercase mb-2">Quantizing</p>
-            <p className="heading-4 text-ink animate-pulse tracking-wide">ACADEMIC CORE</p>
+            <p className="heading-4 text-clay-text animate-pulse tracking-wide">ACADEMIC CORE</p>
           </div>
         </div>
       </div>
@@ -63,7 +63,7 @@ export function CourseDetailPage() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
           </svg>
         </div>
-        <h2 className="display-sm mb-4">Course vanished into the void</h2>
+        <h2 className="display-sm text-clay-text mb-4">Course vanished into the void</h2>
         <p className="body-md text-ink-muted mb-8 max-w-md">We couldn't locate this specific academic node in our database.</p>
         <Link to="/courses" className="btn-primary px-8">Return to Universe</Link>
       </div>
@@ -89,7 +89,7 @@ export function CourseDetailPage() {
             <svg className="h-4 w-4 text-ink-muted group-hover:text-emerald-500 transition-colors group-hover:-translate-x-0.5 duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
-            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-ink-secondary group-hover:text-ink transition-colors">Catalog</span>
+            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-ink-secondary group-hover:text-clay-text transition-colors">Catalog</span>
           </Link>
           <div className="h-1 w-1 rounded-full bg-ink-muted/30" />
           <span className="text-[11px] font-bold text-emerald-500 uppercase tracking-widest">{course.code}</span>
@@ -109,9 +109,9 @@ export function CourseDetailPage() {
               <h1 className="hero-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl mb-6 leading-[1.1] tracking-tight">
                 {course.name}
               </h1>
-              
+
               {course.nameEn && (
-                <p className="text-xl md:text-2xl font-heading text-ink-muted mb-8 italic opacity-70 leading-relaxed">
+                <p className="text-xl md:text-2xl font-heading text-ink-muted mb-8 italic leading-relaxed">
                   {course.nameEn}
                 </p>
               )}
@@ -128,14 +128,14 @@ export function CourseDetailPage() {
             <div className="flex flex-row lg:flex-col flex-wrap gap-4 min-w-[200px]">
               <div className="glass-card-glow flex-1 lg:flex-none px-8 py-6 border-emerald-500/10 hover:border-emerald-500/30 transition-all duration-500 flex flex-col items-center justify-center min-w-[140px]">
                 <div className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500 mb-2">Credits</div>
-                <div className="heading-1 text-ink group-hover:scale-110 transition-transform">{course.credits}</div>
+                <div className="heading-1 text-clay-text group-hover:scale-110 transition-transform">{course.credits}</div>
                 <div className="mt-2 h-1 w-8 bg-emerald-500/20 rounded-full overflow-hidden">
                   <div className="h-full bg-emerald-500 rounded-full w-2/3 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
                 </div>
               </div>
               <div className="glass-card-glow flex-1 lg:flex-none px-8 py-6 border-indigo-500/10 hover:border-indigo-500/30 transition-all duration-500 flex flex-col items-center justify-center min-w-[140px]">
                 <div className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-2">Sources</div>
-                <div className="heading-1 text-ink">{repos.length}</div>
+                <div className="heading-1 text-clay-text">{repos.length}</div>
                 <div className="mt-2 flex gap-1">
                   {[1, 2, 3].map(i => <div key={i} className="h-1 w-2 rounded-full bg-indigo-500/30" />)}
                 </div>
@@ -163,7 +163,7 @@ export function CourseDetailPage() {
                 </div>
                 <div>
                   <div className="text-[10px] font-black uppercase tracking-[0.2em] text-ink-muted mb-0.5">{stat.label}</div>
-                  <div className="text-sm font-bold text-ink group-hover:text-emerald-500 transition-colors duration-300">{stat.value}</div>
+                  <div className="text-sm font-bold text-clay-text group-hover:text-emerald-500 transition-colors duration-300">{stat.value}</div>
                 </div>
               </div>
             ))}
@@ -212,7 +212,7 @@ export function CourseDetailPage() {
                       <path d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196 7.5 7.5 0 0010.607 10.607z" />
                     </svg>
                   </div>
-                  <h3 className="heading-3 mb-3">No matching nodes</h3>
+                  <h3 className="heading-3 text-clay-text mb-3">No matching nodes</h3>
                   <p className="body-md text-ink-muted max-w-sm mx-auto leading-relaxed">
                     The current parameters did not return any results. Adjust filters to continue exploration.
                   </p>
@@ -241,12 +241,12 @@ export function CourseDetailPage() {
                   </div>
                   <h4 className="heading-5 text-emerald-500 uppercase tracking-[0.1em]">Academic Insight</h4>
                 </div>
-                
+
                 <p className="body-sm leading-[1.8] text-ink-secondary italic relative">
                   <span className="absolute -top-4 -left-2 text-4xl text-emerald-500/20 font-serif">"</span>
                   Bridging the gap between conceptual architecture and practical implementation. Analyze the repository nodes to understand industry-standard applications of this core curriculum.
                 </p>
-                
+
                 <div className="mt-8 pt-8 border-t border-glass-border flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="h-2 w-2 rounded-full bg-emerald-500" />
@@ -280,4 +280,3 @@ export function CourseDetailPage() {
     </div>
   )
 }
-

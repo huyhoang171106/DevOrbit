@@ -34,7 +34,7 @@ export function CourseListPage() {
           </div>
           <div className="flex flex-col items-center">
             <p className="text-[11px] font-black text-emerald-500 tracking-[0.4em] uppercase mb-2">Synchronizing</p>
-            <p className="heading-3 text-ink animate-pulse tracking-wide font-bold">ACADEMIC UNIVERSE</p>
+            <p className="heading-3 text-clay-text animate-pulse tracking-wide font-bold">ACADEMIC UNIVERSE</p>
           </div>
         </div>
       </div>
@@ -64,8 +64,8 @@ export function CourseListPage() {
                 <div className="absolute -bottom-2 left-0 w-full h-1 bg-emerald-500/20 rounded-full blur-sm" />
               </span> Journey
             </h1>
-            <p className="body-md text-xl text-ink-secondary leading-relaxed mb-12 max-w-3xl opacity-80">
-              Navigate the UIT knowledge ecosystem. Discover specialized repositories, 
+            <p className="body-md text-xl text-ink-secondary leading-relaxed mb-12 max-w-3xl">
+              Navigate the UIT knowledge ecosystem. Discover specialized repositories,
               interactive neural maps, and peer insights for every course in our curriculum.
             </p>
           </div>
@@ -85,12 +85,12 @@ export function CourseListPage() {
                   placeholder="Search course nodes by name or code (e.g. CS101)..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-glass-surface/80 backdrop-blur-xl border border-glass-border rounded-[1.5rem] py-5 pl-16 pr-6 text-ink focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all placeholder:text-ink-muted/60 text-lg shadow-sm"
+                  className="w-full bg-glass-surface/80 backdrop-blur-xl border border-glass-border rounded-[1.5rem] py-5 pl-16 pr-6 text-clay-text focus:outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5 transition-all placeholder:text-ink-muted/60 text-lg shadow-sm"
                 />
               </div>
             </div>
-            
-            <Link 
+
+            <Link
               to="/knowledge-graph"
               className="glass-card-glow flex items-center justify-center gap-4 px-8 py-5 border-emerald-500/20 text-emerald-500 font-black uppercase tracking-[0.2em] text-[13px] hover:border-emerald-500/40 hover:bg-emerald-500/[0.03] transition-all duration-500 group min-w-[240px] rounded-[1.5rem]"
             >
@@ -135,7 +135,7 @@ export function CourseListPage() {
                   <path d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196 7.5 7.5 0 0010.607 10.607z" />
                 </svg>
               </div>
-              <h3 className="display-sm mb-4">{searchQuery ? 'Zero Search Results' : 'System Empty'}</h3>
+              <h3 className="display-sm mb-4 text-clay-text">{searchQuery ? 'Zero Search Results' : 'System Empty'}</h3>
               <p className="body-md text-xl text-ink-muted max-w-md mx-auto leading-relaxed">
                 {searchQuery
                   ? `We couldn't locate any academic nodes matching "${searchQuery}". Please verify the course code or name.`
@@ -157,4 +157,3 @@ export function CourseListPage() {
     </div>
   )
 }
-

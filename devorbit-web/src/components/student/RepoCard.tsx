@@ -27,61 +27,59 @@ export function RepoCard({ repo }: { repo: RepoSummary }) {
   return (
     <Link
       to={`/repos/${repo.id}`}
-      className="glass-card-glow group relative flex flex-col h-full cursor-pointer border-opacity-30 hover:border-emerald-500/40 hover:bg-glass-surface-hover hover:shadow-[0_15px_40px_-12px_rgba(16,185,129,0.12)] transition-all duration-500 p-6"
+      className="clay-card-hover group flex flex-col h-full bg-clay-surface !p-7 border-clay-border"
     >
-      <div className="relative z-10 flex items-start justify-between gap-4 mb-4">
+      <div className="flex items-start justify-between gap-4 mb-5">
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2.5 mb-2">
-            <div className="h-7 w-7 rounded-lg bg-emerald-500/5 flex items-center justify-center border border-emerald-500/10 group-hover:border-emerald-500/30 group-hover:bg-emerald-500/10 transition-all duration-500 shrink-0">
-              <svg className="h-3.5 w-3.5 text-emerald-500/70 group-hover:text-emerald-500 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="h-10 w-10 rounded-xl bg-clay-primary flex items-center justify-center border-[3px] border-clay-border shadow-[3px_3px_0px_0px_var(--color-clay-shadow-outer)] group-hover:bg-clay-secondary transition-colors shrink-0">
+              <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
               </svg>
             </div>
-            <h3 className="text-base font-bold text-ink group-hover:text-emerald-500 transition-colors duration-500 truncate leading-none">
+            <h3 className="text-lg font-black text-clay-text uppercase tracking-normal truncate leading-snug">
               {repo.displayName}
             </h3>
           </div>
-          
-          <p className="text-xs text-ink-secondary line-clamp-2 leading-relaxed opacity-80 group-hover:opacity-100 transition-opacity duration-500 min-h-[2.5rem]">
-            {repo.description || "No description provided for this academic resource node."}
+
+          <p className="text-[16px] font-bold text-clay-text leading-snug">
+            {repo.description || "Danh mục mã nguồn chuyên sâu cho môn học."}
           </p>
         </div>
 
         {repo.stars !== null && repo.stars > 0 && (
           <div className="shrink-0">
-            <span className="flex items-center gap-1 bg-amber-500/5 px-2 py-1 rounded-lg border border-amber-500/10 text-amber-500 group-hover:bg-amber-500/10 transition-all">
-              <svg className="h-3 w-3 fill-current" viewBox="0 0 24 24">
+            <span className="flex items-center gap-1.5 bg-clay-surface px-3 py-1.5 rounded-xl border-[3px] border-clay-border shadow-[4px_4px_0px_0px_var(--color-clay-shadow-outer)] text-clay-text">
+              <svg className="h-3.5 w-3.5 fill-clay-text" viewBox="0 0 24 24">
                 <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
               </svg>
-              <span className="text-[10px] font-black tracking-tighter">{repo.stars}</span>
+              <span className="text-[12px] font-black tracking-tighter">{repo.stars}</span>
             </span>
           </div>
         )}
       </div>
 
-      <div className="relative z-10 mt-auto flex flex-wrap items-center gap-2">
+      <div className="mt-auto flex flex-wrap items-center gap-3">
         {repo.primaryLanguage && (
-          <span className="inline-flex items-center gap-1.5 rounded-lg bg-glass-surface/50 px-2.5 py-1 border border-glass-border">
-            <span className="h-1.5 w-1.5 rounded-full shadow-[0_0_5px_currentColor]" style={{ color: langColor, backgroundColor: 'currentColor' }} />
-            <span className="text-[10px] font-black uppercase tracking-wider text-ink-secondary">{repo.primaryLanguage}</span>
+          <span className="inline-flex items-center gap-2 rounded-lg bg-clay-surface px-3 py-1.5 border-[2px] border-clay-border">
+            <span className="h-2 w-2 rounded-full border-[1px] border-clay-border" style={{ backgroundColor: langColor }} />
+            <span className="text-[10px] font-black uppercase tracking-widest text-clay-text">{repo.primaryLanguage}</span>
           </span>
         )}
         {repo.techStacks?.slice(0, 3).map((stack) => (
-          <span key={stack} className="inline-flex items-center rounded-lg bg-emerald-500/5 px-2.5 py-1 border border-emerald-500/10 text-[9px] uppercase font-black tracking-[0.1em] text-emerald-500/70 group-hover:text-emerald-500 transition-all">
+          <span key={stack} className="inline-flex items-center rounded-lg bg-clay-accent text-white px-3 py-1.5 border-[2px] border-clay-border text-[10px] uppercase font-black tracking-widest shadow-[2px_2px_0px_0px_var(--color-clay-shadow-outer)]">
             {stack}
           </span>
         ))}
         {repo.techStacks?.length > 3 && (
-          <span className="text-[9px] font-black text-ink-muted/60 uppercase tracking-tighter">+{repo.techStacks.length - 3}</span>
+          <span className="text-[10px] font-black text-ink-muted uppercase tracking-tighter">+{repo.techStacks.length - 3} more</span>
         )}
       </div>
 
-      {/* Subtle indicator of activity */}
-      <div className="absolute top-0 right-0 p-1 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-1 -translate-y-1">
-        <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+      {/* Chunky indicator of activity */}
+      <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 -translate-y-2">
+        <div className="h-4 w-4 rounded-full bg-clay-primary border-[2px] border-clay-border shadow-[2px_2px_0px_0px_var(--color-clay-shadow-outer)]" />
       </div>
     </Link>
   )
 }
-
-

@@ -37,7 +37,7 @@ export function LoginPage() {
               <circle cx="12" cy="12" r="11" strokeDasharray="2 4" opacity="0.2" />
             </svg>
           </div>
-          <h1 className="heading-3 text-ink">Admin Login</h1>
+          <h1 className="heading-3 text-clay-text">Admin Login</h1>
           <p className="mt-2 body-sm">Sign in to manage courses and repositories.</p>
         </div>
 

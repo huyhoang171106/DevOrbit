@@ -33,7 +33,8 @@ public class RepoCandidateService {
             candidates = repoCandidateRepository.findByStatusAndAssignedReviewer(
                 RepoCandidateStatus.NEW, reviewer);
         } else {
-            candidates = repoCandidateRepository.findByStatus(RepoCandidateStatus.NEW);
+            candidates = repoCandidateRepository.findByStatusAndAssignedReviewer(
+                RepoCandidateStatus.NEW, null);
         }
         return candidates.stream()
             .map(RepoCandidateResponse::from)

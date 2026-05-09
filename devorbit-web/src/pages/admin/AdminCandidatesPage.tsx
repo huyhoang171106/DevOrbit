@@ -96,7 +96,7 @@ export function AdminCandidatesPage() {
     <div className="w-full max-w-[1440px] mx-auto px-[32px] py-[64px]">
       <div className="mb-[32px] flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="display-sm text-ink mb-1">Repo Candidates</h1>
+          <h1 className="display-sm text-clay-text mb-1">Repo Candidates</h1>
           <p className="body-sm text-ink-secondary">
             Review and approve repositories discovered from GitHub scans.
           </p>
@@ -110,11 +110,10 @@ export function AdminCandidatesPage() {
                 <button
                   key={p}
                   onClick={() => setReviewer(p)}
-                  className={`px-5 py-2 text-[13px] font-bold rounded-lg transition-all ${
-                    reviewer === p
+                  className={`px-5 py-2 text-[13px] font-bold rounded-lg transition-all ${reviewer === p
                       ? 'bg-cosmic-surface text-emerald-400 shadow-md border border-glass-border scale-105 z-10'
-                      : 'text-ink-secondary hover:text-ink hover:bg-cosmic-surface/50'
-                  }`}
+                      : 'text-ink-secondary hover:text-clay-text hover:bg-cosmic-surface/50'
+                    }`}
                 >
                   {p === 'all' ? 'All' : p}
                   {p !== 'all' && reviewerRemaining[p] !== undefined && (

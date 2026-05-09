@@ -15,7 +15,7 @@ export function AdminScanPage() {
   const [bulkScanning, setBulkScanning] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [courses, setCourses] = useState<any[]>([])
-  
+
   const [logs, setLogs] = useState<string[]>([])
   const terminalRef = useRef<HTMLDivElement>(null)
 
@@ -33,7 +33,7 @@ export function AdminScanPage() {
         try {
           const res = await apiAdminGet<string[]>('/api/admin/github/scan-logs', token)
           setLogs(res)
-          
+
           // Check if scan completed (last log contains "completed")
           if (res.length > 0 && res[res.length - 1].toLowerCase().includes('completed')) {
             setBulkScanning(false)
@@ -57,12 +57,12 @@ export function AdminScanPage() {
 
   async function handleScanAll() {
     if (!window.confirm('This will scan all courses on GitHub. It takes about 2-3 minutes to finish in the background. Continue?')) return
-    
+
     setBulkScanning(true)
     setError(null)
     setSuccessMessage(null)
     setLogs(['[System] Initializing connection...'])
-    
+
     try {
       await apiAdminPost('/api/admin/github/scan-all', token, {})
       setSuccessMessage('Bulk scan started! You can track the progress in the console below.')
@@ -83,14 +83,14 @@ export function AdminScanPage() {
         courseId,
         query,
       })
-      
+
       // Manually attach course code if missing from backend response
       const targetCourse = courses.find(c => c.id === courseId)
       const mappedResults = res.map(candidate => ({
         ...candidate,
         courseCode: candidate.courseCode || targetCourse?.code
       }))
-      
+
       setCandidates(mappedResults)
     } catch (err) {
       setError('Scan failed.')
@@ -152,7 +152,7 @@ export function AdminScanPage() {
             </div>
             <span className="text-[10px] font-mono text-ink-muted uppercase tracking-widest">discovery_terminal</span>
           </div>
-          <div 
+          <div
             ref={terminalRef}
             className="p-4 h-60 overflow-y-auto font-mono text-[11px] leading-relaxed scrollbar-thin scrollbar-thumb-white/10"
           >
@@ -191,19 +191,18 @@ export function AdminScanPage() {
           </div>
           <ul className="divide-y divide-glass-border">
             {candidates.map((c) => (
-              <li key={c.id} className="flex items-center justify-between px-5 py-3.5 transition-colors hover:bg-glass-surface">
+              <li key={c.id} className="flex items-center justify-between px-5 py-3.5 transition-colors hover:bg-glass-surface-raised">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-ink truncate">
+                    <span className="text-sm font-medium text-clay-text truncate">
                       {c.githubOwner}/{c.githubName}
                     </span>
-                    <span className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-medium border ${
-                      c.status === 'NEW'
+                    <span className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-medium border ${c.status === 'NEW'
                         ? 'bg-amber-500/10 text-amber-400 border-amber-500/10'
                         : c.status === 'APPROVED'
-                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/10'
-                        : 'bg-rose-500/10 text-rose-400 border-rose-500/10'
-                    }`}>
+                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/10'
+                          : 'bg-rose-500/10 text-rose-400 border-rose-500/10'
+                      }`}>
                       {c.status}
                     </span>
                     {c.courseCode && (
@@ -220,7 +219,7 @@ export function AdminScanPage() {
                   href={c.githubUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="ml-4 flex-shrink-0 text-xs text-cyan-600 dark:text-cyan-400 hover:text-cyan-500 dark:hover:text-cyan-300 transition-colors inline-flex items-center gap-1"
+                  className="ml-4 flex-shrink-0 text-xs text-cyan-400 hover:text-cyan-300 transition-colors inline-flex items-center gap-1"
                 >
                   View
                   <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

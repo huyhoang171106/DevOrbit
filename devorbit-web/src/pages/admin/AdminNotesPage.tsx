@@ -37,13 +37,13 @@ export function AdminNotesPage() {
   return (
     <div className="w-full max-w-[1280px] mx-auto px-[32px] py-[64px]">
       <div className="mb-[32px]">
-        <h1 className="display-sm text-ink mb-1">Student Notes</h1>
-        <p className="body-sm text-ink-secondary">Browse and manage notes created by students.</p>
+        <h1 className="display-sm text-clay-text mb-1">Student Notes</h1>
+        <p className="body-sm text-clay-text-muted">Browse and manage notes created by students.</p>
       </div>
 
       {loading ? (
         <div className="flex items-center justify-center py-[96px]">
-          <div className="flex items-center gap-3 body-sm text-ink-secondary">
+          <div className="flex items-center gap-3 body-sm text-clay-text-muted">
             <svg className="h-5 w-5 animate-spin text-emerald-400" viewBox="0 0 24 24" fill="none">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -52,21 +52,21 @@ export function AdminNotesPage() {
           </div>
         </div>
       ) : (
-        <div className="glass-card overflow-hidden border border-glass-border p-0">
+        <div className="glass-card overflow-hidden border border-clay-border p-0">
           <table className="min-w-full text-sm">
             <thead>
-              <tr className="border-b border-glass-border bg-glass-surface-raised">
-                <th className="table-header text-left font-medium text-ink-secondary py-3 px-4">Title</th>
-                <th className="table-header text-left font-medium text-ink-secondary py-3 px-4">Student</th>
-                <th className="table-header text-left font-medium text-ink-secondary py-3 px-4">Target</th>
-                <th className="table-header text-left font-medium text-ink-secondary py-3 px-4">Snippets</th>
-                <th className="table-header text-right font-medium text-ink-secondary py-3 px-4">Actions</th>
+              <tr className="border-b border-clay-border bg-glass-surface-raised">
+                <th className="table-header text-left font-medium text-clay-text-muted py-3 px-4">Title</th>
+                <th className="table-header text-left font-medium text-clay-text-muted py-3 px-4">Student</th>
+                <th className="table-header text-left font-medium text-clay-text-muted py-3 px-4">Target</th>
+                <th className="table-header text-left font-medium text-clay-text-muted py-3 px-4">Snippets</th>
+                <th className="table-header text-right font-medium text-clay-text-muted py-3 px-4">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-glass-border bg-cosmic-surface">
+            <tbody className="divide-y divide-clay-border bg-clay-bg">
               {(notes ?? []).length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-10 text-center body-sm text-ink-secondary">No notes found.</td>
+                  <td colSpan={5} className="px-4 py-10 text-center body-sm text-clay-text-muted">No notes found.</td>
                 </tr>
               )}
               {(notes ?? []).map((n) => (
@@ -74,20 +74,20 @@ export function AdminNotesPage() {
                   <td className="table-cell py-3 px-4">
                     <button
                       onClick={() => setSelectedNote(n)}
-                      className="text-left text-ink hover:text-emerald-400 transition-colors font-medium body-sm"
+                      className="text-left text-clay-text hover:text-emerald-400 transition-colors font-medium body-sm"
                     >
                       {truncate(n.title, 60)}
                     </button>
                   </td>
-                  <td className="table-cell text-ink-secondary body-sm py-3 px-4">{n.studentCode}</td>
+                  <td className="table-cell text-clay-text-muted body-sm py-3 px-4">{n.studentCode}</td>
                   <td className="table-cell py-3 px-4">
-                    <span className="code-sm text-ink-secondary bg-glass-surface border border-glass-border px-1.5 py-0.5 rounded-md">{targetLabels[n.targetType] ?? n.targetType}{n.targetId ? ` #${n.targetId}` : ''}</span>
+                    <span className="code-sm text-clay-text-muted bg-clay-surface border border-clay-border px-1.5 py-0.5 rounded-md">{targetLabels[n.targetType] ?? n.targetType}{n.targetId ? ` #${n.targetId}` : ''}</span>
                   </td>
-                  <td className="table-cell text-ink-secondary body-sm py-3 px-4">{n.snippets?.length ?? 0}</td>
+                  <td className="table-cell text-clay-text-muted body-sm py-3 px-4">{n.snippets?.length ?? 0}</td>
                   <td className="table-cell text-right py-3 px-4">
                     <div className="flex justify-end gap-2">
-                      <button onClick={() => setSelectedNote(n)} className="btn-secondary !py-1 !px-3 !bg-glass-surface !text-xs !text-ink-secondary hover:!text-ink border border-glass-border">View</button>
-                      <button onClick={() => handleDelete(n.id)} className="btn-secondary !py-1 !px-3 !bg-glass-surface !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Delete</button>
+                      <button onClick={() => setSelectedNote(n)} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-clay-text-muted hover:!text-clay-text border border-clay-border">View</button>
+                      <button onClick={() => handleDelete(n.id)} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Delete</button>
                     </div>
                   </td>
                 </tr>

@@ -203,6 +203,7 @@ export type GraphNode = {
   code: string
   val: number
   level: number
+  impactScore: number
 }
 
 export type GraphLink = {

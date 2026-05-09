@@ -171,7 +171,7 @@ export function AdminRoadmapsPage() {
   // --- Shared ---
   function Spinner() {
     return (
-      <div className="flex items-center gap-2 text-xs text-ink-secondary py-4 px-4">
+      <div className="flex items-center gap-2 text-xs text-clay-text-muted py-4 px-4">
         <svg className="h-4 w-4 animate-spin text-emerald-400" viewBox="0 0 24 24" fill="none">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -185,8 +185,8 @@ export function AdminRoadmapsPage() {
     <div className="w-full max-w-[1280px] mx-auto px-[32px] py-[64px]">
       <div className="mb-[32px] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="display-sm text-ink mb-1">Learning Roadmaps</h1>
-          <p className="body-sm text-ink-secondary">Manage student learning roadmaps, phases, and items.</p>
+          <h1 className="display-sm text-clay-text mb-1">Learning Roadmaps</h1>
+          <p className="body-sm text-clay-text-muted">Manage student learning roadmaps, phases, and items.</p>
         </div>
         <button onClick={() => { setRmEdit(undefined); setRmEditId(null); setRmDialog(true) }} className="btn-primary self-start text-sm px-4 py-2">
           <svg className="mr-2 h-4 w-4 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
@@ -196,7 +196,7 @@ export function AdminRoadmapsPage() {
 
       {loading ? (
         <div className="flex items-center justify-center py-[96px]">
-          <div className="flex items-center gap-3 body-sm text-ink-secondary">
+          <div className="flex items-center gap-3 body-sm text-clay-text-muted">
             <svg className="h-5 w-5 animate-spin text-emerald-400" viewBox="0 0 24 24" fill="none">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -207,7 +207,7 @@ export function AdminRoadmapsPage() {
       ) : (
         <div className="space-y-[16px]">
           {(roadmaps ?? []).length === 0 && (
-            <div className="glass-card p-[32px] text-center body-sm text-ink-secondary">No roadmaps yet.</div>
+            <div className="glass-card p-[32px] text-center body-sm text-clay-text-muted">No roadmaps yet.</div>
           )}
           {(roadmaps ?? []).map((rm) => (
             <div key={rm.id} className="glass-card overflow-hidden p-0">
@@ -215,81 +215,81 @@ export function AdminRoadmapsPage() {
               <div className="p-4 flex items-center justify-between hover:bg-glass-surface-raised transition-colors cursor-pointer" onClick={() => toggleExpandRoadmap(rm.id)}>
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <button
-                    className="text-ink-secondary hover:text-ink transition-colors"
+                    className="text-clay-text-muted hover:text-clay-text transition-colors"
                   >
                     <svg className={`h-4 w-4 transition-transform ${expandedRoadmap === rm.id ? 'rotate-90' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M9 18l6-6-6-6" />
                     </svg>
                   </button>
                   <div className="min-w-0">
-                    <h3 className="heading-4 text-ink">{rm.title}</h3>
-                    <p className="body-sm text-ink-secondary mt-[4px]">
+                    <h3 className="heading-4 text-clay-text">{rm.title}</h3>
+                    <p className="body-sm text-clay-text-muted mt-[4px]">
                       {rm.studentCode} - {rm.studentName} &middot; {rm.isPublic ? 'Public' : 'Private'}
                       &middot; Updated {new Date(rm.updatedAt).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
                 <div className="flex gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
-                  <button onClick={() => openRmEdit(rm)} className="btn-secondary !py-1 !px-3 !bg-glass-surface !text-xs">Edit</button>
-                  <button onClick={() => handleRmDelete(rm.id)} className="btn-secondary !py-1 !px-3 !bg-glass-surface !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Delete</button>
+                  <button onClick={() => openRmEdit(rm)} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs">Edit</button>
+                  <button onClick={() => handleRmDelete(rm.id)} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Delete</button>
                 </div>
               </div>
 
               {/* Phases (expanded) */}
               {expandedRoadmap === rm.id && (
-                <div className="border-t border-glass-border bg-glass-surface">
+                <div className="border-t border-clay-border bg-clay-surface">
                   {phLoading[rm.id] ? <Spinner /> : (
                     <div>
                       {/* Phase list */}
                       {(phases[rm.id] ?? []).length === 0 && (
-                        <p className="px-[32px] py-[16px] body-sm text-ink-secondary">No phases yet.</p>
+                        <p className="px-[32px] py-[16px] body-sm text-clay-text-muted">No phases yet.</p>
                       )}
                       {(phases[rm.id] ?? []).map((ph) => (
                         <div key={ph.id}>
                           {/* Phase row */}
-                          <div className="pl-[48px] pr-4 py-3 flex items-center justify-between border-b border-glass-border hover:bg-glass-surface-raised cursor-pointer" onClick={() => toggleExpandPhase(ph.id)}>
+                          <div className="pl-[48px] pr-4 py-3 flex items-center justify-between border-b border-clay-border hover:bg-glass-surface-raised cursor-pointer" onClick={() => toggleExpandPhase(ph.id)}>
                             <div className="flex items-center gap-3 flex-1 min-w-0">
                               <button
-                                className="text-ink-secondary hover:text-ink transition-colors"
+                                className="text-clay-text-muted hover:text-clay-text transition-colors"
                               >
                                 <svg className={`h-3.5 w-3.5 transition-transform ${expandedPhase[ph.id] ? 'rotate-90' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                   <path d="M9 18l6-6-6-6" />
                                 </svg>
                               </button>
-                              <span className="code-sm text-ink-secondary bg-glass-surface border border-glass-border px-1.5 py-0.5 rounded">#{ph.sortOrder}</span>
+                              <span className="code-sm text-clay-text-muted bg-clay-surface border border-clay-border px-1.5 py-0.5 rounded">#{ph.sortOrder}</span>
                               <div className="min-w-0">
-                                <span className="body-md font-medium text-ink">{ph.title}</span>
-                                {ph.description && <p className="body-sm text-ink-secondary truncate mt-0.5">{ph.description}</p>}
+                                <span className="body-md font-medium text-clay-text">{ph.title}</span>
+                                {ph.description && <p className="body-sm text-clay-text-muted truncate mt-0.5">{ph.description}</p>}
                               </div>
                             </div>
                             <div className="flex gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
-                              <button onClick={() => { setPhEdit({ title: ph.title, description: ph.description ?? '', sortOrder: ph.sortOrder }); setPhEditId(ph.id); setPhRoadmapId(null); setPhDialog(true) }} className="btn-secondary !py-0.5 !px-2 !bg-cosmic-surface !text-xs">Edit</button>
-                              <button onClick={() => handlePhDelete(ph.id, rm.id)} className="btn-secondary !py-0.5 !px-2 !bg-cosmic-surface !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Delete</button>
+                              <button onClick={() => { setPhEdit({ title: ph.title, description: ph.description ?? '', sortOrder: ph.sortOrder }); setPhEditId(ph.id); setPhRoadmapId(null); setPhDialog(true) }} className="btn-secondary !py-0.5 !px-2 !bg-clay-bg !text-xs">Edit</button>
+                              <button onClick={() => handlePhDelete(ph.id, rm.id)} className="btn-secondary !py-0.5 !px-2 !bg-clay-bg !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Delete</button>
                             </div>
                           </div>
 
                           {/* Items (expanded under phase) */}
                           {expandedPhase[ph.id] && (
-                            <div className="bg-cosmic-surface border-b border-glass-border">
+                            <div className="bg-clay-bg border-b border-clay-border">
                               {itLoading[ph.id] ? <Spinner /> : (
                                 <div className="py-2">
                                   {(items[ph.id] ?? []).length === 0 && (
-                                    <p className="pl-[72px] pr-8 py-2 body-sm text-ink-secondary">No items yet.</p>
+                                    <p className="pl-[72px] pr-8 py-2 body-sm text-clay-text-muted">No items yet.</p>
                                   )}
                                   {(items[ph.id] ?? []).map((it) => (
                                     <div key={it.id} className="pl-[72px] pr-4 py-2 flex items-center justify-between hover:bg-glass-surface-raised transition-colors">
                                       <div className="flex items-center gap-3 min-w-0">
-                                        <span className="code-sm text-ink-secondary bg-glass-surface border border-glass-border px-1.5 py-0.5 rounded">#{it.sortOrder}</span>
+                                        <span className="code-sm text-clay-text-muted bg-clay-surface border border-clay-border px-1.5 py-0.5 rounded">#{it.sortOrder}</span>
                                         <span className="badge-tag uppercase">
                                           {it.targetType}
                                         </span>
-                                        <span className="code-sm text-ink-secondary">ID: {it.targetId}</span>
-                                        {it.title && <span className="body-sm text-ink truncate max-w-[200px]">{it.title}</span>}
-                                        {it.note && <span className="body-sm text-ink-secondary italic truncate max-w-[150px]">{it.note}</span>}
+                                        <span className="code-sm text-clay-text-muted">ID: {it.targetId}</span>
+                                        {it.title && <span className="body-sm text-clay-text truncate max-w-[200px]">{it.title}</span>}
+                                        {it.note && <span className="body-sm text-clay-text-muted italic truncate max-w-[150px]">{it.note}</span>}
                                       </div>
                                       <div className="flex gap-2 shrink-0">
-                                        <button onClick={() => { setItEdit({ targetType: it.targetType, targetId: it.targetId, title: it.title ?? '', note: it.note ?? '', sortOrder: it.sortOrder }); setItEditId(it.id); setItPhaseId(null); setItDialog(true) }} className="btn-secondary !py-0.5 !px-2 !bg-glass-surface !text-xs">Edit</button>
-                                        <button onClick={() => handleItDelete(it.id)} className="btn-secondary !py-0.5 !px-2 !bg-glass-surface !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Delete</button>
+                                        <button onClick={() => { setItEdit({ targetType: it.targetType, targetId: it.targetId, title: it.title ?? '', note: it.note ?? '', sortOrder: it.sortOrder }); setItEditId(it.id); setItPhaseId(null); setItDialog(true) }} className="btn-secondary !py-0.5 !px-2 !bg-clay-surface !text-xs">Edit</button>
+                                        <button onClick={() => handleItDelete(it.id)} className="btn-secondary !py-0.5 !px-2 !bg-clay-surface !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Delete</button>
                                       </div>
                                     </div>
                                   ))}

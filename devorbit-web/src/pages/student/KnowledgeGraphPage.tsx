@@ -1,12 +1,54 @@
-import { useRef } from 'react'
+import { useRef, useState, useMemo } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import ForceGraph2D from 'react-force-graph-2d'
 import { useKnowledgeGraph } from '../../hooks/useKnowledgeGraph'
+import { Activity, Play, RotateCcw, AlertTriangle } from 'lucide-react'
 
 export function KnowledgeGraphPage() {
   const fgRef = useRef<any>(null)
   const navigate = useNavigate()
   const { data, isLoading, error } = useKnowledgeGraph()
+
+  // --- Simulation State ---
+  const [isSimulationMode, setIsSimulationMode] = useState(false)
+  const [failedNodes, setFailedNodes] = useState<Set<number>>(new Set())
+
+  // --- Recursive Blocking Logic ---
+  const blockedNodes = useMemo(() => {
+    if (!data || failedNodes.size === 0) return new Set<number>()
+
+    const blocked = new Set<number>(failedNodes)
+    const queue = Array.from(failedNodes)
+
+    while (queue.length > 0) {
+      const currentId = queue.shift()!
+      // Find all courses that have 'currentId' as a prerequisite
+      const downstream = data.links
+        .filter(link => link.source === currentId && link.type === 'PREREQUISITE')
+        .map(link => link.target)
+
+      for (const targetId of downstream) {
+        if (!blocked.has(targetId)) {
+          blocked.add(targetId)
+          queue.push(targetId)
+        }
+      }
+    }
+    return blocked
+  }, [data, failedNodes])
+
+  // --- Semester Delay Estimation ---
+  const delayEstimate = useMemo(() => {
+    if (!data || blockedNodes.size === 0) return 0
+    
+    // Find the max level difference among blocked nodes
+    const blockedNodeList = data.nodes.filter(n => blockedNodes.has(n.id))
+    const maxLevel = Math.max(...blockedNodeList.map(n => n.level))
+    const minLevel = Math.min(...blockedNodeList.map(n => n.level))
+    
+    // Roughly estimate: delay is the number of semester levels affected
+    return Math.max(1, Math.floor((maxLevel - minLevel) / 1.5) + 1)
+  }, [data, blockedNodes])
 
   if (isLoading) {
     return (
@@ -107,10 +149,70 @@ export function KnowledgeGraphPage() {
             </div>
           </div>
 
-          <div className="mt-10 flex gap-4 pointer-events-auto">
-            <Link to="/courses" className="btn-primary text-[11px] px-6 py-2.5 uppercase tracking-[0.2em]">
-              Catalog View
-            </Link>
+          <div className="mt-10 flex flex-col gap-4 pointer-events-auto">
+            <button 
+              onClick={() => {
+                setIsSimulationMode(!isSimulationMode)
+                if (isSimulationMode) setFailedNodes(new Set())
+              }}
+              className={`flex items-center justify-center gap-3 w-full px-6 py-3 rounded-xl font-black uppercase tracking-[0.2em] text-[11px] transition-all duration-500 border ${
+                isSimulationMode 
+                  ? 'bg-rose-500 border-rose-400 text-white shadow-[0_0_30px_rgba(244,63,94,0.4)]' 
+                  : 'bg-emerald-500 border-emerald-400 text-white shadow-[0_0_30px_rgba(16,185,129,0.4)]'
+              }`}
+            >
+              {isSimulationMode ? <Activity className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+              {isSimulationMode ? 'Exit Simulation' : 'Enter Simulation'}
+            </button>
+            
+            {isSimulationMode && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 backdrop-blur-sm">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-ink-muted">Simulation Metrics</span>
+                    <button 
+                      onClick={() => setFailedNodes(new Set())}
+                      className="text-ink-muted hover:text-white transition-colors"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                    </button>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[20px] font-bold text-white">{blockedNodes.size}</span>
+                      <span className="text-[8px] font-black uppercase tracking-widest text-ink-muted">Blocked Courses</span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[20px] font-bold text-rose-500">+{delayEstimate}</span>
+                        <span className="text-[10px] text-rose-500 font-bold uppercase">Sem</span>
+                      </div>
+                      <span className="text-[8px] font-black uppercase tracking-widest text-ink-muted">Graduation Delay</span>
+                    </div>
+                  </div>
+                </div>
+
+                {failedNodes.size > 0 && (
+                  <div className="flex items-start gap-3 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20">
+                    <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                    <p className="text-[10px] text-rose-200 leading-relaxed font-medium">
+                      High risk detected. The current failure pattern blocks key prerequisites for your graduation path.
+                    </p>
+                  </div>
+                )}
+
+                <p className="text-[9px] text-ink-muted italic text-center px-4">
+                  Click on any course node to simulate a failure and observe the impact propagation.
+                </p>
+              </div>
+            )}
+
+            {!isSimulationMode && (
+              <Link to="/courses" className="btn-secondary text-[11px] px-6 py-2.5 uppercase tracking-[0.2em] text-center">
+                Catalog View
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -141,6 +243,9 @@ export function KnowledgeGraphPage() {
           // Safety check for finite values to prevent Canvas errors
           if (!Number.isFinite(node.x) || !Number.isFinite(node.y) || !Number.isFinite(node.val) || node.val <= 0) return;
 
+          const isFailed = failedNodes.has(node.id)
+          const isBlocked = blockedNodes.has(node.id) && !isFailed
+          
           // Use the pre-calculated topological level (computed server-side)
           const level = node.level || 0;
 
@@ -148,8 +253,17 @@ export function KnowledgeGraphPage() {
           let glowColor = 'rgba(16, 185, 129, 0.4)';
           let glowColorMuted = 'rgba(16, 185, 129, 0.1)';
 
-          // Level-based color mapping (Topological Depth)
-          switch (level) {
+          if (isFailed) {
+            nodeColor = '#f43f5e'; // Rose-500
+            glowColor = 'rgba(244, 63, 94, 0.6)';
+            glowColorMuted = 'rgba(244, 63, 94, 0.2)';
+          } else if (isBlocked) {
+            nodeColor = '#fb7185'; // Rose-400 (Faded)
+            glowColor = 'rgba(251, 113, 133, 0.3)';
+            glowColorMuted = 'rgba(251, 113, 133, 0.05)';
+          } else {
+            // Level-based color mapping (Topological Depth)
+            switch (level) {
             case 0: // Root nodes (no prerequisites)
               nodeColor = '#22d3ee'; // Cyan
               glowColor = 'rgba(34, 211, 238, 0.4)';
@@ -221,7 +335,18 @@ export function KnowledgeGraphPage() {
         linkDirectionalParticleColor={(link: any) => link.type === 'PREREQUISITE' ? '#10b981' : '#6366f1'}
         linkCurvature={0.1}
         linkLineDash={(link: any) => link.type === 'COMPLEMENTARY' ? [6, 4] : []}
-        onNodeClick={(node: any) => navigate(`/courses/${node.id}`)}
+        onNodeClick={(node: any) => {
+          if (isSimulationMode) {
+            setFailedNodes(prev => {
+              const next = new Set(prev)
+              if (next.has(node.id)) next.delete(node.id)
+              else next.add(node.id)
+              return next
+            })
+          } else {
+            navigate(`/courses/${node.id}`)
+          }
+        }}
         cooldownTicks={50}
         d3AlphaDecay={0.02}
         d3VelocityDecay={0.4}

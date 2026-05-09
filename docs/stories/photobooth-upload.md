@@ -1,4 +1,4 @@
-# Story: Korean-Style Upload Photobooth
+`# Story: Korean-Style Upload Photobooth
 
 ## Status
 - **Status:** Draft

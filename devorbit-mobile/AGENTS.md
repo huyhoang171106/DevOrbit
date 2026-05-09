@@ -19,11 +19,11 @@ Kotlin Android application for the DevOrbit platform, providing mobile access fo
 ## Subdirectories
 | Directory | Purpose |
 |-----------|---------|
-| `app/src/main/java/vn/edu/uit/devorbit/mobile/model/` | Data models (Course, Repo, TechStack, Ai, Knowledge) |
+| `app/src/main/java/vn/edu/uit/devorbit/mobile/model/` | Data models (Course, Repo, TechStack, Knowledge) |
 | `app/src/main/java/vn/edu/uit/devorbit/mobile/network/` | API client and network configuration |
 | `app/src/main/java/vn/edu/uit/devorbit/mobile/repository/` | Data repositories with caching |
 | `app/src/main/java/vn/edu/uit/devorbit/mobile/ui/` | UI screens and composables |
-| `app/src/main/java/vn/edu/uit/devorbit/mobile/ui/viewmodel/` | ViewModel classes (CourseViewModel, AiTutorViewModel) |
+| `app/src/main/java/vn/edu/uit/devorbit/mobile/ui/viewmodel/` | ViewModel classes (CourseViewModel) |
 | `app/src/main/java/vn/edu/uit/devorbit/mobile/ui/components/` | Reusable UI components (GlassCard, CosmicBackground) |
 | `app/src/main/res/` | Android resources (layouts, drawables, values) |
 | `gradle/` | Gradle wrapper files |

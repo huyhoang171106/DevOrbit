@@ -20,24 +20,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import vn.edu.uit.devorbit.mobile.ui.components.GlassCard
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicGlowPurple
-import vn.edu.uit.devorbit.mobile.ui.viewmodel.AiTutorViewModel
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun RepoDetailScreen(
     repo: RepoSummary,
-    onBack: () -> Unit,
-    aiViewModel: AiTutorViewModel = hiltViewModel()
+    onBack: () -> Unit
 ) {
     val context = LocalContext.current
-    val aiSummary by aiViewModel.summary
-    val aiAdvice by aiViewModel.advice
-    val isAiLoading by aiViewModel.isLoading
-
-    LaunchedEffect(repo.id) {
-        aiViewModel.loadAiInsights(repo.id)
-    }
 
     Column(
         modifier = Modifier
@@ -108,59 +100,6 @@ fun RepoDetailScreen(
                             labelColor = Color.White
                         )
                     )
-                }
-            }
-            Spacer(Modifier.height(24.dp))
-        } else {
-            Spacer(Modifier.height(24.dp))
-        }
-
-        // AI SMART INSIGHTS SECTION
-        Text(
-            "AI SMART INSIGHTS",
-            style = MaterialTheme.typography.labelLarge,
-            color = CosmicGlowPurple,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-        
-        GlassCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(1.dp, CosmicGlowPurple.copy(alpha = 0.5f), RoundedCornerShape(24.dp))
-        ) {
-            if (isAiLoading) {
-                LinearProgressIndicator(
-                    modifier = Modifier.fillMaxWidth(),
-                    color = CosmicGlowPurple
-                )
-            } else {
-                Column {
-                    aiSummary?.let {
-                        Text(
-                            text = "💡 Summary",
-                            style = MaterialTheme.typography.titleSmall,
-                            color = CosmicGlowPurple
-                        )
-                        Text(
-                            text = it.content,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White
-                        )
-                        Spacer(Modifier.height(16.dp))
-                    }
-                    
-                    aiAdvice?.let {
-                        Text(
-                            text = "🎓 Tutor's Advice",
-                            style = MaterialTheme.typography.titleSmall,
-                            color = CosmicGlowPurple
-                        )
-                        Text(
-                            text = it.content,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White
-                        )
-                    }
                 }
             }
         }

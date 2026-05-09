@@ -24,11 +24,4 @@ interface ApiService {
 
     @GET("/api/courses/{id}/articles")
     suspend fun getArticles(@Path("id") courseId: Long): List<CourseArticle>
-
-    // AI Features
-    @GET("/api/ai/repo/{repoId}/summary")
-    suspend fun getAiSummary(@Path("repoId") repoId: Long): AiResponse
-
-    @GET("/api/ai/repo/{repoId}/advice")
-    suspend fun getAiAdvice(@Path("repoId") repoId: Long): AiResponse
 }

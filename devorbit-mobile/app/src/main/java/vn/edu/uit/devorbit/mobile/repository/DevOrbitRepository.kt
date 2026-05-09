@@ -1,9 +1,7 @@
 package vn.edu.uit.devorbit.mobile.repository
 
 import android.content.Context
-import vn.edu.uit.devorbit.mobile.model.CourseSummary
-import vn.edu.uit.devorbit.mobile.model.RepoSummary
-import vn.edu.uit.devorbit.mobile.network.NetworkModule
+import vn.edu.uit.devorbit.mobile.model.*
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -27,14 +25,6 @@ class DevOrbitRepository(
             saveCache = { cache.saveReposJson(courseId, gson.toJson(it)) },
             loadCache = { cache.getReposJson(courseId) },
         )
-
-    suspend fun getAiSummary(repoId: Long): Result<vn.edu.uit.devorbit.mobile.model.AiResponse> = runCatching {
-        api.getAiSummary(repoId)
-    }
-
-    suspend fun getAiAdvice(repoId: Long): Result<vn.edu.uit.devorbit.mobile.model.AiResponse> = runCatching {
-        api.getAiAdvice(repoId)
-    }
 
     suspend fun getTutorials(courseId: Long): Result<List<CourseTutorial>> = runCatching {
         api.getTutorials(courseId)

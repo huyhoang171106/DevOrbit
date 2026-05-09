@@ -5,8 +5,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import vn.edu.uit.devorbit.mobile.model.CourseSummary
-import vn.edu.uit.devorbit.mobile.model.RepoSummary
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Alignment
+import androidx.hilt.navigation.compose.hiltViewModel
+import vn.edu.uit.devorbit.mobile.model.*
+import vn.edu.uit.devorbit.mobile.ui.viewmodel.CourseViewModel
 
 enum class Screen { COURSES, DETAIL, REPO_DETAIL }
 

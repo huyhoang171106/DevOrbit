@@ -6,8 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import vn.edu.uit.devorbit.mobile.model.CourseSummary
-import vn.edu.uit.devorbit.mobile.model.RepoSummary
+import vn.edu.uit.devorbit.mobile.model.*
 import vn.edu.uit.devorbit.mobile.repository.DevOrbitRepository
 import javax.inject.Inject
 

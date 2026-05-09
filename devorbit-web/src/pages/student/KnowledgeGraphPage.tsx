@@ -246,6 +246,10 @@ export function KnowledgeGraphPage() {
           const isFailed = failedNodes.has(node.id)
           const isBlocked = blockedNodes.has(node.id) && !isFailed
           
+          // --- Risk Heatmap (Impact Score) ---
+          const impact = node.impactScore || 0;
+          const impactFactor = impact / 10; // 0.0 to 1.0
+          
           // Use the pre-calculated topological level (computed server-side)
           const level = node.level || 0;
 
@@ -254,13 +258,20 @@ export function KnowledgeGraphPage() {
           let glowColorMuted = 'rgba(16, 185, 129, 0.1)';
 
           if (isFailed) {
-            nodeColor = '#f43f5e'; // Rose-500
-            glowColor = 'rgba(244, 63, 94, 0.6)';
-            glowColorMuted = 'rgba(244, 63, 94, 0.2)';
+            const pulse = (Math.sin(Date.now() / 200) + 1) / 2; // 0 to 1 pulse
+            nodeColor = pulse > 0.5 ? '#f43f5e' : '#e11d48'; // Pulsing Rose
+            glowColor = `rgba(244, 63, 94, ${0.4 + pulse * 0.4})`;
+            glowColorMuted = `rgba(244, 63, 94, ${0.1 + pulse * 0.1})`;
           } else if (isBlocked) {
-            nodeColor = '#fb7185'; // Rose-400 (Faded)
-            glowColor = 'rgba(251, 113, 133, 0.3)';
-            glowColorMuted = 'rgba(251, 113, 133, 0.05)';
+            const pulse = (Math.sin(Date.now() / 400) + 1) / 2; // Slower pulse
+            nodeColor = '#fb7185';
+            glowColor = `rgba(251, 113, 133, ${0.2 + pulse * 0.2})`;
+            glowColorMuted = `rgba(251, 113, 133, 0.05)`;
+          } else if (isSimulationMode && impact > 7) {
+            // Heatmap highlight for critical nodes in simulation mode
+            nodeColor = '#f59e0b'; // Amber (Critical Warning)
+            glowColor = 'rgba(245, 158, 11, 0.6)';
+            glowColorMuted = 'rgba(245, 158, 11, 0.2)';
           } else {
             // Level-based color mapping (Topological Depth)
             switch (level) {
@@ -295,26 +306,28 @@ export function KnowledgeGraphPage() {
               glowColorMuted = 'rgba(244, 63, 94, 0.1)';
           }
 
-          // Draw outer glow
-          const gradient = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, node.val + 2);
+          // Draw outer glow (Scale based on impact in heatmap mode)
+          const glowSize = (node.val + 2) + (isSimulationMode ? impactFactor * 6 : 0);
+          const gradient = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, glowSize);
           gradient.addColorStop(0, glowColor);
           gradient.addColorStop(0.5, glowColorMuted);
           gradient.addColorStop(1, 'rgba(16, 185, 129, 0)');
 
           ctx.beginPath();
-          ctx.arc(node.x, node.y, node.val + 2, 0, 2 * Math.PI, false);
+          ctx.arc(node.x, node.y, glowSize, 0, 2 * Math.PI, false);
           ctx.fillStyle = gradient;
           ctx.fill();
 
-          // Draw main node
+          // Draw main node (Larger for higher impact)
+          const radius = (node.val / 2) + (isSimulationMode ? impactFactor * 2 : 0);
           ctx.beginPath();
-          ctx.arc(node.x, node.y, node.val / 2, 0, 2 * Math.PI, false);
+          ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI, false);
           ctx.fillStyle = nodeColor;
           ctx.fill();
 
           // Draw border
-          ctx.strokeStyle = nodeColor;
-          ctx.lineWidth = 2 / globalScale;
+          ctx.strokeStyle = (isSimulationMode && impact > 8) ? '#fff' : nodeColor;
+          ctx.lineWidth = (isSimulationMode && impact > 8) ? 3 / globalScale : 2 / globalScale;
           ctx.stroke();
 
           // Draw label
@@ -326,13 +339,28 @@ export function KnowledgeGraphPage() {
           }
         }}
         linkWidth={1.8}
-        linkColor={(link: any) => link.type === 'PREREQUISITE' ? 'rgba(16, 185, 129, 0.6)' : 'rgba(99, 102, 241, 0.5)'}
+        linkColor={(link: any) => {
+          if (blockedNodes.has(link.source.id) || blockedNodes.has(link.target.id)) {
+            return 'rgba(244, 63, 94, 0.6)' // Alert Red
+          }
+          return link.type === 'PREREQUISITE' ? 'rgba(16, 185, 129, 0.6)' : 'rgba(99, 102, 241, 0.5)'
+        }}
         linkDirectionalArrowLength={4}
         linkDirectionalArrowRelPos={1}
         linkDirectionalParticles={4}
-        linkDirectionalParticleSpeed={0.015}
+        linkDirectionalParticleSpeed={(link: any) => {
+          if (blockedNodes.has(link.source.id) || blockedNodes.has(link.target.id)) {
+            return 0.04 // High speed "alert" particles
+          }
+          return 0.015
+        }}
         linkDirectionalParticleWidth={2.5}
-        linkDirectionalParticleColor={(link: any) => link.type === 'PREREQUISITE' ? '#10b981' : '#6366f1'}
+        linkDirectionalParticleColor={(link: any) => {
+          if (blockedNodes.has(link.source.id) || blockedNodes.has(link.target.id)) {
+            return '#f43f5e' // Rose-500 Alert
+          }
+          return link.type === 'PREREQUISITE' ? '#10b981' : '#6366f1'
+        }}
         linkCurvature={0.1}
         linkLineDash={(link: any) => link.type === 'COMPLEMENTARY' ? [6, 4] : []}
         onNodeClick={(node: any) => {

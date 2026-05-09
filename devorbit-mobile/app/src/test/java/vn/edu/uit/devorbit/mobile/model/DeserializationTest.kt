@@ -10,7 +10,7 @@ class DeserializationTest {
     private val gson = Gson()
 
     @Test
-    fun `TechStack deserializes from {"name": "..."}`() {
+    fun techStack_deserialization_test() {
         val json = """{"name": "Kotlin"}"""
         val result = gson.fromJson(json, TechStack::class.java)
         assertEquals("Kotlin", result.name)

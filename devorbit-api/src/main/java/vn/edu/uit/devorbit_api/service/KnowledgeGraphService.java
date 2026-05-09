@@ -3,7 +3,9 @@ package vn.edu.uit.devorbit_api.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import vn.edu.uit.devorbit_api.event.RelationshipChangedEvent;
 import vn.edu.uit.devorbit_api.dto.admin.CourseRelationshipResponse;
 import vn.edu.uit.devorbit_api.dto.publicapi.CourseSummaryResponse;
 import vn.edu.uit.devorbit_api.dto.publicapi.KnowledgeGraphResponse;
@@ -60,6 +62,11 @@ public class KnowledgeGraphService {
     @CacheEvict(value = "knowledgeGraph", allEntries = true)
     public void evictGraphCache() {
         // Intentionally empty — the @CacheEvict annotation handles cache invalidation
+    }
+
+    @EventListener
+    public void onRelationshipChanged(RelationshipChangedEvent event) {
+        evictGraphCache();
     }
 
     /**

@@ -38,8 +38,8 @@ export function RepoDetailPage() {
             <div className="absolute inset-0 rounded-full border-t-4 border-emerald-500 animate-spin shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
           </div>
           <div className="flex flex-col items-center">
-            <p className="text-[12px] font-black text-emerald-500 tracking-[0.4em] uppercase mb-2">Analyzing Node</p>
-            <p className="heading-4 text-clay-text animate-pulse tracking-wide font-bold">RESOURCE SYNCHRONIZATION</p>
+            <p className="text-[12px] font-black text-emerald-500 tracking-[0.4em] uppercase mb-2">Đang phân tích tài nguyên</p>
+            <p className="heading-4 text-clay-text animate-pulse tracking-wide font-bold">ĐỒNG BỘ HÓA TÀI NGUYÊN</p>
           </div>
         </div>
       </div>
@@ -54,12 +54,12 @@ export function RepoDetailPage() {
             <path d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008h-.008v-.008z" />
           </svg>
         </div>
-        <h1 className="display-sm text-clay-text mb-4">Resource Not Located</h1>
+        <h1 className="display-sm text-clay-text mb-4">Không tìm thấy tài nguyên</h1>
         <p className="body-md text-ink-muted mb-10 max-w-sm mx-auto">
-          The academic resource node you are looking for does not exist in the current knowledge matrix.
+          Tài nguyên học thuật bạn đang tìm kiếm không tồn tại trong ma trận kiến thức hiện tại.
         </p>
         <Link to="/courses" className="btn-primary px-8 py-3 uppercase tracking-[0.2em] text-[12px]">
-          Return to Catalog
+          Quay lại danh mục
         </Link>
       </div>
     )
@@ -83,7 +83,7 @@ export function RepoDetailPage() {
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
           </div>
-          Return to Node
+          Quay lại
         </Link>
 
         <div className="grid lg:grid-cols-12 gap-10">
@@ -106,14 +106,14 @@ export function RepoDetailPage() {
                       </svg>
                       <span className="text-xl font-black tracking-tighter">{repo.stars}</span>
                     </div>
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500/60 mt-2">Node Appreciation</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500/60 mt-2">Lượt yêu thích</span>
                   </div>
                 )}
               </div>
 
               <div className="max-w-3xl mb-12">
                 <p className="body-md text-xl text-ink-secondary leading-relaxed">
-                  {repo.description || "Comprehensive implementation of course concepts and standardized academic modules."}
+                  {repo.description || "Triển khai toàn diện các khái niệm môn học và các mô-đun học thuật tiêu chuẩn."}
                 </p>
               </div>
 
@@ -135,7 +135,7 @@ export function RepoDetailPage() {
                 rel="noopener noreferrer"
                 className="btn-primary inline-flex items-center gap-3 px-8 py-4 uppercase tracking-[0.2em] text-[13px]"
               >
-                Access Source Code
+                Truy cập mã nguồn
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" />
                 </svg>
@@ -152,7 +152,7 @@ export function RepoDetailPage() {
                   </svg>
                 </div>
                 <h3 className="heading-3 text-clay-text mb-6 flex items-center gap-4">
-                  Node Analysis
+                  Phân tích nội dung
                 </h3>
                 <div className="prose prose-invert prose-sm">
                   <p className="body-md text-ink-secondary leading-[1.8] text-lg">
@@ -171,7 +171,7 @@ export function RepoDetailPage() {
                   </svg>
                 </div>
                 <h3 className="heading-3 text-clay-text mb-6 flex items-center gap-4">
-                  Academic Strategy
+                  Chiến lược học tập
                 </h3>
                 <div className="prose prose-invert prose-sm">
                   <p className="body-md text-ink-secondary leading-[1.8] text-lg italic">

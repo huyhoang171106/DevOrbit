@@ -50,9 +50,9 @@ export function AdminCourseResourcesPage() {
   )
 
   const tabs: { key: Tab; label: string }[] = [
-    { key: 'youtube', label: 'YouTube Playlists' },
-    { key: 'articles', label: 'Articles' },
-    { key: 'tutorials', label: 'Tutorials' },
+    { key: 'youtube', label: 'Danh sách phát YouTube' },
+    { key: 'articles', label: 'Bài viết' },
+    { key: 'tutorials', label: 'Hướng dẫn (Tutorials)' },
   ]
 
   async function handleYtSubmit(data: YoutubePlaylistRequest) {
@@ -67,7 +67,7 @@ export function AdminCourseResourcesPage() {
   }
 
   async function handleYtDelete(id: number) {
-    if (!confirm('Delete this playlist?')) return
+    if (!confirm('Xoá danh sách phát này?')) return
     try { await apiAdminDelete(`/api/admin/courses/${cid}/resources/youtube-playlists/${id}`, token); ytRefetch() }
     catch (e) { console.error(e) }
   }
@@ -84,7 +84,7 @@ export function AdminCourseResourcesPage() {
   }
 
   async function handleArtDelete(id: number) {
-    if (!confirm('Delete this article?')) return
+    if (!confirm('Xoá bài viết này?')) return
     try { await apiAdminDelete(`/api/admin/courses/${cid}/resources/articles/${id}`, token); artRefetch() }
     catch (e) { console.error(e) }
   }
@@ -101,7 +101,7 @@ export function AdminCourseResourcesPage() {
   }
 
   async function handleTutDelete(id: number) {
-    if (!confirm('Delete this tutorial?')) return
+    if (!confirm('Xoá hướng dẫn này?')) return
     try { await apiAdminDelete(`/api/admin/courses/${cid}/resources/tutorials/${id}`, token); tutRefetch() }
     catch (e) { console.error(e) }
   }
@@ -109,9 +109,9 @@ export function AdminCourseResourcesPage() {
   return (
     <div className="w-full max-w-[1280px] mx-auto px-[32px] py-[64px]">
       <div className="mb-[32px]">
-        <Link to="/admin/courses" className="text-xs text-emerald-400/70 hover:text-emerald-400 transition-colors font-medium">&larr; Back to Courses</Link>
-        <h1 className="display-sm text-clay-text mt-3 mb-1">Course #{cid}</h1>
-        <p className="body-sm text-clay-text-muted">Course Resources</p>
+        <Link to="/admin/courses" className="text-xs text-emerald-400/70 hover:text-emerald-400 transition-colors font-medium">&larr; Quay lại danh sách môn học</Link>
+        <h1 className="display-sm text-clay-text mt-3 mb-1">Môn học #{cid}</h1>
+        <p className="body-sm text-clay-text-muted">Tài nguyên học tập</p>
       </div>
 
       {/* Tabs */}
@@ -136,15 +136,15 @@ export function AdminCourseResourcesPage() {
           <div className="mb-[16px] flex justify-end">
             <button onClick={() => { setYtEdit(undefined); setYtEditId(null); setYtDialog(true) }} className="btn-primary text-sm px-4 py-2">
               <svg className="mr-2 h-4 w-4 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
-              Add Playlist
+              Thêm danh sách phát
             </button>
           </div>
           {ytLoading ? <Spinner /> : (
             <div className="glass-card overflow-hidden border border-clay-border p-0">
               <table className="min-w-full text-sm">
-                <thead><tr className="border-b border-clay-border bg-glass-surface-raised"><th className="table-header text-left font-medium text-clay-text-muted py-3 px-4">Title</th><th className="table-header text-left font-medium text-clay-text-muted py-3 px-4">Channel</th><th className="table-header text-right font-medium text-clay-text-muted py-3 px-4">Actions</th></tr></thead>
+                <thead><tr className="border-b border-clay-border bg-glass-surface-raised"><th className="table-header text-left font-medium text-clay-text-muted py-3 px-4">Tiêu đề</th><th className="table-header text-left font-medium text-clay-text-muted py-3 px-4">Kênh</th><th className="table-header text-right font-medium text-clay-text-muted py-3 px-4">Thao tác</th></tr></thead>
                 <tbody className="divide-y divide-clay-border bg-clay-bg">
-                  {(ytList ?? []).length === 0 && <tr><td colSpan={3} className="px-4 py-10 text-center body-sm text-clay-text-muted">No playlists.</td></tr>}
+                  {(ytList ?? []).length === 0 && <tr><td colSpan={3} className="px-4 py-10 text-center body-sm text-clay-text-muted">Chưa có danh sách phát nào.</td></tr>}
                   {(ytList ?? []).map((item) => (
                     <tr key={item.id} className="transition-colors hover:bg-glass-surface-raised">
                       <td className="table-cell py-3 px-4">
@@ -154,8 +154,8 @@ export function AdminCourseResourcesPage() {
                       <td className="table-cell text-clay-text-muted body-sm py-3 px-4">{item.channelName || <span className="text-clay-text-muted/50">—</span>}</td>
                       <td className="table-cell text-right py-3 px-4">
                         <div className="flex justify-end gap-2">
-                          <button onClick={() => { setYtEdit({ title: item.title, url: item.url, description: item.description ?? '', channelName: item.channelName ?? '' }); setYtEditId(item.id); setYtDialog(true) }} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-clay-text-muted hover:!text-clay-text border border-clay-border">Edit</button>
-                          <button onClick={() => handleYtDelete(item.id)} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Delete</button>
+                          <button onClick={() => { setYtEdit({ title: item.title, url: item.url, description: item.description ?? '', channelName: item.channelName ?? '' }); setYtEditId(item.id); setYtDialog(true) }} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-clay-text-muted hover:!text-clay-text border border-clay-border">Sửa</button>
+                          <button onClick={() => handleYtDelete(item.id)} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Xoá</button>
                         </div>
                       </td>
                     </tr>
@@ -174,15 +174,15 @@ export function AdminCourseResourcesPage() {
           <div className="mb-[16px] flex justify-end">
             <button onClick={() => { setArtEdit(undefined); setArtEditId(null); setArtDialog(true) }} className="btn-primary text-sm px-4 py-2">
               <svg className="mr-2 h-4 w-4 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
-              Add Article
+              Thêm bài viết
             </button>
           </div>
           {artLoading ? <Spinner /> : (
             <div className="glass-card overflow-hidden border border-clay-border p-0">
               <table className="min-w-full text-sm">
-                <thead><tr className="border-b border-clay-border bg-glass-surface-raised"><th className="table-header text-left font-medium text-clay-text-muted py-3 px-4">Title</th><th className="table-header text-left font-medium text-clay-text-muted py-3 px-4">Author</th><th className="table-header text-right font-medium text-clay-text-muted py-3 px-4">Actions</th></tr></thead>
+                <thead><tr className="border-b border-clay-border bg-glass-surface-raised"><th className="table-header text-left font-medium text-clay-text-muted py-3 px-4">Tiêu đề</th><th className="table-header text-left font-medium text-clay-text-muted py-3 px-4">Tác giả</th><th className="table-header text-right font-medium text-clay-text-muted py-3 px-4">Thao tác</th></tr></thead>
                 <tbody className="divide-y divide-clay-border bg-clay-bg">
-                  {(artList ?? []).length === 0 && <tr><td colSpan={3} className="px-4 py-10 text-center body-sm text-clay-text-muted">No articles.</td></tr>}
+                  {(artList ?? []).length === 0 && <tr><td colSpan={3} className="px-4 py-10 text-center body-sm text-clay-text-muted">Chưa có bài viết nào.</td></tr>}
                   {(artList ?? []).map((item) => (
                     <tr key={item.id} className="transition-colors hover:bg-glass-surface-raised">
                       <td className="table-cell py-3 px-4">
@@ -192,8 +192,8 @@ export function AdminCourseResourcesPage() {
                       <td className="table-cell text-clay-text-muted body-sm py-3 px-4">{item.author || <span className="text-clay-text-muted/50">—</span>}</td>
                       <td className="table-cell text-right py-3 px-4">
                         <div className="flex justify-end gap-2">
-                          <button onClick={() => { setArtEdit({ title: item.title, url: item.url, author: item.author ?? '', description: item.description ?? '' }); setArtEditId(item.id); setArtDialog(true) }} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-clay-text-muted hover:!text-clay-text border border-clay-border">Edit</button>
-                          <button onClick={() => handleArtDelete(item.id)} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Delete</button>
+                          <button onClick={() => { setArtEdit({ title: item.title, url: item.url, author: item.author ?? '', description: item.description ?? '' }); setArtEditId(item.id); setArtDialog(true) }} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-clay-text-muted hover:!text-clay-text border border-clay-border">Sửa</button>
+                          <button onClick={() => handleArtDelete(item.id)} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Xoá</button>
                         </div>
                       </td>
                     </tr>
@@ -212,15 +212,15 @@ export function AdminCourseResourcesPage() {
           <div className="mb-[16px] flex justify-end">
             <button onClick={() => { setTutEdit(undefined); setTutEditId(null); setTutDialog(true) }} className="btn-primary text-sm px-4 py-2">
               <svg className="mr-2 h-4 w-4 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
-              Add Tutorial
+              Thêm hướng dẫn
             </button>
           </div>
           {tutLoading ? <Spinner /> : (
             <div className="glass-card overflow-hidden border border-clay-border p-0">
               <table className="min-w-full text-sm">
-                <thead><tr className="border-b border-clay-border bg-glass-surface-raised"><th className="table-header text-left font-medium text-clay-text-muted py-3 px-4">Title</th><th className="table-header text-left font-medium text-clay-text-muted py-3 px-4">Type</th><th className="table-header text-right font-medium text-clay-text-muted py-3 px-4">Actions</th></tr></thead>
+                <thead><tr className="border-b border-clay-border bg-glass-surface-raised"><th className="table-header text-left font-medium text-clay-text-muted py-3 px-4">Tiêu đề</th><th className="table-header text-left font-medium text-clay-text-muted py-3 px-4">Loại</th><th className="table-header text-right font-medium text-clay-text-muted py-3 px-4">Thao tác</th></tr></thead>
                 <tbody className="divide-y divide-clay-border bg-clay-bg">
-                  {(tutList ?? []).length === 0 && <tr><td colSpan={3} className="px-4 py-10 text-center body-sm text-clay-text-muted">No tutorials.</td></tr>}
+                  {(tutList ?? []).length === 0 && <tr><td colSpan={3} className="px-4 py-10 text-center body-sm text-clay-text-muted">Chưa có hướng dẫn nào.</td></tr>}
                   {(tutList ?? []).map((item) => (
                     <tr key={item.id} className="transition-colors hover:bg-glass-surface-raised">
                       <td className="table-cell py-3 px-4">
@@ -232,8 +232,8 @@ export function AdminCourseResourcesPage() {
                       </td>
                       <td className="table-cell text-right py-3 px-4">
                         <div className="flex justify-end gap-2">
-                          <button onClick={() => { setTutEdit({ title: item.title, url: item.url, type: item.type ?? '', description: item.description ?? '' }); setTutEditId(item.id); setTutDialog(true) }} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-clay-text-muted hover:!text-clay-text border border-clay-border">Edit</button>
-                          <button onClick={() => handleTutDelete(item.id)} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Delete</button>
+                          <button onClick={() => { setTutEdit({ title: item.title, url: item.url, type: item.type ?? '', description: item.description ?? '' }); setTutEditId(item.id); setTutDialog(true) }} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-clay-text-muted hover:!text-clay-text border border-clay-border">Sửa</button>
+                          <button onClick={() => handleTutDelete(item.id)} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Xoá</button>
                         </div>
                       </td>
                     </tr>
@@ -257,7 +257,7 @@ function Spinner() {
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
         </svg>
-        Loading...
+        Đang tải...
       </div>
     </div>
   )

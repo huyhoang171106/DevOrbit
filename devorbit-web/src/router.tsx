@@ -5,6 +5,9 @@ import { CourseListPage } from './pages/student/CourseListPage'
 import { CourseDetailPage } from './pages/student/CourseDetailPage'
 import { RepoDetailPage } from './pages/student/RepoDetailPage'
 import { PhotographPage } from './pages/student/PhotographPage'
+import { StudentLoginPage } from './pages/student/StudentLoginPage'
+import { StudentBookmarksPage } from './pages/student/StudentBookmarksPage'
+import { PhotoboothPage } from './pages/student/PhotoboothPage'
 import { LoginPage } from './pages/admin/LoginPage'
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage'
 import { AdminCoursesPage } from './pages/admin/AdminCoursesPage'
@@ -45,10 +48,16 @@ export function AppRoutes() {
       } />
       <Route path="/photograph" element={<PhotographPage />} />
       <Route path="/repos/:repoId" element={<RepoDetailPage />} />
+      <Route path="/student/login" element={<StudentLoginPage />} />
+      <Route path="/student/bookmarks" element={<StudentBookmarksPage />} />
+      <Route path="/student/photobooth" element={<PhotoboothPage />} />
       <Route path="/admin/login" element={<LoginPage />} />
       <Route path="/admin" element={<AdminDashboardPage />} />
       <Route path="/admin/courses" element={<AdminCoursesPage />} />
-      <Route path="/admin/courses/:courseId/resources" element={<AdminCourseResourcesPage />} />
+      <Route
+        path="/admin/courses/:courseId/resources"
+        element={<AdminCourseResourcesPage />}
+      />
       <Route path="/admin/scan" element={<AdminScanPage />} />
       <Route path="/admin/candidates" element={<AdminCandidatesPage />} />
       <Route path="/admin/repos" element={<AdminReposPage />} />
@@ -56,5 +65,5 @@ export function AppRoutes() {
       <Route path="/admin/relationships" element={<AdminRelationshipsPage />} />
       <Route path="/admin/notes" element={<AdminNotesPage />} />
     </Routes>
-  )
+  );
 }

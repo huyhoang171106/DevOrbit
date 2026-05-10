@@ -1,19 +1,20 @@
-﻿import { Routes, Route } from 'react-router-dom'
-import { HomePage } from './pages/student/HomePage'
-import { CourseListPage } from './pages/student/CourseListPage'
-import { CourseDetailPage } from './pages/student/CourseDetailPage'
-import { StudentLoginPage } from './pages/student/StudentLoginPage'
-import { StudentBookmarksPage } from './pages/student/StudentBookmarksPage'
-import { LoginPage } from './pages/admin/LoginPage'
-import { AdminDashboardPage } from './pages/admin/AdminDashboardPage'
-import { AdminCoursesPage } from './pages/admin/AdminCoursesPage'
-import { AdminScanPage } from './pages/admin/AdminScanPage'
-import { AdminCandidatesPage } from './pages/admin/AdminCandidatesPage'
-import { AdminReposPage } from './pages/admin/AdminReposPage'
-import { AdminCourseResourcesPage } from './pages/admin/AdminCourseResourcesPage'
-import { AdminRoadmapsPage } from './pages/admin/AdminRoadmapsPage'
-import { AdminRelationshipsPage } from './pages/admin/AdminRelationshipsPage'
-import { AdminNotesPage } from './pages/admin/AdminNotesPage'
+﻿import { Routes, Route } from "react-router-dom";
+import { HomePage } from "./pages/student/HomePage";
+import { CourseListPage } from "./pages/student/CourseListPage";
+import { CourseDetailPage } from "./pages/student/CourseDetailPage";
+import { StudentLoginPage } from "./pages/student/StudentLoginPage";
+import { StudentBookmarksPage } from "./pages/student/StudentBookmarksPage";
+import { PhotoboothPage } from "./pages/student/PhotoboothPage";
+import { LoginPage } from "./pages/admin/LoginPage";
+import { AdminDashboardPage } from "./pages/admin/AdminDashboardPage";
+import { AdminCoursesPage } from "./pages/admin/AdminCoursesPage";
+import { AdminScanPage } from "./pages/admin/AdminScanPage";
+import { AdminCandidatesPage } from "./pages/admin/AdminCandidatesPage";
+import { AdminReposPage } from "./pages/admin/AdminReposPage";
+import { AdminCourseResourcesPage } from "./pages/admin/AdminCourseResourcesPage";
+import { AdminRoadmapsPage } from "./pages/admin/AdminRoadmapsPage";
+import { AdminRelationshipsPage } from "./pages/admin/AdminRelationshipsPage";
+import { AdminNotesPage } from "./pages/admin/AdminNotesPage";
 
 export function AppRoutes() {
   return (
@@ -23,10 +24,14 @@ export function AppRoutes() {
       <Route path="/courses/:courseId" element={<CourseDetailPage />} />
       <Route path="/student/login" element={<StudentLoginPage />} />
       <Route path="/student/bookmarks" element={<StudentBookmarksPage />} />
+      <Route path="/student/photobooth" element={<PhotoboothPage />} />
       <Route path="/admin/login" element={<LoginPage />} />
       <Route path="/admin" element={<AdminDashboardPage />} />
       <Route path="/admin/courses" element={<AdminCoursesPage />} />
-      <Route path="/admin/courses/:courseId/resources" element={<AdminCourseResourcesPage />} />
+      <Route
+        path="/admin/courses/:courseId/resources"
+        element={<AdminCourseResourcesPage />}
+      />
       <Route path="/admin/scan" element={<AdminScanPage />} />
       <Route path="/admin/candidates" element={<AdminCandidatesPage />} />
       <Route path="/admin/repos" element={<AdminReposPage />} />
@@ -34,5 +39,5 @@ export function AppRoutes() {
       <Route path="/admin/relationships" element={<AdminRelationshipsPage />} />
       <Route path="/admin/notes" element={<AdminNotesPage />} />
     </Routes>
-  )
+  );
 }

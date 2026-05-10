@@ -4,7 +4,6 @@ import { HomePage } from './pages/student/HomePage'
 import { CourseListPage } from './pages/student/CourseListPage'
 import { CourseDetailPage } from './pages/student/CourseDetailPage'
 import { RepoDetailPage } from './pages/student/RepoDetailPage'
-import { PhotographPage } from './pages/student/PhotographPage'
 import { StudentLoginPage } from './pages/student/StudentLoginPage'
 import { StudentBookmarksPage } from './pages/student/StudentBookmarksPage'
 import { PhotoboothPage } from './pages/student/PhotoboothPage'
@@ -46,7 +45,6 @@ export function AppRoutes() {
           <GalaxyPage />
         </Suspense>
       } />
-      <Route path="/photograph" element={<PhotographPage />} />
       <Route path="/repos/:repoId" element={<RepoDetailPage />} />
       <Route path="/student/login" element={<StudentLoginPage />} />
       <Route path="/student/bookmarks" element={<StudentBookmarksPage />} />

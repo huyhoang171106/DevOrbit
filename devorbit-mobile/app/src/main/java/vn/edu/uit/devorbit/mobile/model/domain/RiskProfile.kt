@@ -1,0 +1,24 @@
+package vn.edu.uit.devorbit.mobile.model.domain
+
+data class RiskProfile(
+    val subjectRisks: List<SubjectRisk> = emptyList(),
+    val overallRisk: RiskLevel = RiskLevel.LOW,
+    val riskFactors: List<RiskFactor> = emptyList()
+)
+
+data class SubjectRisk(
+    val subjectId: Long,
+    val subjectName: String,
+    val riskLevel: RiskLevel,
+    val weakPrerequisites: List<String>,
+    val overdueTasks: Int = 0,
+    val consistency: Double = 1.0
+)
+
+enum class RiskLevel { LOW, MEDIUM, HIGH, CRITICAL }
+
+data class RiskFactor(
+    val type: String,
+    val description: String,
+    val severity: RiskLevel
+)

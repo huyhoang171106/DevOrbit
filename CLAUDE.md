@@ -1,43 +1,81 @@
-<!-- gitnexus:start -->
-# GitNexus — Code Intelligence
+# <TÊN PROJECT>
 
-This project is indexed by GitNexus as **DevOrbit** (1618 symbols, 3046 relationships, 124 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+> File này load mọi session khi làm project này. Cộng dồn với `~/.claude/CLAUDE.md` global. Chỉ chứa thứ RIÊNG project, KHÔNG lặp lại global. Giữ <80 dòng.
 
-> If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
+## Mô tả project
 
-## Always Do
+<1-2 câu: project này làm gì, dùng cho ai, ở stage nào (MVP / production / maintenance).>
 
-- **MUST run impact analysis before editing any symbol.** Before modifying a function, class, or method, run `gitnexus_impact({target: "symbolName", direction: "upstream"})` and report the blast radius (direct callers, affected processes, risk level) to the user.
-- **MUST run `gitnexus_detect_changes()` before committing** to verify your changes only affect expected symbols and execution flows.
-- **MUST warn the user** if impact analysis returns HIGH or CRITICAL risk before proceeding with edits.
-- When exploring unfamiliar code, use `gitnexus_query({query: "concept"})` to find execution flows instead of grepping. It returns process-grouped results ranked by relevance.
-- When you need full context on a specific symbol — callers, callees, which execution flows it participates in — use `gitnexus_context({name: "symbolName"})`.
+## Tech stack
 
-## Never Do
+- **Language**: <vd: TypeScript 5.x, Python 3.12, Go 1.22>
+- **Framework**: <vd: Next.js 14 / NestJS / FastAPI / Spring Boot>
+- **Database**: <vd: PostgreSQL 16, Redis 7>
+- **Test**: <vd: Vitest, pytest, Go test>
+- **Build**: <vd: Vite, esbuild, Maven>
+- **Deploy**: <vd: Vercel, AWS ECS, GCP Cloud Run>
 
-- NEVER edit a function, class, or method without first running `gitnexus_impact` on it.
-- NEVER ignore HIGH or CRITICAL risk warnings from impact analysis.
-- NEVER rename symbols with find-and-replace — use `gitnexus_rename` which understands the call graph.
-- NEVER commit changes without running `gitnexus_detect_changes()` to check affected scope.
+## Lệnh quan trọng
 
-## Resources
+```bash
+<command-cài-deps>           # vd: pnpm install
+<command-dev>                 # vd: pnpm dev
+<command-test>                # vd: pnpm test
+<command-test-watch>          # vd: pnpm test:watch
+<command-lint>                # vd: pnpm lint
+<command-typecheck>           # vd: pnpm typecheck
+<command-format>              # vd: pnpm format
+<command-build>               # vd: pnpm build
+<command-migrate-db>          # vd: pnpm db:migrate
+```
 
-| Resource | Use for |
-|----------|---------|
-| `gitnexus://repo/DevOrbit/context` | Codebase overview, check index freshness |
-| `gitnexus://repo/DevOrbit/clusters` | All functional areas |
-| `gitnexus://repo/DevOrbit/processes` | All execution flows |
-| `gitnexus://repo/DevOrbit/process/{name}` | Step-by-step execution trace |
+## Cấu trúc thư mục
 
-## CLI
+```text
+src/
+├── <module-1>/   # mô tả ngắn
+├── <module-2>/   # mô tả ngắn
+└── ...
+tests/
+docs/
+```
 
-| Task | Read this skill file |
-|------|---------------------|
-| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md` |
-| Blast radius / "What breaks if I change X?" | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
-| Trace bugs / "Why is X failing?" | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md` |
-| Rename / extract / split / refactor | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
-| Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
-| Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
+<Chỉ note thư mục có quy ước SPECIAL — không list từng folder.>
 
-<!-- gitnexus:end -->
+## Convention RIÊNG project
+
+<Chỉ ghi những convention KHÁC global, hoặc cụ thể project này. Vd:>
+- Tất cả API endpoint trả về `{ data, error, meta }`, không bare object.
+- Tên file React component: `PascalCase.tsx`. Hook: `useCamelCase.ts`.
+- DB column: `snake_case`. JS variable: `camelCase`. Model class: `PascalCase`.
+- Tất cả `useState` cho async data → dùng React Query thay thế.
+
+## Module owner & nơi cần cẩn thận
+
+- `src/auth/*` — security sensitive, cần test trước khi sửa.
+- `src/payment/*` — KHÔNG sửa khi không có ticket. Chạm code này phải có review @<owner>.
+- `src/migration/*` — chỉ thêm migration mới, KHÔNG sửa migration cũ đã apply.
+
+## Vùng cấm / điều cần biết
+
+- KHÔNG đổi schema DB không có migration file kèm.
+- KHÔNG `git push --force` lên `main`/`develop`.
+- KHÔNG bypass pre-commit hook (lint/test phải pass).
+- API breaking change phải bump major version + cập nhật `CHANGELOG.md`.
+
+## Compact Instructions (cho `/compact` cả manual và auto)
+
+Khi compact, summary PHẢI giữ:
+1. **File đã sửa** trong session (full path) + lý do từng file.
+2. **Migration đã chạy** / dependency đã thêm.
+3. **Quyết định kiến trúc** đã chốt (kèm rationale 1 câu).
+4. **Bước đang dở** + bước tiếp theo cụ thể.
+5. **Bug đã reproduce** nhưng chưa fix.
+Bỏ qua: tool output dài, build log, dead-end debugging.
+
+## Tham chiếu
+
+- Docs project: <link Notion / Confluence / Wiki>
+- Design system: <link Figma>
+- API spec: <link Swagger / Postman>
+- Deployment runbook: <link>

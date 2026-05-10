@@ -78,3 +78,8 @@ devorbit-api/gsd-template/
 # Agent Internal
 **/.pi/
 **/.harness-backup/
+
+# Claude Code
+CLAUDE.local.md
+.claude/settings.local.json
+.claude/HANDOFF.md

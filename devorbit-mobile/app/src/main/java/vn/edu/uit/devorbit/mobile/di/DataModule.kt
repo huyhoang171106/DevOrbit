@@ -13,6 +13,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 import vn.edu.uit.devorbit.mobile.network.ApiService
 import vn.edu.uit.devorbit.mobile.repository.CacheStore
 import vn.edu.uit.devorbit.mobile.repository.DevOrbitRepository
+import vn.edu.uit.devorbit.mobile.repository.DevOrbitDatabase
+import vn.edu.uit.devorbit.mobile.repository.LearningTaskDao
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
@@ -26,7 +28,7 @@ object DataModule {
     @Singleton
     fun provideLoggingInterceptor(): HttpLoggingInterceptor {
         return HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.HEADERS
+            level = HttpLoggingInterceptor.Level.BASIC
         }
     }
 
@@ -60,6 +62,18 @@ object DataModule {
     @Singleton
     fun provideCacheStore(@ApplicationContext context: Context): CacheStore {
         return CacheStore(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDevOrbitDatabase(@ApplicationContext context: Context): DevOrbitDatabase {
+        return DevOrbitDatabase.getInstance(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLearningTaskDao(db: DevOrbitDatabase): LearningTaskDao {
+        return db.learningTaskDao()
     }
 
     @Provides

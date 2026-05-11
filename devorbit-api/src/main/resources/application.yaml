@@ -5,15 +5,15 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: devorbit.project@gmail.com 
-    password:  sycfmtwhcyqbfzcw 
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
-
+  
   sql:
     init:
       mode: ${SQL_INIT_MODE:never}
@@ -41,3 +41,8 @@ app:
 
 server:
   port: ${SERVER_PORT:8080}
+
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME}
+  api-key: ${CLOUDINARY_API_KEY}
+  api-secret: ${CLOUDINARY_API_SECRET}

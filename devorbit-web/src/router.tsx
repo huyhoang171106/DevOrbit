@@ -17,6 +17,7 @@ import { AdminCourseResourcesPage } from './pages/admin/AdminCourseResourcesPage
 import { AdminRoadmapsPage } from './pages/admin/AdminRoadmapsPage'
 import { AdminRelationshipsPage } from './pages/admin/AdminRelationshipsPage'
 import { AdminNotesPage } from './pages/admin/AdminNotesPage'
+import { AdminPhotoboothFramesPage } from './pages/admin/AdminPhotoboothFramesPage'
 
 const GalaxyPage = lazy(() => import('./pages/student/knowledge-graph/GalaxyPage'))
 
@@ -62,6 +63,7 @@ export function AppRoutes() {
       <Route path="/admin/roadmaps" element={<AdminRoadmapsPage />} />
       <Route path="/admin/relationships" element={<AdminRelationshipsPage />} />
       <Route path="/admin/notes" element={<AdminNotesPage />} />
+      <Route path="/admin/photobooth-frames" element={<AdminPhotoboothFramesPage />} />
     </Routes>
   );
 }

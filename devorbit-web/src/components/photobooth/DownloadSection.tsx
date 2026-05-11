@@ -77,7 +77,7 @@ export function DownloadSection({ canvas, frame }: DownloadSectionProps) {
                   d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                 />
               </svg>
-              Download as PNG (2000×2000px)
+              Download as PNG ({canvas?.width ?? 2000}&times;{canvas?.height ?? 2000}px)
             </>
           )}
         </button>

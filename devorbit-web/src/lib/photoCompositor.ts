@@ -1,20 +1,22 @@
 import { FrameDefinition, FilterType } from "./frames/frameDefinitions";
+import { SlotFilter, FILTER_PRESETS } from "./photoFilters";
 
-const CANVAS_SIZE = 2000;
+const LOGICAL_SIZE = 2000;
+const imageCache = new Map<string, HTMLImageElement>();
 
 export class PhotoCompositor {
   static async loadImages(files: File[]): Promise<HTMLImageElement[]> {
     const images: HTMLImageElement[] = [];
 
     for (const file of files) {
-      const img = await this.loadImage(file);
+      const img = await this.loadImageFromFile(file);
       images.push(img);
     }
 
     return images;
   }
 
-  private static loadImage(file: File): Promise<HTMLImageElement> {
+  private static loadImageFromFile(file: File): Promise<HTMLImageElement> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -30,30 +32,87 @@ export class PhotoCompositor {
     });
   }
 
+  private static loadImageFromUrl(url: string): Promise<HTMLImageElement> {
+    if (imageCache.has(url)) {
+      return Promise.resolve(imageCache.get(url)!);
+    }
+
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        imageCache.set(url, img);
+        resolve(img);
+      };
+      img.onerror = () =>
+        reject(new Error(`Failed to load image: ${url}`));
+      img.src = url;
+    });
+  }
+
+  static clearCache() {
+    imageCache.clear();
+  }
+
   static async compositePhotos(
     images: HTMLImageElement[],
     frame: FrameDefinition,
+    offsets?: { dx: number; dy: number; zoom?: number }[],
+    slotFilters?: SlotFilter[],
   ): Promise<HTMLCanvasElement> {
+    // Determine canvas size from frame overlay image if available
+    let canvasW = LOGICAL_SIZE;
+    let canvasH = LOGICAL_SIZE;
+    let overlayImg: HTMLImageElement | null = null;
+
+    if (frame.overlayImage) {
+      try {
+        overlayImg = await this.loadImageFromUrl(frame.overlayImage);
+        canvasW = overlayImg.naturalWidth || overlayImg.width || LOGICAL_SIZE;
+        canvasH = overlayImg.naturalHeight || overlayImg.height || LOGICAL_SIZE;
+      } catch (err) {
+        console.error("Failed to load frame overlay image:", err);
+      }
+    }
+
+    const scaleX = canvasW / LOGICAL_SIZE;
+    const scaleY = canvasH / LOGICAL_SIZE;
+
     const canvas = document.createElement("canvas");
-    canvas.width = CANVAS_SIZE;
-    canvas.height = CANVAS_SIZE;
+    canvas.width = canvasW;
+    canvas.height = canvasH;
     const ctx = canvas.getContext("2d")!;
 
     // Fill background
     ctx.fillStyle = frame.backgroundColor;
-    ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+    ctx.fillRect(0, 0, canvasW, canvasH);
 
-    // Draw each photo into its slot
-    frame.slots.forEach((slot, index) => {
+    // Scale slots from logical space to actual canvas size
+    const scaledSlots = frame.slots.map((s) => ({
+      ...s,
+      x: Math.round(s.x * scaleX),
+      y: Math.round(s.y * scaleY),
+      width: Math.round(s.width * scaleX),
+      height: Math.round(s.height * scaleY),
+      borderRadius: Math.round(s.borderRadius * scaleX),
+    }));
+
+    // Draw each photo into its scaled slot
+    scaledSlots.forEach((slot, index) => {
       if (index < images.length) {
-        this.drawImageInSlot(ctx, images[index], slot);
+        this.drawImageInSlot(ctx, images[index], slot, offsets?.[index], slotFilters?.[index]);
       }
     });
 
-    // Draw overlays
+    // Draw vector overlays
     frame.overlays.forEach((overlay) => {
       this.drawOverlay(ctx, overlay);
     });
+
+    // Draw overlay image on top at its natural size
+    if (overlayImg) {
+      ctx.drawImage(overlayImg, 0, 0, canvasW, canvasH);
+    }
 
     // Apply filter if specified
     if (frame.filter !== "normal") {
@@ -74,26 +133,43 @@ export class PhotoCompositor {
       borderRadius: number;
       border?: { color: string; width: number };
     },
+    offset?: { dx: number; dy: number; zoom?: number },
+    slotFilter?: SlotFilter,
   ) {
     const imgAspect = image.width / image.height;
     const slotAspect = slot.width / slot.height;
 
-    let sourceX = 0;
-    let sourceY = 0;
+    // Cover-fit: base crop
     let sourceWidth = image.width;
     let sourceHeight = image.height;
-
-    // Cover-fit: calculate crop
     if (imgAspect > slotAspect) {
       sourceWidth = image.height * slotAspect;
-      sourceX = (image.width - sourceWidth) / 2;
     } else {
       sourceHeight = image.width / slotAspect;
-      sourceY = (image.height - sourceHeight) / 2;
     }
 
-    // Draw with border radius
+    // Apply zoom
+    const zoom = offset?.zoom ?? 1;
+    sourceWidth /= zoom;
+    sourceHeight /= zoom;
+
+    // Center
+    let sourceX = (image.width - sourceWidth) / 2;
+    let sourceY = (image.height - sourceHeight) / 2;
+
+    // Apply user offset (clamped so crop stays within image bounds)
+    if (offset) {
+      const maxDx = (image.width - sourceWidth) / 2;
+      const maxDy = (image.height - sourceHeight) / 2;
+      sourceX += Math.max(-maxDx, Math.min(maxDx, offset.dx));
+      sourceY += Math.max(-maxDy, Math.min(maxDy, offset.dy));
+    }
+
+    // Draw with per-slot filter
     ctx.save();
+    if (slotFilter && slotFilter !== "normal") {
+      ctx.filter = FILTER_PRESETS[slotFilter]?.css || "none";
+    }
     ctx.beginPath();
     this.roundRect(
       ctx,

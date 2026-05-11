@@ -11,6 +11,7 @@ import vn.edu.uit.devorbit_api.dto.publicapi.KnowledgeGraphResponse;
 import vn.edu.uit.devorbit_api.service.CourseService;
 import vn.edu.uit.devorbit_api.service.CourseTutorialService;
 import vn.edu.uit.devorbit_api.service.CourseYoutubePlaylistService;
+import vn.edu.uit.devorbit_api.dto.publicapi.ElectiveGroupResponse;
 import vn.edu.uit.devorbit_api.service.CourseArticleService;
 import vn.edu.uit.devorbit_api.service.KnowledgeGraphService;
 
@@ -54,5 +55,15 @@ public class PublicCourseController {
     @GetMapping("/{id}/articles")
     public List<?> getArticles(@PathVariable Long id) {
         return articleService.getByCourse(id);
+    }
+
+    @GetMapping("/elective-groups")
+    public List<ElectiveGroupResponse> getElectiveGroups() {
+        return knowledgeGraphService.getElectiveGroups();
+    }
+
+    @GetMapping("/elective-group/{code}")
+    public List<CourseSummaryResponse> getElectiveGroupCourses(@PathVariable String code) {
+        return knowledgeGraphService.getElectiveGroupCourses(code);
     }
 }

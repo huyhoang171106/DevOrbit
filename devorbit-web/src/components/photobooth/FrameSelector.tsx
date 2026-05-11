@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   FrameDefinition,
   FRAME_DEFINITIONS,
@@ -12,6 +13,8 @@ export function FrameSelector({
   selectedFrame,
   onFrameSelect,
 }: FrameSelectorProps) {
+  const [imgErrors, setImgErrors] = useState<Set<string>>(new Set());
+
   return (
     <div className="glass-card p-8">
       <h3 className="heading-5 text-ink mb-2">Choose a Frame</h3>
@@ -29,13 +32,22 @@ export function FrameSelector({
                 ? "border-emerald-400 bg-emerald-400/10 shadow-lg shadow-emerald-400/20"
                 : "border-glass-border hover:border-emerald-500/50"
             }`}>
-            {/* Frame preview simulation */}
-            <div
-              className="w-full aspect-video rounded-lg mb-3 flex items-center justify-center text-xs font-mono"
-              style={{ backgroundColor: frame.backgroundColor }}>
-              <span style={{ color: frame.accentColor || "#10b981" }}>
-                {frame.photoCount}x{frame.photoCount === 4 ? "4" : ""}
-              </span>
+            <div className="w-full rounded-lg mb-3 overflow-hidden flex items-center justify-center bg-cosmic-base">
+              {frame.overlayImage && !imgErrors.has(frame.id) ? (
+                <img
+                  src={frame.overlayImage}
+                  alt={frame.displayName}
+                  className="w-full"
+                  onError={() =>
+                    setImgErrors((prev) => new Set(prev).add(frame.id))
+                  }
+                />
+              ) : (
+                <span className="text-xs font-mono text-ink-muted">
+                  {frame.photoCount}x
+                  {frame.photoCount === 4 ? "4" : ""}
+                </span>
+              )}
             </div>
 
             <div className="flex items-start justify-between gap-2">

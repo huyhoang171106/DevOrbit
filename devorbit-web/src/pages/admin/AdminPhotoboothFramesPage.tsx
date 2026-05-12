@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { useRequireAuth } from "../../lib/hooks";
 import { frameService } from "../../lib/frames/frameService";
 import { reloadFrames } from "../../lib/frames/frameDefinitions";
@@ -50,6 +51,14 @@ export function AdminPhotoboothFramesPage() {
     if (!ok) { setError("Failed to delete frame"); return; }
     await reloadFrames();
     load();
+  };
+
+  const handleRename = async (frame: StoredFrame, newDisplayName: string) => {
+    setError(null);
+    const ok = await frameService.upsert({ ...frame, displayName: newDisplayName });
+    if (!ok) { setError("Failed to rename frame"); return; }
+    await reloadFrames();
+    setFrames((prev) => prev.map((f) => (f.id === frame.id ? { ...f, displayName: newDisplayName } : f)));
   };
 
   const handleSaveSlots = async (updated: StoredFrame) => {
@@ -123,6 +132,7 @@ export function AdminPhotoboothFramesPage() {
               frame={frame}
               onEdit={() => setEditing(frame)}
               onDelete={() => handleDelete(frame.id)}
+              onRename={handleRename}
             />
           ))}
         </div>
@@ -150,21 +160,46 @@ function FrameCard({
   frame,
   onEdit,
   onDelete,
+  onRename,
 }: {
   frame: StoredFrame;
   onEdit: () => void;
   onDelete: () => void;
+  onRename: (f: StoredFrame, name: string) => void;
 }) {
   const [imgErr, setImgErr] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editName, setEditName] = useState(frame.displayName);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [editing]);
+
+  const handleSave = () => {
+    const trimmed = editName.trim();
+    if (trimmed && trimmed !== frame.displayName) {
+      onRename(frame, trimmed);
+    }
+    setEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") handleSave();
+    if (e.key === "Escape") { setEditName(frame.displayName); setEditing(false); }
+  };
 
   return (
     <div className="glass-card overflow-hidden border border-glass-border">
-      <div className="bg-cosmic-base flex items-center justify-center overflow-hidden">
+      <div className="bg-cosmic-base flex items-center justify-center overflow-hidden h-[300px]">
         {frame.overlayImage && !imgErr ? (
           <img
             src={frame.overlayImage}
             alt={frame.displayName}
-            className="w-full"
+            className="w-full h-full object-contain"
             onError={() => setImgErr(true)}
           />
         ) : (
@@ -174,7 +209,24 @@ function FrameCard({
         )}
       </div>
       <div className="p-4">
-        <h3 className="body-sm-medium text-ink truncate">{frame.displayName}</h3>
+        {editing ? (
+          <input
+            ref={inputRef}
+            value={editName}
+            onChange={(e) => setEditName(e.target.value)}
+            onBlur={handleSave}
+            onKeyDown={handleKeyDown}
+            className="w-full rounded border border-glass-border bg-glass-surface px-2 py-1 text-sm text-ink mb-2"
+          />
+        ) : (
+          <h3
+            className="body-sm-medium text-ink truncate cursor-pointer hover:text-emerald-400 transition-colors"
+            onClick={() => { setEditing(true); setEditName(frame.displayName); }}
+            title="Click để sửa tên"
+          >
+            {frame.displayName}
+          </h3>
+        )}
         <p className="body-xs text-ink-secondary mt-1">
           {frame.photoCount} photos &middot; {frame.slots.length} slots
         </p>
@@ -456,7 +508,7 @@ function SlotEditor({
     }
   }, []);
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="bg-clay-bg border border-glass-border rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto p-6">
         <div className="flex items-center justify-between mb-4">
@@ -524,7 +576,8 @@ function SlotEditor({
           <button onClick={() => onSave({ ...frame, slots, photoCount: slots.length as 1 | 2 | 3 | 4 | 6 })} className="btn-primary px-6 py-3">Save Slots</button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -579,7 +632,7 @@ function UploadDialog({
     }
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="bg-clay-bg border border-glass-border rounded-2xl w-full max-w-lg p-6">
         <div className="flex items-center justify-between mb-6">
@@ -672,6 +725,7 @@ function UploadDialog({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

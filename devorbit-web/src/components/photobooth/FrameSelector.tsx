@@ -32,12 +32,12 @@ export function FrameSelector({
                 ? "border-emerald-400 bg-emerald-400/10 shadow-lg shadow-emerald-400/20"
                 : "border-glass-border hover:border-emerald-500/50"
             }`}>
-            <div className="w-full rounded-lg mb-3 overflow-hidden flex items-center justify-center bg-cosmic-base">
+            <div className="w-full h-[200px] rounded-lg mb-3 overflow-hidden flex items-center justify-center bg-cosmic-base">
               {frame.overlayImage && !imgErrors.has(frame.id) ? (
                 <img
                   src={frame.overlayImage}
                   alt={frame.displayName}
-                  className="w-full"
+                  className="w-full h-full object-contain"
                   onError={() =>
                     setImgErrors((prev) => new Set(prev).add(frame.id))
                   }

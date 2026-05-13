@@ -33,8 +33,7 @@ public class RepoCandidateService {
             candidates = repoCandidateRepository.findByStatusAndAssignedReviewer(
                 RepoCandidateStatus.NEW, reviewer);
         } else {
-            candidates = repoCandidateRepository.findByStatusAndAssignedReviewer(
-                RepoCandidateStatus.NEW, null);
+            candidates = repoCandidateRepository.findByStatus(RepoCandidateStatus.NEW);
         }
         return candidates.stream()
             .map(RepoCandidateResponse::from)
@@ -140,5 +139,13 @@ public class RepoCandidateService {
         distributeCandidates();
 
         return RepoCandidateResponse.from(candidate);
+    }
+
+    @Transactional
+    public void updateReviewNote(Long candidateId, String reviewNote) {
+        RepoCandidate candidate = repoCandidateRepository.findById(candidateId)
+            .orElseThrow(() -> new NotFoundException("Candidate not found: " + candidateId));
+        candidate.setReviewNote(reviewNote);
+        repoCandidateRepository.save(candidate);
     }
 }

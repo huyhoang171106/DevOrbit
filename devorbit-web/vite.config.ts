@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    allowedHosts: ['nodes-deserve-ian-displays.trycloudflare.com'],
+    allowedHosts: ["provide-significance-consumer-guys.trycloudflare.com"],
     proxy: {
       '/api': {
         target: 'http://localhost:8080',

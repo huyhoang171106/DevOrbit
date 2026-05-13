@@ -6,7 +6,7 @@ export default {
       fontFamily: {
         heading: ['"Be Vietnam Pro"', 'Inter', 'sans-serif'],
         body: ['Inter', 'sans-serif'],
-        mono: ['Geist Mono', 'monospace'],
+        mono: ['"IBM Plex Mono"', 'monospace'],
       },
       colors: {
         ink: {
@@ -23,16 +23,6 @@ export default {
           text: 'var(--color-clay-text)',
           'text-muted': 'var(--color-clay-text-muted)',
           border: 'var(--color-clay-border)',
-        },
-        glass: {
-          surface: 'var(--color-glass-surface)',
-          'surface-raised': 'var(--color-glass-surface-raised)',
-          'surface-hover': 'var(--color-glass-surface-hover)',
-          border: 'var(--color-glass-border)',
-        },
-        cosmic: {
-          surface: 'var(--color-cosmic-surface)',
-          elevated: 'var(--color-cosmic-elevated)',
         },
       },
     },

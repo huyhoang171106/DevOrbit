@@ -45,10 +45,30 @@ export function CandidateTable({ candidates, onApprove, onReject }: CandidateTab
                   </span>
                   <span className="text-clay-text-muted">{c.forks} forks</span>
                 </div>
+                {c.reviewNote && (
+                  <div className="mt-3 p-3 bg-gradient-to-br from-clay-primary/10 via-clay-primary/5 to-transparent border border-clay-primary/20 rounded-xl text-[12px] leading-relaxed text-clay-text shadow-sm backdrop-blur-sm relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-1 opacity-10 group-hover:opacity-20 transition-opacity">
+                      <svg className="h-8 w-8 text-clay-primary" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2L14.5 9L22 12L14.5 15L12 22L9.5 15L2 12L9.5 9L12 2Z" />
+                      </svg>
+                    </div>
+                    <div className="flex items-center gap-2 mb-1.5 font-bold text-clay-primary uppercase tracking-widest text-[9px]">
+                      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-clay-primary text-white scale-90">
+                        <svg className="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                        </svg>
+                      </span>
+                      AI Analysis Agent
+                    </div>
+                    <div className="relative z-10 font-medium italic">
+                      {c.reviewNote}
+                    </div>
+                  </div>
+                )}
               </td>
               <td className="table-cell py-3 px-4">
                 {c.courseCode ? (
-                  <span className="text-xs font-semibold text-emerald-400 bg-emerald-500/5 px-2 py-1 rounded border border-emerald-500/10">
+                  <span className="text-xs font-semibold text-clay-primary bg-clay-primary/5 px-2 py-1 rounded border border-clay-primary/10">
                     {c.courseCode}
                   </span>
                 ) : (
@@ -60,7 +80,7 @@ export function CandidateTable({ candidates, onApprove, onReject }: CandidateTab
                   href={c.githubUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-emerald-400 transition-colors hover:text-emerald-400/80 inline-flex items-center gap-1 body-sm font-medium break-all"
+                  className="text-clay-primary transition-colors hover:text-clay-primary/80 inline-flex items-center gap-1 body-sm font-medium break-all"
                 >
                   <span>{c.githubUrl.replace('https://github.com/', '')}</span>
                   <svg className="h-3 w-3 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -70,7 +90,7 @@ export function CandidateTable({ candidates, onApprove, onReject }: CandidateTab
               </td>
               <td className="table-cell py-3 px-4">
                 <div className="flex flex-col gap-1">
-                  {c.status === 'APPROVED' && <span className="badge-tag w-fit bg-emerald-500/10 text-emerald-400 border-emerald-500/20">{c.status}</span>}
+                  {c.status === 'APPROVED' && <span className="badge-tag w-fit bg-clay-primary/10 text-clay-primary border-clay-primary/20">{c.status}</span>}
                   {c.status === 'REJECTED' && <span className="badge-tag w-fit bg-red-500/10 text-red-400 border-red-500/30">{c.status}</span>}
                   {c.status === 'NEW' && <span className="badge-tag w-fit bg-clay-surface text-clay-text-muted">{c.status}</span>}
                   {c.lastPushedAt && <div className="text-[11px] text-clay-text-muted">Pushed {new Date(c.lastPushedAt).toLocaleDateString()}</div>}

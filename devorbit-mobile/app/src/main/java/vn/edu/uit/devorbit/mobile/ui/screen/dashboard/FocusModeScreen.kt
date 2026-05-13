@@ -56,14 +56,15 @@ fun FocusModeScreen(
             Box(contentAlignment = Alignment.Center, modifier = Modifier.size(200.dp)) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     val strokeWidth = 12.dp.toPx()
-                    val arcSize = size - Offset(strokeWidth, strokeWidth) * 2
+                    val innerWidth = size.width - strokeWidth * 2
+                    val innerHeight = size.height - strokeWidth * 2
                     drawArc(
                         color = GlassWhite,
                         startAngle = -90f,
                         sweepAngle = 360f,
                         useCenter = false,
                         topLeft = Offset(strokeWidth, strokeWidth),
-                        size = Size(arcSize.width, arcSize.height),
+                        size = Size(innerWidth, innerHeight),
                         style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
                     )
                     drawArc(
@@ -72,7 +73,7 @@ fun FocusModeScreen(
                         sweepAngle = progress * 360f,
                         useCenter = false,
                         topLeft = Offset(strokeWidth, strokeWidth),
-                        size = Size(arcSize.width, arcSize.height),
+                        size = Size(innerWidth, innerHeight),
                         style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
                     )
                 }

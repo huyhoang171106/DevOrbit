@@ -1,24 +1,21 @@
 package vn.edu.uit.devorbit.mobile.ui.screen.knowledge
 
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import vn.edu.uit.devorbit.mobile.model.domain.GraphLink
 import vn.edu.uit.devorbit.mobile.model.domain.GraphNode
+import vn.edu.uit.devorbit.mobile.ui.components.GalaxyGraphCanvas
 import vn.edu.uit.devorbit.mobile.ui.components.GlassCard
 import vn.edu.uit.devorbit.mobile.ui.theme.*
 
@@ -30,218 +27,103 @@ fun KnowledgeGraphScreen(
     selectedNode: GraphNode?,
     onNodeClick: (GraphNode) -> Unit,
 ) {
-    val grouped = nodes.groupBy { it.level }.toSortedMap()
+    Box(modifier = Modifier.fillMaxSize()) {
+        // The interactive Galaxy - Spatial knowledge rendering
+        GalaxyGraphCanvas(
+            nodes = nodes,
+            links = links,
+            selectedNode = selectedNode,
+            onNodeClick = onNodeClick
+        )
 
-    if (nodes.isEmpty()) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Dang tai do thi tri thuc...", color = TextSecondary)
-        }
-        return
-    }
-
-    LazyColumn(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        contentPadding = PaddingValues(vertical = 16.dp, bottom = 80.dp)
-    ) {
-        // Header
-        item {
+        // Header Overlay - Cosmic Context
+        Column(
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(CosmicTheme.spacing.medium)
+        ) {
             Text(
-                text = "Do thi kien thuc",
-                color = TextPrimary,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
+                text = "VŨ TRỤ TRI THỨC",
+                style = CosmicTheme.typography.command,
+                color = CosmicTheme.colors.plasma
             )
             Text(
-                text = "${nodes.size} mon hoc . ${grouped.size} cap do",
-                color = TextSecondary,
-                fontSize = 13.sp
+                text = "${nodes.size} THỂ THỰC TRI THỨC . ${nodes.groupBy { it.level }.size} CẤP ĐỘ",
+                style = CosmicTheme.typography.label,
+                color = CosmicTheme.colors.textSecondary
             )
         }
 
-        // Learning path section (when a node is selected)
-        if (selectedNode != null && learningPath.isNotEmpty()) {
-            item {
-                LearningPathSection(selectedNode = selectedNode, learningPath = learningPath)
-            }
-        }
-
-        // Nodes grouped by level
-        grouped.forEach { (level, levelNodes) ->
-            item {
-                Text(
-                    text = "Cap do $level",
-                    color = CosmicGlowBlue,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
-                )
-            }
-            items(levelNodes, key = { it.id }) { node ->
-                NodeCard(
-                    node = node,
-                    isSelected = selectedNode?.id == node.id,
-                    onClick = { onNodeClick(node) }
-                )
+        // Selected Node Detail Card - The Knowledge Portal
+        AnimatedVisibility(
+            visible = selectedNode != null,
+            enter = slideInVertically { it } + fadeIn(),
+            exit = slideOutVertically { it } + fadeOut(),
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(CosmicTheme.spacing.medium)
+                .padding(bottom = 80.dp)
+        ) {
+            selectedNode?.let { node ->
+                KnowledgePortalCard(node = node)
             }
         }
     }
 }
 
 @Composable
-private fun NodeCard(node: GraphNode, isSelected: Boolean, onClick: () -> Unit) {
-    val borderColor = if (isSelected) CosmicGlowPurple else GlassBorder
-
-    GlassCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-    ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+private fun KnowledgePortalCard(node: GraphNode) {
+    GlassCard(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(CosmicTheme.spacing.small)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // Identity Orb
+                Surface(
+                    modifier = Modifier.size(52.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    color = CosmicTheme.colors.plasma.copy(alpha = 0.15f),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.plasma.copy(alpha = 0.3f))
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = node.code.takeLast(3),
+                            color = CosmicTheme.colors.plasma,
+                            style = CosmicTheme.typography.command,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.width(CosmicTheme.spacing.medium))
+                
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = node.name,
-                        color = TextPrimary,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Medium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        text = node.name.uppercase(),
+                        style = CosmicTheme.typography.body,
+                        fontWeight = FontWeight.Black,
+                        color = Color.White,
+                        maxLines = 1
                     )
-                    Text(
-                        text = node.code,
-                        color = TextSecondary,
-                        fontSize = 12.sp
-                    )
-                }
-                LevelBadge(level = node.level)
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Impact score bar
-            ImpactBar(score = node.impactScore)
-        }
-    }
-}
-
-@Composable
-private fun LevelBadge(level: Int) {
-    Surface(
-        shape = RoundedCornerShape(8.dp),
-        color = CosmicNebulaPurple.copy(alpha = 0.25f)
-    ) {
-        Text(
-            text = "L$level",
-            color = CosmicNebulaPurple,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-        )
-    }
-}
-
-@Composable
-private fun ImpactBar(score: Double) {
-    val barColor = when {
-        score > 7.0 -> Color(0xFFEF5350)
-        score > 4.0 -> Color(0xFFFFB74D)
-        else -> CosmicGlowBlue
-    }
-    val fraction = (score / 10.0).toFloat().coerceIn(0f, 1f)
-
-    Column {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(text = "Anh huong", color = TextSecondary, fontSize = 11.sp)
-            Text(
-                text = "%.1f".format(score),
-                color = barColor,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-        Spacer(modifier = Modifier.height(4.dp))
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(4.dp)
-                .clip(RoundedCornerShape(2.dp))
-        ) {
-            Surface(color = GlassWhite, modifier = Modifier.fillMaxSize()) {}
-            Box(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth(fraction)
-                    .clip(RoundedCornerShape(2.dp))
-            ) {
-                Surface(color = barColor.copy(alpha = 0.6f), modifier = Modifier.fillMaxSize()) {}
-            }
-        }
-    }
-}
-
-@Composable
-private fun LearningPathSection(selectedNode: GraphNode, learningPath: List<GraphNode>) {
-    GlassCard(modifier = Modifier.fillMaxWidth()) {
-        Column {
-            Text(
-                text = "Lo trinh hoc: ${selectedNode.name}",
-                color = TextPrimary,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Cac mon can hoan thanh truoc",
-                color = TextSecondary,
-                fontSize = 12.sp
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-
-            learningPath.forEachIndexed { index, node ->
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (node.id == selectedNode.id) CosmicGlowPurple.copy(alpha = 0.3f)
-                        else CosmicStarBlue.copy(alpha = 0.15f)
-                    ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = "${index + 1}",
-                            color = if (node.id == selectedNode.id) CosmicGlowPurple else CosmicStarBlue,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            text = "Hệ số ảnh hưởng:",
+                            style = CosmicTheme.typography.label,
+                            color = CosmicTheme.colors.textSecondary
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = String.format("%.1f", node.impactScore),
+                            style = CosmicTheme.typography.label,
+                            color = CosmicTheme.colors.aurora,
+                            fontWeight = FontWeight.Bold
                         )
                     }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text(
-                            text = node.name,
-                            color = TextPrimary,
-                            fontSize = 14.sp,
-                            fontWeight = if (node.id == selectedNode.id) FontWeight.Bold else FontWeight.Normal
-                        )
-                        Text(text = node.code, color = TextSecondary, fontSize = 11.sp)
-                    }
                 }
-                if (index < learningPath.lastIndex) {
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Box(
-                        modifier = Modifier
-                            .width(2.dp)
-                            .height(12.dp)
-                            .padding(start = 8.dp)
-                    ) {
-                        Surface(color = GlassBorder, modifier = Modifier.fillMaxSize()) {}
-                    }
-                    Spacer(modifier = Modifier.height(6.dp))
+                
+                IconButton(
+                    onClick = { /* Action handled via currentScreen in App.kt */ },
+                    colors = IconButtonDefaults.iconButtonColors(containerColor = CosmicTheme.colors.glassBorder)
+                ) {
+                    Icon(Icons.Default.Info, contentDescription = "Detail", tint = Color.White)
                 }
             }
         }

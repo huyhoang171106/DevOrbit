@@ -6,12 +6,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,7 +35,6 @@ fun TaskBreakdownScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(CosmicDeepSpace)
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Text(
@@ -157,7 +157,7 @@ fun TaskBreakdownScreen(
                         ),
                         shape = RoundedCornerShape(16.dp)
                     ) {
-                        Icon(Icons.Default.ArrowForward, contentDescription = null)
+                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
                         Spacer(modifier = Modifier.width(6.dp))
                         Text("Tạo task từ breakdown")
                     }
@@ -228,7 +228,7 @@ private fun BreakdownStepCard(index: Int, step: BreakdownStep) {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
-                                    Icons.Default.Flag,
+                                    Icons.Default.Star,
                                     contentDescription = null,
                                     tint = CosmicStarBlue,
                                     modifier = Modifier.size(12.dp)

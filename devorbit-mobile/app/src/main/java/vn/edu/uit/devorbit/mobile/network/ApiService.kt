@@ -24,4 +24,10 @@ interface ApiService {
 
     @GET("/api/courses/{id}/articles")
     suspend fun getArticles(@Path("id") courseId: Long): List<CourseArticle>
+
+    @GET("/api/courses/relationships")
+    suspend fun getRelationships(): List<CourseRelationshipResponse>
+
+    @GET("/api/courses/graph")
+    suspend fun getKnowledgeGraph(): GraphResponse
 }

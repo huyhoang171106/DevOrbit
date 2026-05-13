@@ -27,12 +27,12 @@ export function PreviewCanvas({ canvas, isLoading }: PreviewCanvasProps) {
 
       <div
         ref={containerRef}
-        className="bg-cosmic-base rounded-lg overflow-hidden flex items-center justify-center min-h-[400px] sm:min-h-[600px]">
+        className="bg-clay-surface rounded-none overflow-hidden flex items-center justify-center min-h-[400px] sm:min-h-[600px]">
         {isLoading ? (
           <div className="flex flex-col items-center gap-3">
             <div className="inline-flex animate-spin">
               <svg
-                className="h-8 w-8 text-emerald-400"
+                className="h-8 w-8 text-clay-primary"
                 fill="none"
                 viewBox="0 0 24 24">
                 <circle

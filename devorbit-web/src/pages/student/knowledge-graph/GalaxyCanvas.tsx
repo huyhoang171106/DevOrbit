@@ -12,7 +12,7 @@ export function GalaxyCanvas({ children }: Props) {
     <Canvas
       camera={{ position: [0, 0, 50], fov: 60, far: 300 }}
       gl={{ antialias: true, alpha: false }}
-      style={{ background: '#05070a' }}
+      style={{ background: 'transparent' }}
       dpr={[1, 2]}
     >
       <Suspense fallback={null}>

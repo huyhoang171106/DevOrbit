@@ -6,6 +6,8 @@ data class GraphNode(
     val code: String,
     val level: Int = 0,
     val impactScore: Double = 0.0,
+    val semester: Int? = null,
+    val description: String? = null,
 )
 
 data class GraphLink(

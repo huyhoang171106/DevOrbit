@@ -7,6 +7,10 @@ plugins {
     id("com.google.devtools.ksp") version "2.0.21-1.0.28"
 }
 
+kotlin {
+    jvmToolchain(17)
+}
+
 android {
     namespace = "vn.edu.uit.devorbit.mobile"
     compileSdk = 35
@@ -18,7 +22,7 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8080\"")
+        buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8080/\"")
     }
 
     buildFeatures {
@@ -49,6 +53,10 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.4")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+    implementation("androidx.compose.material3.adaptive:adaptive:1.0.0")
+    implementation("androidx.compose.material3.adaptive:adaptive-layout:1.0.0")
+    implementation("androidx.compose.material3.adaptive:adaptive-navigation:1.0.0")
+    implementation("androidx.compose.material3:material3-adaptive-navigation-suite")
 
     // Hilt
     implementation("com.google.dagger:hilt-android:2.51.1")

@@ -53,7 +53,7 @@ export function CustomSelect({ value, onChange, options, label }: CustomSelectPr
                   setIsOpen(false)
                 }}
                 className={`w-full text-left px-3 py-2 text-xs transition-colors ${value === option.value
-                    ? 'bg-emerald-500/10 text-emerald-400 font-medium'
+                    ? 'bg-clay-primary/10 text-clay-primary font-medium'
                     : 'text-clay-text-muted hover:text-clay-text hover:bg-glass-surface-raised'
                   }`}
               >

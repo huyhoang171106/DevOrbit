@@ -9,6 +9,7 @@ type GalaxyState = {
   isTimeTravelMode: boolean
   currentSemester: number
   weekMarkers: Array<{ week: number; count: number }>
+  aiRecommendedNodes: Set<number>
 }
 
 type GalaxyActions = {
@@ -21,6 +22,7 @@ type GalaxyActions = {
   toggleTimeTravel: () => void
   setCurrentSemester: (semester: number) => void
   setWeekMarkers: (markers: Array<{ week: number; count: number }>) => void
+  setAiRecommendedNodes: (ids: Set<number>) => void
 }
 
 export const useGalaxyStore = create<GalaxyState & GalaxyActions>((set) => ({
@@ -32,6 +34,7 @@ export const useGalaxyStore = create<GalaxyState & GalaxyActions>((set) => ({
   isTimeTravelMode: false,
   currentSemester: 0,
   weekMarkers: [],
+  aiRecommendedNodes: new Set(),
 
   setFocusNode: (id) => set({ focusNodeId: id }),
   setHoveredNode: (id) => set({ hoveredNodeId: id }),
@@ -51,4 +54,5 @@ export const useGalaxyStore = create<GalaxyState & GalaxyActions>((set) => ({
   toggleTimeTravel: () => set((s) => ({ isTimeTravelMode: !s.isTimeTravelMode })),
   setCurrentSemester: (semester) => set({ currentSemester: semester }),
   setWeekMarkers: (markers) => set({ weekMarkers: markers }),
+  setAiRecommendedNodes: (ids) => set({ aiRecommendedNodes: ids }),
 }))

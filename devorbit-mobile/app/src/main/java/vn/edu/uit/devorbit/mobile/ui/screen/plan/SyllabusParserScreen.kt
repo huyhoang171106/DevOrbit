@@ -8,9 +8,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Topic
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -40,7 +40,6 @@ fun SyllabusParserScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(CosmicDeepSpace)
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Text(
@@ -143,7 +142,7 @@ fun SyllabusParserScreen(
                                 modifier = Modifier.padding(vertical = 2.dp)
                             ) {
                                 Icon(
-                                    Icons.Default.CalendarMonth,
+                                    Icons.Default.DateRange,
                                     contentDescription = null,
                                     tint = CosmicGlowBlue,
                                     modifier = Modifier.size(16.dp)
@@ -171,7 +170,7 @@ fun SyllabusParserScreen(
                                 modifier = Modifier.padding(vertical = 2.dp)
                             ) {
                                 Icon(
-                                    Icons.Default.Topic,
+                                    Icons.AutoMirrored.Filled.List,
                                     contentDescription = null,
                                     tint = CosmicGlowPurple,
                                     modifier = Modifier.size(16.dp)
@@ -214,7 +213,7 @@ fun SyllabusParserScreen(
                     ),
                     shape = RoundedCornerShape(16.dp)
                 ) {
-                    Icon(Icons.Default.ArrowForward, contentDescription = null)
+                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
                     Spacer(modifier = Modifier.width(6.dp))
                     Text("Tạo task từ syllabus")
                 }

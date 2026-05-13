@@ -8,9 +8,11 @@ public record CourseRelationshipResponse(
     Long courseId,
     String courseCode,
     String courseName,
+    String courseNameEn,
     Long relatedCourseId,
     String relatedCourseCode,
     String relatedCourseName,
+    String relatedCourseNameEn,
     CourseRelationType relationType,
     LocalDateTime createdAt
 ) {}

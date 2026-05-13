@@ -7,7 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object NetworkModule {
-    private const val BASE_URL = "http://10.0.2.2:8080"
+    private const val BASE_URL = "http://10.0.2.2:8080/"
 
     // Logs request/response headers only (not body) to avoid leaking tokens or PII
     private val loggingInterceptor = HttpLoggingInterceptor().apply {

@@ -1,0 +1,34 @@
+{
+  "GitNexus": {
+    "status": "dry-run",
+    "files_count": 50
+  },
+  "brain": {
+    "status": "dry-run",
+    "files_count": 2
+  },
+  "design-system": {
+    "status": "dry-run",
+    "files_count": 2
+  },
+  "devorbit-api": {
+    "status": "dry-run",
+    "files_count": 50
+  },
+  "devorbit-mobile": {
+    "status": "dry-run",
+    "files_count": 50
+  },
+  "devorbit-showcase": {
+    "status": "dry-run",
+    "files_count": 50
+  },
+  "devorbit-web": {
+    "status": "dry-run",
+    "files_count": 50
+  },
+  "frame ptb": {
+    "status": "dry-run",
+    "files_count": 0
+  }
+}

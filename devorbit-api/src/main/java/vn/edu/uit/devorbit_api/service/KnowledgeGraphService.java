@@ -1,15 +1,15 @@
 package vn.edu.uit.devorbit_api.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
-import vn.edu.uit.devorbit_api.config.ElectiveGroupConfig;
 import vn.edu.uit.devorbit_api.event.RelationshipChangedEvent;
+import vn.edu.uit.devorbit_api.constant.CurriculumConstants;
 import vn.edu.uit.devorbit_api.dto.admin.CourseRelationshipResponse;
 import vn.edu.uit.devorbit_api.dto.publicapi.CourseSummaryResponse;
-import vn.edu.uit.devorbit_api.dto.publicapi.ElectiveGroupResponse;
 import vn.edu.uit.devorbit_api.dto.publicapi.KnowledgeGraphResponse;
 import vn.edu.uit.devorbit_api.entity.CourseRelationType;
 
@@ -18,130 +18,62 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class KnowledgeGraphService {
 
     private final CourseService courseService;
     private final CourseRelationshipService relationshipService;
-    private final ElectiveGroupConfig electiveGroupConfig;
+
+
 
     @Cacheable(value = "knowledgeGraph", unless = "#result.nodes.isEmpty()")
     public KnowledgeGraphResponse getGraph() {
+        log.info("Generating knowledge graph...");
         List<CourseSummaryResponse> courses = courseService.getActiveCourseSummaries();
         List<CourseRelationshipResponse> relationships = relationshipService.getAll();
+        
+        log.info("Loaded {} courses and {} relationships", courses.size(), relationships.size());
 
-        // Separate mandatory vs elective
+        // Filter to only mandatory courses from the KTPM curriculum (Khoá 20-2025)
+        // Elective placeholders (TCN*, CDTN) are handled by LLM separately
         List<CourseSummaryResponse> mandatory = courses.stream()
-            .filter(c -> !"TU_CHON".equals(c.loaiMonHoc()) && c.semester() != null)
-            .collect(Collectors.toList());
-        List<CourseSummaryResponse> elective = courses.stream()
-            .filter(c -> "TU_CHON".equals(c.loaiMonHoc()))
+            .filter(c -> CurriculumConstants.MANDATORY_CODES.contains(c.code()))
             .collect(Collectors.toList());
 
-        // Map elective courses by maMH for group assignment
-        Map<String, List<CourseSummaryResponse>> electiveByCode = new HashMap<>();
-        for (CourseSummaryResponse ec : elective) {
-            electiveByCode.computeIfAbsent(ec.code(), k -> new ArrayList<>()).add(ec);
-        }
+        log.info("Filtered to {} mandatory KTPM courses", mandatory.size());
 
-        // Build mandatory nodes with semester
+        // Build all nodes
         List<KnowledgeGraphResponse.GraphNode> nodes = new ArrayList<>();
+
         for (CourseSummaryResponse c : mandatory) {
-            String electiveGroup = null;
-            if (c.code().startsWith("TC_CSN")) electiveGroup = "TC_CSN";
-            else if (c.code().startsWith("TC_CN")) {
-                // Check if it's specialized or general
-                if (c.code().startsWith("TC_CN_PM")) electiveGroup = "TC_CN_PM";
-                else if (c.code().startsWith("TC_CN_GAME")) electiveGroup = "TC_CN_GAME";
-                else electiveGroup = "TC_CN";
-            }
-            else if (c.code().startsWith("TC_TN")) electiveGroup = "TC_TN";
+            // Use semester from curriculum plan; fall back to DB value
+            Integer semester = CurriculumConstants.CURRICULUM_SEMESTERS.getOrDefault(c.code(), c.semester());
+            if (semester == null) semester = 1;
 
             nodes.add(new KnowledgeGraphResponse.GraphNode(
                 c.id(), c.name(), c.code(), c.description(),
                 12.0 + (c.repoCount() != null ? c.repoCount() * 1.5 : 0),
-                0, 0.0, c.semester(), electiveGroup
-            ));
-        }
-
-        // Build elective group nodes (synthetic for groups not represented in DB)
-        Map<String, Integer> groupSemesterHint = new HashMap<>();
-        groupSemesterHint.put("TC_CSN", 4);
-        groupSemesterHint.put("TC_CN", 6);
-        groupSemesterHint.put("TC_CN_PM", 6);
-        groupSemesterHint.put("TC_CN_GAME", 6);
-        groupSemesterHint.put("TC_TN", 8);
-
-        Set<String> processedCodes = new HashSet<>();
-        for (var entry : electiveGroupConfig.getGroups().entrySet()) {
-            String groupCode = entry.getKey();
-            ElectiveGroupConfig.ElectiveGroupDef def = entry.getValue();
-
-            // Skip sub-groups (parentGroupCode != null) — they appear as filters, not independent nodes
-            if (def.parentGroupCode() != null) continue;
-
-            // Collect elective course IDs belonging to this group
-            List<Long> groupCourseIds = new ArrayList<>();
-            for (String maMH : def.courseCodes()) {
-                List<CourseSummaryResponse> matched = electiveByCode.getOrDefault(maMH, List.of());
-                for (CourseSummaryResponse ec : matched) {
-                    if (!processedCodes.contains(ec.code())) {
-                        groupCourseIds.add(ec.id());
-                        processedCodes.add(ec.code());
-                    }
-                }
-            }
-
-            // Add a synthetic node for the group
-            long groupNodeId = -(new Random(Objects.hash(groupCode)).nextInt(9000) + 1000); // deterministic negative ID
-            nodes.add(new KnowledgeGraphResponse.GraphNode(
-                groupNodeId,
-                def.name(),
-                groupCode,
-                def.description(),
-                18.0, // slightly larger node
-                0, 0.0,
-                groupSemesterHint.getOrDefault(groupCode, 5),
-                groupCode
+                0, 0.0, semester, null
             ));
         }
 
         // Build links from all relationships
+        // For PREREQUISITE, the edge direction is: prerequisite → course
+        // (prerequisite unlocks the course in the knowledge graph)
         List<KnowledgeGraphResponse.GraphLink> links = relationships.stream()
-            .map(r -> new KnowledgeGraphResponse.GraphLink(
-                r.courseId(), r.relatedCourseId(), r.relationType()
-            ))
-            .collect(Collectors.toList());
-
-        // Also connect group nodes to mandatory nodes where a course in the group
-        // is prerequisite of a mandatory course
-        for (var entry : electiveGroupConfig.getGroups().entrySet()) {
-            ElectiveGroupConfig.ElectiveGroupDef def = entry.getValue();
-            if (def.parentGroupCode() != null) continue;
-
-            for (String maMH : def.courseCodes()) {
-                List<CourseSummaryResponse> matched = electiveByCode.getOrDefault(maMH, List.of());
-                if (matched.isEmpty()) continue;
-
-                List<Long> groupNodeIds = findAllGroupNodeIds(nodes, def.code());
-                if (groupNodeIds.isEmpty()) continue;
-
-                for (CourseRelationshipResponse r : relationships) {
-                    // If an elective course in this group is prerequisite or complementary to a mandatory course
-                    if (r.relationType() == CourseRelationType.PREREQUISITE || r.relationType() == CourseRelationType.COMPLEMENTARY) {
-                        for (CourseSummaryResponse ec : matched) {
-                            if (r.courseId().equals(ec.id())) {
-                                // link source=all matching group nodes, target=the mandatory course
-                                for (Long gId : groupNodeIds) {
-                                    links.add(new KnowledgeGraphResponse.GraphLink(
-                                        gId, r.relatedCourseId(), CourseRelationType.COMPLEMENTARY
-                                    ));
-                                }
-                            }
-                        }
-                    }
+            .map(r -> {
+                if (r.relationType() == CourseRelationType.PREREQUISITE) {
+                    // PREREQUISITE: source=prerequisite, target=course
+                    return new KnowledgeGraphResponse.GraphLink(
+                        r.relatedCourseId(), r.courseId(), r.relationType()
+                    );
                 }
-            }
-        }
+                // COMPLEMENTARY / COREQUISITE: non-directional, keep as-is
+                return new KnowledgeGraphResponse.GraphLink(
+                    r.courseId(), r.relatedCourseId(), r.relationType()
+                );
+            })
+            .collect(Collectors.toList());
 
         // Calculate topological levels
         Map<Long, Integer> levels = calculateLevels(nodes, links);
@@ -163,41 +95,6 @@ public class KnowledgeGraphService {
         return new KnowledgeGraphResponse(nodesWithMetadata, links);
     }
 
-    public List<ElectiveGroupResponse> getElectiveGroups() {
-        return electiveGroupConfig.getGroups().values().stream()
-            .map(def -> new ElectiveGroupResponse(
-                def.code(), def.name(), def.description(),
-                def.minCredits(), def.parentGroupCode(),
-                def.courseCodes().size()
-            ))
-            .collect(Collectors.toList());
-    }
-
-    public List<CourseSummaryResponse> getElectiveGroupCourses(String groupCode) {
-        ElectiveGroupConfig.ElectiveGroupDef def = electiveGroupConfig.getGroups().get(groupCode);
-        if (def == null) return List.of();
-
-        List<CourseSummaryResponse> all = courseService.getActiveCourseSummaries();
-        Set<String> targetCodes = new HashSet<>(def.courseCodes());
-
-        // Include sub-groups (e.g. if TC_CN is requested, include TC_CN_PM and TC_CN_GAME)
-        for (var gDef : electiveGroupConfig.getGroups().values()) {
-            if (groupCode.equals(gDef.parentGroupCode())) {
-                targetCodes.addAll(gDef.courseCodes());
-            }
-        }
-
-        // If sub-group is requested, include parent group courses too
-        if (def.parentGroupCode() != null) {
-            ElectiveGroupConfig.ElectiveGroupDef parent = electiveGroupConfig.getGroups().get(def.parentGroupCode());
-            if (parent != null) targetCodes.addAll(parent.courseCodes());
-        }
-
-        return all.stream()
-            .filter(c -> targetCodes.contains(c.code()))
-            .collect(Collectors.toList());
-    }
-
     @CacheEvict(value = "knowledgeGraph", allEntries = true)
     public void evictGraphCache() {}
 
@@ -206,14 +103,7 @@ public class KnowledgeGraphService {
         evictGraphCache();
     }
 
-    private List<Long> findAllGroupNodeIds(List<KnowledgeGraphResponse.GraphNode> nodes, String groupCode) {
-        return nodes.stream()
-            .filter(n -> groupCode.equals(n.electiveGroup()))
-            .map(KnowledgeGraphResponse.GraphNode::id)
-            .collect(Collectors.toList());
-    }
-
-    // --- level / impact score calculations (unchanged) ---
+    // --- level / impact score calculations ---
 
     private Map<Long, Integer> calculateLevels(
             List<KnowledgeGraphResponse.GraphNode> nodes,
@@ -324,12 +214,19 @@ public class KnowledgeGraphService {
     }
 
     private int calculateMaxDepth(Long nodeId, Map<Long, List<Long>> adjacency, Map<Long, Integer> memo) {
-        if (memo.containsKey(nodeId)) return memo.get(nodeId);
+        return calculateMaxDepthRecursive(nodeId, adjacency, memo, new HashSet<>());
+    }
 
+    private int calculateMaxDepthRecursive(Long nodeId, Map<Long, List<Long>> adjacency, Map<Long, Integer> memo, Set<Long> visitedInPath) {
+        if (memo.containsKey(nodeId)) return memo.get(nodeId);
+        if (visitedInPath.contains(nodeId)) return 0; // Cycle detected
+
+        visitedInPath.add(nodeId);
         int max = 0;
         for (Long neighbor : adjacency.getOrDefault(nodeId, List.of())) {
-            max = Math.max(max, 1 + calculateMaxDepth(neighbor, adjacency, memo));
+            max = Math.max(max, 1 + calculateMaxDepthRecursive(neighbor, adjacency, memo, visitedInPath));
         }
+        visitedInPath.remove(nodeId);
 
         memo.put(nodeId, max);
         return max;

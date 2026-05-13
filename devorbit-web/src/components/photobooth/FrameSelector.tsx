@@ -26,8 +26,8 @@ export function FrameSelector({
             onClick={() => onFrameSelect(frame)}
             className={`glass-card p-4 text-left transition-all border-2 ${
               selectedFrame?.id === frame.id
-                ? "border-emerald-400 bg-emerald-400/10 shadow-lg shadow-emerald-400/20"
-                : "border-glass-border hover:border-emerald-500/50"
+                ? "border-clay-primary bg-clay-primary/10"
+                : "border-glass-border hover:border-clay-primary/50"
             }`}>
             {/* Frame preview simulation */}
             <div
@@ -51,7 +51,7 @@ export function FrameSelector({
               <div className="flex-shrink-0">
                 {selectedFrame?.id === frame.id && (
                   <svg
-                    className="h-5 w-5 text-emerald-400"
+                    className="h-5 w-5 text-clay-primary"
                     fill="currentColor"
                     viewBox="0 0 20 20">
                     <path

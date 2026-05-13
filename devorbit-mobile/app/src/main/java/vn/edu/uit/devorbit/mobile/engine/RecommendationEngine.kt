@@ -101,7 +101,7 @@ object RecommendationEngine {
                 java.time.Instant.ofEpochMilli(it.deadline!!)
                     .atZone(java.time.ZoneId.systemDefault())
                     .toLocalDate()
-                    .let { d -> java.time.temporal.WeekFields.ISO.weekOfWeekBasedYear()(d) }
+                    .get(java.time.temporal.WeekFields.ISO.weekOfWeekBasedYear())
             }
         val hasCrowdedWeek = deadlineCounts.any { it.value.size >= 3 }
         if (hasCrowdedWeek) {

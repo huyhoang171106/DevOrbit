@@ -22,13 +22,10 @@ const GalaxyPage = lazy(() => import('./pages/student/knowledge-graph/GalaxyPage
 
 function GalaxyFallback() {
   return (
-    <div className="relative h-[80vh] flex items-center justify-center overflow-hidden bg-[#05070a]">
-      <div className="relative flex flex-col items-center gap-6">
-        <div className="relative h-20 w-20">
-          <div className="absolute inset-0 rounded-full border-4 border-emerald-500/10" />
-          <div className="absolute inset-0 rounded-full border-t-4 border-emerald-500 animate-spin shadow-[0_0_20px_rgba(16,185,129,0.4)]" />
-        </div>
-        <p className="text-[12px] font-black text-emerald-500 tracking-[0.4em] uppercase">Đang tải galaxy...</p>
+    <div className="h-[80vh] flex items-center justify-center bg-clay-bg">
+      <div className="flex flex-col items-center gap-4">
+        <div className="h-8 w-8 border-2 border-clay-border border-t-clay-primary animate-spin rounded-none" />
+        <p className="text-[12px] font-medium text-clay-text-muted tracking-[0.2em] uppercase">Đang tải</p>
       </div>
     </div>
   )

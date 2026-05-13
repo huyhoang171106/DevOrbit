@@ -92,10 +92,10 @@ export function PhotoboothPage() {
 
   if (!isUnlocked) {
     return (
-      <div className="min-h-screen bg-cosmic-base pt-24 pb-12 px-4">
+      <div className="min-h-screen bg-clay-surface pt-24 pb-12 px-4">
         <div className="mx-auto max-w-3xl">
           <div className="text-center mb-12">
-            <h1 className="hero-display text-ink mb-4">🎞️ Photobooth</h1>
+            <h1 className="hero-display text-clay-text mb-4">🎞️ Photobooth</h1>
             <p className="subtitle text-ink-secondary">
               Create memorable moments with Korean-style photo strips
             </p>
@@ -108,7 +108,7 @@ export function PhotoboothPage() {
               <p className="body-md text-ink-secondary">
                 Upload a document to unlock exclusive photobooth frames,
                 including our special{" "}
-                <span className="text-emerald-400">UIT 20th Anniversary</span>{" "}
+                <span className="text-clay-primary">UIT 20th Anniversary</span>{" "}
                 frame!
               </p>
             </div>
@@ -119,11 +119,11 @@ export function PhotoboothPage() {
   }
 
   return (
-    <div className="min-h-screen bg-cosmic-base pt-24 pb-12 px-4">
+    <div className="min-h-screen bg-clay-surface pt-24 pb-12 px-4">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="hero-display text-ink mb-2">🎞️ Photobooth</h1>
+          <h1 className="hero-display text-clay-text mb-2">🎞️ Photobooth</h1>
           <p className="subtitle text-ink-secondary">
             Create memorable moments with Korean-style photo strips
           </p>
@@ -170,17 +170,17 @@ export function PhotoboothPage() {
         {/* Info Section */}
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="glass-card p-4 text-center">
-            <p className="heading-5 text-emerald-400 mb-2">📱 Responsive</p>
+            <p className="heading-5 text-clay-primary mb-2">📱 Responsive</p>
             <p className="body-sm text-ink-secondary">Works on all devices</p>
           </div>
           <div className="glass-card p-4 text-center">
-            <p className="heading-5 text-emerald-400 mb-2">🎨 Frames</p>
+            <p className="heading-5 text-clay-primary mb-2">🎨 Frames</p>
             <p className="body-sm text-ink-secondary">
               {FRAME_DEFINITIONS.length} styles available
             </p>
           </div>
           <div className="glass-card p-4 text-center">
-            <p className="heading-5 text-emerald-400 mb-2">🚀 Fast</p>
+            <p className="heading-5 text-clay-primary mb-2">🚀 Fast</p>
             <p className="body-sm text-ink-secondary">Real-time compositing</p>
           </div>
         </div>

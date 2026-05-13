@@ -83,9 +83,9 @@ export function DownloadSection({ canvas, frame }: DownloadSectionProps) {
         </button>
 
         {exportSuccess && (
-          <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg flex items-center gap-2">
+          <div className="p-3 bg-clay-primary/10 border border-clay-primary/30 rounded-lg flex items-center gap-2">
             <svg
-              className="h-5 w-5 text-emerald-400 flex-shrink-0"
+              className="h-5 w-5 text-clay-primary flex-shrink-0"
               fill="currentColor"
               viewBox="0 0 20 20">
               <path
@@ -94,7 +94,7 @@ export function DownloadSection({ canvas, frame }: DownloadSectionProps) {
                 clipRule="evenodd"
               />
             </svg>
-            <p className="body-sm text-emerald-400">
+            <p className="body-sm text-clay-primary">
               Downloaded! Check your downloads folder
             </p>
           </div>

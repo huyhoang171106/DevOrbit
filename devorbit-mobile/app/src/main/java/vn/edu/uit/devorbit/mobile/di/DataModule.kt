@@ -11,10 +11,13 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import vn.edu.uit.devorbit.mobile.network.ApiService
-import vn.edu.uit.devorbit.mobile.repository.CacheStore
-import vn.edu.uit.devorbit.mobile.repository.DevOrbitRepository
-import vn.edu.uit.devorbit.mobile.repository.DevOrbitDatabase
-import vn.edu.uit.devorbit.mobile.repository.LearningTaskDao
+import vn.edu.uit.devorbit.mobile.data.local.DevOrbitDatabase
+import vn.edu.uit.devorbit.mobile.data.local.dao.CourseDao
+import vn.edu.uit.devorbit.mobile.data.local.dao.RepoDao
+import vn.edu.uit.devorbit.mobile.data.local.dao.RelationshipDao
+import vn.edu.uit.devorbit.mobile.data.local.dao.TaskDao
+import vn.edu.uit.devorbit.mobile.data.repository.AcademicRepository
+import androidx.room.Room
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
@@ -22,7 +25,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object DataModule {
 
-    private const val BASE_URL = "http://10.0.2.2:8080"
+    private const val BASE_URL = "http://10.0.2.2:8080/"
 
     @Provides
     @Singleton
@@ -60,29 +63,47 @@ object DataModule {
 
     @Provides
     @Singleton
-    fun provideCacheStore(@ApplicationContext context: Context): CacheStore {
-        return CacheStore(context)
+    fun provideDatabase(@ApplicationContext context: Context): DevOrbitDatabase {
+        return Room.databaseBuilder(
+            context,
+            DevOrbitDatabase::class.java,
+            DevOrbitDatabase.DATABASE_NAME
+        ).fallbackToDestructiveMigration().build()
     }
 
     @Provides
     @Singleton
-    fun provideDevOrbitDatabase(@ApplicationContext context: Context): DevOrbitDatabase {
-        return DevOrbitDatabase.getInstance(context)
+    fun provideCourseDao(db: DevOrbitDatabase): CourseDao {
+        return db.courseDao()
     }
 
     @Provides
     @Singleton
-    fun provideLearningTaskDao(db: DevOrbitDatabase): LearningTaskDao {
-        return db.learningTaskDao()
+    fun provideRepoDao(db: DevOrbitDatabase): RepoDao {
+        return db.repoDao()
     }
 
     @Provides
     @Singleton
-    fun provideDevOrbitRepository(
-        @ApplicationContext context: Context,
+    fun provideRelationshipDao(db: DevOrbitDatabase): RelationshipDao {
+        return db.relationshipDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideTaskDao(db: DevOrbitDatabase): TaskDao {
+        return db.taskDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAcademicRepository(
         apiService: ApiService,
-        cacheStore: CacheStore,
-    ): DevOrbitRepository {
-        return DevOrbitRepository(context, apiService, cacheStore)
+        courseDao: CourseDao,
+        repoDao: RepoDao,
+        relationshipDao: RelationshipDao,
+        taskDao: TaskDao
+    ): AcademicRepository {
+        return AcademicRepository(apiService, courseDao, repoDao, relationshipDao, taskDao)
     }
 }

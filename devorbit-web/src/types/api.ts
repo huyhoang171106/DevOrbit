@@ -2,7 +2,10 @@ export type CourseSummary = {
   id: number
   code: string
   name: string
+  description?: string | null
   repoCount: number
+  semester?: number | null
+  loaiMonHoc?: string | null
 }
 
 export type CourseDetail = {
@@ -54,6 +57,7 @@ export type RepoCandidate = {
   courseId: number | null
   courseCode: string | null
   courseName: string | null
+  reviewNote: string | null
 }
 
 export type ReviewerStats = {
@@ -210,9 +214,12 @@ export type GraphNode = {
   id: number
   name: string
   code: string
+  description?: string | null
   val: number
   level: number
   impactScore: number
+  semester?: number | null
+  electiveGroup?: string | null
 }
 
 export type GraphLink = {
@@ -226,7 +233,14 @@ export type GraphResponse = {
   links: GraphLink[]
 }
 
-// --- Course Relationships ---
+export type ElectiveGroupInfo = {
+  code: string
+  name: string
+  description: string
+  minCredits: number
+  parentGroupCode: string | null
+  courseCount: number
+}
 
 export type CourseRelationType = 'PREREQUISITE' | 'COMPLEMENTARY' | 'COREQUISITE'
 
@@ -241,9 +255,11 @@ export type CourseRelationshipResponse = {
   courseId: number
   courseCode: string
   courseName: string
+  courseNameEn: string | null
   relatedCourseId: number
   relatedCourseCode: string
   relatedCourseName: string
+  relatedCourseNameEn: string | null
   relationType: CourseRelationType
   createdAt: string
 }

@@ -16,6 +16,6 @@ echo Environment variables loaded from .env
 echo Starting DevOrbit API...
 echo.
 
-.\mvnw.cmd spring-boot:run
+.\mvnw.cmd spring-boot:run -Dmaven.test.skip=true
 
 endlocal

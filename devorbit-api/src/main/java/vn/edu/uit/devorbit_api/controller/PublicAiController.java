@@ -1,11 +1,10 @@
 package vn.edu.uit.devorbit_api.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import vn.edu.uit.devorbit_api.dto.publicapi.AiResponse;
+import vn.edu.uit.devorbit_api.dto.publicapi.RoadmapGenerationRequest;
+import vn.edu.uit.devorbit_api.dto.publicapi.RoadmapRecommendationResponse;
 import vn.edu.uit.devorbit_api.service.AiService;
 
 @RestController
@@ -22,5 +21,10 @@ public class PublicAiController {
     @GetMapping("/repo/{repoId}/advice")
     public AiResponse getTutorAdvice(@PathVariable Long repoId) {
         return aiService.getTutorAdvice(repoId);
+    }
+
+    @PostMapping("/generate-roadmap")
+    public RoadmapRecommendationResponse generateRoadmap(@RequestBody RoadmapGenerationRequest request) {
+        return aiService.generateRoadmap(request);
     }
 }

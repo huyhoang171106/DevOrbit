@@ -66,7 +66,6 @@ export function ScanForm({ onSubmit, loading }: ScanFormProps) {
               const suggestions = [
                 `${selected.code} ${selected.name}`,
                 `${selected.code} repository`,
-                `${selected.name} tutorial`,
                 selected.code,
               ]
               return suggestions.map((s) => (

@@ -24,7 +24,6 @@ fun DigitalTwinScreen(twin: AcademicTwin?) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(CosmicDeepSpace)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {

@@ -32,11 +32,16 @@ public class Course {
     @Column(name = "loaimonhoc", nullable = false, length = 50)
     private String loaiMonHoc;
 
+    private Integer semester;
+
     @Column(name = "is_open")
     private boolean isOpen;
 
     @Column(name = "management_unit", length = 100)
     private String managementUnit;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
     @Column(name = "mamh_old", length = 50)
     private String maMH_Old;

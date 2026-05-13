@@ -12,7 +12,11 @@ public class GithubClientConfig {
     public WebClient githubWebClient(GithubProperties githubProperties) {
         String token = githubProperties.token();
         if (token == null || token.isBlank()) {
-            throw new IllegalStateException("GITHUB_TOKEN environment variable is not set. GitHub API scan is unavailable.");
+            System.err.println("WARNING: GITHUB_TOKEN environment variable is not set. GitHub API scan will be unavailable.");
+            return WebClient.builder()
+                .baseUrl("https://api.github.com")
+                .defaultHeader(HttpHeaders.USER_AGENT, "DevOrbit/1.0")
+                .build();
         }
 
         return WebClient.builder()

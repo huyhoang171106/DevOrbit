@@ -1,6 +1,7 @@
 package vn.edu.uit.devorbit_api.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,7 +12,6 @@ import vn.edu.uit.devorbit_api.dto.publicapi.KnowledgeGraphResponse;
 import vn.edu.uit.devorbit_api.service.CourseService;
 import vn.edu.uit.devorbit_api.service.CourseTutorialService;
 import vn.edu.uit.devorbit_api.service.CourseYoutubePlaylistService;
-import vn.edu.uit.devorbit_api.dto.publicapi.ElectiveGroupResponse;
 import vn.edu.uit.devorbit_api.service.CourseArticleService;
 import vn.edu.uit.devorbit_api.service.KnowledgeGraphService;
 
@@ -20,6 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/courses")
 @RequiredArgsConstructor
+@Slf4j
 public class PublicCourseController {
     private final CourseService courseService;
     private final CourseTutorialService tutorialService;
@@ -34,7 +35,11 @@ public class PublicCourseController {
 
     @GetMapping("/graph")
     public KnowledgeGraphResponse getGraph() {
-        return knowledgeGraphService.getGraph();
+        log.info("Fetching knowledge graph data...");
+        KnowledgeGraphResponse response = knowledgeGraphService.getGraph();
+        log.info("Knowledge graph data fetched: {} nodes, {} links", 
+            response.nodes().size(), response.links().size());
+        return response;
     }
 
     @GetMapping("/{id}")
@@ -55,15 +60,5 @@ public class PublicCourseController {
     @GetMapping("/{id}/articles")
     public List<?> getArticles(@PathVariable Long id) {
         return articleService.getByCourse(id);
-    }
-
-    @GetMapping("/elective-groups")
-    public List<ElectiveGroupResponse> getElectiveGroups() {
-        return knowledgeGraphService.getElectiveGroups();
-    }
-
-    @GetMapping("/elective-group/{code}")
-    public List<CourseSummaryResponse> getElectiveGroupCourses(@PathVariable String code) {
-        return knowledgeGraphService.getElectiveGroupCourses(code);
     }
 }

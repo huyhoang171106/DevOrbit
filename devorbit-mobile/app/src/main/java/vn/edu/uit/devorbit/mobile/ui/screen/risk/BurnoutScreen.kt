@@ -23,7 +23,6 @@ fun BurnoutScreen(burnout: BurnoutStatus) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(CosmicDeepSpace)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -73,12 +72,15 @@ private fun BurnoutHeader() {
 
 @Composable
 private fun BurnoutBanner(risk: BurnoutRisk) {
-    val (bgColor, textColor, label) = when (risk) {
-        BurnoutRisk.NONE -> CosmicGlowBlue.copy(alpha = 0.25f) to CosmicGlowBlue to "Không có"
-        BurnoutRisk.LOW -> Color(0xFFFFA726).copy(alpha = 0.25f) to Color(0xFFFFA726) to "Thấp"
-        BurnoutRisk.MODERATE -> Color(0xFFFF7043).copy(alpha = 0.25f) to Color(0xFFFF7043) to "Trung bình"
-        BurnoutRisk.HIGH -> Color(0xFFEF5350).copy(alpha = 0.25f) to Color(0xFFEF5350) to "Cao"
+    val triple = when (risk) {
+        BurnoutRisk.NONE -> Triple(CosmicGlowBlue.copy(alpha = 0.25f), CosmicGlowBlue, "Không có")
+        BurnoutRisk.LOW -> Triple(Color(0xFFFFA726).copy(alpha = 0.25f), Color(0xFFFFA726), "Thấp")
+        BurnoutRisk.MODERATE -> Triple(Color(0xFFFF7043).copy(alpha = 0.25f), Color(0xFFFF7043), "Trung bình")
+        BurnoutRisk.HIGH -> Triple(Color(0xFFEF5350).copy(alpha = 0.25f), Color(0xFFEF5350), "Cao")
     }
+    val bgColor = triple.first
+    val textColor = triple.second
+    val label = triple.third
     Box(
         modifier = Modifier
             .fillMaxWidth()

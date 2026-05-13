@@ -44,4 +44,12 @@ public class AdminRepoCandidateController {
     public RepoCandidateResponse reject(@PathVariable Long candidateId) {
         return repoCandidateService.rejectCandidate(candidateId);
     }
+
+    @PostMapping("/{candidateId}/review-note")
+    public void updateReviewNote(
+        @PathVariable Long candidateId,
+        @RequestBody java.util.Map<String, String> body
+    ) {
+        repoCandidateService.updateReviewNote(candidateId, body.get("reviewNote"));
+    }
 }

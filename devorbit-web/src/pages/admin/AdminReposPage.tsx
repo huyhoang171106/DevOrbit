@@ -99,7 +99,7 @@ export function AdminReposPage() {
       {editingRepo && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-clay-bg/80 p-4 backdrop-blur-sm">
           <form
-            className="w-full max-w-2xl space-y-[16px] rounded-[12px] border border-glass-border bg-cosmic-surface p-[32px] shadow-[0_24px_48px_-8px_rgba(0,0,0,0.5)]"
+            className="w-full max-w-2xl space-y-4 border border-clay-border bg-clay-surface p-8"
             onSubmit={(e) => {
               e.preventDefault()
               void handleSave(editingRepo, e.currentTarget)

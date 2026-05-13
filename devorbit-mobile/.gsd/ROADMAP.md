@@ -11,13 +11,15 @@
 
 ## Phases
 
-### Phase 1: Foundation & Course Hub
+### Phase 1: Foundation & Course Hub (Offline-First)
 **Status**: ⬜ Not Started
-**Objective**: Establish the new "Academic OS" layout and rebuild the Course/Repo discovery engine.
+**Objective**: Establish the 5-pillar "Academic OS" architecture and implement the Room DB caching engine.
 **Deliverables**:
-- New Navigation System (Dashboard, Hub, PTB, Todo, AI)
-- Course List view (synced with UIT data)
-- Repository Browser with search and AI classification
+- **5-Pillar Navigation**: Bottom bar scaffold (Dashboard, Courses, Progress, Execution, AI Copilot).
+- **Offline Data Engine**: Room DB setup with schemas for Courses, Repos, and Academic Progress.
+- **Mission Control Dashboard**: Initial widget layout (Briefing, Risk, Workload Heatmap placeholders).
+- **High-Density Course Hub**: List-based discovery view with search-first UX.
+- **Galaxy Toggle**: Integration of existing Graph Canvas as a secondary "Explore" mode.
 
 ### Phase 2: Academic Progress Tracker (PTB)
 **Status**: ⬜ Not Started

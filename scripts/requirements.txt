@@ -1,0 +1,3 @@
+# Auto-review candidates LLM script
+# Python 3.12+ required. No external deps — uses only stdlib.
+# Optional: python-dotenv if you want .env auto-load (not required)

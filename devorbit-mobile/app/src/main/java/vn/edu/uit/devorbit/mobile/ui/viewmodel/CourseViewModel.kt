@@ -1,65 +1,71 @@
 package vn.edu.uit.devorbit.mobile.ui.viewmodel
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import vn.edu.uit.devorbit.mobile.model.*
-import vn.edu.uit.devorbit.mobile.repository.DevOrbitRepository
+import vn.edu.uit.devorbit.mobile.data.local.entity.CourseEntity
+import vn.edu.uit.devorbit.mobile.data.repository.AcademicRepository
+import vn.edu.uit.devorbit.mobile.model.domain.GraphNode
+import vn.edu.uit.devorbit.mobile.model.domain.GraphLink
 import javax.inject.Inject
 
 @HiltViewModel
 class CourseViewModel @Inject constructor(
-    private val repository: DevOrbitRepository
+    private val repository: AcademicRepository
 ) : ViewModel() {
 
-    private val _courses = mutableStateOf<List<CourseSummary>>(emptyList())
-    val courses: State<List<CourseSummary>> = _courses
+    val courses: StateFlow<List<CourseEntity>> = repository.allCourses
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    private val _repos = mutableStateOf<List<RepoSummary>>(emptyList())
-    val repos: State<List<RepoSummary>> = _repos
+    private val _graphNodes = MutableStateFlow<List<GraphNode>>(emptyList())
+    val graphNodes: StateFlow<List<GraphNode>> = _graphNodes.asStateFlow()
 
-    private val _tutorials = mutableStateOf<List<CourseTutorial>>(emptyList())
-    val tutorials: State<List<CourseTutorial>> = _tutorials
+    private val _graphLinks = MutableStateFlow<List<GraphLink>>(emptyList())
+    val graphLinks: StateFlow<List<GraphLink>> = _graphLinks.asStateFlow()
 
-    private val _videos = mutableStateOf<List<CourseYoutubePlaylist>>(emptyList())
-    val videos: State<List<CourseYoutubePlaylist>> = _videos
+    private val _graphLoading = MutableStateFlow(false)
+    val graphLoading: StateFlow<Boolean> = _graphLoading.asStateFlow()
 
-    private val _articles = mutableStateOf<List<CourseArticle>>(emptyList())
-    val articles: State<List<CourseArticle>> = _articles
+    private val _graphError = MutableStateFlow<String?>(null)
+    val graphError: StateFlow<String?> = _graphError.asStateFlow()
 
-    private val _isLoading = mutableStateOf(false)
-    val isLoading: State<Boolean> = _isLoading
+    init {
+        refreshCourses()
+        loadGraph()
+    }
 
-    private val _error = mutableStateOf<String?>(null)
-    val error: State<String?> = _error
-
-    fun loadCourses() {
+    fun refreshCourses() {
         viewModelScope.launch {
-            _isLoading.value = true
-            repository.getCourses()
-                .onSuccess { _courses.value = it }
-                .onFailure { _error.value = it.message ?: "Failed to load courses" }
-            _isLoading.value = false
+            repository.refreshCourses()
         }
     }
 
-    fun loadRepos(courseId: Long) {
+    fun loadGraph() {
         viewModelScope.launch {
-            _isLoading.value = true
-            _repos.value = emptyList()
-            _tutorials.value = emptyList()
-            _videos.value = emptyList()
-            _articles.value = emptyList()
-
-            repository.getRepos(courseId).onSuccess { _repos.value = it }
-            repository.getTutorials(courseId).onSuccess { _tutorials.value = it }
-            repository.getVideos(courseId).onSuccess { _videos.value = it }
-            repository.getArticles(courseId).onSuccess { _articles.value = it }
-            
-            _isLoading.value = false
+            _graphLoading.value = true
+            _graphError.value = null
+            try {
+                val kg = repository.getCourseGraph()
+                _graphNodes.value = kg.nodes
+                _graphLinks.value = kg.links
+            } catch (e: Exception) {
+                _graphError.value = e.message ?: "Failed to load graph"
+            } finally {
+                _graphLoading.value = false
+            }
         }
+    }
+
+    fun getNodesGroupedBySemester(): Map<Int, List<GraphNode>> {
+        return _graphNodes.value
+            .filter { it.semester != null && it.semester in 1..8 }
+            .groupBy { it.semester!! }
+            .toSortedMap()
     }
 }

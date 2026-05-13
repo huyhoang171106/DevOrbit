@@ -28,10 +28,35 @@ class AcademicRepository @Inject constructor(
     // ─── Knowledge Graph (from API) ───
 
     suspend fun getKnowledgeGraph(): KnowledgeGraph {
-        val courses = api.getCourses()
-        val nodes = courses.map { GraphNode(id = it.id, name = it.name, code = it.code) }
-        // Links từ API không có sẵn → dùng course relationships nếu có
-        return KnowledgeGraph(nodes, emptyList())
+        val response = api.getKnowledgeGraph()
+        val nodes = response.nodes.map { dto ->
+            GraphNode(
+                id = dto.id,
+                name = dto.name,
+                code = dto.code,
+                level = dto.level ?: 0,
+                impactScore = dto.impactScore ?: 0.0,
+                semester = dto.semester ?: courseSemesterFallback(dto.code),
+                description = dto.description
+            )
+        }
+        val links = response.links.map { dto ->
+            GraphLink(sourceId = dto.source, targetId = dto.target, type = dto.type)
+        }
+        return KnowledgeGraph(nodes, links)
+    }
+
+    private fun courseSemesterFallback(code: String): Int? {
+        // Heuristic fallback from course code prefix
+        val num = code.filter { it.isDigit() }.take(2).toIntOrNull() ?: return null
+        return when {
+            num in 1..9 -> 1
+            num in 10..19 -> 2
+            num in 20..29 -> 3
+            num in 30..39 -> 4
+            num in 40..49 -> 5
+            else -> null
+        }
     }
 
     fun computeGraphMetadata(nodes: List<GraphNode>, links: List<GraphLink>): KnowledgeGraph {

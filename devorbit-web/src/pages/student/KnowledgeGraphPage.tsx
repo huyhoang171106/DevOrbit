@@ -52,17 +52,10 @@ export function KnowledgeGraphPage() {
 
   if (isLoading) {
     return (
-      <div className="relative h-[80vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[600px] w-[600px] bg-emerald-500/[0.05] blur-[150px] rounded-full animate-pulse" />
-        <div className="relative flex flex-col items-center gap-6">
-          <div className="relative h-20 w-20">
-            <div className="absolute inset-0 rounded-full border-4 border-emerald-500/10" />
-            <div className="absolute inset-0 rounded-full border-t-4 border-emerald-500 animate-spin shadow-[0_0_20px_rgba(16,185,129,0.4)]" />
-          </div>
-          <div className="flex flex-col items-center">
-            <p className="text-[12px] font-black text-emerald-500 tracking-[0.4em] uppercase mb-2">Đang thiết lập</p>
-            <p className="heading-3 text-clay-text animate-pulse tracking-widest font-bold">MẠNG LƯỚI KIẾN THỨC</p>
-          </div>
+      <div className="h-[80vh] flex items-center justify-center bg-clay-bg">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-8 w-8 border-2 border-clay-border border-t-clay-primary animate-spin rounded-none" />
+          <p className="text-[12px] font-medium text-clay-text-muted tracking-[0.2em] uppercase">Đang thiết lập</p>
         </div>
       </div>
     )
@@ -70,10 +63,10 @@ export function KnowledgeGraphPage() {
 
   if (error) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', color: '#94a3b8' }}>
-        <h2 className="text-clay-text">Không thể tải sơ đồ kiến thức</h2>
-        <p className="text-ink-secondary">{error instanceof Error ? error.message : 'Đã xảy ra lỗi không xác định'}</p>
-        <button onClick={() => window.location.reload()} style={{ marginTop: '16px', padding: '8px 24px', cursor: 'pointer' }}>
+      <div className="flex flex-col items-center justify-center h-screen px-10 bg-clay-bg">
+        <h2 className="font-heading text-2xl font-bold text-clay-text mb-2">Không thể tải sơ đồ kiến thức</h2>
+        <p className="text-clay-text-muted mb-4">{error instanceof Error ? error.message : 'Đã xảy ra lỗi không xác định'}</p>
+        <button onClick={() => window.location.reload()} className="btn-primary">
           Thử lại
         </button>
       </div>
@@ -83,133 +76,133 @@ export function KnowledgeGraphPage() {
   const graphData = data ?? { nodes: [], links: [] }
 
   return (
-    <div className="relative w-full h-[calc(100vh-80px)] bg-[#05070a] overflow-hidden">
+    <div className="relative w-full h-[calc(100vh-64px)] bg-clay-bg overflow-hidden">
       {/* Immersive background texture */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
         style={{ backgroundImage: 'radial-gradient(#10b981 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
       {/* Overlay UI */}
       <div className="absolute top-8 left-8 z-20 pointer-events-none max-w-md animate-in fade-in slide-in-from-left-8 duration-1000">
-        <div className="glass-card-glow p-8 border-emerald-500/20 backdrop-blur-2xl">
-          <div className="inline-flex items-center gap-3 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-6">
-            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500">Ma trận kiến thức trực tuyến</span>
+        <div className="glass-card p-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-clay-surface border border-clay-border mb-4">
+            <div className="h-2 w-2 bg-clay-primary" />
+            <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-clay-primary">Ma trận kiến thức trực tuyến</span>
           </div>
 
-          <h1 className="display-sm text-white mb-4 leading-tight">Hệ sinh thái học thuật</h1>
-          <p className="body-sm text-ink-secondary mb-8 leading-relaxed">
+          <h1 className="display-sm text-clay-text mb-4">Hệ sinh thái học thuật</h1>
+          <p className="body-sm mb-6">
             Một hình ảnh trực quan, sống động về mạng lưới các môn học tại UIT. Phân tích các mối liên hệ và đồng bộ hóa lộ trình học tập của bạn.
           </p>
 
-          <div className="grid grid-cols-2 gap-4 mb-8">
+          <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <div className="h-1.5 w-4 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-ink-muted">Cơ sở</span>
+                <div className="h-1.5 w-4 bg-cyan-500" />
+                <span className="text-[10px] font-medium uppercase tracking-widest text-ink-muted">Cơ sở</span>
               </div>
               <div className="flex items-center gap-3">
-                <div className="h-1.5 w-4 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-ink-muted">Cơ sở ngành</span>
+                <div className="h-1.5 w-4 bg-emerald-500" />
+                <span className="text-[10px] font-medium uppercase tracking-widest text-ink-muted">Cơ sở ngành</span>
               </div>
               <div className="flex items-center gap-3">
-                <div className="h-1.5 w-4 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-ink-muted">Trung cấp</span>
+                <div className="h-1.5 w-4 bg-indigo-500" />
+                <span className="text-[10px] font-medium uppercase tracking-widest text-ink-muted">Trung cấp</span>
               </div>
             </div>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <div className="h-1.5 w-4 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.8)]" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-ink-muted">Nâng cao</span>
+                <div className="h-1.5 w-4 bg-violet-500" />
+                <span className="text-[10px] font-medium uppercase tracking-widest text-ink-muted">Nâng cao</span>
               </div>
               <div className="flex items-center gap-3">
-                <div className="h-1.5 w-4 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-ink-muted">Chuyên ngành</span>
+                <div className="h-1.5 w-4 bg-amber-500" />
+                <span className="text-[10px] font-medium uppercase tracking-widest text-ink-muted">Chuyên ngành</span>
               </div>
               <div className="flex items-center gap-3">
-                <div className="h-1.5 w-4 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-ink-muted">Chuyên sâu</span>
+                <div className="h-1.5 w-4 bg-rose-500" />
+                <span className="text-[10px] font-medium uppercase tracking-widest text-ink-muted">Chuyên sâu</span>
               </div>
             </div>
           </div>
 
-          <div className="space-y-4 pt-6 border-t border-white/5">
-            <div className="flex items-center gap-4 group/legend">
-              <div className="h-1 w-10 bg-emerald-500/30 rounded-full group-hover/legend:bg-emerald-500 transition-colors" />
+          <div className="space-y-3 pt-4 border-t border-clay-border">
+            <div className="flex items-center gap-4">
+              <div className="h-1 w-10 bg-clay-primary" />
               <div className="flex flex-col">
-                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500/80">Môn tiên quyết</span>
-                <span className="text-[8px] text-ink-muted font-medium tracking-wide">Mối liên hệ bắt buộc</span>
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-clay-primary">Môn tiên quyết</span>
+                <span className="text-[9px] text-ink-muted">Mối liên hệ bắt buộc</span>
               </div>
             </div>
-            <div className="flex items-center gap-4 group/legend">
-              <div className="h-0.5 w-10 border-t border-dashed border-white/30" />
+            <div className="flex items-center gap-4">
+              <div className="h-0.5 w-10 border-t border-dashed border-clay-border" />
               <div className="flex flex-col">
-                <span className="text-[10px] font-black uppercase tracking-widest text-ink-muted">Bổ sung</span>
-                <span className="text-[8px] text-ink-muted font-medium tracking-wide">Được khuyến nghị</span>
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-ink-muted">Bổ sung</span>
+                <span className="text-[9px] text-ink-muted">Được khuyến nghị</span>
               </div>
             </div>
           </div>
 
-          <div className="mt-10 flex flex-col gap-4 pointer-events-auto">
-            <button 
+          <div className="mt-8 flex flex-col gap-3 pointer-events-auto">
+            <button
               onClick={() => {
                 setIsSimulationMode(!isSimulationMode)
                 if (isSimulationMode) setFailedNodes(new Set())
               }}
-              className={`flex items-center justify-center gap-3 w-full px-6 py-3 rounded-xl font-black uppercase tracking-[0.2em] text-[11px] transition-all duration-500 border ${
-                isSimulationMode 
-                  ? 'bg-rose-500 border-rose-400 text-white shadow-[0_0_30px_rgba(244,63,94,0.4)]' 
-                  : 'bg-emerald-500 border-emerald-400 text-white shadow-[0_0_30px_rgba(16,185,129,0.4)]'
+              className={`flex items-center justify-center gap-2 w-full px-6 py-3 font-semibold uppercase tracking-[0.1em] text-[12px] transition-all border ${
+                isSimulationMode
+                  ? 'bg-rose-500 text-white border-rose-500'
+                  : 'btn-primary'
               }`}
             >
               {isSimulationMode ? <Activity className="w-4 h-4" /> : <Play className="w-4 h-4" />}
               {isSimulationMode ? 'Thoát giả lập' : 'Bật chế độ giả lập'}
             </button>
-            
+
             {isSimulationMode && (
-              <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
-                <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 backdrop-blur-sm">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-ink-muted">Chỉ số giả lập</span>
-                    <button 
+              <div className="space-y-3 animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="p-4 border border-clay-border bg-clay-surface">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-ink-muted">Chỉ số giả lập</span>
+                    <button
                       onClick={() => setFailedNodes(new Set())}
-                      className="text-ink-muted hover:text-white transition-colors"
+                      className="text-ink-muted hover:text-clay-text transition-colors"
                     >
                       <RotateCcw className="w-3 h-3" />
                     </button>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
-                      <span className="text-[20px] font-bold text-white">{blockedNodes.size}</span>
-                      <span className="text-[8px] font-black uppercase tracking-widest text-ink-muted">Môn học bị ảnh hưởng</span>
+                      <span className="text-xl font-bold text-clay-text">{blockedNodes.size}</span>
+                      <span className="text-[9px] font-medium uppercase tracking-widest text-ink-muted">Môn học bị ảnh hưởng</span>
                     </div>
                     <div className="flex flex-col gap-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-[20px] font-bold text-rose-500">+{delayEstimate}</span>
-                        <span className="text-[10px] text-rose-500 font-bold uppercase">Kỳ</span>
+                        <span className="text-xl font-bold text-rose-500">+{delayEstimate}</span>
+                        <span className="text-[10px] text-rose-500 font-semibold uppercase">Kỳ</span>
                       </div>
-                      <span className="text-[8px] font-black uppercase tracking-widest text-ink-muted">Độ trễ tốt nghiệp</span>
+                      <span className="text-[9px] font-medium uppercase tracking-widest text-ink-muted">Độ trễ tốt nghiệp</span>
                     </div>
                   </div>
                 </div>
 
                 {failedNodes.size > 0 && (
-                  <div className="flex items-start gap-3 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20">
+                  <div className="flex items-start gap-3 p-4 border border-rose-500 bg-red-50">
                     <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-                    <p className="text-[10px] text-rose-200 leading-relaxed font-medium">
+                    <p className="text-[11px] text-rose-700 leading-relaxed font-medium">
                       Rủi ro cao. Mô hình thất bại hiện tại làm gián đoạn các môn tiên quyết quan trọng cho việc tốt nghiệp.
                     </p>
                   </div>
                 )}
 
-                <p className="text-[9px] text-ink-muted italic text-center px-4">
+                <p className="text-[10px] text-ink-muted italic text-center px-4">
                   Nhấn vào bất kỳ môn học nào để giả định việc không hoàn thành và xem mức độ ảnh hưởng lan truyền.
                 </p>
               </div>
             )}
 
             {!isSimulationMode && (
-              <Link to="/courses" className="btn-secondary text-[11px] px-6 py-2.5 uppercase tracking-[0.2em] text-center">
+              <Link to="/courses" className="btn-secondary text-center">
                 Xem danh mục
               </Link>
             )}
@@ -218,7 +211,7 @@ export function KnowledgeGraphPage() {
       </div>
 
       <div className="absolute bottom-8 right-8 z-20 flex flex-col items-end gap-3 pointer-events-none animate-in fade-in slide-in-from-right-8 duration-1000">
-        <div className="glass-card px-5 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-ink-muted border-glass-border backdrop-blur-md">
+        <div className="glass-card px-4 py-2.5 text-[10px] font-medium text-ink-muted">
           Cuộn: Phóng to • Kéo: Di chuyển • Nhấn: Xem môn học
         </div>
       </div>
@@ -228,9 +221,10 @@ export function KnowledgeGraphPage() {
         graphData={graphData}
         backgroundColor="transparent"
         nodeLabel={(node: any) => `
-          <div style="background: rgba(13, 18, 37, 0.95); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px);">
+          <div style="background: rgba(13, 18, 37, 0.95); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px); max-width: 300px;">
             <div style="color: #10b981; font-weight: 900; font-size: 10px; margin-bottom: 4px; letter-spacing: 0.1em; text-transform: uppercase;">${node.code}</div>
-            <div style="color: #fff; font-weight: 700; font-size: 13px;">${node.name}</div>
+            <div style="color: #fff; font-weight: 700; font-size: 13px; margin-bottom: 8px;">${node.name}</div>
+            ${node.description ? `<div style="color: rgba(255,255,255,0.7); font-size: 11px; line-height: 1.5; border-top: 1px solid rgba(255,255,255,0.1); pt: 8px;">${node.description}</div>` : ''}
           </div>
         `}
         nodeColor={() => '#10b981'}

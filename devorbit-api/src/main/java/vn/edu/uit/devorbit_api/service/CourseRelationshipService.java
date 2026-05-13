@@ -78,8 +78,8 @@ public class CourseRelationshipService {
     private CourseRelationshipResponse toResponse(CourseRelationship entity) {
         return new CourseRelationshipResponse(
                 entity.getId(),
-                entity.getCourse().getId(), entity.getCourse().getMaMH(), entity.getCourse().getTenMH(),
-                entity.getRelatedCourse().getId(), entity.getRelatedCourse().getMaMH(), entity.getRelatedCourse().getTenMH(),
+                entity.getCourse().getId(), entity.getCourse().getMaMH(), entity.getCourse().getTenMH(), entity.getCourse().getTenMH_EN(),
+                entity.getRelatedCourse().getId(), entity.getRelatedCourse().getMaMH(), entity.getRelatedCourse().getTenMH(), entity.getRelatedCourse().getTenMH_EN(),
                 entity.getRelationType(), entity.getCreatedAt());
     }
 }

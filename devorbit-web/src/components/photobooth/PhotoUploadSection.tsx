@@ -73,8 +73,8 @@ export function PhotoUploadSection({
         onClick={() => fileInputRef.current?.click()}
         className={`border-2 border-dashed rounded-lg p-12 cursor-pointer transition-all ${
           dragActive
-            ? "border-emerald-400 bg-emerald-400/10"
-            : "border-glass-border hover:border-emerald-500/50 hover:bg-glass-surface-hover"
+            ? "border-clay-primary bg-clay-primary/10"
+            : "border-glass-border hover:border-clay-primary/50 hover:bg-glass-surface-hover"
         }`}>
         <input
           ref={fileInputRef}
@@ -87,7 +87,7 @@ export function PhotoUploadSection({
 
         <div className="flex flex-col items-center gap-3">
           <svg
-            className="h-10 w-10 text-emerald-400"
+            className="h-10 w-10 text-clay-primary"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24">
@@ -116,8 +116,8 @@ export function PhotoUploadSection({
       )}
 
       {selectedCount > 0 && (
-        <div className="mt-4 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
-          <p className="body-sm text-emerald-400">
+        <div className="mt-4 p-3 bg-clay-primary/10 border border-clay-primary/30 rounded-lg">
+          <p className="body-sm text-clay-primary">
             ✓ {selectedCount} photo{selectedCount !== 1 ? "s" : ""} ready to
             composite
           </p>

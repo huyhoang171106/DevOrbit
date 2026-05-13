@@ -1,6 +1,6 @@
 # SPEC.md — Project Specification (Mobile Rebuild)
 
-> **Status**: `DRAFT`
+> **Status**: `FINALIZED` (2026-05-12)
 
 ## Vision
 DevOrbit Mobile is an "Academic OS" for UIT students, providing a centralized hub for course materials, progress tracking, academic planning, and AI-driven intelligence to optimize their university journey.

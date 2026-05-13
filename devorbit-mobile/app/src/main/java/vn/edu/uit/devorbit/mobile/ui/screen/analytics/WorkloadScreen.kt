@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import vn.edu.uit.devorbit.mobile.model.domain.WorkloadProfile
 import vn.edu.uit.devorbit.mobile.model.domain.WorkloadStatus
+import vn.edu.uit.devorbit.mobile.ui.components.CosmicBackground
 import vn.edu.uit.devorbit.mobile.ui.components.GlassCard
 import vn.edu.uit.devorbit.mobile.ui.theme.*
 

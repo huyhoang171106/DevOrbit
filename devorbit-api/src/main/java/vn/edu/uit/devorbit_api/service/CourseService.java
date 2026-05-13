@@ -47,6 +47,7 @@ public class CourseService {
                 .loaiMonHoc(request.subjectType())
                 .isOpen(request.isOpen() != null ? request.isOpen() : true)
                 .managementUnit(request.managementUnit())
+                .description(request.description())
                 .maMH_Old(request.codeOld())
                 .equivalentMH(request.equivalentMH())
                 .prerequisiteMH(request.prerequisiteMH())
@@ -66,6 +67,7 @@ public class CourseService {
         course.setLoaiMonHoc(request.subjectType());
         course.setOpen(request.isOpen() != null ? request.isOpen() : true);
         course.setManagementUnit(request.managementUnit());
+        course.setDescription(request.description());
         course.setMaMH_Old(request.codeOld());
         course.setEquivalentMH(request.equivalentMH());
         course.setPrerequisiteMH(request.prerequisiteMH());
@@ -89,7 +91,7 @@ public class CourseService {
                 course.getMaMH(),
                 course.getTenMH(),
                 course.getTenMH_EN(),
-                null,
+                course.getDescription(),
                 course.getLt(),
                 course.getTh(),
                 course.getSoTC(),

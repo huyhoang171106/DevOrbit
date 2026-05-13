@@ -17,8 +17,8 @@ export function DocumentUnlock({ isUnlocked, onUnlock }: DocumentUnlockProps) {
 
   if (isUnlocked) {
     return (
-      <div className="glass-card p-6 text-center border border-emerald-500/30 bg-emerald-500/5">
-        <div className="flex items-center justify-center gap-2 text-emerald-400 heading-5 mb-2">
+      <div className="glass-card p-6 text-center border border-clay-primary/30 bg-clay-primary/5">
+        <div className="flex items-center justify-center gap-2 text-clay-primary heading-5 mb-2">
           <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
             <path
               fillRule="evenodd"
@@ -44,7 +44,7 @@ export function DocumentUnlock({ isUnlocked, onUnlock }: DocumentUnlockProps) {
 
       <button
         onClick={() => fileInputRef.current?.click()}
-        className="w-full border-2 border-dashed border-glass-border rounded-lg p-8 hover:border-emerald-500/50 transition-colors cursor-pointer group">
+        className="w-full border-2 border-dashed border-glass-border rounded-lg p-8 hover:border-clay-primary/50 transition-colors cursor-pointer group">
         <input
           ref={fileInputRef}
           type="file"
@@ -54,7 +54,7 @@ export function DocumentUnlock({ isUnlocked, onUnlock }: DocumentUnlockProps) {
         />
         <div className="flex flex-col items-center gap-3">
           <svg
-            className="h-8 w-8 text-ink-secondary group-hover:text-emerald-400 transition-colors"
+            className="h-8 w-8 text-ink-secondary group-hover:text-clay-primary transition-colors"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24">

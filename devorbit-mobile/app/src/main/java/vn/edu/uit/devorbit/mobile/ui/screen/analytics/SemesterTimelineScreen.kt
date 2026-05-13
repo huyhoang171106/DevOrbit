@@ -1,5 +1,6 @@
 package vn.edu.uit.devorbit.mobile.ui.screen.analytics
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,6 +21,7 @@ import vn.edu.uit.devorbit.mobile.model.domain.EventType
 import vn.edu.uit.devorbit.mobile.model.domain.Milestone
 import vn.edu.uit.devorbit.mobile.model.domain.SemesterTimeline
 import vn.edu.uit.devorbit.mobile.model.domain.TimelineEvent
+import vn.edu.uit.devorbit.mobile.ui.components.CosmicBackground
 import vn.edu.uit.devorbit.mobile.ui.components.GlassCard
 import vn.edu.uit.devorbit.mobile.ui.theme.*
 

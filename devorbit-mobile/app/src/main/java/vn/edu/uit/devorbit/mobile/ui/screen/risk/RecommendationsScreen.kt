@@ -40,7 +40,6 @@ fun RecommendationsScreen(recommendations: List<StudyRecommendation>) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(CosmicDeepSpace)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {

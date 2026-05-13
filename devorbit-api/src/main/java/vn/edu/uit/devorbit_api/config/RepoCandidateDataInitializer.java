@@ -12,6 +12,6 @@ public class RepoCandidateDataInitializer {
 
     @PostConstruct
     public void init() {
-        repoCandidateService.distributeCandidates();
+        // repoCandidateService.distributeCandidates();
     }
 }

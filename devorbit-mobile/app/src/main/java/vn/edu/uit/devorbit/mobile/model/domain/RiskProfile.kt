@@ -3,7 +3,12 @@ package vn.edu.uit.devorbit.mobile.model.domain
 data class RiskProfile(
     val subjectRisks: List<SubjectRisk> = emptyList(),
     val overallRisk: RiskLevel = RiskLevel.LOW,
-    val riskFactors: List<RiskFactor> = emptyList()
+    val riskFactors: List<RiskFactor> = emptyList(),
+    val academicRisk: Double = 0.0,
+    val healthRisk: Double = 0.0,
+    val consistencyRisk: Double = 0.0,
+    val socialRisk: Double = 0.0,
+    val mentalRisk: Double = 0.0
 )
 
 data class SubjectRisk(

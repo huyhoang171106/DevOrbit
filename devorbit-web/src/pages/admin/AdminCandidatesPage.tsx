@@ -3,14 +3,12 @@ import { apiAdminGet, apiAdminPost } from '../../lib/api'
 import { getAdminToken } from '../../lib/auth'
 import { useRequireAuth, useApiFetch } from '../../lib/hooks'
 import { CandidateTable } from '../../components/admin/CandidateTable'
-import { ApproveModal } from '../../components/admin/ApproveModal'
 import { CustomSelect } from '../../components/admin/CustomSelect'
 import type { RepoCandidate, ReviewerStats } from '../../types/api'
 
 export function AdminCandidatesPage() {
   useRequireAuth()
   const token = getAdminToken()!
-  const [approvingId, setApprovingId] = useState<number | null>(null)
   const [selectedSubject, setSelectedSubject] = useState<string>('all')
   const [reviewer, setReviewer] = useState<string>('all')
   const [approveError, setApproveError] = useState<string | null>(null)
@@ -37,18 +35,16 @@ export function AdminCandidatesPage() {
   const uniqueSubjects = Array.from(new Set(mappedCandidates.map(c => c.courseCode).filter(Boolean) as string[]))
 
   async function handleApprove(id: number) {
-    setApprovingId(id)
-  }
+    const candidate = (candidates ?? []).find(c => c.id === id)
+    if (!candidate) return
 
-  async function handleConfirmApprove(id: number, description: string, techStacks: string[], reviewNote: string) {
     setApproveError(null)
     try {
       await apiAdminPost(`/api/admin/repo-candidates/${id}/approve`, token, {
-        description,
-        techStacks,
-        reviewNote,
+        description: candidate.description,
+        reviewNote: candidate.reviewNote,
+        techStacks: candidate.primaryLanguage ? [candidate.primaryLanguage] : []
       })
-      setApprovingId(null)
       fetchCandidates()
       refetchStats()
     } catch (err) {
@@ -69,9 +65,6 @@ export function AdminCandidatesPage() {
     }
   }
 
-  const selectedCandidate = approvingId != null
-    ? (candidates ?? []).find((c) => c.id === approvingId) ?? null
-    : null
 
   const reviewerRemaining = (stats ?? []).reduce((acc, s) => {
     acc[s.reviewer] = s.remaining
@@ -110,9 +103,9 @@ export function AdminCandidatesPage() {
                 <button
                   key={p}
                   onClick={() => setReviewer(p)}
-                  className={`px-5 py-2 text-[13px] font-bold rounded-lg transition-all ${reviewer === p
-                      ? 'bg-cosmic-surface text-emerald-400 shadow-md border border-glass-border scale-105 z-10'
-                      : 'text-ink-secondary hover:text-clay-text hover:bg-cosmic-surface/50'
+                  className={`px-5 py-2 text-[13px] font-semibold transition-all border ${reviewer === p
+                      ? 'bg-clay-primary text-white border-clay-primary'
+                      : 'text-ink-secondary hover:text-clay-text hover:bg-clay-surface border-clay-border'
                     }`}
                 >
                   {p === 'all' ? 'Tất cả' : p}
@@ -164,16 +157,6 @@ export function AdminCandidatesPage() {
         onApprove={handleApprove}
         onReject={handleReject}
       />
-
-      {selectedCandidate && (
-        <ApproveModal
-          candidate={selectedCandidate}
-          onConfirm={(description, techStacks, reviewNote) =>
-            handleConfirmApprove(selectedCandidate.id, description, techStacks, reviewNote)
-          }
-          onClose={() => setApprovingId(null)}
-        />
-      )}
     </div>
   )
 }

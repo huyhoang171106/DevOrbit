@@ -49,7 +49,7 @@ class PublicCourseControllerTest {
     @Test
     void shouldReturnCourseSummaries() throws Exception {
         when(courseService.getActiveCourseSummaries()).thenReturn(List.of(
-            new CourseSummaryResponse(1L, "SE101", "Nhap mon CNPM", 0L)
+            new CourseSummaryResponse(1L, "SE101", "Nhap mon CNPM", "Test Desc", 0L, 1, "DAI_CUONG", "CNPM")
         ));
 
         mockMvc.perform(get("/api/courses"))
@@ -60,8 +60,8 @@ class PublicCourseControllerTest {
     @Test
     void shouldReturnKnowledgeGraph() throws Exception {
         var graphNodes = List.of(
-            new KnowledgeGraphResponse.GraphNode(1L, "Test Course", "T101", 12.0, 0, 0.0),
-            new KnowledgeGraphResponse.GraphNode(2L, "Advanced Test", "T201", 13.5, 1, 0.0)
+            new KnowledgeGraphResponse.GraphNode(1L, "Test Course", "T101", "Desc 1", 12.0, 0, 0.0, 1),
+            new KnowledgeGraphResponse.GraphNode(2L, "Advanced Test", "T201", "Desc 2", 13.5, 1, 0.0, 2)
         );
         var graphLinks = List.of(
             new KnowledgeGraphResponse.GraphLink(1L, 2L, CourseRelationType.PREREQUISITE)

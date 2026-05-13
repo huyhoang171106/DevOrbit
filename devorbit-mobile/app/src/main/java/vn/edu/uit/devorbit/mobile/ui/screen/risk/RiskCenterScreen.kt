@@ -1,22 +1,36 @@
 package vn.edu.uit.devorbit.mobile.ui.screen.risk
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import vn.edu.uit.devorbit.mobile.model.domain.RiskLevel
-import vn.edu.uit.devorbit.mobile.model.domain.RiskProfile
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.drawscope.rotate
+import vn.edu.uit.devorbit.mobile.model.domain.*
+import vn.edu.uit.devorbit.mobile.ui.components.GlassCard
 import vn.edu.uit.devorbit.mobile.ui.theme.*
+import kotlin.math.cos
+import kotlin.math.sin
 
 @Composable
 fun RiskCenterScreen(
@@ -27,247 +41,272 @@ fun RiskCenterScreen(
     onNavigateToSimulation: () -> Unit = {},
 ) {
     LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(CosmicDeepSpace)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(CosmicTheme.spacing.medium),
+        contentPadding = PaddingValues(bottom = 100.dp)
     ) {
-        item { RiskHeader() }
-        item { OverallRiskBanner(riskProfile.overallRisk) }
+        // Hero: Multi-dimensional Risk Radar
         item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OutlinedButton(
-                    onClick = onNavigateToBurnout,
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp)
-                ) { Text("Kiệt sức", color = CosmicNebulaPurple, fontSize = 12.sp) }
-                OutlinedButton(
-                    onClick = onNavigateToTwin,
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp)
-                ) { Text("Digital Twin", color = CosmicNebulaPurple, fontSize = 12.sp) }
-            }
+            RiskRadarSection(riskProfile)
         }
+
+        // Action Orbit
         item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OutlinedButton(
-                    onClick = onNavigateToRecommendations,
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp)
-                ) { Text("Khuyến nghị", color = CosmicNebulaPurple, fontSize = 12.sp) }
-                OutlinedButton(
-                    onClick = onNavigateToSimulation,
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp)
-                ) { Text("Mô phỏng", color = CosmicNebulaPurple, fontSize = 12.sp) }
-            }
-        }
-        item {
-            Text(
-                text = "Yếu tố rủi ro",
-                color = TextPrimary,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold
+            ActionOrbitRow(
+                onNavigateToBurnout,
+                onNavigateToTwin,
+                onNavigateToRecommendations,
+                onNavigateToSimulation
             )
         }
+
+        // Risk Factors Section
+        item {
+            SectionHeader("CÁC BIẾN SỐ RỦI RO")
+        }
+        
         items(riskProfile.riskFactors) { factor ->
-            RiskFactorCard(factor.type, factor.description, factor.severity)
+            FactorGlassCard(factor)
         }
-        item { Spacer(Modifier.height(4.dp)) }
+
+        // Subject Analysis
         item {
-            Text(
-                text = "Phân tích theo môn",
-                color = TextPrimary,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold
-            )
+            SectionHeader("PHÂN TÍCH ĐỊNH LƯỢNG THEO MÔN")
         }
+        
         items(riskProfile.subjectRisks) { subject ->
-            SubjectRiskCard(
-                name = subject.subjectName,
-                riskLevel = subject.riskLevel,
-                overdueTasks = subject.overdueTasks,
-                consistency = subject.consistency
+            SubjectRiskGlassCard(subject)
+        }
+    }
+}
+
+@Composable
+private fun RiskRadarSection(profile: RiskProfile) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(vertical = CosmicTheme.spacing.large),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.size(260.dp)) {
+            // Cosmic Radar Chart
+            RadarChart(
+                metrics = listOf(
+                    "Academic" to profile.academicRisk,
+                    "Health" to profile.healthRisk,
+                    "Consistency" to profile.consistencyRisk,
+                    "Social" to profile.socialRisk,
+                    "Mental" to profile.mentalRisk
+                )
+            )
+            
+            // Central Risk Level
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = profile.overallRisk.name,
+                    style = CosmicTheme.typography.command,
+                    color = getRiskColor(profile.overallRisk)
+                )
+                Text(
+                    text = "OVERALL RISK",
+                    style = CosmicTheme.typography.label,
+                    color = CosmicTheme.colors.textSecondary
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun RadarChart(metrics: List<Pair<String, Double>>) {
+    val infiniteTransition = rememberInfiniteTransition(label = "RadarSweep")
+    val sweep by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(4000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "Sweep"
+    )
+
+    val plasmaColor = CosmicTheme.colors.plasma
+    val glassBorderColor = CosmicTheme.colors.glassBorder
+    val paddingDp = 40.dp
+    val axisStrokeWidth = 1.dp
+    val polygonStrokeWidth = 2.dp
+
+    Canvas(modifier = Modifier
+        .fillMaxSize()
+        .drawWithCache {
+            val centerX = size.width / 2
+            val centerY = size.height / 2
+            val radius = size.minDimension / 2 - paddingDp.toPx()
+            
+            // Pre-calculate data polygon path
+            val dataPath = Path()
+            metrics.forEachIndexed { index, metric ->
+                val valueFraction = (metric.second / 10.0).toFloat().coerceIn(0f, 1f)
+                val angle = (index * (360f / metrics.size) - 90f) * (Math.PI / 180f).toFloat()
+                val x = centerX + radius * valueFraction * cos(angle)
+                val y = centerY + radius * valueFraction * sin(angle)
+                if (index == 0) dataPath.moveTo(x, y) else dataPath.lineTo(x, y)
+            }
+            dataPath.close()
+
+            val dataBrush = Brush.radialGradient(
+                colors = listOf(
+                    plasmaColor.copy(alpha = 0.4f),
+                    plasmaColor.copy(alpha = 0.1f)
+                ),
+                center = Offset(centerX, centerY),
+                radius = radius
+            )
+
+            val sweepBrush = Brush.sweepGradient(
+                0f to Color.Transparent,
+                0.1f to plasmaColor.copy(alpha = 0.2f),
+                0.2f to Color.Transparent
+            )
+
+            onDrawBehind {
+                // Background Web
+                for (i in 1..4) {
+                    val r = radius * (i / 4f)
+                    drawCircle(
+                        color = glassBorderColor.copy(alpha = 0.2f),
+                        radius = r,
+                        center = Offset(centerX, centerY),
+                        style = Stroke(width = axisStrokeWidth.toPx())
+                    )
+                }
+                
+                // Axis Lines
+                metrics.forEachIndexed { index, _ ->
+                    val angle = (index * (360f / metrics.size) - 90f) * (Math.PI / 180f).toFloat()
+                    val endX = centerX + radius * cos(angle)
+                    val endY = centerY + radius * sin(angle)
+                    drawLine(
+                        color = glassBorderColor.copy(alpha = 0.3f),
+                        start = Offset(centerX, centerY),
+                        end = Offset(endX, endY),
+                        strokeWidth = axisStrokeWidth.toPx()
+                    )
+                }
+                
+                // Draw Data Polygon
+                drawPath(
+                    path = dataPath,
+                    brush = dataBrush
+                )
+                drawPath(
+                    path = dataPath,
+                    color = plasmaColor,
+                    style = Stroke(width = polygonStrokeWidth.toPx())
+                )
+                
+                // Radar Sweep Effect
+                rotate(degrees = sweep, pivot = Offset(centerX, centerY)) {
+                    drawArc(
+                        brush = sweepBrush,
+                        startAngle = 0f,
+                        sweepAngle = 45f,
+                        useCenter = true,
+                        size = Size(radius * 2, radius * 2),
+                        topLeft = Offset(centerX - radius, centerY - radius)
+                    )
+                }
+            }
+        }
+    ) {
+        // Logic moved to drawWithCache
+    }
+}
+
+@Composable
+private fun ActionOrbitRow(
+    onBurnout: () -> Unit,
+    onTwin: () -> Unit,
+    onRecs: () -> Unit,
+    onSim: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = CosmicTheme.spacing.medium),
+        horizontalArrangement = Arrangement.spacedBy(CosmicTheme.spacing.small)
+    ) {
+        OrbitButton("BURN", onBurnout, Modifier.weight(1f))
+        OrbitButton("TWIN", onTwin, Modifier.weight(1f))
+        OrbitButton("RECS", onRecs, Modifier.weight(1f))
+        OrbitButton("SIM", onSim, Modifier.weight(1f))
+    }
+}
+
+@Composable
+private fun OrbitButton(label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier.height(48.dp).clickable { onClick() },
+        color = CosmicTheme.colors.nebula,
+        shape = RoundedCornerShape(12.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(text = label, style = CosmicTheme.typography.command.copy(fontSize = 12.sp), color = Color.White)
+        }
+    }
+}
+
+@Composable
+private fun FactorGlassCard(factor: RiskFactor) {
+    GlassCard(modifier = Modifier.fillMaxWidth().padding(horizontal = CosmicTheme.spacing.medium)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Surface(
+                modifier = Modifier.size(40.dp),
+                shape = CircleShape,
+                color = getRiskColor(factor.severity).copy(alpha = 0.2f)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(Icons.Default.Warning, null, modifier = Modifier.size(20.dp), tint = getRiskColor(factor.severity))
+                }
+            }
+            Spacer(modifier = Modifier.width(CosmicTheme.spacing.medium))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = factor.type.uppercase(), style = CosmicTheme.typography.command.copy(fontSize = 13.sp), color = Color.White)
+                Text(text = factor.description, style = CosmicTheme.typography.label, color = CosmicTheme.colors.textSecondary)
+            }
+        }
+    }
+}
+
+@Composable
+private fun SubjectRiskGlassCard(subject: SubjectRisk) {
+    GlassCard(modifier = Modifier.fillMaxWidth().padding(horizontal = CosmicTheme.spacing.medium)) {
+        Column {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = subject.subjectName, style = CosmicTheme.typography.body, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                Text(text = subject.riskLevel.name, style = CosmicTheme.typography.label, color = getRiskColor(subject.riskLevel))
+            }
+            Spacer(modifier = Modifier.height(CosmicTheme.spacing.small))
+            LinearProgressIndicator(
+                progress = { (subject.consistency / 1.0).toFloat() },
+                modifier = Modifier.fillMaxWidth().height(4.dp).clip(CircleShape),
+                color = CosmicTheme.colors.aurora,
+                trackColor = CosmicTheme.colors.glassBorder
             )
         }
-        item { Spacer(Modifier.height(16.dp)) }
     }
 }
 
+private fun getRiskColor(level: RiskLevel): Color = when (level) {
+    RiskLevel.LOW -> Color(0xFF00F5A0)
+    RiskLevel.MEDIUM -> Color(0xFFFFB74D)
+    RiskLevel.HIGH -> Color(0xFFFF7043)
+    RiskLevel.CRITICAL -> Color(0xFFEF5350)
+}
+
 @Composable
-private fun RiskHeader() {
+private fun SectionHeader(title: String) {
     Text(
-        text = "Trung tâm rủi ro",
-        color = TextPrimary,
-        fontSize = 24.sp,
-        fontWeight = FontWeight.Bold
-    )
-    Spacer(Modifier.height(4.dp))
-    Text(
-        text = "Tổng quan các rủi ro học tập của bạn",
-        color = TextSecondary,
-        fontSize = 14.sp
-    )
-}
-
-@Composable
-private fun OverallRiskBanner(level: RiskLevel) {
-    val (bgColor, label) = when (level) {
-        RiskLevel.LOW -> CosmicGlowBlue.copy(alpha = 0.25f) to "Thấp"
-        RiskLevel.MEDIUM -> Color(0xFFFFA726).copy(alpha = 0.25f) to "Trung bình"
-        RiskLevel.HIGH -> Color(0xFFFF7043).copy(alpha = 0.25f) to "Cao"
-        RiskLevel.CRITICAL -> Color(0xFFEF5350).copy(alpha = 0.25f) to "Nghiêm trọng"
-    }
-    val textColor = when (level) {
-        RiskLevel.LOW -> CosmicGlowBlue
-        RiskLevel.MEDIUM -> Color(0xFFFFA726)
-        RiskLevel.HIGH -> Color(0xFFFF7043)
-        RiskLevel.CRITICAL -> Color(0xFFEF5350)
-    }
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(bgColor)
-            .padding(16.dp)
-    ) {
-        Column {
-            Text(text = "Mức rủi ro tổng thể", color = TextSecondary, fontSize = 13.sp)
-            Spacer(Modifier.height(4.dp))
-            Text(text = label, color = textColor, fontSize = 28.sp, fontWeight = FontWeight.Bold)
-        }
-    }
-}
-
-@Composable
-private fun RiskFactorCard(type: String, description: String, severity: RiskLevel) {
-    val severityColor = when (severity) {
-        RiskLevel.LOW -> CosmicGlowBlue
-        RiskLevel.MEDIUM -> Color(0xFFFFA726)
-        RiskLevel.HIGH -> Color(0xFFFF7043)
-        RiskLevel.CRITICAL -> Color(0xFFEF5350)
-    }
-    val severityLabel = when (severity) {
-        RiskLevel.LOW -> "Thấp"
-        RiskLevel.MEDIUM -> "TB"
-        RiskLevel.HIGH -> "Cao"
-        RiskLevel.CRITICAL -> "Nặng"
-    }
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = GlassWhite),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(severityColor.copy(alpha = 0.3f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "!", color = severityColor, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-            }
-            Spacer(Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = type, color = TextPrimary, fontWeight = FontWeight.Medium, fontSize = 15.sp)
-                Spacer(Modifier.height(2.dp))
-                Text(text = description, color = TextSecondary, fontSize = 13.sp)
-            }
-            Spacer(Modifier.width(8.dp))
-            Text(text = severityLabel, color = severityColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-        }
-    }
-}
-
-@Composable
-private fun SubjectRiskCard(
-    name: String,
-    riskLevel: RiskLevel,
-    overdueTasks: Int,
-    consistency: Double
-) {
-    val badgeColor = when (riskLevel) {
-        RiskLevel.LOW -> CosmicGlowBlue
-        RiskLevel.MEDIUM -> Color(0xFFFFA726)
-        RiskLevel.HIGH -> Color(0xFFFF7043)
-        RiskLevel.CRITICAL -> Color(0xFFEF5350)
-    }
-    val badgeLabel = when (riskLevel) {
-        RiskLevel.LOW -> "An toàn"
-        RiskLevel.MEDIUM -> "Cảnh báo"
-        RiskLevel.HIGH -> "Nguy hiểm"
-        RiskLevel.CRITICAL -> "Nghiêm trọng"
-    }
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = GlassWhite),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = name, color = TextPrimary, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
-                Spacer(Modifier.weight(1f))
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(badgeColor.copy(alpha = 0.25f))
-                        .padding(horizontal = 8.dp, vertical = 2.dp)
-                ) {
-                    Text(text = badgeLabel, color = badgeColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                }
-            }
-            Spacer(Modifier.height(8.dp))
-            Row {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "Quá hạn", color = TextSecondary, fontSize = 12.sp)
-                    Text(text = "$overdueTasks việc", color = TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                }
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "Tính nhất quán", color = TextSecondary, fontSize = 12.sp)
-                    Spacer(Modifier.height(4.dp))
-                    ConsistencyBar(consistency)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ConsistencyBar(value: Double) {
-    val barColor = when {
-        value >= 0.8 -> CosmicGlowBlue
-        value >= 0.5 -> Color(0xFFFFA726)
-        else -> Color(0xFFEF5350)
-    }
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(6.dp)
-            .clip(RoundedCornerShape(3.dp))
-            .background(GlassWhite)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth(fraction = value.toFloat().coerceIn(0f, 1f))
-                .fillMaxHeight()
-                .clip(RoundedCornerShape(3.dp))
-                .background(barColor)
-        )
-    }
-    Text(
-        text = "${(value * 100).toInt()}%",
-        color = TextSecondary,
-        fontSize = 11.sp
+        text = title,
+        style = CosmicTheme.typography.command,
+        color = CosmicTheme.colors.textSecondary,
+        modifier = Modifier.padding(horizontal = CosmicTheme.spacing.medium, vertical = CosmicTheme.spacing.small)
     )
 }

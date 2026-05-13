@@ -168,6 +168,24 @@ export function CourseDetailPage() {
               </div>
             ))}
           </div>
+
+          {/* Academic Metadata Section */}
+          {(course.equivalentMH || course.codeOld) && (
+            <div className="mt-8 flex flex-wrap gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+              {course.codeOld && (
+                <div className="px-4 py-2 rounded-xl bg-amber-500/5 border border-amber-500/20 flex items-center gap-3">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-amber-600/80">Mã cũ:</span>
+                  <span className="text-[11px] font-bold text-amber-700">{course.codeOld}</span>
+                </div>
+              )}
+              {course.equivalentMH && (
+                <div className="px-4 py-2 rounded-xl bg-indigo-500/5 border border-indigo-500/20 flex items-center gap-3">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-indigo-500/80">Tương đương:</span>
+                  <span className="text-[11px] font-bold text-indigo-600">{course.equivalentMH}</span>
+                </div>
+              )}
+            </div>
+          )}
         </header>
 
         <div className="grid lg:grid-cols-12 gap-12">

@@ -1,5 +1,5 @@
 version: 1
-focused: 2026-05-13-mobile-refactor-v2
+focused: 2026-05-13-KG-LLM-001
 status_vocabulary:
   - draft
   - implementing
@@ -15,14 +15,14 @@ specs:
   - id: 2026-05-13-KG-LLM-001
     path: specs\2026-05-13-KG-LLM-001
     title: Hoàn thiện tích hợp LLM trong Knowledge Graph
-    status: draft
-    focused: false
+    status: implementing
+    focused: true
     last_audit: null
-    updated: 2026-05-13
+    updated: 2026-05-14
   - id: 2026-05-13-mobile-refactor-v2
     path: specs\2026-05-13-mobile-refactor-v2
     title: DevOrbit Mobile — Refactor & Product Vision
     status: completed
-    focused: true
+    focused: false
     last_audit: null
     updated: 2026-05-13

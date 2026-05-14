@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import { ParticleNetwork } from './ParticleNetwork'
 import { Cube, Graph, Compass, BookOpen, User, Camera } from '@phosphor-icons/react'
 
 const navLinks = [
   { to: '/courses', label: 'Môn Học', icon: BookOpen },
-  { to: '/knowledge-graph', label: 'Sơ Đồ Kiến Thức', icon: Graph },
+  { to: '/knowledge-graph', label: 'Lộ Trình Học Tập', icon: Graph },
   { to: '/student/photobooth', label: 'Photobooth', icon: Camera },
 ]
 
@@ -18,11 +19,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="relative min-h-screen flex flex-col bg-orbit-bg selection:bg-orbit-accent selection:text-zinc-950">
-      {/* Ambient background glow */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute -top-[40%] -right-[20%] w-[60%] h-[60%] bg-orbit-accent/5 blur-[200px] rounded-full" />
-        <div className="absolute -bottom-[30%] -left-[20%] w-[50%] h-[50%] bg-emerald-500/3 blur-[150px] rounded-full" />
-      </div>
+      <ParticleNetwork />
 
       {/* Top Navigation */}
       <nav className="sticky top-0 z-50 w-full border-b border-orbit-border bg-orbit-bg/80 backdrop-blur-2xl">
@@ -47,7 +44,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <Link
                   key={link.to}
                   to={link.to}
-                  className={`relative flex items-center gap-2.5 px-5 text-[13px] font-semibold transition-all duration-300 h-full group
+                  className={`relative flex items-center gap-2.5 px-5 text-[15px] font-bold transition-all duration-300 h-full group
                     ${isActive(link.to)
                       ? 'text-orbit-accent'
                       : 'text-orbit-text-secondary hover:text-orbit-text'
@@ -114,7 +111,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       key={link.to}
                       to={link.to}
                       onClick={() => setMobileOpen(false)}
-                      className={`flex items-center gap-4 px-5 py-4 text-[15px] font-semibold rounded-2xl transition-all duration-200
+                      className={`flex items-center gap-4 px-5 py-4 text-[16px] font-bold rounded-2xl transition-all duration-200
                         ${isActive(link.to)
                           ? 'text-orbit-accent bg-orbit-accent/5 border border-orbit-accent/20'
                           : 'text-orbit-text-secondary hover:text-orbit-text hover:bg-orbit-surface border border-transparent'

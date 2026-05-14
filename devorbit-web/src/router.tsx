@@ -1,29 +1,29 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
-import { HomePage } from './pages/student/HomePage'
-import { CourseListPage } from './pages/student/CourseListPage'
-import { CourseDetailPage } from './pages/student/CourseDetailPage'
-import { RepoDetailPage } from './pages/student/RepoDetailPage'
-import { StudentLoginPage } from './pages/student/StudentLoginPage'
-import { StudentBookmarksPage } from './pages/student/StudentBookmarksPage'
-import { PhotoboothPage } from './pages/student/PhotoboothPage'
-import { LoginPage } from './pages/admin/LoginPage'
-import { AdminDashboardPage } from './pages/admin/AdminDashboardPage'
-import { AdminCoursesPage } from './pages/admin/AdminCoursesPage'
-import { AdminScanPage } from './pages/admin/AdminScanPage'
-import { AdminCandidatesPage } from './pages/admin/AdminCandidatesPage'
-import { AdminReposPage } from './pages/admin/AdminReposPage'
-import { AdminCourseResourcesPage } from './pages/admin/AdminCourseResourcesPage'
-import { AdminRoadmapsPage } from './pages/admin/AdminRoadmapsPage'
-import { AdminRelationshipsPage } from './pages/admin/AdminRelationshipsPage'
-import { AdminNotesPage } from './pages/admin/AdminNotesPage'
-import { AdminPhotoboothFramesPage } from './pages/admin/AdminPhotoboothFramesPage'
 
+const HomePage = lazy(() => import('./pages/student/HomePage').then(m => ({ default: m.HomePage })))
+const CourseListPage = lazy(() => import('./pages/student/CourseListPage').then(m => ({ default: m.CourseListPage })))
+const CourseDetailPage = lazy(() => import('./pages/student/CourseDetailPage').then(m => ({ default: m.CourseDetailPage })))
+const RepoDetailPage = lazy(() => import('./pages/student/RepoDetailPage').then(m => ({ default: m.RepoDetailPage })))
+const StudentLoginPage = lazy(() => import('./pages/student/StudentLoginPage').then(m => ({ default: m.StudentLoginPage })))
+const StudentBookmarksPage = lazy(() => import('./pages/student/StudentBookmarksPage').then(m => ({ default: m.StudentBookmarksPage })))
+const PhotoboothPage = lazy(() => import('./pages/student/PhotoboothPage').then(m => ({ default: m.PhotoboothPage })))
+const LoginPage = lazy(() => import('./pages/admin/LoginPage').then(m => ({ default: m.LoginPage })))
+const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })))
+const AdminCoursesPage = lazy(() => import('./pages/admin/AdminCoursesPage').then(m => ({ default: m.AdminCoursesPage })))
+const AdminScanPage = lazy(() => import('./pages/admin/AdminScanPage').then(m => ({ default: m.AdminScanPage })))
+const AdminCandidatesPage = lazy(() => import('./pages/admin/AdminCandidatesPage').then(m => ({ default: m.AdminCandidatesPage })))
+const AdminReposPage = lazy(() => import('./pages/admin/AdminReposPage').then(m => ({ default: m.AdminReposPage })))
+const AdminCourseResourcesPage = lazy(() => import('./pages/admin/AdminCourseResourcesPage').then(m => ({ default: m.AdminCourseResourcesPage })))
+const AdminRoadmapsPage = lazy(() => import('./pages/admin/AdminRoadmapsPage').then(m => ({ default: m.AdminRoadmapsPage })))
+const AdminRelationshipsPage = lazy(() => import('./pages/admin/AdminRelationshipsPage').then(m => ({ default: m.AdminRelationshipsPage })))
+const AdminNotesPage = lazy(() => import('./pages/admin/AdminNotesPage').then(m => ({ default: m.AdminNotesPage })))
+const AdminPhotoboothFramesPage = lazy(() => import('./pages/admin/AdminPhotoboothFramesPage').then(m => ({ default: m.AdminPhotoboothFramesPage })))
 const GalaxyPage = lazy(() => import('./pages/student/knowledge-graph/GalaxyPage'))
 
-function GalaxyFallback() {
+function PageFallback() {
   return (
-    <div className="h-[80vh] flex items-center justify-center bg-orbit-bg">
+    <div className="h-[80vh] flex items-center justify-center">
       <div className="flex flex-col items-center gap-6">
         <div className="relative h-10 w-10">
           <div className="absolute inset-0 rounded-full border-2 border-orbit-accent/10" />
@@ -38,32 +38,25 @@ function GalaxyFallback() {
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/courses" element={<CourseListPage />} />
-      <Route path="/courses/:courseId" element={<CourseDetailPage />} />
-      <Route path="/knowledge-graph" element={
-        <Suspense fallback={<GalaxyFallback />}>
-          <GalaxyPage />
-        </Suspense>
-      } />
-      <Route path="/repos/:repoId" element={<RepoDetailPage />} />
-      <Route path="/student/login" element={<StudentLoginPage />} />
-      <Route path="/student/bookmarks" element={<StudentBookmarksPage />} />
-      <Route path="/student/photobooth" element={<PhotoboothPage />} />
-      <Route path="/admin/login" element={<LoginPage />} />
-      <Route path="/admin" element={<AdminDashboardPage />} />
-      <Route path="/admin/courses" element={<AdminCoursesPage />} />
-      <Route
-        path="/admin/courses/:courseId/resources"
-        element={<AdminCourseResourcesPage />}
-      />
-      <Route path="/admin/scan" element={<AdminScanPage />} />
-      <Route path="/admin/candidates" element={<AdminCandidatesPage />} />
-      <Route path="/admin/repos" element={<AdminReposPage />} />
-      <Route path="/admin/roadmaps" element={<AdminRoadmapsPage />} />
-      <Route path="/admin/relationships" element={<AdminRelationshipsPage />} />
-      <Route path="/admin/notes" element={<AdminNotesPage />} />
-      <Route path="/admin/photobooth-frames" element={<AdminPhotoboothFramesPage />} />
+      <Route path="/" element={<Suspense fallback={<PageFallback />}><HomePage /></Suspense>} />
+      <Route path="/courses" element={<Suspense fallback={<PageFallback />}><CourseListPage /></Suspense>} />
+      <Route path="/courses/:courseId" element={<Suspense fallback={<PageFallback />}><CourseDetailPage /></Suspense>} />
+      <Route path="/knowledge-graph" element={<Suspense fallback={<PageFallback />}><GalaxyPage /></Suspense>} />
+      <Route path="/repos/:repoId" element={<Suspense fallback={<PageFallback />}><RepoDetailPage /></Suspense>} />
+      <Route path="/student/login" element={<Suspense fallback={<PageFallback />}><StudentLoginPage /></Suspense>} />
+      <Route path="/student/bookmarks" element={<Suspense fallback={<PageFallback />}><StudentBookmarksPage /></Suspense>} />
+      <Route path="/student/photobooth" element={<Suspense fallback={<PageFallback />}><PhotoboothPage /></Suspense>} />
+      <Route path="/admin/login" element={<Suspense fallback={<PageFallback />}><LoginPage /></Suspense>} />
+      <Route path="/admin" element={<Suspense fallback={<PageFallback />}><AdminDashboardPage /></Suspense>} />
+      <Route path="/admin/courses" element={<Suspense fallback={<PageFallback />}><AdminCoursesPage /></Suspense>} />
+      <Route path="/admin/courses/:courseId/resources" element={<Suspense fallback={<PageFallback />}><AdminCourseResourcesPage /></Suspense>} />
+      <Route path="/admin/scan" element={<Suspense fallback={<PageFallback />}><AdminScanPage /></Suspense>} />
+      <Route path="/admin/candidates" element={<Suspense fallback={<PageFallback />}><AdminCandidatesPage /></Suspense>} />
+      <Route path="/admin/repos" element={<Suspense fallback={<PageFallback />}><AdminReposPage /></Suspense>} />
+      <Route path="/admin/roadmaps" element={<Suspense fallback={<PageFallback />}><AdminRoadmapsPage /></Suspense>} />
+      <Route path="/admin/relationships" element={<Suspense fallback={<PageFallback />}><AdminRelationshipsPage /></Suspense>} />
+      <Route path="/admin/notes" element={<Suspense fallback={<PageFallback />}><AdminNotesPage /></Suspense>} />
+      <Route path="/admin/photobooth-frames" element={<Suspense fallback={<PageFallback />}><AdminPhotoboothFramesPage /></Suspense>} />
     </Routes>
   );
 }

@@ -312,7 +312,7 @@ export const SEMESTER_LABELS: Record<number, string> = {
 export const SEMESTER_COLORS: Record<number, string> = {
   1: '#22d3ee',
   2: '#34d399',
-  3: '#10b981',
+  3: '#14b8a6',
   4: '#6366f1',
   5: '#8b5cf6',
   6: '#a78bfa',

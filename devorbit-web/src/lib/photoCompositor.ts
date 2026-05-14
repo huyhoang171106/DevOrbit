@@ -1,8 +1,15 @@
 import { FrameDefinition, FilterType } from "./frames/frameDefinitions";
 import { SlotFilter, FILTER_PRESETS } from "./photoFilters";
 
-const LOGICAL_SIZE = 2000;
+const LOGICAL_MAX = 2000;
 const imageCache = new Map<string, HTMLImageElement>();
+
+function getLogicalSize(imgW: number, imgH: number) {
+  const maxDim = Math.max(imgW, imgH);
+  if (maxDim === 0) return { w: LOGICAL_MAX, h: LOGICAL_MAX };
+  const scale = LOGICAL_MAX / maxDim;
+  return { w: Math.round(imgW * scale), h: Math.round(imgH * scale) };
+}
 
 export class PhotoCompositor {
   static async loadImages(files: File[]): Promise<HTMLImageElement[]> {
@@ -61,22 +68,24 @@ export class PhotoCompositor {
     slotFilters?: SlotFilter[],
   ): Promise<HTMLCanvasElement> {
     // Determine canvas size from frame overlay image if available
-    let canvasW = LOGICAL_SIZE;
-    let canvasH = LOGICAL_SIZE;
+    let canvasW = LOGICAL_MAX;
+    let canvasH = LOGICAL_MAX;
     let overlayImg: HTMLImageElement | null = null;
 
     if (frame.overlayImage) {
       try {
         overlayImg = await this.loadImageFromUrl(frame.overlayImage);
-        canvasW = overlayImg.naturalWidth || overlayImg.width || LOGICAL_SIZE;
-        canvasH = overlayImg.naturalHeight || overlayImg.height || LOGICAL_SIZE;
+        canvasW = overlayImg.naturalWidth || overlayImg.width || LOGICAL_MAX;
+        canvasH = overlayImg.naturalHeight || overlayImg.height || LOGICAL_MAX;
       } catch (err) {
         console.error("Failed to load frame overlay image:", err);
       }
     }
 
-    const scaleX = canvasW / LOGICAL_SIZE;
-    const scaleY = canvasH / LOGICAL_SIZE;
+    const { w: logicalW, h: logicalH } = getLogicalSize(canvasW, canvasH);
+
+    const scaleX = canvasW / logicalW;
+    const scaleY = canvasH / logicalH;
 
     const canvas = document.createElement("canvas");
     canvas.width = canvasW;

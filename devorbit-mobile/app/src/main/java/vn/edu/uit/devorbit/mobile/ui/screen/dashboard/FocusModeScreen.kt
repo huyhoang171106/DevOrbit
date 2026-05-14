@@ -20,7 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import vn.edu.uit.devorbit.mobile.model.domain.LearningTask
+import vn.edu.uit.devorbit.mobile.domain.model.LearningTask
 import vn.edu.uit.devorbit.mobile.ui.theme.*
 
 @Composable

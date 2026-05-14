@@ -44,6 +44,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/discovery/**").permitAll()
                 .requestMatchers("/api/tech-stacks/**").permitAll()
                 .requestMatchers("/api/health").permitAll()
+                .requestMatchers("/api/student/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
                 .anyRequest().denyAll())

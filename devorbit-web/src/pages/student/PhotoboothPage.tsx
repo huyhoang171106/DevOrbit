@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import { useRequireAuth } from "../../lib/hooks";
 import { DocumentUnlock } from "../../components/photobooth/DocumentUnlock";
 import { FrameSelector } from "../../components/photobooth/FrameSelector";
 import { PhotoUploadSection } from "../../components/photobooth/PhotoUploadSection";
@@ -23,8 +22,6 @@ import {
 const SESSION_UNLOCK_KEY = "photobooth_unlocked";
 
 export function PhotoboothPage() {
-  useRequireAuth();
-
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [framesReady, setFramesReady] = useState(false);
   const [selectedFrame, setSelectedFrame] = useState<FrameDefinition | null>(null);

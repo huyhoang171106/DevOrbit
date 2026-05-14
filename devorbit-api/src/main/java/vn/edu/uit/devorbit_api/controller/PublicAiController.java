@@ -1,5 +1,6 @@
 package vn.edu.uit.devorbit_api.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.uit.devorbit_api.dto.publicapi.AiQueryRequest;
@@ -26,12 +27,12 @@ public class PublicAiController {
     }
 
     @PostMapping("/generate-roadmap")
-    public RoadmapRecommendationResponse generateRoadmap(@RequestBody RoadmapGenerationRequest request) {
+    public RoadmapRecommendationResponse generateRoadmap(@RequestBody @Valid RoadmapGenerationRequest request) {
         return aiService.generateRoadmap(request);
     }
 
     @PostMapping("/knowledge-graph/query")
-    public AiQueryResponse queryKnowledgeGraph(@RequestBody AiQueryRequest request) {
+    public AiQueryResponse queryKnowledgeGraph(@RequestBody @Valid AiQueryRequest request) {
         return aiService.queryKnowledgeGraph(request);
     }
 }

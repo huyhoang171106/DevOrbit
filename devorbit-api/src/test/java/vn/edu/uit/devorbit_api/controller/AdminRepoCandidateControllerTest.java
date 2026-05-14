@@ -36,7 +36,7 @@ class AdminRepoCandidateControllerTest {
     private RepoCandidateResponse makeCandidateResponse(Long id, String status) {
         return new RepoCandidateResponse(
             id, "owner", "repo", "https://github.com/owner/repo", status,
-            null, null, null, 0, 0, null, null, null, null, null, null
+            null, null, null, 0, 0, null, null, null, null, null, null, null
         );
     }
 

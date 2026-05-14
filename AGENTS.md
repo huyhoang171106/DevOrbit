@@ -154,3 +154,7 @@ This project is indexed by GitNexus as **DevOrbit** (33240 symbols, 47366 relati
 | Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
 
 <!-- gitnexus:end -->
+
+Spec directories live under `GitNexus\docs\superpowers\specs` unless a nested AGENTS.md documents a more specific convention.
+Spec directory names use `YYYY-MM-DD-kebab-feature`, for example `2026-05-01-spec-lifecycle-audit`.
+Spec directories include a free-form `MILESTONES.md` implementation log for milestones, setbacks, fixes, validation notes, and decisions.

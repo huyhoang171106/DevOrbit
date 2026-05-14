@@ -1,10 +1,19 @@
-import { supabase } from "../supabase";
+import { getSupabase } from "../supabase";
 import type { StoredFrame } from "../../types/frames";
 
 const TABLE = "photobooth_frames";
 const BUCKET = "frame-overlays";
 
+function getClient() {
+  const client = getSupabase();
+  if (!client) return null;
+  return client;
+}
+
 async function listFrames(): Promise<StoredFrame[]> {
+  const supabase = getClient();
+  if (!supabase) return [];
+
   const { data, error } = await supabase
     .from(TABLE)
     .select("*")
@@ -19,6 +28,9 @@ async function listFrames(): Promise<StoredFrame[]> {
 }
 
 async function getFrame(frameId: string): Promise<StoredFrame | null> {
+  const supabase = getClient();
+  if (!supabase) return null;
+
   const { data, error } = await supabase
     .from(TABLE)
     .select("*")
@@ -30,6 +42,9 @@ async function getFrame(frameId: string): Promise<StoredFrame | null> {
 }
 
 async function upsertFrame(frame: StoredFrame): Promise<boolean> {
+  const supabase = getClient();
+  if (!supabase) return false;
+
   const { error } = await supabase.from(TABLE).upsert(
     {
       frame_id: frame.id,
@@ -53,6 +68,9 @@ async function upsertFrame(frame: StoredFrame): Promise<boolean> {
 }
 
 async function deleteFrame(frameId: string): Promise<boolean> {
+  const supabase = getClient();
+  if (!supabase) return false;
+
   const { error } = await supabase
     .from(TABLE)
     .delete()
@@ -69,22 +87,26 @@ async function uploadFrameImage(
   frameId: string,
   file: File,
 ): Promise<string | null> {
+  const supabase = getClient();
+
   // Try Supabase Storage first
   const ext = file.name.split(".").pop() || "png";
   const path = `${frameId}.${ext}`;
 
-  const { error } = await supabase.storage
-    .from(BUCKET)
-    .upload(path, file, { upsert: true });
-
-  if (!error) {
-    const { data: publicUrl } = supabase.storage
+  if (supabase) {
+    const { error } = await supabase.storage
       .from(BUCKET)
-      .getPublicUrl(path);
-    return publicUrl?.publicUrl ?? null;
-  }
+      .upload(path, file, { upsert: true });
 
-  console.warn("Storage upload failed, falling back to data URL:", error.message);
+    if (!error) {
+      const { data: publicUrl } = supabase.storage
+        .from(BUCKET)
+        .getPublicUrl(path);
+      return publicUrl?.publicUrl ?? null;
+    }
+
+    console.warn("Storage upload failed, falling back to data URL:", error.message);
+  }
 
   // Fallback: convert to data URL and store in DB
   return new Promise((resolve, reject) => {

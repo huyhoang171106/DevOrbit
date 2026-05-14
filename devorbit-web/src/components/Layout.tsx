@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Cube, Graph, Compass, BookOpen, User } from '@phosphor-icons/react'
+import { Cube, Graph, Compass, BookOpen, User, Camera } from '@phosphor-icons/react'
 
 const navLinks = [
   { to: '/courses', label: 'Môn Học', icon: BookOpen },
   { to: '/knowledge-graph', label: 'Sơ Đồ Kiến Thức', icon: Graph },
+  { to: '/student/photobooth', label: 'Photobooth', icon: Camera },
 ]
 
 export function Layout({ children }: { children: React.ReactNode }) {

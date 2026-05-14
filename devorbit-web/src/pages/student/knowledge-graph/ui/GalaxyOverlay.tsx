@@ -107,7 +107,7 @@ export function GalaxyOverlay() {
           id: c.courseId,
           code: c.courseCode,
           name: c.courseName,
-          semester: c.semester || rec?.semester || 4,
+          semester: rec?.semester ?? c.semester ?? 4,
           description: c.description || '',
         }
       })

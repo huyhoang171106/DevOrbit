@@ -21,7 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import vn.edu.uit.devorbit.mobile.model.domain.GraphNode
+import vn.edu.uit.devorbit.mobile.domain.model.GraphNode
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.CourseViewModel
 

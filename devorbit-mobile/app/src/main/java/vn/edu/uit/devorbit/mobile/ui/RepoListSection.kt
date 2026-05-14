@@ -9,7 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
-import vn.edu.uit.devorbit.mobile.model.*
+import vn.edu.uit.devorbit.mobile.data.remote.dto.*
 
 import vn.edu.uit.devorbit.mobile.ui.components.GlassCard
 

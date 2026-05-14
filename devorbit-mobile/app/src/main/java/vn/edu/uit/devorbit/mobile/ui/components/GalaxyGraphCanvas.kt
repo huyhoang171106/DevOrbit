@@ -12,8 +12,8 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import vn.edu.uit.devorbit.mobile.model.domain.GraphLink
-import vn.edu.uit.devorbit.mobile.model.domain.GraphNode
+import vn.edu.uit.devorbit.mobile.domain.model.GraphLink
+import vn.edu.uit.devorbit.mobile.domain.model.GraphNode
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import kotlin.math.cos
 import kotlin.math.sin

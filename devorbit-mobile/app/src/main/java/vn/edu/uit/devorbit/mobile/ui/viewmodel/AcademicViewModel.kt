@@ -9,8 +9,8 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import vn.edu.uit.devorbit.mobile.data.repository.AcademicRepository
 import vn.edu.uit.devorbit.mobile.data.local.entity.*
-import vn.edu.uit.devorbit.mobile.model.domain.*
-import vn.edu.uit.devorbit.mobile.engine.*
+import vn.edu.uit.devorbit.mobile.domain.model.*
+// Engines — reserved for future integration
 import javax.inject.Inject
 
 @HiltViewModel

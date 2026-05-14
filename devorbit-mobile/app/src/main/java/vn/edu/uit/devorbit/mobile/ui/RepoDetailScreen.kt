@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import vn.edu.uit.devorbit.mobile.model.RepoSummary
+import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSummary
 
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll

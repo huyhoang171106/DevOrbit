@@ -30,10 +30,6 @@ android {
         buildConfig = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"
-    }
-
     kotlinOptions {
         jvmTarget = "17"
     }
@@ -68,6 +64,9 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+
+    // DataStore
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
 
     // Room
     implementation("androidx.room:room-runtime:2.6.1")

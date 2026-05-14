@@ -11,6 +11,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import vn.edu.uit.devorbit.mobile.network.ApiService
+import vn.edu.uit.devorbit.mobile.data.remote.interceptor.AuthInterceptor
 import vn.edu.uit.devorbit.mobile.data.local.DevOrbitDatabase
 import vn.edu.uit.devorbit.mobile.data.local.dao.CourseDao
 import vn.edu.uit.devorbit.mobile.data.local.dao.RepoDao
@@ -37,9 +38,13 @@ object DataModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(loggingInterceptor: HttpLoggingInterceptor): OkHttpClient {
+    fun provideOkHttpClient(
+        loggingInterceptor: HttpLoggingInterceptor,
+        authInterceptor: AuthInterceptor
+    ): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
+            .addInterceptor(authInterceptor)
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .build()

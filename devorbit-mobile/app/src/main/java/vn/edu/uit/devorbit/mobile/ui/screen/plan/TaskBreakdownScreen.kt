@@ -16,8 +16,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import vn.edu.uit.devorbit.mobile.model.domain.BreakdownStep
-import vn.edu.uit.devorbit.mobile.model.domain.TaskBreakdown
+import vn.edu.uit.devorbit.mobile.domain.model.BreakdownStep
+import vn.edu.uit.devorbit.mobile.domain.model.TaskBreakdown
 import vn.edu.uit.devorbit.mobile.ui.components.GlassCard
 import vn.edu.uit.devorbit.mobile.ui.theme.*
 

@@ -11,8 +11,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import vn.edu.uit.devorbit.mobile.data.local.entity.CourseEntity
 import vn.edu.uit.devorbit.mobile.data.repository.AcademicRepository
-import vn.edu.uit.devorbit.mobile.model.domain.GraphNode
-import vn.edu.uit.devorbit.mobile.model.domain.GraphLink
+import vn.edu.uit.devorbit.mobile.domain.model.GraphNode
+import vn.edu.uit.devorbit.mobile.domain.model.GraphLink
 import javax.inject.Inject
 
 @HiltViewModel

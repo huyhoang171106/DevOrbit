@@ -12,11 +12,11 @@ export function CandidateTable({ candidates, onApprove, onReject }: CandidateTab
       <table className="min-w-full text-sm">
         <thead>
           <tr className="border-b border-clay-border bg-glass-surface-raised">
-            <th className="table-header text-left font-medium text-clay-text-muted py-3 px-4 w-[280px]">Repository</th>
-            <th className="table-header text-left font-medium text-clay-text-muted py-3 px-4 w-[100px]">Subject</th>
+            <th className="table-header text-left font-medium text-clay-text-muted py-3 px-4 w-[280px]">Kho mã nguồn</th>
+            <th className="table-header text-left font-medium text-clay-text-muted py-3 px-4 w-[100px]">Môn học</th>
             <th className="table-header text-left font-medium text-clay-text-muted py-3 px-4 w-[350px]">URL</th>
-            <th className="table-header text-left font-medium text-clay-text-muted py-3 px-4 w-[120px]">Status</th>
-            <th className="table-header text-right font-medium text-clay-text-muted py-3 px-4 w-[180px]">Actions</th>
+            <th className="table-header text-left font-medium text-clay-text-muted py-3 px-4 w-[120px]">Trạng thái</th>
+            <th className="table-header text-right font-medium text-clay-text-muted py-3 px-4 w-[180px]">Thao tác</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-clay-border bg-clay-bg">

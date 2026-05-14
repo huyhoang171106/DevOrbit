@@ -1,7 +1,8 @@
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { DiscoveryFeed } from '../../components/student/DiscoveryFeed'
-import { Compass, Graph, Cube, MagicWand, Rocket, BookOpen, Code, Sparkle, ArrowRight, GraduationCap } from '@phosphor-icons/react'
+import { Compass, Graph, Cube, MagicWand, Rocket, BookOpen, Code, Sparkle, ArrowRight, GraduationCap, Smiley } from '@phosphor-icons/react'
 
 const staggerContainer = {
   hidden: { opacity: 0 },
@@ -21,6 +22,25 @@ const fadeUp = {
 }
 
 export function HomePage() {
+  const [slideIndex, setSlideIndex] = useState(0)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const slides = useMemo(() => [
+    { icon: BookOpen, label: 'Danh mục môn học', count: '80+' },
+    { icon: Code, label: 'Kho mã nguồn', count: '450+' },
+    { icon: GraduationCap, label: 'Sinh viên sử dụng', count: '100+' },
+    { icon: Smiley, label: 'Mức độ hài lòng', count: '96%' },
+  ], [])
+
+  useEffect(() => {
+    intervalRef.current = setInterval(() => {
+      setSlideIndex(prev => (prev + 1) % slides.length)
+    }, 2000)
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current)
+    }
+  }, [])
+
   return (
     <div className="w-full">
       {/* ─── HERO: Split-screen asymmetric ─── */}
@@ -29,7 +49,6 @@ export function HomePage() {
         <div className="absolute inset-0 pointer-events-none z-0">
           <div className="absolute top-[-20%] right-[-10%] w-[70%] h-[80%] bg-orbit-accent/8 blur-[250px] rounded-full" />
           <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[50%] bg-emerald-500/5 blur-[200px] rounded-full" />
-          {/* Grid texture */}
           <div
             className="absolute inset-0 opacity-[0.015]"
             style={{ backgroundImage: 'radial-gradient(rgba(52, 211, 153, 0.5) 1px, transparent 1px)', backgroundSize: '48px 48px' }}
@@ -48,29 +67,31 @@ export function HomePage() {
               <motion.div variants={fadeUp} className="mb-8">
                 <span className="section-label">
                   <Sparkle className="h-3 w-3" weight="fill" />
-                  Đại học Công nghệ Thông tin
+                  Trường Đại học Công nghệ Thông tin
                 </span>
               </motion.div>
 
               <motion.h1
                 variants={fadeUp}
-                className="hero-display mb-8"
+                className="hero-display mb-8 leading-[1.1]"
               >
                 Kết nối{' '}
                 <span className="text-orbit-accent relative inline-block">
                   Môn học
-                  <span className="absolute -bottom-2 left-0 w-full h-1 bg-orbit-accent/30 rounded-full blur-[2px]" />
+                  <span className="absolute -bottom-1 left-0 w-full h-1 bg-orbit-accent/30 rounded-full blur-[2px]" />
                 </span>
                 <br />
-                Kho Mã nguồn
+                <span className="inline-block mt-1">
+                  Kho Mã nguồn
+                </span>
               </motion.h1>
 
               <motion.p
                 variants={fadeUp}
                 className="body-lg text-[18px] md:text-[20px] mb-12 max-w-[600px] leading-relaxed"
               >
-                DevOrbit giúp sinh viên UIT tiếp cận các đồ án mẫu, dự án GitHub
-                và công nghệ lõi theo từng môn học một cách trực quan và khoa học.
+                DevOrbit giúp sinh&nbsp;viên Khoa Công&nbsp;nghệ Phần&nbsp;Mềm - UIT tiếp&nbsp;cận các đồ&nbsp;án mẫu, dự&nbsp;án GitHub
+                và công&nbsp;nghệ lõi theo từng môn&nbsp;học một cách trực&nbsp;quan và khoa&nbsp;học.
               </motion.p>
 
               <motion.div
@@ -107,8 +128,21 @@ export function HomePage() {
                   <div className="absolute top-4 left-4 right-0 bottom-0 rounded-[2.5rem] bg-orbit-elevated border border-orbit-border" />
 
                   {/* Front card */}
-                  <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-br from-orbit-surface to-orbit-elevated border border-orbit-accent/20 p-10 flex flex-col justify-between shadow-glow-lg">
-                    <div className="flex items-center gap-4">
+                  <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-br from-orbit-surface to-orbit-elevated border border-orbit-accent/20 p-10 flex flex-col shadow-glow-lg overflow-hidden">
+                    {/* Floating decorative bubbles */}
+                    <motion.div
+                      className="absolute -top-16 -right-16 w-72 h-72 rounded-full pointer-events-none"
+                      style={{ background: 'radial-gradient(circle at 30% 30%, rgba(52, 211, 153, 0.08), rgba(255, 255, 255, 0.02) 70%)' }}
+                      animate={{ y: [0, -35, 0, 35, 0] }}
+                      transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+                    />
+                    <motion.div
+                      className="absolute -bottom-20 -left-20 w-96 h-96 rounded-full pointer-events-none"
+                      style={{ background: 'radial-gradient(circle at 70% 70%, rgba(16, 185, 129, 0.06), rgba(255, 255, 255, 0.01) 70%)' }}
+                      animate={{ y: [0, 30, 0, -30, 0] }}
+                      transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
+                    />
+                    <div className="flex items-center gap-4 shrink-0">
                       <div className="h-14 w-14 rounded-2xl bg-orbit-accent/10 border border-orbit-accent/20 flex items-center justify-center">
                         <Cube className="h-8 w-8 text-orbit-accent" weight="duotone" />
                       </div>
@@ -118,26 +152,39 @@ export function HomePage() {
                       </div>
                     </div>
 
-                    <div className="space-y-5">
-                      {[
-                        { icon: BookOpen, label: 'Danh mục môn học', count: '120+' },
-                        { icon: Code, label: 'Kho mã nguồn', count: '450+' },
-                        { icon: GraduationCap, label: 'Sinh viên sử dụng', count: '2.5K+' },
-                      ].map((item, i) => (
-                        <div key={i} className="flex items-center justify-between py-3 border-b border-orbit-border/50 last:border-0">
-                          <div className="flex items-center gap-3">
-                            <item.icon className="h-4 w-4 text-orbit-accent" weight="duotone" />
-                            <span className="text-[13px] font-medium text-orbit-text-secondary">{item.label}</span>
-                          </div>
-                          <span className="text-[15px] font-black text-orbit-text tabular-nums">{item.count}</span>
-                        </div>
-                      ))}
+                    {/* ─── Stats Carousel (centered) ─── */}
+                    <div className="flex-1 flex flex-col items-center justify-center">
+                      <div className="relative w-full overflow-hidden flex items-center justify-center">
+                        <AnimatePresence mode="wait">
+                          <motion.div
+                            key={slideIndex}
+                            initial={{ opacity: 0, x: 30 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -30 }}
+                            transition={{ duration: 0.35 }}
+                            className="flex flex-col items-center justify-center"
+                          >
+                            {(() => {
+                              const Icon = slides[slideIndex].icon
+                              return <Icon className="h-9 w-9 text-orbit-accent mb-3" weight="duotone" />
+                            })()}
+                            <span className="text-3xl font-bold text-orbit-text text-center leading-tight">{slides[slideIndex].label}</span>
+                            <span className="text-[44px] font-black text-orbit-text tabular-nums leading-none mt-3">{slides[slideIndex].count}</span>
+                          </motion.div>
+                        </AnimatePresence>
+                      </div>
                     </div>
 
-                    <div className="flex gap-3 pt-4">
-                      <div className="h-2 w-2 rounded-full bg-orbit-accent animate-breathing" />
-                      <div className="h-2 w-2 rounded-full bg-orbit-accent/40 animate-breathing" style={{ animationDelay: '0.5s' }} />
-                      <div className="h-2 w-2 rounded-full bg-orbit-accent/20 animate-breathing" style={{ animationDelay: '1s' }} />
+                    {/* Slide indicator (bottom) */}
+                    <div className="flex items-center justify-center gap-2 shrink-0 mt-auto pt-6">
+                      {slides.map((_slide, i) => (
+                        <div
+                          key={i}
+                          className={`h-2 rounded-full transition-all duration-300 ${
+                            i === slideIndex ? 'w-6 bg-orbit-accent' : 'w-2 bg-orbit-border/30'
+                          }`}
+                        />
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -148,7 +195,7 @@ export function HomePage() {
       </section>
 
       {/* ─── AI TUTOR: Bento Section ─── */}
-      <section className="relative w-full overflow-hidden py-28 md:py-36">
+      <section className="relative w-full overflow-hidden pt-28 md:pt-36 pb-16 md:pb-20">
         <div className="w-full max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12">
           <motion.div
             className="max-w-xl mb-16"
@@ -159,15 +206,15 @@ export function HomePage() {
           >
             <span className="section-label mb-6 inline-flex">
               <MagicWand className="h-3 w-3" weight="fill" />
-              Sức mạnh trí tuệ nhân tạo
+              Sức&nbsp;mạnh trí&nbsp;tuệ nhân&nbsp;tạo
             </span>
             <h2 className="display-lg mt-6 mb-6">
               Tóm tắt &<br />
               <span className="text-orbit-accent">Cố vấn học tập</span>
             </h2>
             <p className="body-lg text-[17px] leading-relaxed">
-              DevOrbit sử dụng AI để phân tích từng repository. Nhận ngay bản tóm tắt dự án,
-              lộ trình học tập và lời khuyên từ AI Tutor để làm chủ kiến thức.
+               DevOrbit sử dụng AI để phân&nbsp;tích từng repository. Nhận ngay bản tóm&nbsp;tắt dự&nbsp;án,
+              lộ&nbsp;trình học&nbsp;tập và lời khuyên từ AI Tutor để làm chủ kiến&nbsp;thức.
             </p>
           </motion.div>
 
@@ -205,8 +252,8 @@ export function HomePage() {
                         <span className="text-[10px] text-orbit-text-muted">Vừa xong</span>
                       </div>
                       <p className="body-md text-[14px] italic leading-relaxed text-orbit-text-secondary">
-                        "Dựa trên kiến trúc Spring Boot này, bạn nên tập trung vào SecurityConfig
-                        để hiểu cách xử lý JWT..."
+                        "Dựa trên kiến&nbsp;trúc Spring Boot này, bạn nên tập&nbsp;trung vào SecurityConfig
+                        để hiểu cách xử&nbsp;lý JWT..."
                       </p>
                       <div className="mt-4 flex gap-2">
                         <span className="text-[10px] px-3 py-1.5 rounded-full bg-orbit-accent-subtle border border-orbit-accent/20 text-orbit-accent font-semibold">Spring Boot</span>
@@ -219,7 +266,7 @@ export function HomePage() {
                 <div className="flex items-center gap-4 mt-6 text-[12px]">
                   <span className="flex items-center gap-2 text-orbit-text-muted">
                     <span className="h-1.5 w-1.5 rounded-full bg-orbit-accent animate-breathing" />
-                    Đang phân tích 3 repositories
+                    Đang phân&nbsp;tích 3 repositories
                   </span>
                 </div>
               </div>
@@ -234,9 +281,9 @@ export function HomePage() {
                 <Code className="h-8 w-8 text-orbit-accent" weight="duotone" />
               </div>
               <div>
-                <h3 className="heading-4 mb-3">Tóm tắt tự động</h3>
+                <h3 className="heading-4 mb-3">Tóm&nbsp;tắt tự&nbsp;động</h3>
                 <p className="body-md text-[14px] leading-relaxed">
-                  Hiểu các dự án phức tạp trong vài giây với phân tích AI chuyên sâu.
+                  Hiểu các dự&nbsp;án phức&nbsp;tạp trong vài giây với phân&nbsp;tích AI chuyên&nbsp;sâu.
                 </p>
               </div>
               <div className="mt-8 flex gap-2">
@@ -256,10 +303,10 @@ export function HomePage() {
                   <Rocket className="h-8 w-8 text-orbit-accent" weight="duotone" />
                 </div>
                 <div>
-                  <h3 className="heading-4 mb-3">Lộ trình học tập</h3>
+                  <h3 className="heading-4 mb-3">Lộ&nbsp;trình học&nbsp;tập</h3>
                   <p className="body-md text-[14px] leading-relaxed max-w-xl">
-                    Hướng dẫn học tập từ mã nguồn thực tế, đề xuất môn học và kỹ năng
-                    theo định hướng nghề nghiệp của bạn.
+                    Hướng dẫn học&nbsp;tập từ mã&nbsp;nguồn thực&nbsp;tế, đề&nbsp;xuất môn&nbsp;học và kỹ&nbsp;năng
+                    theo định&nbsp;hướng nghề&nbsp;nghiệp của bạn.
                   </p>
                 </div>
               </div>
@@ -269,36 +316,6 @@ export function HomePage() {
               </Link>
             </motion.div>
           </motion.div>
-        </div>
-      </section>
-
-      {/* ─── STATS: Minimal metrics strip ─── */}
-      <section className="border-t border-b border-orbit-border py-16 md:py-20">
-        <div className="w-full max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-16">
-            {[
-              { value: '120+', label: 'Môn học' },
-              { value: '450+', label: 'Dự án mã nguồn' },
-              { value: '2.500+', label: 'Sinh viên' },
-              { value: '96%', label: 'Hài lòng' },
-            ].map((stat, i) => (
-              <motion.div
-                key={i}
-                className="text-center md:text-left"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, type: 'spring', stiffness: 100, damping: 20 }}
-              >
-                <div className="text-[36px] md:text-[48px] font-black text-orbit-text tabular-nums leading-none mb-2">
-                  {stat.value}
-                </div>
-                <div className="text-[13px] font-medium text-orbit-text-muted uppercase tracking-wider">
-                  {stat.label}
-                </div>
-              </motion.div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -314,7 +331,7 @@ export function HomePage() {
           >
             <span className="section-label-muted mb-6 inline-flex">
               <Compass className="h-3 w-3" weight="regular" />
-              Dòng thời gian mới nhất
+              Dòng thời&nbsp;gian mới&nbsp;nhất
             </span>
             <h2 className="display-lg mt-6 mb-6">
               Khám phá{' '}

@@ -10,6 +10,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import vn.edu.uit.devorbit.mobile.BuildConfig
 import vn.edu.uit.devorbit.mobile.network.ApiService
 import vn.edu.uit.devorbit.mobile.data.remote.interceptor.AuthInterceptor
 import vn.edu.uit.devorbit.mobile.data.local.DevOrbitDatabase
@@ -26,13 +27,13 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object DataModule {
 
-    private const val BASE_URL = "http://10.0.2.2:8080/"
+    private const val BASE_URL = BuildConfig.API_BASE_URL
 
     @Provides
     @Singleton
     fun provideLoggingInterceptor(): HttpLoggingInterceptor {
         return HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BASIC
+            level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BASIC else HttpLoggingInterceptor.Level.NONE
         }
     }
 

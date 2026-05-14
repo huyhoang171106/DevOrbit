@@ -1,0 +1,270 @@
+/* ── Fontsource (MUST precede @tailwind per PostCSS rules) ── */
+@import '@fontsource/geist-sans/400.css';
+@import '@fontsource/geist-sans/500.css';
+@import '@fontsource/geist-sans/600.css';
+@import '@fontsource/geist-sans/700.css';
+@import '@fontsource/geist-sans/800.css';
+@import '@fontsource/geist-sans/900.css';
+@import '@fontsource/geist-mono/400.css';
+@import '@fontsource/geist-mono/500.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --orbit-bg: #09090b;
+    --orbit-surface: #18181b;
+    --orbit-elevated: #27272a;
+    --orbit-border: rgba(39, 39, 42, 0.8);
+    --orbit-accent: #34d399;
+    --orbit-accent-subtle: rgba(52, 211, 153, 0.1);
+    --orbit-text: #fafafa;
+    --orbit-text-secondary: #a1a1aa;
+    --orbit-text-muted: #52525b;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-orbit-bg font-body text-orbit-text antialiased;
+    color-scheme: dark;
+  }
+
+  ::selection {
+    background-color: var(--orbit-accent);
+    color: #09090b;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #27272a;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3f3f46;
+  }
+}
+
+/* ── Backward-compat aliases (for remaining admin/photobooth pages) ── */
+@layer utilities {
+  .bg-clay-bg { background-color: var(--orbit-bg); }
+  .bg-clay-surface { background-color: var(--orbit-surface); }
+  .bg-clay-primary { background-color: var(--orbit-accent); }
+  .text-clay-text { color: var(--orbit-text); }
+  .text-clay-text-muted { color: var(--orbit-text-secondary); }
+  .text-clay-primary { color: var(--orbit-accent); }
+  .text-clay-primary\/40 { color: color-mix(in srgb, var(--orbit-accent) 40%, transparent); }
+  .border-clay-border { border-color: var(--orbit-border); }
+  .border-clay-primary { border-color: var(--orbit-accent); }
+  .text-ink-secondary { color: var(--orbit-text-secondary); }
+  .text-ink-muted { color: var(--orbit-text-muted); }
+  .bg-glass-surface { background-color: var(--orbit-surface); }
+  .bg-glass-surface-hover { background-color: rgba(39, 39, 42, 0.5); }
+  .border-glass-border { border-color: var(--orbit-border); }
+  .glass-card { @apply orbit-card; }
+  .glass-card-glow { @apply orbit-card-glow; }
+  .clay-card-hover { @apply orbit-card-interactive; }
+}
+
+@layer components {
+  /* ─── Cards ─── */
+  .orbit-card {
+    @apply bg-orbit-surface border border-orbit-border rounded-4xl p-8 
+           shadow-diffusion transition-all duration-500;
+  }
+
+  .orbit-card:hover {
+    @apply border-orbit-accent/20 shadow-glow;
+  }
+
+  .orbit-card-interactive {
+    @apply orbit-card cursor-pointer hover:-translate-y-1;
+  }
+
+  .orbit-card-glow {
+    @apply orbit-card border-orbit-accent/10 hover:border-orbit-accent/30;
+  }
+
+  /* ─── Glass (elevated surfaces) ─── */
+  .orbit-glass {
+    @apply bg-orbit-elevated/60 backdrop-blur-xl border border-orbit-border rounded-4xl;
+  }
+
+  .orbit-glass-strong {
+    @apply bg-orbit-elevated/80 backdrop-blur-2xl border border-orbit-border rounded-4xl;
+  }
+
+  /* ─── Buttons ─── */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-3 px-8 py-4 
+           bg-orbit-accent text-zinc-950 font-bold rounded-2xl
+           transition-all duration-300 text-[14px] uppercase tracking-wider;
+  }
+
+  .btn-primary:hover {
+    @apply bg-emerald-300 shadow-glow-lg -translate-y-[1px];
+  }
+
+  .btn-primary:active {
+    @apply scale-[0.98] translate-y-0;
+  }
+
+  .btn-primary:disabled {
+    @apply opacity-40 cursor-not-allowed hover:shadow-none hover:translate-y-0;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-3 px-8 py-4 
+           bg-transparent text-orbit-text border border-orbit-border 
+           rounded-2xl transition-all duration-300 text-[14px] uppercase tracking-wider font-semibold;
+  }
+
+  .btn-secondary:hover {
+    @apply border-orbit-accent/40 bg-orbit-accent-subtle text-orbit-accent;
+  }
+
+  .btn-secondary:active {
+    @apply scale-[0.98];
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-3 
+           text-orbit-text-secondary font-medium rounded-2xl 
+           transition-all duration-200 text-[14px];
+  }
+
+  .btn-ghost:hover {
+    @apply bg-orbit-surface text-orbit-text;
+  }
+
+  /* ─── Badges ─── */
+  .badge {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-full 
+           bg-orbit-accent-subtle border border-orbit-accent/20 
+           text-orbit-accent text-[10px] font-black uppercase tracking-[0.2em];
+  }
+
+  .badge-muted {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-full 
+           bg-orbit-surface border border-orbit-border 
+           text-orbit-text-muted text-[10px] font-black uppercase tracking-[0.2em];
+  }
+
+  /* ─── Inputs ─── */
+  .input-field {
+    @apply w-full bg-orbit-surface border border-orbit-border rounded-2xl 
+           px-6 py-4 text-orbit-text placeholder:text-orbit-text-muted/60
+           transition-all duration-300 text-[15px]
+           focus:outline-none focus:border-orbit-accent/40 focus:ring-4 focus:ring-orbit-accent/5;
+  }
+
+  /* ─── Typography ─── */
+  .hero-display {
+    @apply font-heading text-[56px] md:text-[80px] lg:text-[96px] 
+           font-black leading-[0.95] tracking-tighter text-orbit-text;
+  }
+
+  .display-lg {
+    @apply font-heading text-[40px] md:text-[56px] font-black leading-[1.05] tracking-tighter text-orbit-text;
+  }
+
+  .display-md {
+    @apply font-heading text-[32px] md:text-[40px] font-bold leading-[1.1] tracking-tight text-orbit-text;
+  }
+
+  .display-sm {
+    @apply font-heading text-[24px] md:text-[28px] font-bold leading-[1.2] tracking-tight text-orbit-text;
+  }
+
+  .heading-1 {
+    @apply font-heading text-[40px] font-black leading-[1.1] tracking-tight text-orbit-text;
+  }
+
+  .heading-2 {
+    @apply font-heading text-[32px] font-bold leading-[1.15] tracking-tight text-orbit-text;
+  }
+
+  .heading-3 {
+    @apply font-heading text-[24px] font-bold leading-[1.2] tracking-tight text-orbit-text;
+  }
+
+  .heading-4 {
+    @apply font-heading text-[20px] font-semibold leading-[1.3] tracking-tight text-orbit-text;
+  }
+
+  .heading-5 {
+    @apply font-heading text-[16px] font-semibold leading-[1.4] tracking-tight text-orbit-text;
+  }
+
+  .subtitle {
+    @apply font-body text-[20px] font-medium leading-relaxed text-orbit-text-secondary;
+  }
+
+  .body-lg {
+    @apply font-body text-[17px] leading-relaxed text-orbit-text-secondary;
+  }
+
+  .body-md {
+    @apply font-body text-[15px] leading-relaxed text-orbit-text-secondary;
+  }
+
+  .body-sm {
+    @apply font-body text-[13px] leading-relaxed text-orbit-text-secondary;
+  }
+
+  /* ─── Section Helpers ─── */
+  .section-label {
+    @apply inline-flex items-center gap-3 px-4 py-2 rounded-full 
+           bg-orbit-accent-subtle border border-orbit-accent/20
+           text-orbit-accent text-[10px] font-black uppercase tracking-[0.25em];
+  }
+
+  .section-label-muted {
+    @apply inline-flex items-center gap-3 px-4 py-2 rounded-full 
+           bg-orbit-surface border border-orbit-border
+           text-orbit-text-muted text-[10px] font-black uppercase tracking-[0.25em];
+  }
+
+  .divider-gradient {
+    @apply h-px w-full bg-gradient-to-r from-transparent via-orbit-border to-transparent;
+  }
+
+  .divider-accent {
+    @apply h-px w-full bg-gradient-to-r from-transparent via-orbit-accent/20 to-transparent;
+  }
+
+  /* ─── Skeleton ─── */
+  .skeleton {
+    @apply bg-orbit-elevated rounded-2xl animate-pulse;
+  }
+
+  /* ─── Status Dots ─── */
+  .status-dot {
+    @apply h-2 w-2 rounded-full bg-orbit-accent;
+    animation: breathing 3s ease-in-out infinite;
+  }
+
+  .status-dot-warning {
+    @apply h-2 w-2 rounded-full bg-amber-500;
+    animation: breathing 2s ease-in-out infinite;
+  }
+
+  /* ─── Shimmer line ─── */
+  .shimmer-line {
+    @apply h-4 rounded-full;
+    background: linear-gradient(90deg, #27272a 25%, #3f3f46 50%, #27272a 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s ease-in-out infinite;
+  }
+}

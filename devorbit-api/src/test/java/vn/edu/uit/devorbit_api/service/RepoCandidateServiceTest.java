@@ -3,6 +3,7 @@ package vn.edu.uit.devorbit_api.service;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.uit.devorbit_api.entity.RepoCandidate;
 import vn.edu.uit.devorbit_api.entity.RepoCandidateStatus;
@@ -10,10 +11,8 @@ import vn.edu.uit.devorbit_api.repository.RepoCandidateRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(properties = {
-    "app.jwt.secret=test-secret-key-that-is-long-enough-32",
-    "app.github.token=test-token"
-})
+@SpringBootTest
+@ActiveProfiles("test")
 @Transactional
 class RepoCandidateServiceTest {
 

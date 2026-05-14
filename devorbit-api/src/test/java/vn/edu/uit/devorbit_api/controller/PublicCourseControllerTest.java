@@ -49,7 +49,7 @@ class PublicCourseControllerTest {
     @Test
     void shouldReturnCourseSummaries() throws Exception {
         when(courseService.getActiveCourseSummaries()).thenReturn(List.of(
-            new CourseSummaryResponse(1L, "SE101", "Nhap mon CNPM", "Test Desc", 0L, 1, "DAI_CUONG", "CNPM")
+            new CourseSummaryResponse(1L, "SE101", "Nhap mon CNPM", "Test Desc", 0L, 1, 0, "DAI_CUONG", "CNPM")
         ));
 
         mockMvc.perform(get("/api/courses"))

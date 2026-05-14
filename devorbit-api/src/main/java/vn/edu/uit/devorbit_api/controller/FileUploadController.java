@@ -7,7 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import vn.edu.uit.devorbit_api.service.CloudinaryService;
+import vn.edu.uit.devorbit_api.service.SupabaseStorageService;
 
 import java.util.Map;
 
@@ -17,12 +17,12 @@ import java.util.Map;
 @Tag(name = "File Upload", description = "Các API liên quan đến upload file")
 public class FileUploadController {
 
-    private final CloudinaryService cloudinaryService;
+    private final SupabaseStorageService storageService;
 
-    @Operation(summary = "Upload ảnh lên Cloudinary")
+    @Operation(summary = "Upload ảnh lên Supabase Storage")
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<?, ?>> uploadFile(@RequestParam("file") MultipartFile file) {
-        Map<?, ?> data = cloudinaryService.upload(file);
+        Map<?, ?> data = storageService.upload(file);
         return ResponseEntity.ok(data);
     }
 }

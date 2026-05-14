@@ -1,17 +1,18 @@
 package vn.edu.uit.devorbit_api.entity;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(name = "photobooth_frames")
 public class PhotoboothFrame {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private UUID id;
 
     @Column(name = "frame_id", nullable = false, unique = true)
     private String frameId;
@@ -29,8 +30,7 @@ public class PhotoboothFrame {
     private String description;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private String slots;
+    private JsonNode slots;
 
     @Column(name = "overlay_image_url")
     private String overlayImageUrl;
@@ -49,6 +49,9 @@ public class PhotoboothFrame {
 
     @PrePersist
     protected void onCreate() {
+        if (id == null) {
+            id = UUID.randomUUID();
+        }
         createdAt = Instant.now();
         updatedAt = Instant.now();
     }
@@ -59,8 +62,8 @@ public class PhotoboothFrame {
     }
 
     // Getters & Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
 
     public String getFrameId() { return frameId; }
     public void setFrameId(String frameId) { this.frameId = frameId; }
@@ -77,8 +80,8 @@ public class PhotoboothFrame {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public String getSlots() { return slots; }
-    public void setSlots(String slots) { this.slots = slots; }
+    public JsonNode getSlots() { return slots; }
+    public void setSlots(JsonNode slots) { this.slots = slots; }
 
     public String getOverlayImageUrl() { return overlayImageUrl; }
     public void setOverlayImageUrl(String overlayImageUrl) { this.overlayImageUrl = overlayImageUrl; }

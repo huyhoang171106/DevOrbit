@@ -50,6 +50,16 @@ export const apiPost = <T>(path: string, body: unknown) => request<T>(path, { me
 export const apiPut = <T>(path: string, body: unknown) => request<T>(path, { method: 'PUT', body })
 export const apiDelete = (path: string) => request<void>(path, { method: 'DELETE' })
 
+export const apiUpload = <T>(path: string, formData: FormData): Promise<T> => {
+  return fetch(`${apiBaseUrl}${path}`, {
+    method: 'POST',
+    body: formData,
+  }).then(async (res) => {
+    if (!res.ok) throw new Error(`Upload failed: ${res.status}`)
+    return (await res.json()) as T
+  })
+}
+
 // --- Admin API (authenticated) ---
 export const apiAdminGet = <T>(path: string, token: string) => request<T>(path, { token })
 export const apiAdminPost = <T>(path: string, token: string, body: unknown) =>

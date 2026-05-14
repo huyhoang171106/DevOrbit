@@ -16,6 +16,10 @@ public class CloudinaryService {
     private final Cloudinary cloudinary;
 
     public Map<?, ?> upload(MultipartFile file) {
+        if (cloudinary == null) {
+            // No Cloudinary configured — return a basic response
+            return Map.of("url", "");
+        }
         try {
             Map<?, ?> data = this.cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
             return data;

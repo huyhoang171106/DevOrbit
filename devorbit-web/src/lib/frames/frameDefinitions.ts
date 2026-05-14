@@ -56,7 +56,13 @@ export async function reloadFrames(): Promise<void> {
   } catch (err) {
     console.error("Failed to load frames:", err);
     FRAME_DEFINITIONS = [];
+    throw err; // re-throw để ensureFramesLoaded biết lần này thất bại
   }
+}
+
+export async function forceRefreshFrames(): Promise<void> {
+  loadPromise = null;
+  return ensureFramesLoaded();
 }
 
 function toFrameDefinition(stored: StoredFrame): FrameDefinition {
@@ -81,9 +87,11 @@ function toFrameDefinition(stored: StoredFrame): FrameDefinition {
   };
 }
 
-export function ensureFramesLoaded(): Promise<void> {
+export async function ensureFramesLoaded(): Promise<void> {
   if (!loadPromise) {
-    loadPromise = reloadFrames();
+    loadPromise = reloadFrames().catch(() => {
+      loadPromise = null; // cho phép thử lại lần sau
+    });
   }
   return loadPromise;
 }

@@ -36,3 +36,4 @@ target/
 src/main/resources/application-local.yaml
 **/secrets/**
 **/credentials/**
+nul

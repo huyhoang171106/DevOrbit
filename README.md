@@ -238,9 +238,7 @@ devorbit/
 │   ├── build.gradle.kts
 │   └── settings.gradle.kts
 ├── docs/                            # Project documentation
-│   └── superpowers/
-│       ├── specs/                   # Design specifications
-│       └── plans/                   # Implementation plans
+├── specs/                           # Design specifications (spec-driven)
 ├── docker-compose.yml               # Multi-service orchestration
 ├── AGENTS.md                        # AI agent guidance (root)
 └── README.md                        # This file

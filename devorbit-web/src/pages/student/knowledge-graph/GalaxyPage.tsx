@@ -9,11 +9,8 @@ import type { GraphLink } from '../../../types/api'
 
 const CARD_WIDTH = 140
 const CARD_HEIGHT = 65
-const SMALL_CARD_WIDTH = 120
-const SMALL_CARD_HEIGHT = 48
-const CARD_RADIUS = 0 // Flowchart often uses sharp corners
 const COLUMN_WIDTH = 240
-const VERTICAL_STEP = 90 // Slightly tighter vertically to fit more
+const VERTICAL_STEP = 80
 
 function computeBlocked(failed: Set<number>, links: GraphLink[]): Set<number> {
   if (failed.size === 0) return new Set()
@@ -43,7 +40,8 @@ export default function GalaxyPage() {
   const toggleFailedNode = useGalaxyStore((s) => s.toggleFailedNode)
   const setBlockedNodes = useGalaxyStore((s) => s.setBlockedNodes)
   const blockedNodes = useGalaxyStore((s) => s.blockedNodes)
-  const aiRecommendedNodes = useGalaxyStore((s) => s.aiRecommendedNodes)
+  const aiElectiveNodes = useGalaxyStore((s) => s.aiElectiveNodes)
+  const aiElectiveNodeData = useGalaxyStore((s) => s.aiElectiveNodeData)
 
   const graphData = useMemo(() => {
     if (!data || !data.nodes) return { nodes: [], links: [] }
@@ -55,6 +53,11 @@ export default function GalaxyPage() {
 
     const sortedNodes = [...validNodes].sort((a, b) => {
       if (a.semester !== b.semester) return a.semester - b.semester
+      // Push ENG courses to the bottom of each semester
+      const aIsEng = a.code?.startsWith("ENG")
+      const bIsEng = b.code?.startsWith("ENG")
+      if (aIsEng && !bIsEng) return 1
+      if (!aIsEng && bIsEng) return -1
       return a.code.localeCompare(b.code)
     })
 
@@ -69,6 +72,47 @@ export default function GalaxyPage() {
         fy: (nodeIndex - (totalInSemester - 1) / 2) * VERTICAL_STEP,
       }
     })
+
+    // Add elective nodes below main nodes in their semester columns
+    if (aiElectiveNodeData.length > 0) {
+      const maxSemesterY: Record<number, number> = {}
+      processedNodes.forEach(n => {
+        const sem = n.semester ?? 1
+        if (!maxSemesterY[sem] || n.fy > maxSemesterY[sem]) maxSemesterY[sem] = n.fy
+      })
+
+      // Group electives by semester so per-semester indices are correct
+      const electivesBySemester: Record<number, typeof aiElectiveNodeData> = {}
+      aiElectiveNodeData.forEach(en => {
+        const sem = en.semester || 1
+        if (!electivesBySemester[sem]) electivesBySemester[sem] = []
+        electivesBySemester[sem].push(en)
+      })
+
+      const electiveNodes: any[] = []
+      Object.entries(electivesBySemester)
+        .sort(([a], [b]) => Number(a) - Number(b))
+        .forEach(([semStr, electives]) => {
+          const sem = Number(semStr)
+          const baseY = maxSemesterY[sem] ?? 0
+          electives.forEach((en, i) => {
+            electiveNodes.push({
+              id: en.id,
+              code: en.code,
+              name: en.name,
+              semester: sem,
+              description: en.description || '',
+              val: 12.0,
+              level: 0,
+              impactScore: 0.0,
+              electiveGroup: null,
+              fx: (sem - 4.5) * COLUMN_WIDTH,
+              fy: baseY + (i + 1) * VERTICAL_STEP,
+            })
+          })
+        })
+      processedNodes.push(...electiveNodes)
+    }
 
     const allNodeIds = new Set(processedNodes.map(n => n.id))
 
@@ -85,7 +129,7 @@ export default function GalaxyPage() {
       }))
 
     return { nodes: processedNodes, links: resolvedLinks }
-  }, [data])
+  }, [data, aiElectiveNodeData])
 
   useEffect(() => {
     if (data && data.links) {
@@ -213,7 +257,7 @@ export default function GalaxyPage() {
             ctx.lineTo(x - COLUMN_WIDTH / 2, 1000)
             ctx.stroke()
 
-            const fontSize = 14 / globalScale
+            const fontSize = 14
             ctx.font = `black ${fontSize}px Inter, sans-serif`
             ctx.fillStyle = '#1e293b'
             ctx.textAlign = 'center'
@@ -228,7 +272,7 @@ export default function GalaxyPage() {
           const isFailed = failedNodes.has(node.id)
           const isBlocked = blockedNodes.has(node.id) && !isFailed
           const isSelected = selectedNodeId === node.id
-          const isAiRecommended = aiRecommendedNodes.has(node.id)
+          const isAiRecommended = aiElectiveNodes.has(node.id)
           
           let borderColor = isSelected ? '#10b981' : (isAiRecommended ? '#7c3aed' : '#334155')
           let bgColor = isSelected ? '#ecfdf5' : (isAiRecommended ? '#f5f3ff' : '#ffffff')
@@ -245,11 +289,11 @@ export default function GalaxyPage() {
           ctx.lineWidth = (isSelected || isAiRecommended ? 2 : 1) / globalScale
 
           ctx.beginPath()
-          ctx.rect(x, y, CARD_WIDTH, CARD_HEIGHT)
+          ctx.roundRect(x, y, CARD_WIDTH, CARD_HEIGHT, 4)
           ctx.fill()
           ctx.stroke()
 
-          const fs = 11 / globalScale
+          const fs = 11
           ctx.textAlign = 'center'
           ctx.textBaseline = 'middle'
 
@@ -257,14 +301,6 @@ export default function GalaxyPage() {
           ctx.font = `600 ${fs}px Inter, sans-serif`
           ctx.fillStyle = textColor
           ctx.fillText(node.code, node.x, node.y - 12)
-          
-          // Line separator inside node like in flowchart
-          // ctx.beginPath()
-          // ctx.moveTo(x, node.y - 2)
-          // ctx.lineTo(x + CARD_WIDTH, node.y - 2)
-          // ctx.strokeStyle = '#e2e8f0'
-          // ctx.lineWidth = 1 / globalScale
-          // ctx.stroke()
 
           if (isAiRecommended && !isSelected) {
             ctx.font = `${fs}px Inter, sans-serif`
@@ -304,7 +340,6 @@ export default function GalaxyPage() {
           
           const startX = start.x + CARD_WIDTH / 2
           const startY = start.y
-          // Target anchor logic: entering from left. If source is strictly above/below but same X, enters top/bottom
           const endX = end.x - CARD_WIDTH / 2
           const endY = end.y
 
@@ -314,7 +349,6 @@ export default function GalaxyPage() {
             ctx.beginPath()
             ctx.moveTo(startX, startY + offsetY)
             
-            // Check if nodes are in the same column (same semester vertically)
             if (Math.abs(start.x - end.x) < 10) {
                ctx.lineTo(startX + 20/globalScale, startY + offsetY)
                ctx.lineTo(startX + 20/globalScale, endY + offsetY)
@@ -328,7 +362,6 @@ export default function GalaxyPage() {
           }
 
           if (isPrerequisite) {
-            // Draw double line: draw thick dark line, then thinner white line inside
             ctx.lineWidth = 3 / globalScale
             ctx.strokeStyle = baseColor
             drawPath()
@@ -339,7 +372,6 @@ export default function GalaxyPage() {
             drawPath()
             ctx.stroke()
             
-            // Hollow Arrow Head
             if (globalScale > 0.2) {
               const arrowSize = 8 / globalScale
               ctx.beginPath()
@@ -354,13 +386,11 @@ export default function GalaxyPage() {
               ctx.stroke()
             }
           } else {
-            // Single solid line
             ctx.lineWidth = 1 / globalScale
             ctx.strokeStyle = baseColor
             drawPath()
             ctx.stroke()
             
-            // Solid Arrow Head
             if (globalScale > 0.2) {
               const arrowSize = 6 / globalScale
               ctx.beginPath()
@@ -374,7 +404,7 @@ export default function GalaxyPage() {
           }
         }}
 
-        linkDirectionalParticles={0} // Disable particles to match static flowchart style
+        linkDirectionalParticles={0}
 
         onNodeClick={handleNodeClick}
         onEngineStop={() => {

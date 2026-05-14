@@ -1,5 +1,13 @@
 import { create } from 'zustand'
 
+type ElectiveNodeData = {
+  id: number
+  code: string
+  name: string
+  semester: number
+  description?: string
+}
+
 type GalaxyState = {
   focusNodeId: number | null
   hoveredNodeId: number | null
@@ -10,6 +18,9 @@ type GalaxyState = {
   currentSemester: number
   weekMarkers: Array<{ week: number; count: number }>
   aiRecommendedNodes: Set<number>
+  aiElectiveNodes: Set<number>
+  aiElectiveNodeData: ElectiveNodeData[]
+  selectedGraduationTrack: string | null
 }
 
 type GalaxyActions = {
@@ -23,6 +34,9 @@ type GalaxyActions = {
   setCurrentSemester: (semester: number) => void
   setWeekMarkers: (markers: Array<{ week: number; count: number }>) => void
   setAiRecommendedNodes: (ids: Set<number>) => void
+  setAiElectiveNodes: (ids: Set<number>) => void
+  setAiElectiveNodeData: (data: ElectiveNodeData[]) => void
+  setSelectedGraduationTrack: (type: string | null) => void
 }
 
 export const useGalaxyStore = create<GalaxyState & GalaxyActions>((set) => ({
@@ -35,6 +49,9 @@ export const useGalaxyStore = create<GalaxyState & GalaxyActions>((set) => ({
   currentSemester: 0,
   weekMarkers: [],
   aiRecommendedNodes: new Set(),
+  aiElectiveNodes: new Set(),
+  aiElectiveNodeData: [],
+  selectedGraduationTrack: null,
 
   setFocusNode: (id) => set({ focusNodeId: id }),
   setHoveredNode: (id) => set({ hoveredNodeId: id }),
@@ -55,4 +72,7 @@ export const useGalaxyStore = create<GalaxyState & GalaxyActions>((set) => ({
   setCurrentSemester: (semester) => set({ currentSemester: semester }),
   setWeekMarkers: (markers) => set({ weekMarkers: markers }),
   setAiRecommendedNodes: (ids) => set({ aiRecommendedNodes: ids }),
+  setAiElectiveNodes: (ids) => set({ aiElectiveNodes: ids }),
+  setAiElectiveNodeData: (data) => set({ aiElectiveNodeData: data }),
+  setSelectedGraduationTrack: (type) => set({ selectedGraduationTrack: type }),
 }))

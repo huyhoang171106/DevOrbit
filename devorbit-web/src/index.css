@@ -1,25 +1,28 @@
+/* ── Fontsource (MUST precede @tailwind per PostCSS rules) ── */
+@import '@fontsource/geist-sans/400.css';
+@import '@fontsource/geist-sans/500.css';
+@import '@fontsource/geist-sans/600.css';
+@import '@fontsource/geist-sans/700.css';
+@import '@fontsource/geist-sans/800.css';
+@import '@fontsource/geist-sans/900.css';
+@import '@fontsource/geist-mono/400.css';
+@import '@fontsource/geist-mono/500.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* ArchLine Design System — Blueprint-light palette */
-    --color-clay-bg: #ffffff;
-    --color-clay-surface: #f9fafb;
-    --color-clay-primary: #1e40af;
-    --color-clay-secondary: #9ca3af;
-    --color-clay-accent: #1e40af;
-    --color-clay-text: #111827;
-    --color-clay-text-muted: #6b7280;
-    --color-clay-border: #e5e7eb;
-    --color-clay-shadow-outer: transparent;
-    --color-clay-shadow-inner: transparent;
-
-    /* Ink mapping — semantic aliases */
-    --color-ink: var(--color-clay-text);
-    --color-ink-secondary: var(--color-clay-text-muted);
-    --color-ink-muted: #9ca3af;
+    --orbit-bg: #09090b;
+    --orbit-surface: #18181b;
+    --orbit-elevated: #27272a;
+    --orbit-border: rgba(39, 39, 42, 0.8);
+    --orbit-accent: #34d399;
+    --orbit-accent-subtle: rgba(52, 211, 153, 0.1);
+    --orbit-text: #fafafa;
+    --orbit-text-secondary: #a1a1aa;
+    --orbit-text-muted: #52525b;
   }
 
   html {
@@ -27,226 +30,241 @@
   }
 
   body {
-    @apply bg-clay-bg font-body text-clay-text antialiased;
-    color-scheme: light;
+    @apply bg-orbit-bg font-body text-orbit-text antialiased;
+    color-scheme: dark;
+  }
+
+  ::selection {
+    background-color: var(--orbit-accent);
+    color: #09090b;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #27272a;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3f3f46;
   }
 }
 
+/* ── Backward-compat aliases (for remaining admin/photobooth pages) ── */
+@layer utilities {
+  .bg-clay-bg { background-color: var(--orbit-bg); }
+  .bg-clay-surface { background-color: var(--orbit-surface); }
+  .bg-clay-primary { background-color: var(--orbit-accent); }
+  .text-clay-text { color: var(--orbit-text); }
+  .text-clay-text-muted { color: var(--orbit-text-secondary); }
+  .text-clay-primary { color: var(--orbit-accent); }
+  .text-clay-primary\/40 { color: color-mix(in srgb, var(--orbit-accent) 40%, transparent); }
+  .border-clay-border { border-color: var(--orbit-border); }
+  .border-clay-primary { border-color: var(--orbit-accent); }
+  .text-ink-secondary { color: var(--orbit-text-secondary); }
+  .text-ink-muted { color: var(--orbit-text-muted); }
+  .bg-glass-surface { background-color: var(--orbit-surface); }
+  .bg-glass-surface-hover { background-color: rgba(39, 39, 42, 0.5); }
+  .border-glass-border { border-color: var(--orbit-border); }
+  .glass-card { @apply orbit-card; }
+  .glass-card-glow { @apply orbit-card-glow; }
+  .clay-card-hover { @apply orbit-card-interactive; }
+}
+
 @layer components {
-  /* === Cards === */
-  .clay-card {
-    @apply rounded-none border border-clay-border bg-white transition-all duration-200;
+  /* ─── Cards ─── */
+  .orbit-card {
+    @apply bg-orbit-surface border border-orbit-border rounded-4xl p-8 
+           shadow-diffusion transition-all duration-500;
   }
 
-  .clay-card:hover {
-    border-color: #9ca3af;
+  .orbit-card:hover {
+    @apply border-orbit-accent/20 shadow-glow;
   }
 
-  .clay-card-hover {
-    @apply clay-card hover:-translate-y-0.5 hover:border-[#9ca3af];
+  .orbit-card-interactive {
+    @apply orbit-card cursor-pointer hover:-translate-y-1;
   }
 
-  .clay-card-vibrant {
-    @apply rounded-none border-2 border-clay-primary bg-white;
+  .orbit-card-glow {
+    @apply orbit-card border-orbit-accent/10 hover:border-orbit-accent/30;
   }
 
-  /* === Glass backward compat (mapped to ArchLine flat) === */
-  .glass-card {
-    @apply rounded-none border border-clay-border bg-white;
+  /* ─── Glass (elevated surfaces) ─── */
+  .orbit-glass {
+    @apply bg-orbit-elevated/60 backdrop-blur-xl border border-orbit-border rounded-4xl;
   }
 
-  .glass-card-hover {
-    @apply glass-card hover:bg-clay-surface;
+  .orbit-glass-strong {
+    @apply bg-orbit-elevated/80 backdrop-blur-2xl border border-orbit-border rounded-4xl;
   }
 
-  .glass-card-glow {
-    @apply glass-card;
-  }
-
-  .bg-glass-surface {
-    background-color: var(--color-clay-surface);
-  }
-
-  .bg-glass-surface-raised {
-    background-color: #f3f4f6;
-  }
-
-  .bg-glass-surface-hover {
-    background-color: #f3f4f6;
-  }
-
-  .border-glass-border {
-    border-color: var(--color-clay-border);
-  }
-
-  /* === Cosmic backward compat === */
-  .bg-cosmic-surface {
-    background-color: var(--color-clay-bg);
-  }
-
-  .bg-cosmic-elevated {
-    background-color: var(--color-clay-surface);
-  }
-
-  .cosmic-base {
-    @apply bg-clay-surface;
-  }
-
-  /* === Ink text helpers === */
-  .text-ink {
-    color: var(--color-ink);
-  }
-
-  .text-ink-secondary {
-    color: var(--color-ink-secondary);
-  }
-
-  .text-ink-muted {
-    color: var(--color-ink-muted);
-  }
-
-  .text-clay-text {
-    color: var(--color-clay-text);
-  }
-
-  .text-clay-text-muted {
-    color: var(--color-clay-text-muted);
-  }
-
-  .bg-clay-bg {
-    background-color: var(--color-clay-bg);
-  }
-
-  .bg-clay-surface {
-    background-color: var(--color-clay-surface);
-  }
-
-  .bg-clay-primary {
-    background-color: var(--color-clay-primary);
-  }
-
-  .border-clay-border {
-    border-color: var(--color-clay-border);
-  }
-
-  /* === Typography === */
-  .hero-display {
-    @apply font-heading text-[48px] font-bold leading-[1.1] tracking-[0.02em] text-clay-text;
-  }
-
-  .display-lg {
-    @apply font-heading text-[32px] font-semibold leading-[1.2] tracking-[0.01em] text-clay-text;
-  }
-
-  .display-sm {
-    @apply font-heading text-[24px] font-semibold leading-[1.3] text-clay-text;
-  }
-
-  .heading-1 {
-    @apply font-heading text-[48px] font-bold leading-[1.2] tracking-[0.02em] text-clay-text;
-  }
-
-  .heading-2 {
-    @apply font-heading text-[36px] font-bold leading-[1.2] text-clay-text;
-  }
-
-  .heading-3 {
-    @apply font-heading text-[28px] font-semibold leading-[1.4] text-clay-text;
-  }
-
-  .heading-4 {
-    @apply font-heading text-[22px] font-semibold leading-[1.4] text-clay-text;
-  }
-
-  .heading-5 {
-    @apply font-heading text-[18px] font-semibold leading-[1.5] text-clay-text;
-  }
-
-  .subtitle {
-    @apply font-body text-[20px] font-medium leading-[1.5] text-clay-text-muted;
-  }
-
-  .body-md {
-    @apply font-body text-[16px] leading-[1.6] text-clay-text-muted;
-  }
-
-  .body-sm {
-    @apply font-body text-[14px] leading-[1.5] tracking-[0.01em] text-clay-text-muted;
-  }
-
-  /* === Buttons === */
+  /* ─── Buttons ─── */
   .btn-primary {
-    @apply inline-flex items-center justify-center bg-clay-primary text-white font-semibold rounded-none px-5 py-3 text-[14px] border border-clay-primary transition-all duration-150;
+    @apply inline-flex items-center justify-center gap-3 px-8 py-4 
+           bg-orbit-accent text-zinc-950 font-bold rounded-2xl
+           transition-all duration-300 text-[14px] uppercase tracking-wider;
   }
 
   .btn-primary:hover {
-    @apply bg-[#1e3a8a];
+    @apply bg-emerald-300 shadow-glow-lg -translate-y-[1px];
+  }
+
+  .btn-primary:active {
+    @apply scale-[0.98] translate-y-0;
   }
 
   .btn-primary:disabled {
-    @apply opacity-40 cursor-not-allowed;
+    @apply opacity-40 cursor-not-allowed hover:shadow-none hover:translate-y-0;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center bg-transparent text-clay-primary font-semibold rounded-none px-5 py-3 text-[14px] border border-clay-primary transition-all duration-150;
+    @apply inline-flex items-center justify-center gap-3 px-8 py-4 
+           bg-transparent text-orbit-text border border-orbit-border 
+           rounded-2xl transition-all duration-300 text-[14px] uppercase tracking-wider font-semibold;
   }
 
   .btn-secondary:hover {
-    @apply bg-[#eff6ff];
+    @apply border-orbit-accent/40 bg-orbit-accent-subtle text-orbit-accent;
+  }
+
+  .btn-secondary:active {
+    @apply scale-[0.98];
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center text-[#4b5563] font-medium rounded-none px-4 py-2 text-[14px] transition-all duration-150;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-3 
+           text-orbit-text-secondary font-medium rounded-2xl 
+           transition-all duration-200 text-[14px];
   }
 
   .btn-ghost:hover {
-    @apply bg-[#f3f4f6];
+    @apply bg-orbit-surface text-orbit-text;
   }
 
-  /* === Inputs === */
+  /* ─── Badges ─── */
+  .badge {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-full 
+           bg-orbit-accent-subtle border border-orbit-accent/20 
+           text-orbit-accent text-[10px] font-black uppercase tracking-[0.2em];
+  }
+
+  .badge-muted {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-full 
+           bg-orbit-surface border border-orbit-border 
+           text-orbit-text-muted text-[10px] font-black uppercase tracking-[0.2em];
+  }
+
+  /* ─── Inputs ─── */
   .input-field {
-    @apply w-full rounded-none border border-clay-border bg-white px-3 py-2 text-[14px] text-clay-text placeholder:text-[#9ca3af] transition-all duration-150 focus:outline-none focus:border-2 focus:border-clay-primary;
+    @apply w-full bg-orbit-surface border border-orbit-border rounded-2xl 
+           px-6 py-4 text-orbit-text placeholder:text-orbit-text-muted/60
+           transition-all duration-300 text-[15px]
+           focus:outline-none focus:border-orbit-accent/40 focus:ring-4 focus:ring-orbit-accent/5;
   }
 
-  .label {
-    @apply mb-1 block text-[14px] font-medium text-clay-text;
+  /* ─── Typography ─── */
+  .hero-display {
+    @apply font-heading text-[56px] md:text-[80px] lg:text-[96px] 
+           font-black leading-[0.95] tracking-tighter text-orbit-text;
   }
 
-  /* === Badges === */
-  .badge-tag {
-    @apply inline-flex items-center justify-center rounded-none border border-clay-border bg-clay-surface px-3 py-1 text-[12px] font-medium text-clay-text uppercase tracking-[0.02em];
+  .display-lg {
+    @apply font-heading text-[40px] md:text-[56px] font-black leading-[1.05] tracking-tighter text-orbit-text;
   }
 
-  /* === Page helpers === */
-  .page-title {
-    @apply font-heading text-[36px] font-bold text-clay-text leading-[1.2] tracking-[0.01em];
+  .display-md {
+    @apply font-heading text-[32px] md:text-[40px] font-bold leading-[1.1] tracking-tight text-orbit-text;
   }
 
-  .section-subtitle {
-    @apply text-[11px] font-semibold uppercase tracking-[0.08em] text-clay-primary mb-4;
+  .display-sm {
+    @apply font-heading text-[24px] md:text-[28px] font-bold leading-[1.2] tracking-tight text-orbit-text;
   }
 
-  /* === Table helpers === */
-  .table-header {
-    @apply text-[11px] font-semibold uppercase tracking-[0.08em] text-clay-text;
+  .heading-1 {
+    @apply font-heading text-[40px] font-black leading-[1.1] tracking-tight text-orbit-text;
   }
 
-  .table-cell {
-    @apply text-[14px] text-clay-text-muted;
+  .heading-2 {
+    @apply font-heading text-[32px] font-bold leading-[1.15] tracking-tight text-orbit-text;
   }
 
-  /* === Custom scrollbar === */
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 4px;
+  .heading-3 {
+    @apply font-heading text-[24px] font-bold leading-[1.2] tracking-tight text-orbit-text;
   }
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
+
+  .heading-4 {
+    @apply font-heading text-[20px] font-semibold leading-[1.3] tracking-tight text-orbit-text;
   }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #e5e7eb;
-    border-radius: 10px;
+
+  .heading-5 {
+    @apply font-heading text-[16px] font-semibold leading-[1.4] tracking-tight text-orbit-text;
   }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #d1d5db;
+
+  .subtitle {
+    @apply font-body text-[20px] font-medium leading-relaxed text-orbit-text-secondary;
+  }
+
+  .body-lg {
+    @apply font-body text-[17px] leading-relaxed text-orbit-text-secondary;
+  }
+
+  .body-md {
+    @apply font-body text-[15px] leading-relaxed text-orbit-text-secondary;
+  }
+
+  .body-sm {
+    @apply font-body text-[13px] leading-relaxed text-orbit-text-secondary;
+  }
+
+  /* ─── Section Helpers ─── */
+  .section-label {
+    @apply inline-flex items-center gap-3 px-4 py-2 rounded-full 
+           bg-orbit-accent-subtle border border-orbit-accent/20
+           text-orbit-accent text-[10px] font-black uppercase tracking-[0.25em];
+  }
+
+  .section-label-muted {
+    @apply inline-flex items-center gap-3 px-4 py-2 rounded-full 
+           bg-orbit-surface border border-orbit-border
+           text-orbit-text-muted text-[10px] font-black uppercase tracking-[0.25em];
+  }
+
+  .divider-gradient {
+    @apply h-px w-full bg-gradient-to-r from-transparent via-orbit-border to-transparent;
+  }
+
+  .divider-accent {
+    @apply h-px w-full bg-gradient-to-r from-transparent via-orbit-accent/20 to-transparent;
+  }
+
+  /* ─── Skeleton ─── */
+  .skeleton {
+    @apply bg-orbit-elevated rounded-2xl animate-pulse;
+  }
+
+  /* ─── Status Dots ─── */
+  .status-dot {
+    @apply h-2 w-2 rounded-full bg-orbit-accent;
+    animation: breathing 3s ease-in-out infinite;
+  }
+
+  .status-dot-warning {
+    @apply h-2 w-2 rounded-full bg-amber-500;
+    animation: breathing 2s ease-in-out infinite;
+  }
+
+  /* ─── Shimmer line ─── */
+  .shimmer-line {
+    @apply h-4 rounded-full;
+    background: linear-gradient(90deg, #27272a 25%, #3f3f46 50%, #27272a 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s ease-in-out infinite;
   }
 }

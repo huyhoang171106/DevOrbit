@@ -3,8 +3,8 @@ package vn.edu.uit.devorbit.mobile.data.repository
 import kotlinx.coroutines.flow.Flow
 import vn.edu.uit.devorbit.mobile.data.local.dao.*
 import vn.edu.uit.devorbit.mobile.data.local.entity.*
-import vn.edu.uit.devorbit.mobile.model.GraphNodeDto
-import vn.edu.uit.devorbit.mobile.model.GraphLinkDto
+import vn.edu.uit.devorbit.mobile.data.remote.dto.GraphNodeDto
+import vn.edu.uit.devorbit.mobile.data.remote.dto.GraphLinkDto
 import vn.edu.uit.devorbit.mobile.network.ApiService
 import javax.inject.Inject
 
@@ -82,10 +82,10 @@ class AcademicRepository @Inject constructor(
         }
     }
 
-    suspend fun getCourseGraph(): vn.edu.uit.devorbit.mobile.model.domain.KnowledgeGraph {
+    suspend fun getCourseGraph(): vn.edu.uit.devorbit.mobile.domain.model.KnowledgeGraph {
         val response = apiService.getKnowledgeGraph()
         val nodes = response.nodes.map { dto ->
-            vn.edu.uit.devorbit.mobile.model.domain.GraphNode(
+            vn.edu.uit.devorbit.mobile.domain.model.GraphNode(
                 id = dto.id, name = dto.name, code = dto.code,
                 level = dto.level ?: 0,
                 impactScore = dto.impactScore ?: 0.0,
@@ -94,11 +94,11 @@ class AcademicRepository @Inject constructor(
             )
         }
         val links = response.links.map { dto ->
-            vn.edu.uit.devorbit.mobile.model.domain.GraphLink(
+            vn.edu.uit.devorbit.mobile.domain.model.GraphLink(
                 sourceId = dto.source, targetId = dto.target, type = dto.type
             )
         }
-        return vn.edu.uit.devorbit.mobile.model.domain.KnowledgeGraph(nodes, links)
+        return vn.edu.uit.devorbit.mobile.domain.model.KnowledgeGraph(nodes, links)
     }
 
     suspend fun saveTask(task: TaskEntity) = taskDao.upsertTask(task)

@@ -8,8 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import vn.edu.uit.devorbit_api.dto.PhotoboothFrameDTO;
-import vn.edu.uit.devorbit_api.service.CloudinaryService;
 import vn.edu.uit.devorbit_api.service.PhotoboothFrameService;
+import vn.edu.uit.devorbit_api.service.SupabaseStorageService;
 
 import java.util.List;
 import java.util.Map;
@@ -21,7 +21,7 @@ import java.util.Map;
 public class PhotoboothFrameController {
 
     private final PhotoboothFrameService frameService;
-    private final CloudinaryService cloudinaryService;
+    private final SupabaseStorageService storageService;
 
     @Operation(summary = "Lấy danh sách tất cả frame")
     @GetMapping
@@ -55,7 +55,7 @@ public class PhotoboothFrameController {
     public ResponseEntity<?> uploadOverlay(
             @PathVariable String frameId,
             @RequestParam("file") MultipartFile file) {
-        Map<?, ?> uploadData = cloudinaryService.upload(file);
+        Map<?, ?> uploadData = storageService.upload(file);
         String url = (String) uploadData.get("url");
         if (url == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Upload failed"));

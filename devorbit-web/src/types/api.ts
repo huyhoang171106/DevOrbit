@@ -5,6 +5,7 @@ export type CourseSummary = {
   description?: string | null
   repoCount: number
   semester?: number | null
+  credits?: number
   loaiMonHoc?: string | null
 }
 

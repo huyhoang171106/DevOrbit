@@ -23,7 +23,7 @@ export function DownloadSection({ canvas, frame }: DownloadSectionProps) {
       setTimeout(() => setExportSuccess(false), 3000);
     } catch (error) {
       console.error("Export failed:", error);
-      alert("Failed to export image. Please try again.");
+      alert("Xuất ảnh thất bại. Vui lòng thử lại.");
     } finally {
       setIsExporting(false);
     }
@@ -31,9 +31,9 @@ export function DownloadSection({ canvas, frame }: DownloadSectionProps) {
 
   return (
     <div className="glass-card p-8">
-      <h3 className="heading-5 text-ink mb-2">Download Your Photobooth</h3>
+      <h3 className="heading-5 text-ink mb-2">Tải Photobooth của bạn</h3>
       <p className="body-sm text-ink-secondary mb-6">
-        Save your memories as a high-quality PNG image
+        Lưu kỷ niệm dưới dạng ảnh PNG chất lượng cao
       </p>
 
       <div className="space-y-3">
@@ -61,7 +61,7 @@ export function DownloadSection({ canvas, frame }: DownloadSectionProps) {
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 />
               </svg>
-              Preparing Download...
+              Đang chuẩn bị...
             </>
           ) : (
             <>
@@ -77,7 +77,7 @@ export function DownloadSection({ canvas, frame }: DownloadSectionProps) {
                   d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                 />
               </svg>
-              Download as PNG ({canvas?.width ?? 2000}&times;{canvas?.height ?? 2000}px)
+              Tải xuống PNG ({canvas?.width ?? 2000}&times;{canvas?.height ?? 2000}px)
             </>
           )}
         </button>
@@ -95,7 +95,7 @@ export function DownloadSection({ canvas, frame }: DownloadSectionProps) {
               />
             </svg>
             <p className="body-sm text-clay-primary">
-              Downloaded! Check your downloads folder
+              Đã tải xuống! Kiểm tra thư mục tải về
             </p>
           </div>
         )}
@@ -103,11 +103,11 @@ export function DownloadSection({ canvas, frame }: DownloadSectionProps) {
 
       <div className="mt-6 p-4 bg-glass-surface rounded-lg">
         <p className="body-sm text-ink-secondary">
-          <span className="font-semibold text-ink block mb-2">📸 Tips:</span>
+          <span className="font-semibold text-ink block mb-2">📸 Mẹo:</span>
           <ul className="space-y-1 ml-4 list-disc">
-            <li>Use portrait photos for best results</li>
-            <li>Ensure good lighting in your images</li>
-            <li>Share your creation on social media!</li>
+            <li>Sử dụng ảnh chân dung để có kết quả tốt nhất</li>
+            <li>Đảm bảo ánh sáng tốt trong ảnh</li>
+            <li>Chia sẻ tác phẩm lên mạng xã hội!</li>
           </ul>
         </p>
       </div>

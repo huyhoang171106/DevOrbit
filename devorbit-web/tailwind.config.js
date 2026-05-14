@@ -4,8 +4,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        heading: ['"Geist Sans"', 'system-ui', 'sans-serif'],
-        body: ['"Geist Sans"', 'system-ui', 'sans-serif'],
+        heading: ['"Baloo 2"', 'system-ui', 'sans-serif'],
+        body: ['Inter', 'system-ui', 'sans-serif'],
         mono: ['"Geist Mono"', 'monospace'],
       },
       colors: {

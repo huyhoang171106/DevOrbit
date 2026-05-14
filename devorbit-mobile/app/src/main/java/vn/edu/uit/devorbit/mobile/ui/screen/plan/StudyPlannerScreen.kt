@@ -20,9 +20,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import vn.edu.uit.devorbit.mobile.model.domain.StudyItem
-import vn.edu.uit.devorbit.mobile.model.domain.StudyPhase
-import vn.edu.uit.devorbit.mobile.model.domain.StudyPlan
+import vn.edu.uit.devorbit.mobile.domain.model.StudyItem
+import vn.edu.uit.devorbit.mobile.domain.model.StudyPhase
+import vn.edu.uit.devorbit.mobile.domain.model.StudyPlan
 import vn.edu.uit.devorbit.mobile.ui.components.GlassCard
 import vn.edu.uit.devorbit.mobile.ui.theme.*
 

@@ -1,0 +1,252 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* ArchLine Design System — Blueprint-light palette */
+    --color-clay-bg: #ffffff;
+    --color-clay-surface: #f9fafb;
+    --color-clay-primary: #1e40af;
+    --color-clay-secondary: #9ca3af;
+    --color-clay-accent: #1e40af;
+    --color-clay-text: #111827;
+    --color-clay-text-muted: #6b7280;
+    --color-clay-border: #e5e7eb;
+    --color-clay-shadow-outer: transparent;
+    --color-clay-shadow-inner: transparent;
+
+    /* Ink mapping — semantic aliases */
+    --color-ink: var(--color-clay-text);
+    --color-ink-secondary: var(--color-clay-text-muted);
+    --color-ink-muted: #9ca3af;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-clay-bg font-body text-clay-text antialiased;
+    color-scheme: light;
+  }
+}
+
+@layer components {
+  /* === Cards === */
+  .clay-card {
+    @apply rounded-none border border-clay-border bg-white transition-all duration-200;
+  }
+
+  .clay-card:hover {
+    border-color: #9ca3af;
+  }
+
+  .clay-card-hover {
+    @apply clay-card hover:-translate-y-0.5 hover:border-[#9ca3af];
+  }
+
+  .clay-card-vibrant {
+    @apply rounded-none border-2 border-clay-primary bg-white;
+  }
+
+  /* === Glass backward compat (mapped to ArchLine flat) === */
+  .glass-card {
+    @apply rounded-none border border-clay-border bg-white;
+  }
+
+  .glass-card-hover {
+    @apply glass-card hover:bg-clay-surface;
+  }
+
+  .glass-card-glow {
+    @apply glass-card;
+  }
+
+  .bg-glass-surface {
+    background-color: var(--color-clay-surface);
+  }
+
+  .bg-glass-surface-raised {
+    background-color: #f3f4f6;
+  }
+
+  .bg-glass-surface-hover {
+    background-color: #f3f4f6;
+  }
+
+  .border-glass-border {
+    border-color: var(--color-clay-border);
+  }
+
+  /* === Cosmic backward compat === */
+  .bg-cosmic-surface {
+    background-color: var(--color-clay-bg);
+  }
+
+  .bg-cosmic-elevated {
+    background-color: var(--color-clay-surface);
+  }
+
+  .cosmic-base {
+    @apply bg-clay-surface;
+  }
+
+  /* === Ink text helpers === */
+  .text-ink {
+    color: var(--color-ink);
+  }
+
+  .text-ink-secondary {
+    color: var(--color-ink-secondary);
+  }
+
+  .text-ink-muted {
+    color: var(--color-ink-muted);
+  }
+
+  .text-clay-text {
+    color: var(--color-clay-text);
+  }
+
+  .text-clay-text-muted {
+    color: var(--color-clay-text-muted);
+  }
+
+  .bg-clay-bg {
+    background-color: var(--color-clay-bg);
+  }
+
+  .bg-clay-surface {
+    background-color: var(--color-clay-surface);
+  }
+
+  .bg-clay-primary {
+    background-color: var(--color-clay-primary);
+  }
+
+  .border-clay-border {
+    border-color: var(--color-clay-border);
+  }
+
+  /* === Typography === */
+  .hero-display {
+    @apply font-heading text-[48px] font-bold leading-[1.1] tracking-[0.02em] text-clay-text;
+  }
+
+  .display-lg {
+    @apply font-heading text-[32px] font-semibold leading-[1.2] tracking-[0.01em] text-clay-text;
+  }
+
+  .display-sm {
+    @apply font-heading text-[24px] font-semibold leading-[1.3] text-clay-text;
+  }
+
+  .heading-1 {
+    @apply font-heading text-[48px] font-bold leading-[1.2] tracking-[0.02em] text-clay-text;
+  }
+
+  .heading-2 {
+    @apply font-heading text-[36px] font-bold leading-[1.2] text-clay-text;
+  }
+
+  .heading-3 {
+    @apply font-heading text-[28px] font-semibold leading-[1.4] text-clay-text;
+  }
+
+  .heading-4 {
+    @apply font-heading text-[22px] font-semibold leading-[1.4] text-clay-text;
+  }
+
+  .heading-5 {
+    @apply font-heading text-[18px] font-semibold leading-[1.5] text-clay-text;
+  }
+
+  .subtitle {
+    @apply font-body text-[20px] font-medium leading-[1.5] text-clay-text-muted;
+  }
+
+  .body-md {
+    @apply font-body text-[16px] leading-[1.6] text-clay-text-muted;
+  }
+
+  .body-sm {
+    @apply font-body text-[14px] leading-[1.5] tracking-[0.01em] text-clay-text-muted;
+  }
+
+  /* === Buttons === */
+  .btn-primary {
+    @apply inline-flex items-center justify-center bg-clay-primary text-white font-semibold rounded-none px-5 py-3 text-[14px] border border-clay-primary transition-all duration-150;
+  }
+
+  .btn-primary:hover {
+    @apply bg-[#1e3a8a];
+  }
+
+  .btn-primary:disabled {
+    @apply opacity-40 cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center bg-transparent text-clay-primary font-semibold rounded-none px-5 py-3 text-[14px] border border-clay-primary transition-all duration-150;
+  }
+
+  .btn-secondary:hover {
+    @apply bg-[#eff6ff];
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center text-[#4b5563] font-medium rounded-none px-4 py-2 text-[14px] transition-all duration-150;
+  }
+
+  .btn-ghost:hover {
+    @apply bg-[#f3f4f6];
+  }
+
+  /* === Inputs === */
+  .input-field {
+    @apply w-full rounded-none border border-clay-border bg-white px-3 py-2 text-[14px] text-clay-text placeholder:text-[#9ca3af] transition-all duration-150 focus:outline-none focus:border-2 focus:border-clay-primary;
+  }
+
+  .label {
+    @apply mb-1 block text-[14px] font-medium text-clay-text;
+  }
+
+  /* === Badges === */
+  .badge-tag {
+    @apply inline-flex items-center justify-center rounded-none border border-clay-border bg-clay-surface px-3 py-1 text-[12px] font-medium text-clay-text uppercase tracking-[0.02em];
+  }
+
+  /* === Page helpers === */
+  .page-title {
+    @apply font-heading text-[36px] font-bold text-clay-text leading-[1.2] tracking-[0.01em];
+  }
+
+  .section-subtitle {
+    @apply text-[11px] font-semibold uppercase tracking-[0.08em] text-clay-primary mb-4;
+  }
+
+  /* === Table helpers === */
+  .table-header {
+    @apply text-[11px] font-semibold uppercase tracking-[0.08em] text-clay-text;
+  }
+
+  .table-cell {
+    @apply text-[14px] text-clay-text-muted;
+  }
+
+  /* === Custom scrollbar === */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #e5e7eb;
+    border-radius: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #d1d5db;
+  }
+}

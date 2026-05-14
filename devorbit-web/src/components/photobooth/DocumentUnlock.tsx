@@ -17,8 +17,8 @@ export function DocumentUnlock({ isUnlocked, onUnlock }: DocumentUnlockProps) {
 
   if (isUnlocked) {
     return (
-      <div className="glass-card p-6 text-center border border-clay-primary/30 bg-clay-primary/5">
-        <div className="flex items-center justify-center gap-2 text-clay-primary heading-5 mb-2">
+      <div className="orbit-card p-6 text-center border border-emerald-400/30 bg-emerald-400/5">
+        <div className="flex items-center justify-center gap-2 text-emerald-400 text-sm font-semibold mb-2">
           <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
             <path
               fillRule="evenodd"
@@ -28,7 +28,7 @@ export function DocumentUnlock({ isUnlocked, onUnlock }: DocumentUnlockProps) {
           </svg>
           Photobooth Unlocked!
         </div>
-        <p className="body-sm text-ink-secondary">
+        <p className="text-xs text-zinc-400">
           You're ready to create your memories
         </p>
       </div>
@@ -37,14 +37,14 @@ export function DocumentUnlock({ isUnlocked, onUnlock }: DocumentUnlockProps) {
 
   return (
     <div className="glass-card p-8">
-      <h3 className="heading-5 text-ink mb-2">Unlock Your Memories</h3>
-      <p className="body-sm text-ink-secondary mb-6">
+      <h3 className="text-sm font-semibold text-orbit-text tracking-wide mb-2">Unlock Your Memories</h3>
+      <p className="text-xs text-zinc-400 mb-6">
         Upload any document to unlock the photobooth feature and start creating
       </p>
 
       <button
         onClick={() => fileInputRef.current?.click()}
-        className="w-full border-2 border-dashed border-glass-border rounded-lg p-8 hover:border-clay-primary/50 transition-colors cursor-pointer group">
+        className="w-full border-2 border-dashed border-zinc-700 rounded-lg p-8 hover:border-emerald-400/50 transition-colors cursor-pointer group">
         <input
           ref={fileInputRef}
           type="file"
@@ -54,7 +54,7 @@ export function DocumentUnlock({ isUnlocked, onUnlock }: DocumentUnlockProps) {
         />
         <div className="flex flex-col items-center gap-3">
           <svg
-            className="h-8 w-8 text-ink-secondary group-hover:text-clay-primary transition-colors"
+            className="h-8 w-8 text-zinc-500 group-hover:text-emerald-400 transition-colors"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24">
@@ -66,15 +66,15 @@ export function DocumentUnlock({ isUnlocked, onUnlock }: DocumentUnlockProps) {
             />
           </svg>
           <div className="text-center">
-            <p className="body-sm-medium text-ink">
+            <p className="text-xs font-semibold text-zinc-300">
               Click to upload a document
             </p>
-            <p className="body-sm text-ink-secondary">or drag and drop</p>
+            <p className="text-xs text-zinc-500">or drag and drop</p>
           </div>
         </div>
       </button>
 
-      <p className="body-sm text-ink-muted mt-4 text-center">
+      <p className="text-xs text-zinc-600 mt-4 text-center">
         PDF, DOC, Image files, or ZIP archives
       </p>
     </div>

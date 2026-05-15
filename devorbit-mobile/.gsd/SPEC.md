@@ -1,9 +1,11 @@
 # SPEC.md — Project Specification (Mobile Rebuild)
 
-> **Status**: `FINALIZED` (2026-05-12)
+> **Status**: `FINALIZED` (2026-05-12, updated 2026-05-16)
 
 ## Vision
 DevOrbit Mobile is an "Academic OS" for UIT students, providing a centralized hub for course materials, progress tracking, academic planning, and AI-driven intelligence to optimize their university journey.
+
+> **Implementation Progress**: Course Hub (search, list, detail), Knowledge Graph (search, filter, simulation, galaxy canvas), Dashboard (widget layout), Room offline caching, domain engines (9 engines), and authentication are built. PTB, Smart Todo, and AI UI tabs have their engines ready but lack dedicated tab UI. See `ROADMAP.md` for detailed status.
 
 ## Goals
 1. **Course Repo Hub**: Seamless discovery and classification of UIT course repositories.
@@ -26,7 +28,7 @@ DevOrbit Mobile is an "Academic OS" for UIT students, providing a centralized hu
 - **Tech Stack**: Kotlin, Jetpack Compose, Material 3 (Premium Aesthetics).
 
 ## Success Criteria
-- [ ] Students can find any UIT course repo in < 3 clicks.
-- [ ] PTB accurately calculates credits and prerequisite status.
-- [ ] Smart Todo identifies "overload" weeks based on deadline clusters.
-- [ ] AI Engine provides a valid career roadmap based on course history.
+- [x] Students can find any UIT course repo in < 3 clicks. (Course Hub search + semester filter + list)
+- [ ] PTB accurately calculates credits and prerequisite status. (Engines built: GpaEngine, RiskEngine, SimulationEngine)
+- [ ] Smart Todo identifies "overload" weeks based on deadline clusters. (Engines built: WorkloadEngine, TaskBreakdownEngine)
+- [ ] AI Engine provides a valid career roadmap based on course history. (Engines built: RecommendationEngine, AiRepositoryImpl)

@@ -2,7 +2,6 @@ package vn.edu.uit.devorbit_api.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,43 +64,7 @@ public class PhotoboothFrameService {
         });
     }
 
-    // Seed default frames on first startup
-    @PostConstruct
-    @Transactional
-    public void seedDefaults() {
-        if (repository.count() > 0) return;
 
-        upsertFrame(new PhotoboothFrameDTO(
-                "classic-4", "Classic", "Classic 4-Hình", 4,
-                "Phong cách photobooth cổ điển 4 tấm",
-                "[" +
-                        "{\"id\":\"s1\",\"x\":120,\"y\":120,\"width\":1760,\"height\":380,\"borderRadius\":24}," +
-                        "{\"id\":\"s2\",\"x\":120,\"y\":540,\"width\":1760,\"height\":380,\"borderRadius\":24}," +
-                        "{\"id\":\"s3\",\"x\":120,\"y\":960,\"width\":1760,\"height\":380,\"borderRadius\":24}," +
-                        "{\"id\":\"s4\",\"x\":120,\"y\":1380,\"width\":1760,\"height\":380,\"borderRadius\":24}" +
-                        "]",
-                null, "normal", "#1a1a2e"
-        ));
-
-        upsertFrame(new PhotoboothFrameDTO(
-                "duo-2", "Duo", "Song Hỷ", 2,
-                "Hai tấm ảnh song song",
-                "[" +
-                        "{\"id\":\"s1\",\"x\":100,\"y\":200,\"width\":850,\"height\":1100,\"borderRadius\":32}," +
-                        "{\"id\":\"s2\",\"x\":1050,\"y\":200,\"width\":850,\"height\":1100,\"borderRadius\":32}" +
-                        "]",
-                null, "normal", "#0f0f1a"
-        ));
-
-        upsertFrame(new PhotoboothFrameDTO(
-                "single-1", "Single", "Cá Nhân", 1,
-                "Một tấm ảnh lớn",
-                "[" +
-                        "{\"id\":\"s1\",\"x\":150,\"y\":150,\"width\":1700,\"height\":1200,\"borderRadius\":40}" +
-                        "]",
-                null, "normal", "#09090b"
-        ));
-    }
 
     private JsonNode parseSlots(String json) {
         try {

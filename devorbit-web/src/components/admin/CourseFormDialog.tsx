@@ -54,7 +54,7 @@ export function CourseFormDialog({ open, onClose, onSubmit, initial }: CourseFor
       <div className="glass-card w-full max-w-lg p-8 shadow-2xl">
         <div className="flex items-center justify-between mb-6">
           <h2 className="heading-4 text-clay-text">
-            {initial ? 'Edit Course' : 'Create Course'}
+            {initial ? 'Sửa môn học' : 'Thêm môn học'}
           </h2>
           <button
             type="button"
@@ -69,46 +69,46 @@ export function CourseFormDialog({ open, onClose, onSubmit, initial }: CourseFor
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
-            <label className="label">Code</label>
+            <label className="label">Mã môn</label>
             <input name="code" value={form.code} onChange={handleChange} className="input-field" required />
           </div>
           <div>
-            <label className="label">Name</label>
+            <label className="label">Tên môn</label>
             <input name="name" value={form.name} onChange={handleChange} className="input-field" required />
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="label">Credits</label>
+              <label className="label">Số tín chỉ</label>
               <input name="credits" type="number" value={form.credits} onChange={handleChange} className="input-field" />
             </div>
             <div>
-              <label className="label">Lecture</label>
+              <label className="label">Lý thuyết</label>
               <input name="lectureHours" type="number" value={form.lectureHours} onChange={handleChange} className="input-field" />
             </div>
             <div>
-              <label className="label">Practice</label>
+              <label className="label">Thực hành</label>
               <input name="practiceHours" type="number" value={form.practiceHours} onChange={handleChange} className="input-field" />
             </div>
           </div>
           <div>
-            <label className="label">Subject Type</label>
+            <label className="label">Loại môn</label>
             <select name="subjectType" value={form.subjectType} onChange={handleChange} className="input-field">
-              <option value="">Select</option>
+              <option value="">Chọn</option>
               <option value="Cơ sở ngành">Cơ sở ngành</option>
               <option value="Chuyên ngành">Chuyên ngành</option>
               <option value="Đại cương">Đại cương</option>
             </select>
           </div>
           <div>
-            <label className="label">Description</label>
+            <label className="label">Mô tả</label>
             <textarea name="description" value={form.description} onChange={handleChange} rows={3} className="input-field" />
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <button type="button" onClick={onClose} className="btn-ghost">
-              Cancel
+              Hủy
             </button>
             <button type="submit" className="btn-primary">
-              {initial ? 'Update' : 'Create'}
+              {initial ? 'Cập nhật' : 'Thêm'}
             </button>
           </div>
         </form>

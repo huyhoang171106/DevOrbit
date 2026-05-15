@@ -56,7 +56,7 @@ export function AdminReposPage() {
       setEditingRepo(null)
       refetch()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update repo')
+      setError(err instanceof Error ? err.message : 'Cập nhật kho thất bại')
     }
   }
 
@@ -150,7 +150,7 @@ export function AdminReposPage() {
               </div>
               <div>
                 <label className="label mb-1.5 block">Stars</label>
-                <input name="stars" type="number" min="0" defaultValue={editingRepo.stars ?? 0} className="input-field" placeholder="Stars" />
+                <input name="stars" type="number" min="0" defaultValue={editingRepo.stars ?? 0} className="input-field" placeholder="Sao" />
               </div>
             </div>
 

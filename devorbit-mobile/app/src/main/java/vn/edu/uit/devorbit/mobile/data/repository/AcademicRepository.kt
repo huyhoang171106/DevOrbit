@@ -1,12 +1,24 @@
 package vn.edu.uit.devorbit.mobile.data.repository
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import vn.edu.uit.devorbit.mobile.data.local.dao.*
 import vn.edu.uit.devorbit.mobile.data.local.entity.*
 import vn.edu.uit.devorbit.mobile.data.remote.dto.GraphNodeDto
 import vn.edu.uit.devorbit.mobile.data.remote.dto.GraphLinkDto
+import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseArticle
+import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseTutorial
+import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseYoutubePlaylist
+import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSummary
 import vn.edu.uit.devorbit.mobile.network.ApiService
 import javax.inject.Inject
+
+data class CourseDetailData(
+    val repos: List<RepoSummary>,
+    val tutorials: List<CourseTutorial>,
+    val videos: List<CourseYoutubePlaylist>,
+    val articles: List<CourseArticle>
+)
 
 class AcademicRepository @Inject constructor(
     private val apiService: ApiService,
@@ -63,6 +75,45 @@ class AcademicRepository @Inject constructor(
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    suspend fun loadCourseDetail(courseId: Long): CourseDetailData {
+        val repos = try {
+            val remoteRepos = apiService.getRepos(courseId)
+            val entities = remoteRepos.map {
+                RepoEntity(
+                    id = it.id,
+                    courseId = courseId,
+                    displayName = it.displayName,
+                    description = it.description,
+                    githubUrl = it.githubUrl,
+                    primaryLanguage = it.primaryLanguage,
+                    stars = it.stars ?: 0,
+                    aiClassification = null
+                )
+            }
+            repoDao.upsertRepos(entities)
+            remoteRepos
+        } catch (e: Exception) {
+            repoDao.getReposByCourse(courseId).first().map {
+                RepoSummary(
+                    id = it.id,
+                    displayName = it.displayName,
+                    description = it.description.orEmpty(),
+                    githubUrl = it.githubUrl,
+                    primaryLanguage = it.primaryLanguage.orEmpty(),
+                    stars = it.stars,
+                    techStacks = emptyList()
+                )
+            }
+        }
+
+        return CourseDetailData(
+            repos = repos,
+            tutorials = runCatching { apiService.getTutorials(courseId) }.getOrDefault(emptyList()),
+            videos = runCatching { apiService.getVideos(courseId) }.getOrDefault(emptyList()),
+            articles = runCatching { apiService.getArticles(courseId) }.getOrDefault(emptyList())
+        )
     }
 
     suspend fun refreshRelationships() {

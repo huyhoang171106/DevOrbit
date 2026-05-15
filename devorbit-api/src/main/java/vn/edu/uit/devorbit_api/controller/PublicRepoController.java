@@ -17,6 +17,11 @@ import java.util.List;
 public class PublicRepoController {
     private final GithubRepoService githubRepoService;
 
+    @GetMapping("/repos/{repoId}")
+    public RepoSummaryResponse getRepoById(@PathVariable Long repoId) {
+        return githubRepoService.getApprovedRepoById(repoId);
+    }
+
     @GetMapping("/courses/{courseId}/repos")
     public List<RepoSummaryResponse> getReposByCourse(
         @PathVariable Long courseId,

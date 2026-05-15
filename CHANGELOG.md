@@ -1,6 +1,68 @@
 # Changelog
 
-All notable changes to GSD for Antigravity.
+All notable changes to DevOrbit and GSD for Antigravity.
+
+## DevOrbit — Current (HEAD 816a121)
+
+### Latest Changes
+- **feat:** Remove auth links from nav, fix merge conflicts, add pagination
+- **refactor(photobooth):** Cleanup seed logic, fix schema id type, polish UI
+- **fix:** Remove client-side course sort, rely on backend ORDER BY COUNT(r) DESC
+- **feat(mobile):** Wire course hub detail navigation
+- **feat(mobile):** Add repo tech stack filter
+- **feat:** Photobooth frame compositing with document unlock flow
+- **feat:** AI Roadmap Generator endpoint
+- **feat:** Knowledge Graph blueprint grid with simulation mode
+- **feat:** Student auth with OTP verification
+- **feat:** Admin course resources (articles, tutorials, YouTube playlists)
+- **feat:** Elective course system with group config
+- **feat:** Mobile explore screen with search and tech stack filters
+
+### Additional Recent Commits
+- **refactor(mobile):** mobile-refactor-v2 — clean architecture overhaul (104 files, +2958/-2760)
+  - Wire AuthInterceptor into OkHttpClient, AuthViewModel observes token flow
+  - Move 6 DTO files from model/ to data/remote/dto/
+  - Move 9 engine files to domain/engine/ (Burnout, Risk, Workload, Gpa, Recommendation, etc.)
+  - Move domain models to domain/model/ (AcademicHealth, RiskProfile, etc.)
+  - Add AuthScreen, ProfileScreen, ExploreScreen, AuthViewModel, ExploreViewModel, ProfileViewModel
+  - Add 9 unit test files covering all domain engines
+  - Remove old analytics screens (4), risk screens (4), repository module (6 files)
+  - Add AiRepository, AuthRepository, BookmarkRepository, DiscoveryRepository, ResourceRepository
+- **feat:** SE2025 curriculum integration — backend data import, relationship mapping, AI roadmap generator
+- **feat(mobile):** Local Room database layer, course hub/explore screens, galaxy graph visualization
+- **feat(knowledge-graph):** Floating elective selection card with improved group display
+- **feat:** Email verification on signup flow
+- **fix:** totalCredits now sums from visible columns instead of all nodes in Knowledge Graph
+- **docs:** Update directory tree in README (remove stale superpowers/plans refs)
+- **clean:** Remove orphaned .md files (ArchLine design, stale plans, review notes)
+- **feat(photobooth):** Enhance frame management, per-slot filters, crop adjustment with zoom
+- **fix(photobooth):** Correct slots JSON serialization in entity/DTO/service layers
+- **fix:** Supabase crash causing blank page + add Photobooth nav link
+- **fix(web):** Resolve StudentLoginPage import error and update photobooth route
+- **chore:** Initialize DevOrbit Mobile rebuild project
+- **fix(gradle):** Gradle build configuration fixes
+
+### Current Codebase Stats
+- **Backend:** 21 controllers, 25 services (20 main + 5 AI sub-services), 18 repositories, 22 entities (18 + 4 enums), 43 DTOs
+  - KnowledgeGraphService, AI Roadmap Generator, Photobooth API, Auth endpoints
+  - Course resources (articles, tutorials, YouTube playlists)
+  - Security config with .authenticated() guards, AuthInterceptor support
+- **Frontend:** 11 admin pages, 11 student pages (including Galaxy 3D, Knowledge Graph canvas), React 19 + Vite 6
+  - Dark orbit design system (emerald + zinc, Baloo 2 + Inter, glassmorphism)
+  - Photobooth with frame compositing, per-slot filters, crop adjustment
+  - Knowledge Graph blueprint grid with simulation mode, elective selection
+  - Pagination, tech stack filter, course hub navigation
+- **Mobile:** Kotlin Compose with course hub, repo detail, bookmarks, explore, auth, profile
+  - Clean architecture (data/domain/ui layers), 9 domain engines with unit tests
+  - Course detail navigation, repo tech stack filter, galaxy graph visualization
+  - Cosmic design system (plasma violet + void dark)
+- **Infrastructure:** Docker Compose (db, api, web), Nginx, Supabase Storage, PostgreSQL on Docker
+- **Scripts:** LLM-based auto-review pipeline (auto-review-candidates.py, describe-repos.py)
+- **Knowledge Graph:** 27K nodes, 48K edges, 2027 communities (graphify indexed)
+
+---
+
+## GSD for Antigravity
 
 ## [1.5.0] - 2026-04-01
 

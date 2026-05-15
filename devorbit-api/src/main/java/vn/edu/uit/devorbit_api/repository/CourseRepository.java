@@ -21,11 +21,11 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
 
     @Query("""
             SELECT new vn.edu.uit.devorbit_api.dto.publicapi.CourseSummaryResponse(
-                c.id, c.maMH, c.tenMH, c.description, COUNT(r), c.semester, c.loaiMonHoc, c.managementUnit
+                c.id, c.maMH, c.tenMH, c.description, COUNT(r), c.semester, c.soTC, c.loaiMonHoc, c.managementUnit
             )
             FROM Course c
             LEFT JOIN GithubRepo r ON r.course.id = c.id AND r.active = true
-            GROUP BY c.id, c.maMH, c.tenMH, c.description, c.semester, c.loaiMonHoc, c.managementUnit
+            GROUP BY c.id, c.maMH, c.tenMH, c.description, c.semester, c.soTC, c.loaiMonHoc, c.managementUnit
             ORDER BY COUNT(r) DESC
             """)
     List<CourseSummaryResponse> findAllWithRepoCountSortedByRepoCount();

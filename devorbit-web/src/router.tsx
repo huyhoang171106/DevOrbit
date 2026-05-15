@@ -17,15 +17,19 @@ import { AdminCourseResourcesPage } from './pages/admin/AdminCourseResourcesPage
 import { AdminRoadmapsPage } from './pages/admin/AdminRoadmapsPage'
 import { AdminRelationshipsPage } from './pages/admin/AdminRelationshipsPage'
 import { AdminNotesPage } from './pages/admin/AdminNotesPage'
+import { AdminPhotoboothFramesPage } from './pages/admin/AdminPhotoboothFramesPage'
 
 const GalaxyPage = lazy(() => import('./pages/student/knowledge-graph/GalaxyPage'))
 
 function GalaxyFallback() {
   return (
-    <div className="h-[80vh] flex items-center justify-center bg-clay-bg">
-      <div className="flex flex-col items-center gap-4">
-        <div className="h-8 w-8 border-2 border-clay-border border-t-clay-primary animate-spin rounded-none" />
-        <p className="text-[12px] font-medium text-clay-text-muted tracking-[0.2em] uppercase">Đang tải</p>
+    <div className="h-[80vh] flex items-center justify-center bg-orbit-bg">
+      <div className="flex flex-col items-center gap-6">
+        <div className="relative h-10 w-10">
+          <div className="absolute inset-0 rounded-full border-2 border-orbit-accent/10" />
+          <div className="absolute inset-0 rounded-full border-t-2 border-orbit-accent animate-spin shadow-[0_0_15px_rgba(52,211,153,0.2)]" />
+        </div>
+        <p className="text-[11px] font-black text-orbit-accent tracking-[0.25em] uppercase">Đang tải</p>
       </div>
     </div>
   )
@@ -59,6 +63,7 @@ export function AppRoutes() {
       <Route path="/admin/roadmaps" element={<AdminRoadmapsPage />} />
       <Route path="/admin/relationships" element={<AdminRelationshipsPage />} />
       <Route path="/admin/notes" element={<AdminNotesPage />} />
+      <Route path="/admin/photobooth-frames" element={<AdminPhotoboothFramesPage />} />
     </Routes>
   );
 }

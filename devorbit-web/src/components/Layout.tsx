@@ -79,10 +79,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <User className="h-4 w-4" weight="regular" />
               Quản trị
             </Link>
-            <Link to="/courses" className="btn-primary text-[12px] px-6 py-3">
-              <Compass className="h-4 w-4" weight="bold" />
-              Khám phá
-            </Link>
           </div>
 
           {/* Mobile hamburger */}

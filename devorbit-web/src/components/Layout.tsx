@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ParticleNetwork } from './ParticleNetwork'
-import { Cube, Graph, Compass, BookOpen, User, Camera } from '@phosphor-icons/react'
+import { Cube, Graph, Compass, BookOpen, Camera } from '@phosphor-icons/react'
 
 const navLinks = [
   { to: '/courses', label: 'Môn Học', icon: BookOpen },
@@ -66,18 +66,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
           <div className="hidden md:flex items-center gap-4">
             <Link
-              to="/student/login"
-              className="flex items-center gap-2 text-[13px] font-medium text-orbit-text-muted hover:text-orbit-text-secondary transition-colors px-4 py-2 rounded-2xl hover:bg-orbit-surface"
+              to="/courses"
+              className="btn-primary text-[12px] px-6 py-3"
             >
-              <User className="h-4 w-4" weight="regular" />
-              Sinh viên
-            </Link>
-            <Link
-              to="/admin/login"
-              className="flex items-center gap-2 text-[13px] font-medium text-orbit-text-muted hover:text-orbit-text-secondary transition-colors px-4 py-2 rounded-2xl hover:bg-orbit-surface"
-            >
-              <User className="h-4 w-4" weight="regular" />
-              Quản trị
+              <Compass className="h-4 w-4" weight="bold" />
+              Khám phá ngay
             </Link>
           </div>
 
@@ -125,23 +118,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     </Link>
                   )
                 })}
-                <div className="pt-4 mt-4 border-t border-orbit-border space-y-3">
-                  <Link
-                    to="/student/login"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-3 px-5 py-4 text-[14px] font-medium text-orbit-text-muted rounded-2xl hover:bg-orbit-surface transition-colors"
-                  >
-                    <User className="h-4 w-4" weight="regular" />
-                    Sinh viên
-                  </Link>
-                  <Link
-                    to="/admin/login"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-3 px-5 py-4 text-[14px] font-medium text-orbit-text-muted rounded-2xl hover:bg-orbit-surface transition-colors"
-                  >
-                    <User className="h-4 w-4" weight="regular" />
-                    Quản trị
-                  </Link>
+                <div className="pt-4 mt-4 border-t border-orbit-border">
                   <Link
                     to="/courses"
                     onClick={() => setMobileOpen(false)}

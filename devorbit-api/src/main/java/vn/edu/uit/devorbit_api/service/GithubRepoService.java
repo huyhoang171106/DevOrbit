@@ -38,6 +38,15 @@ public class GithubRepoService {
         return githubRepoRepository.findBySubjectId(subjectId);
     }
 
+    public RepoSummaryResponse getApprovedRepoById(Long repoId) {
+        GithubRepo repo = githubRepoRepository.findById(repoId)
+                .orElseThrow(() -> new NotFoundException("Repo not found: " + repoId));
+        if (!repo.isActive()) {
+            throw new NotFoundException("Repo not found: " + repoId);
+        }
+        return mapToRepoSummary(repo);
+    }
+
     public List<RepoSummaryResponse> getApprovedReposByCourse(Long courseId) {
         return githubRepoRepository.findByCourseIdAndActiveTrue(courseId).stream()
                 .map(this::mapToRepoSummary)

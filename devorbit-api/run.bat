@@ -8,7 +8,7 @@ if not exist ".env" (
     exit /b 1
 )
 
-for /f "usebackq tokens=1,* delims==" %%a in (".env") do (
+for /f "tokens=1,* delims==" %%a in (.env) do (
     set "%%a=%%b"
 )
 

@@ -4,6 +4,8 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.junit.Assert.*
 import org.junit.Test
+import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSummary
+import vn.edu.uit.devorbit.mobile.data.remote.dto.TechStack
 
 class DeserializationTest {
 

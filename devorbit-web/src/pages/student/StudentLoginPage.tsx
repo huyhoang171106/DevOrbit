@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { apiPost } from '../../lib/api'
 import { saveStudentToken } from '../../lib/auth'
 import type { StudentAuthResponse } from '../../types/api'
@@ -11,6 +11,7 @@ export function StudentLoginPage() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -18,6 +19,11 @@ export function StudentLoginPage() {
     e.preventDefault()
     setError('')
     setLoading(true)
+    if (mode === 'register' && password !== confirmPassword) {
+      setError('Mật khẩu nhập lại không khớp.')
+      setLoading(false)
+      return
+    }
     try {
       const path = mode === 'login' ? '/api/student/login' : '/api/student/register'
       const body = mode === 'login' ? { studentCode, password } : { studentCode, fullName, email, password }
@@ -41,13 +47,9 @@ export function StudentLoginPage() {
               <circle cx="12" cy="7" r="4" />
             </svg>
           </div>
-          <p className="body-sm text-emerald-400 mb-[8px] font-medium tracking-wide uppercase">Giai đoạn 2</p>
-          <h1 className="heading-3 text-ink mb-[8px]">
+          <h1 className="heading-2 text-ink mb-[8px]">
             {mode === 'login' ? 'Đăng nhập' : 'Tạo tài khoản'}
           </h1>
-          <p className="body-sm text-ink-secondary">
-            Lưu môn học và kho để tiếp tục học sau.
-          </p>
         </div>
 
         {error && (
@@ -62,7 +64,7 @@ export function StudentLoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-[16px]">
           <div>
-            <label className="label block mb-[6px]">Mã số sinh viên</label>
+            <label className="label block mb-[6px]">Tên đăng nhập</label>
             <input
               className="input-field"
               value={studentCode}
@@ -107,6 +109,20 @@ export function StudentLoginPage() {
             />
           </div>
 
+          {mode === 'register' && (
+            <div>
+              <label className="label block mb-[6px]">Nhập lại mật khẩu</label>
+              <input
+                className="input-field"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={6}
+              />
+            </div>
+          )}
+
           <button className="btn-primary w-full mt-2" type="submit" disabled={loading}>
             {loading ? (
               <span className="flex items-center justify-center gap-[8px]">
@@ -124,7 +140,7 @@ export function StudentLoginPage() {
           </button>
         </form>
 
-        <div className="mt-[24px] pt-[24px] border-t border-glass-border flex items-center justify-between body-sm">
+        <div className="mt-[24px] pt-[24px] border-t border-glass-border flex items-center justify-center body-sm">
           <button
             className="text-emerald-400 hover:text-emerald-400/80 font-medium transition-colors cursor-pointer"
             type="button"
@@ -132,9 +148,6 @@ export function StudentLoginPage() {
           >
             {mode === 'login' ? 'Tạo tài khoản' : 'Đã có tài khoản'}
           </button>
-          <Link to="/courses" className="text-ink-secondary hover:text-ink transition-colors">
-            Tiếp tục xem
-          </Link>
         </div>
       </div>
     </div>

@@ -44,7 +44,7 @@ async function upsertFrame(frame: StoredFrame): Promise<boolean> {
     displayName: frame.displayName,
     photoCount: frame.photoCount,
     description: frame.description ?? "",
-    slots: typeof frame.slots === "string" ? JSON.parse(frame.slots) : frame.slots,
+    slots: typeof frame.slots === "string" ? frame.slots : JSON.stringify(frame.slots),
     overlayImageUrl: frame.overlayImage ?? "",
     filter: frame.filter ?? "normal",
     backgroundColor: frame.backgroundColor ?? "#ffffff",

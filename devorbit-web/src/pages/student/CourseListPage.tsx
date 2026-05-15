@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { apiGet } from '../../lib/api'
 import { CourseCard } from '../../components/student/CourseCard'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { CourseSummary } from '../../types/api'
+import { getCourseColor } from '../../lib/colors'
 import { MagnifyingGlass, Graph, Funnel, X, GraduationCap, BookOpen } from '@phosphor-icons/react'
 
 export function CourseListPage() {
@@ -25,6 +26,16 @@ export function CourseListPage() {
   const filteredCourses = courses.filter(c =>
     c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     c.code.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  const sortedCourses = useMemo(() =>
+    [...filteredCourses].sort((a, b) => {
+      const colorA = getCourseColor(a.code)
+      const colorB = getCourseColor(b.code)
+      if (colorA !== colorB) return colorA.localeCompare(colorB)
+      return a.code.localeCompare(b.code)
+    }),
+    [filteredCourses]
   )
 
   if (loading) {
@@ -94,8 +105,8 @@ export function CourseListPage() {
             </h1>
 
             <p className="body-lg text-[17px] md:text-[18px] leading-relaxed max-w-2xl mb-10">
-              Khám phá hệ sinh thái kiến thức UIT. Tìm kiếm các repository chuyên sâu,
-              sơ đồ mạng lưới tương tác và kinh nghiệm từ bạn bè cho mọi môn học trong chương trình.
+               Khám phá hệ&nbsp;sinh thái kiến&nbsp;thức SE - UIT. Tìm kiếm các repository chuyên&nbsp;sâu,
+              sơ&nbsp;đồ mạng&nbsp;lưới tương&nbsp;tác và kinh&nbsp;nghiệm từ bạn bè cho mọi môn&nbsp;học trong chương&nbsp;trình.
             </p>
           </motion.div>
 
@@ -151,13 +162,13 @@ export function CourseListPage() {
           </div>
           <div className="px-4 py-2 rounded-full bg-orbit-surface border border-orbit-border text-[10px] font-black uppercase tracking-widest text-orbit-text-muted tabular-nums">
             <Funnel className="h-3 w-3 inline-block mr-2" weight="regular" />
-            {filteredCourses.length} kết quả
+            {sortedCourses.length} kết quả
           </div>
         </motion.div>
 
         {/* ─── COURSE GRID (2-col asymmetric + 3-col on xl) ─── */}
         <AnimatePresence mode="wait">
-          {filteredCourses.length > 0 ? (
+          {sortedCourses.length > 0 ? (
             <motion.div
               key="grid"
               className="grid gap-6 md:grid-cols-2 xl:grid-cols-3"
@@ -165,7 +176,7 @@ export function CourseListPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              {filteredCourses.map((c, index) => (
+              {sortedCourses.map((c, index) => (
                 <div
                   key={c.id}
                   className={index === 0 ? 'md:col-span-2 xl:col-span-1' : ''}

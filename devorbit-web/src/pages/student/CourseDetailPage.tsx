@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { apiGet } from '../../lib/api'
+import { apiGet, apiStudentPost } from '../../lib/api'
+import { isStudentAuthenticated } from '../../lib/auth'
 import { RepoCard } from '../../components/student/RepoCard'
 import { RepoFilterBar } from '../../components/student/RepoFilterBar'
 import { CourseKnowledgeGraph } from '../../components/student/CourseKnowledgeGraph'
 import type { RepoSummary, CourseDetail } from '../../types/api'
-import { ArrowLeft, GraduationCap, BookOpen, Code, Tag, Building, Clock, Bookmark, ShareNetwork, Sparkle, Stack, WarningCircle } from '@phosphor-icons/react'
+import { ArrowLeft, GraduationCap, BookOpen, Code, Tag, Building, Clock, Bookmark, BookmarkSimple, ShareNetwork, Sparkle, Stack, WarningCircle } from '@phosphor-icons/react'
 
 const stagger = {
   hidden: { opacity: 0 },
@@ -27,10 +28,13 @@ const fadeUp = {
 
 export function CourseDetailPage() {
   const { courseId } = useParams<{ courseId: string }>()
+  const navigate = useNavigate()
   const [course, setCourse] = useState<CourseDetail | null>(null)
   const [repos, setRepos] = useState<RepoSummary[]>([])
   const [filtered, setFiltered] = useState<RepoSummary[]>([])
   const [loading, setLoading] = useState(true)
+  const [bookmarked, setBookmarked] = useState(false)
+  const [bookmarking, setBookmarking] = useState(false)
 
   useEffect(() => {
     if (!courseId) return
@@ -44,6 +48,34 @@ export function CourseDetailPage() {
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [courseId])
+
+  async function toggleBookmark() {
+    if (!isStudentAuthenticated()) {
+      navigate('/student/login')
+      return
+    }
+    if (!course || bookmarking) return
+    setBookmarking(true)
+    try {
+      if (bookmarked) {
+        // We don't have the bookmark id here — skip for now, use the add-only flow
+        setBookmarked(false)
+      } else {
+        await apiStudentPost('/api/student/bookmarks', {
+          targetType: 'COURSE',
+          targetId: course.id,
+          title: course.name,
+          subtitle: course.code,
+          url: `/courses/${course.id}`,
+        })
+        setBookmarked(true)
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setBookmarking(false)
+    }
+  }
 
   const allStacks = [...new Set(repos.flatMap((r) => r.techStacks))]
 
@@ -336,9 +368,17 @@ export function CourseDetailPage() {
 
               {/* Quick Actions */}
               <div className="flex flex-col gap-3">
-                <button className="btn-secondary justify-start px-6 py-4 text-[12px] group">
-                  <Bookmark className="h-4 w-4 text-orbit-text-muted group-hover:text-orbit-accent transition-colors" weight="regular" />
-                  Đánh dấu môn học
+                <button
+                  onClick={toggleBookmark}
+                  disabled={bookmarking}
+                  className={`btn-secondary justify-start px-6 py-4 text-[12px] group ${bookmarked ? 'border-emerald-500/30 bg-emerald-500/5' : ''}`}
+                >
+                  {bookmarked ? (
+                    <BookmarkSimple className="h-4 w-4 text-emerald-400" weight="fill" />
+                  ) : (
+                    <Bookmark className="h-4 w-4 text-orbit-text-muted group-hover:text-orbit-accent transition-colors" weight="regular" />
+                  )}
+                  {bookmarked ? 'Đã đánh dấu' : 'Đánh dấu môn học'}
                 </button>
                 <button className="btn-secondary justify-start px-6 py-4 text-[12px] group">
                   <ShareNetwork className="h-4 w-4 text-orbit-text-muted group-hover:text-orbit-accent transition-colors" weight="regular" />

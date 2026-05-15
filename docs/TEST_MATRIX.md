@@ -23,6 +23,7 @@ implemented until tests or validation evidence exist.
 | US-016 | Photobooth Upload | - | - | - | Browser | planned | - |
 | US-017 | AI Roadmap Generator | - | pass | pass | no | implemented | [US-017-PLAN-1.1](file:///d:/temp/devorbit/.gsd/plans/US-017-PLAN-1.1.md) |
 | US-018 | Mobile Repo Tech Stack Filter | pass | no | no | Gradle unit test | implemented | `devorbit-mobile`: `.\gradlew.bat :app:testDebugUnitTest` |
+| US-019 | Mobile Course Hub Detail Navigation | pass | no | no | Gradle unit test | implemented | `devorbit-mobile`: `.\gradlew.bat :app:testDebugUnitTest` |
 
 ## Evidence Rules
 

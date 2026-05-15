@@ -183,6 +183,7 @@ function SlotCard({
     ctx.beginPath();
     ctx.rect(cropX, cropY, cropW, cropH);
     ctx.clip();
+    if (flt) ctx.filter = flt;
     ctx.drawImage(img, fullX, fullY, fullW, fullH);
     ctx.restore();
 

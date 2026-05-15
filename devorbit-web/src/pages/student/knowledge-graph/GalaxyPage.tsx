@@ -242,10 +242,15 @@ export default function GalaxyPage() {
         {/* ─── Elective picker — inline cards ─── */}
         <div className="px-6 py-8 space-y-6 pb-24">
           <div className="flex items-center justify-between">
-            <h3 className="text-[17px] font-bold text-orbit-text flex items-center gap-3">
-              <Compass className="h-5 w-5 text-orbit-accent" weight="duotone" />
-              Môn tự chọn
-            </h3>
+            <div>
+              <h3 className="text-[17px] font-bold text-orbit-text flex items-center gap-3">
+                <Compass className="h-5 w-5 text-orbit-accent" weight="duotone" />
+                Môn tự chọn
+              </h3>
+              <p className="text-[14px] text-orbit-text-secondary mt-1">
+                Chọn những môn bạn muốn học nhé!
+              </p>
+            </div>
             {selectedElectiveCodes.size > 0 && (
               <button
                 onClick={() => setSelectedElectiveCodes(new Set())}
@@ -400,7 +405,7 @@ export default function GalaxyPage() {
                 <p className="text-[13px] font-black text-orbit-text text-center mb-1">
                   Môn học chưa đủ điều kiện
                 </p>
-                <p className="text-[10px] text-orbit-text-muted text-center mb-5">
+                <p className="text-[13px] text-orbit-text-secondary text-center mb-5">
                   {prereqWarning.name} ({prereqWarning.code}) yêu cầu hoàn thành các môn sau:
                 </p>
 

@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import { DocumentUnlock } from "../../components/photobooth/DocumentUnlock";
 import { FrameSelector } from "../../components/photobooth/FrameSelector";
 import { PhotoUploadSection } from "../../components/photobooth/PhotoUploadSection";
 import { PreviewCanvas } from "../../components/photobooth/PreviewCanvas";
@@ -16,13 +15,9 @@ import {
   ImageSquare,
   Palette,
   Rocket,
-  LockSimple,
 } from "@phosphor-icons/react";
 
-const SESSION_UNLOCK_KEY = "photobooth_unlocked";
-
 export function PhotoboothPage() {
-  const [isUnlocked, setIsUnlocked] = useState(false);
   const [framesReady, setFramesReady] = useState(false);
   const [selectedFrame, setSelectedFrame] = useState<FrameDefinition | null>(null);
   const [slotPhotos, setSlotPhotos] = useState<(File | null)[]>([]);
@@ -35,8 +30,6 @@ export function PhotoboothPage() {
       await ensureFramesLoaded();
       setFramesReady(true);
     })();
-    const wasUnlocked = sessionStorage.getItem(SESSION_UNLOCK_KEY) === "true";
-    setIsUnlocked(wasUnlocked);
   }, []);
 
   useEffect(() => {
@@ -80,11 +73,6 @@ export function PhotoboothPage() {
     generatePreview();
   }, [generatePreview]);
 
-  const handleUnlock = () => {
-    sessionStorage.setItem(SESSION_UNLOCK_KEY, "true");
-    setIsUnlocked(true);
-  };
-
   const handleFrameSelect = (frame: FrameDefinition) => {
     setSelectedFrame(frame);
     setSlotPhotos(new Array(frame.photoCount).fill(null));
@@ -126,53 +114,6 @@ export function PhotoboothPage() {
     );
   }
 
-  if (!isUnlocked) {
-    return (
-      <div className="min-h-screen pt-24 pb-12 px-4">
-        <div className="mx-auto max-w-3xl">
-          <div className="text-center mb-12">
-            <motion.span
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              className="section-label mb-8 inline-flex"
-            >
-              <ImageSquare size={12} className="h-3 w-3" weight="fill" />
-              Photobooth trực&nbsp;tuyến
-            </motion.span>
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              className="hero-display text-orbit-text mb-4"
-            >
-              Photobooth
-            </motion.h1>
-            <p className="subtitle text-zinc-400">
-              Tạo khoảnh khắc đáng nhớ với các frames chỉ có tại DevOrbit!<br />
-              Mừng UIT 20 tuổi!
-            </p>
-          </div>
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
-            className="space-y-6"
-          >
-            <DocumentUnlock isUnlocked={isUnlocked} onUnlock={handleUnlock} />
-            <div className="orbit-card p-8 text-center">
-              <p className="body-md text-zinc-400">
-                Tải tài liệu lên để mở khóa khung photobooth độc quyền và bắt đầu tạo dải ảnh với khung tùy chỉnh, bao gồm khung{" "}
-                <span className="text-emerald-400 font-semibold">UIT 20th Anniversary</span>{" "}
-                đặc biệt!
-              </p>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <AnimatePresence mode="wait">
       <motion.div
@@ -205,15 +146,6 @@ export function PhotoboothPage() {
               Tạo khoảnh khắc đáng nhớ với các frames chỉ có tại DevOrbit!<br />
               Mừng UIT 20 tuổi!
             </p>
-            <button
-              onClick={() => {
-                sessionStorage.removeItem(SESSION_UNLOCK_KEY);
-                setIsUnlocked(false);
-              }}
-              className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-emerald-400 transition-colors"
-            >
-              <LockSimple size={14} /> Khóa
-            </button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

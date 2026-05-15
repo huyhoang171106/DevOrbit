@@ -731,7 +731,7 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
                 Tự động sắp xếp lộ trình
               </span>
             </div>
-            <p className="text-[10px] text-orbit-text-muted italic tracking-wide">
+            <p className="text-[13px] text-orbit-text-secondary italic tracking-wide">
               Hãy cùng nhau sắp xếp lộ&nbsp;trình học&nbsp;tập 4 năm tại UIT nhé!
             </p>
             <button

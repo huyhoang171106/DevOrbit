@@ -15,12 +15,14 @@ import vn.edu.uit.devorbit_api.entity.Otp;
 import vn.edu.uit.devorbit_api.repository.OtpRepository;
 
 import java.time.LocalDateTime;
-import java.util.Random;
+import java.security.SecureRandom;
 
 @RestController
 @RequestMapping("/api/student")
 @RequiredArgsConstructor
 public class StudentAuthController {
+
+    private static final SecureRandom OTP_RANDOM = new SecureRandom();
 
     private final StudentAuthService studentAuthService;
     private final EmailService emailService;
@@ -29,7 +31,7 @@ public class StudentAuthController {
     @PostMapping("/send-otp")
     @Transactional
     public String sendOtp(@RequestParam String email) {
-        String otp = String.format("%06d", new Random().nextInt(1000000));
+        String otp = String.format("%06d", OTP_RANDOM.nextInt(1_000_000));
         otpRepository.deleteByEmail(email);
 
         Otp otpEntity = Otp.builder()

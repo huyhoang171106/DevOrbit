@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:devorbit_test;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  sql:
+    init:
+      mode: always
+      continue-on-error: true
+  h2:
+    console:
+      enabled: false
+
+app:
+  github:
+    token: test-token
+  jwt:
+    secret: test-jwt-secret-key-that-is-long-enough-32-char
+    expiration-minutes: 120

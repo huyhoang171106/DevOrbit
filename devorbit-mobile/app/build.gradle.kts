@@ -22,7 +22,18 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+        // Overridden per buildType.
         buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8080/\"")
+    }
+
+    buildTypes {
+        debug {
+            buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8080/\"")
+        }
+        release {
+            // TODO: set to your real HTTPS endpoint for production releases.
+            buildConfigField("String", "API_BASE_URL", "\"https://example.invalid/\"")
+        }
     }
 
     buildFeatures {

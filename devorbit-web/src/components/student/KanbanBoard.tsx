@@ -27,12 +27,13 @@ import {
 } from './CareerOrientationData'
 import {
   Compass,
-  GraduationCap,
   Sparkle,
   FloppyDisk,
   ClockCounterClockwise,
-  Translate,
   CheckCircle,
+  CaretDown,
+  GraduationCap,
+  X,
 } from '@phosphor-icons/react'
 import {
   getFixedSemester,
@@ -52,7 +53,7 @@ function getEngSkipCodes(level: EnglishLevel): Set<string> {
 }
 
 const ENG_LEVEL_LABELS: Record<EnglishLevel, string> = {
-  all: 'Anh văn đầy đủ',
+  all: 'Bắt đầu từ AV1',
   eng2: 'Bắt đầu từ AV2',
   eng3: 'Bắt đầu từ AV3',
   passed: 'Đã vượt qua AV',
@@ -111,6 +112,7 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
   const [saveMessage, setSaveMessage] = useState<string | null>(null)
   const [englishLevel, setEnglishLevel] = useState<EnglishLevel>('all')
   const [showEnglishMenu, setShowEnglishMenu] = useState(false)
+  const [showGuide, setShowGuide] = useState(true)
   const [graduationPath, setGraduationPath] = useState<GraduationPath | null>(null)
   const [showGradMenu, setShowGradMenu] = useState(false)
   const [specialtyChoice, setSpecialtyChoice] = useState<string | null>(null)
@@ -189,10 +191,11 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
     }
     // ENG credits count regardless of English level
     if (englishLevel !== 'all') {
+      const skipCodes = getEngSkipCodes(englishLevel)
       for (const engCode of ['ENG01', 'ENG02', 'ENG03']) {
+        if (!skipCodes.has(engCode)) continue
         const engNode = nodes.find(n => n.code.toUpperCase() === engCode)
         if (engNode) {
-          // Only add ENG credits once — they're already counted if placed
           if (semesterMap[engNode.id] === null) {
             total += creditMap.get(engNode.id) ?? getCurriculumCredits(engCode) ?? 4
           }
@@ -511,262 +514,266 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
   const hasUnsavedChanges = savedMapHash !== null && savedMapHash !== hashSemesterMap(semesterMap)
 
   return (
-    <div className="flex flex-col h-full">
-      {/* ─── Action bar ─── */}
-      <div className="shrink-0 px-6 pt-4 pb-2 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {/* Elective credits banner — cơ sở ngành + chuyên ngành tách biệt */}
-          {selectedElectiveCodes.size > 0 && (
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="flex items-center gap-3 px-4 py-2 rounded-2xl border border-orbit-accent/15 bg-orbit-accent/3"
-            >
-              <Compass className="h-4 w-4 shrink-0 text-orbit-accent" weight="duotone" />
-              {/* Cơ sở ngành */}
-              <span className="text-[10px] text-orbit-text-muted">
-                Cơ sở ngành
-              </span>
-              <span className={`text-[11px] font-bold tabular-nums ${
-                (() => {
-                  let c = 0
-                  for (const code of selectedElectiveCodes) if (CO_SO_NGANH_COURSES.includes(code)) c += ELECTIVE_CREDITS[code] ?? 3
-                  return c >= 12
-                })() ? 'text-emerald-400' : 'text-amber-400'
-              }`}>
-                {(() => {
-                  let c = 0
-                  for (const code of selectedElectiveCodes) if (CO_SO_NGANH_COURSES.includes(code)) c += ELECTIVE_CREDITS[code] ?? 3
-                  return c
-                })()} / 12 TC
-              </span>
-              <span className="text-[10px] text-orbit-text-muted">·</span>
-              {/* Chuyên ngành */}
-              <span className="text-[10px] text-orbit-text-muted">
-                Chuyên ngành
-              </span>
-              <span className={`text-[11px] font-bold tabular-nums ${
-                (() => {
-                  let c = 0
-                  for (const code of selectedElectiveCodes) if (!CO_SO_NGANH_COURSES.includes(code)) c += ELECTIVE_CREDITS[code] ?? 3
-                  return c >= 16
-                })() ? 'text-emerald-400' : 'text-amber-400'
-              }`}>
-                {(() => {
-                  let c = 0
-                  for (const code of selectedElectiveCodes) if (!CO_SO_NGANH_COURSES.includes(code)) c += ELECTIVE_CREDITS[code] ?? 3
-                  return c
-                })()} / 16 TC
-              </span>
-            </motion.div>
+    <div className="flex flex-col min-h-full">
+      {/* ─── Elective credits banner ─── */}
+      {selectedElectiveCodes.size > 0 && (
+        <div className="shrink-0 px-6 pt-4 flex justify-center">
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl border border-orbit-accent/15 bg-orbit-accent/3"
+          >
+            <Compass className="h-4 w-4 shrink-0 text-orbit-accent" weight="duotone" />
+            <span className="text-[13px] text-orbit-text-muted">Cơ sở ngành</span>
+            <span className={`text-[14px] font-bold tabular-nums ${
+              (() => {
+                let c = 0
+                for (const code of selectedElectiveCodes) if (CO_SO_NGANH_COURSES.includes(code)) c += ELECTIVE_CREDITS[code] ?? 3
+                return c >= 12
+              })() ? 'text-emerald-400' : 'text-amber-400'
+            }`}>
+              {(() => {
+                let c = 0
+                for (const code of selectedElectiveCodes) if (CO_SO_NGANH_COURSES.includes(code)) c += ELECTIVE_CREDITS[code] ?? 3
+                return c
+              })()} / 12 TC
+            </span>
+            <span className="text-[13px] text-orbit-text-muted">·</span>
+            <span className="text-[13px] text-orbit-text-muted">Chuyên ngành</span>
+            <span className={`text-[14px] font-bold tabular-nums ${
+              (() => {
+                let c = 0
+                for (const code of selectedElectiveCodes) if (!CO_SO_NGANH_COURSES.includes(code)) c += ELECTIVE_CREDITS[code] ?? 3
+                return c >= 16
+              })() ? 'text-emerald-400' : 'text-amber-400'
+            }`}>
+              {(() => {
+                let c = 0
+                for (const code of selectedElectiveCodes) if (!CO_SO_NGANH_COURSES.includes(code)) c += ELECTIVE_CREDITS[code] ?? 3
+                return c
+              })()} / 16 TC
+            </span>
+          </motion.div>
+        </div>
+      )}
+
+      {/* ─── AV + TN selectors ─── */}
+      <div className="shrink-0 px-6 pt-5 pb-3 flex items-end justify-center gap-8">
+        {/* English level selector */}
+        <div className="relative">
+          <label className="text-[11px] font-semibold text-orbit-text-muted mb-2 block text-center">
+            Chọn trình độ anh văn đầu vào
+          </label>
+          <button
+            onClick={() => setShowEnglishMenu(!showEnglishMenu)}
+            className="flex items-center gap-3 px-5 py-3 min-w-[260px] rounded-2xl border border-orbit-border/30 bg-orbit-surface/60 text-[14px] font-medium text-orbit-text hover:border-orbit-accent/40 hover:bg-orbit-accent/[0.02] transition-all"
+          >
+            <span className="flex-1 text-left">
+              {ENG_LEVEL_LABELS[englishLevel]}
+            </span>
+            <CaretDown className="h-4 w-4 text-orbit-text-muted shrink-0" weight="bold" />
+          </button>
+          {showEnglishMenu && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setShowEnglishMenu(false)} />
+              <motion.div
+                initial={{ opacity: 0, y: -4, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                className="absolute left-0 top-full mt-2 w-full min-w-[220px] rounded-2xl border border-orbit-border/20 bg-orbit-surface shadow-diffusion z-20 overflow-hidden"
+              >
+                {(['all', 'eng2', 'eng3', 'passed'] as EnglishLevel[]).map((level) => (
+                  <button
+                    key={level}
+                    onClick={() => { setEnglishLevel(level); setShowEnglishMenu(false) }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-left text-[14px] font-medium transition-all hover:bg-orbit-accent/5 ${
+                      englishLevel === level
+                        ? 'text-orbit-accent bg-orbit-accent/5'
+                        : 'text-orbit-text'
+                    }`}
+                  >
+                    {englishLevel === level && (
+                      <CheckCircle className="h-4 w-4 shrink-0 text-orbit-accent" weight="fill" />
+                    )}
+                    <span className={englishLevel !== level ? 'ml-[28px]' : ''}>
+                      {ENG_LEVEL_LABELS[level]}
+                    </span>
+                  </button>
+                ))}
+              </motion.div>
+            </>
           )}
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* English level selector */}
-          <div className="relative">
-            <button
-              onClick={() => setShowEnglishMenu(!showEnglishMenu)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-2xl border text-[9px] font-bold uppercase tracking-[0.1em] transition-all ${
-                englishLevel !== 'all'
-                  ? 'border-amber-400/40 text-amber-400 bg-amber-400/5 hover:bg-amber-400/15'
-                  : 'border-orbit-border/30 text-orbit-text-muted hover:text-orbit-text hover:border-orbit-border/60'
-              }`}
-            >
-              <Translate className="h-3.5 w-3.5" weight="regular" />
-              {englishLevel === 'all' ? 'AV' : ENG_LEVEL_LABELS[englishLevel]}
-            </button>
-            {showEnglishMenu && (
-              <>
-                <div className="fixed inset-0 z-10" onClick={() => setShowEnglishMenu(false)} />
-                <motion.div
-                  initial={{ opacity: 0, y: -4, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  className="absolute right-0 top-full mt-2 w-56 rounded-2xl border border-orbit-border/20 bg-orbit-surface shadow-diffusion z-20 overflow-hidden"
-                >
-                  {(['all', 'eng2', 'eng3', 'passed'] as EnglishLevel[]).map((level) => (
+        {/* Graduation path selector */}
+        <div className="relative">
+          <label className="text-[11px] font-semibold text-orbit-text-muted mb-2 block text-center">
+            Chọn hình thức tốt nghiệp
+          </label>
+          <button
+            onClick={() => setShowGradMenu(!showGradMenu)}
+            className="flex items-center gap-3 px-5 py-3 min-w-[260px] rounded-2xl border border-orbit-border/30 bg-orbit-surface/60 text-[14px] font-medium text-orbit-text hover:border-orbit-accent/40 hover:bg-orbit-accent/[0.02] transition-all"
+          >
+            <span className="flex-1 text-left">
+              {graduationPath ? graduationPath.name : 'Chưa chọn'}
+            </span>
+            <CaretDown className="h-4 w-4 text-orbit-text-muted shrink-0" weight="bold" />
+          </button>
+          {showGradMenu && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setShowGradMenu(false)} />
+              <motion.div
+                initial={{ opacity: 0, y: -4, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                className="absolute left-0 top-full mt-2 w-full min-w-[300px] rounded-2xl border border-orbit-border/20 bg-orbit-surface shadow-diffusion z-20 overflow-hidden"
+              >
+                <p className="text-[11px] font-black uppercase tracking-[0.15em] text-orbit-text-muted px-4 pt-3 pb-1">
+                  Hình thức tốt nghiệp
+                </p>
+                {GRADUATION_PATHS.map((path) => {
+                  const isActive = graduationPath?.id === path.id
+                  return (
                     <button
-                      key={level}
-                      onClick={() => { setEnglishLevel(level); setShowEnglishMenu(false) }}
-                      className={`w-full flex items-center gap-3 px-4 py-3 text-left text-[12px] font-medium transition-all hover:bg-orbit-accent/5 ${
-                        englishLevel === level
-                          ? 'text-orbit-accent bg-orbit-accent/5'
-                          : 'text-orbit-text'
+                      key={path.id}
+                      onClick={() => {
+                        setGraduationPath(isActive ? null : path)
+                        if (!isActive) setSpecialtyChoice(null)
+                      }}
+                      className={`w-full flex items-start gap-3 px-4 py-3 text-left transition-all hover:bg-orbit-accent/5 ${
+                        isActive ? 'bg-orbit-accent/5' : ''
                       }`}
                     >
-                      {englishLevel === level && (
-                        <CheckCircle className="h-3.5 w-3.5 shrink-0 text-orbit-accent" weight="fill" />
-                      )}
-                      <span className={englishLevel !== level ? 'ml-[22px]' : ''}>
-                        {ENG_LEVEL_LABELS[level]}
-                      </span>
-                    </button>
-                  ))}
-                </motion.div>
-              </>
-            )}
-          </div>
-
-          {/* Graduation path selector */}
-          <div className="relative">
-            <button
-              onClick={() => setShowGradMenu(!showGradMenu)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-2xl border text-[9px] font-bold uppercase tracking-[0.1em] transition-all ${
-                graduationPath
-                  ? 'border-rose-400/40 text-rose-400 bg-rose-400/5 hover:bg-rose-400/15'
-                  : 'border-orbit-border/30 text-orbit-text-muted hover:text-orbit-text hover:border-orbit-border/60'
-              }`}
-            >
-              <GraduationCap className="h-3.5 w-3.5" weight="regular" />
-              {graduationPath ? graduationPath.name : 'Tốt nghiệp'}
-            </button>
-            {showGradMenu && (
-              <>
-                <div className="fixed inset-0 z-10" onClick={() => setShowGradMenu(false)} />
-                <motion.div
-                  initial={{ opacity: 0, y: -4, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  className="absolute right-0 top-full mt-2 w-72 rounded-2xl border border-orbit-border/20 bg-orbit-surface shadow-diffusion z-20 overflow-hidden"
-                >
-                  <p className="text-[9px] font-black uppercase tracking-[0.15em] text-orbit-text-muted px-4 pt-3 pb-1">
-                    Hình thức tốt nghiệp
-                  </p>
-                  {GRADUATION_PATHS.map((path) => {
-                    const isActive = graduationPath?.id === path.id
-                    return (
-                      <button
-                        key={path.id}
-                        onClick={() => {
-                          setGraduationPath(isActive ? null : path)
-                          if (!isActive) setSpecialtyChoice(null)
-                        }}
-                        className={`w-full flex items-start gap-3 px-4 py-3 text-left transition-all hover:bg-orbit-accent/5 ${
-                          isActive ? 'bg-orbit-accent/5' : ''
-                        }`}
-                      >
-                        <div className="mt-0.5">
-                          {isActive ? (
-                            <CheckCircle className="h-3.5 w-3.5 text-orbit-accent" weight="fill" />
-                          ) : (
-                            <div className="h-3.5 w-3.5 rounded-full border border-orbit-border/40" />
-                          )}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className={`text-[12px] font-bold ${isActive ? 'text-orbit-accent' : 'text-orbit-text'}`}>
-                            {path.name}
-                          </div>
-                          <div className="text-[10px] text-orbit-text-muted mt-0.5 leading-relaxed">
-                            {path.description}
-                          </div>
-                        </div>
-                      </button>
-                    )
-                  })}
-
-                  {/* Specialty sub-selector for combined path */}
-                  {graduationPath?.id === 'combined' && (
-                    <div className="border-t border-orbit-border/10 mt-1 pt-2 pb-3 px-4">
-                      <p className="text-[9px] font-bold uppercase tracking-[0.1em] text-orbit-text-muted mb-2">
-                        Chọn môn chuyên đề (4TC)
-                      </p>
-                      <div className="grid grid-cols-1 gap-1">
-                        {SPECIALTY_COURSES.map((spec) => {
-                          const isChosen = specialtyChoice === spec.code
-                          return (
-                            <button
-                              key={spec.code}
-                              onClick={() => setSpecialtyChoice(isChosen ? null : spec.code)}
-                              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-left text-[11px] font-medium transition-all ${
-                                isChosen
-                                  ? 'bg-orbit-accent/10 text-orbit-accent'
-                                  : 'text-orbit-text-muted hover:text-orbit-text hover:bg-orbit-surface'
-                              }`}
-                            >
-                              {isChosen ? (
-                                <CheckCircle className="h-3 w-3 shrink-0 text-orbit-accent" weight="fill" />
-                              ) : (
-                                <div className="h-3 w-3 shrink-0 rounded-full border border-orbit-border/30" />
-                              )}
-                              <span className="truncate">{spec.name}</span>
-                              <span className="text-[9px] text-orbit-text-muted shrink-0 ml-auto">
-                                {spec.credits}TC
-                              </span>
-                            </button>
-                          )
-                        })}
+                      <div className="mt-0.5">
+                        {isActive ? (
+                          <CheckCircle className="h-4 w-4 text-orbit-accent" weight="fill" />
+                        ) : (
+                          <div className="h-4 w-4 rounded-full border border-orbit-border/40" />
+                        )}
                       </div>
+                      <div className="min-w-0 flex-1">
+                        <div className={`text-[14px] font-bold ${isActive ? 'text-orbit-accent' : 'text-orbit-text'}`}>
+                          {path.name}
+                        </div>
+                        <div className="text-[12px] text-orbit-text-muted mt-0.5 leading-relaxed">
+                          {path.description}
+                        </div>
+                      </div>
+                    </button>
+                  )
+                })}
+
+                {/* Specialty sub-selector for combined path */}
+                {graduationPath?.id === 'combined' && (
+                  <div className="border-t border-orbit-border/10 mt-1 pt-2 pb-3 px-4">
+                    <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-orbit-text-muted mb-2">
+                      Chọn môn chuyên đề (4TC)
+                    </p>
+                    <div className="grid grid-cols-1 gap-1">
+                      {SPECIALTY_COURSES.map((spec) => {
+                        const isChosen = specialtyChoice === spec.code
+                        return (
+                          <button
+                            key={spec.code}
+                            onClick={() => setSpecialtyChoice(isChosen ? null : spec.code)}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-left text-[13px] font-medium transition-all ${
+                              isChosen
+                                ? 'bg-orbit-accent/10 text-orbit-accent'
+                                : 'text-orbit-text-muted hover:text-orbit-text hover:bg-orbit-surface'
+                            }`}
+                          >
+                            {isChosen ? (
+                              <CheckCircle className="h-3.5 w-3.5 shrink-0 text-orbit-accent" weight="fill" />
+                            ) : (
+                              <div className="h-3.5 w-3.5 shrink-0 rounded-full border border-orbit-border/30" />
+                            )}
+                            <span className="truncate">{spec.name}</span>
+                            <span className="text-[11px] text-orbit-text-muted shrink-0 ml-auto">
+                              {spec.credits}TC
+                            </span>
+                          </button>
+                        )
+                      })}
                     </div>
-                  )}
-                </motion.div>
-              </>
-            )}
-          </div>
-
-          {/* Save/Load */}
-          <button
-            onClick={handleSave}
-            className={`flex items-center gap-2 px-3 py-2 rounded-2xl border text-[9px] font-bold uppercase tracking-[0.1em] transition-all ${
-              hasUnsavedChanges
-                ? 'border-orbit-accent/40 text-orbit-accent bg-orbit-accent/5 hover:bg-orbit-accent/15'
-                : 'border-orbit-border/30 text-orbit-text-muted hover:text-orbit-text hover:border-orbit-border/60'
-            }`}
-          >
-            <FloppyDisk className="h-3.5 w-3.5" weight="regular" />
-            Lưu
-          </button>
-          <button
-            onClick={handleLoad}
-            className="flex items-center gap-2 px-3 py-2 rounded-2xl border border-orbit-border/30 text-[9px] font-bold uppercase tracking-[0.1em] text-orbit-text-muted hover:text-orbit-text hover:border-orbit-border/60 transition-all"
-          >
-            <ClockCounterClockwise className="h-3.5 w-3.5" weight="regular" />
-            Khôi phục
-          </button>
-
-          {/* Auto-arrange */}
-          <button
-            onClick={handleAutoArrange}
-            className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-orbit-accent/10 border border-orbit-accent/30 text-[9px] font-bold uppercase tracking-[0.1em] text-orbit-accent hover:bg-orbit-accent/20 transition-all"
-          >
-            <Sparkle className="h-3.5 w-3.5" weight="fill" />
-            Tự động sắp xếp
-          </button>
-
-          {/* Toast message */}
-          {saveMessage && (
-            <motion.span
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 10 }}
-              className="text-[10px] font-medium text-orbit-accent"
-            >
-              {saveMessage}
-            </motion.span>
+                  </div>
+                )}
+              </motion.div>
+            </>
           )}
         </div>
+
       </div>
 
+      {/* ─── Usage guide ─── */}
+      {showGuide && (
+        <div className="shrink-0 px-6 pb-1 flex justify-center">
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative flex flex-col items-center gap-1.5 px-5 py-3 rounded-2xl bg-orbit-accent/[0.03] border border-orbit-accent/10"
+          >
+            <div className="flex items-center gap-3 text-[12px] text-orbit-text-secondary leading-relaxed">
+              <span className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-orbit-accent/60" />
+                Kéo thả môn qua học kỳ
+              </span>
+              <span className="text-orbit-border/30">|</span>
+              <span className="flex items-center gap-1.5">
+                <Compass className="h-3.5 w-3.5 text-orbit-accent/60" weight="regular" />
+                Chọn môn tự chọn theo ý thích
+              </span>
+              <span className="text-orbit-border/30">|</span>
+              <span className="flex items-center gap-1.5">
+                <GraduationCap className="h-3.5 w-3.5 text-orbit-accent/60" weight="regular" />
+                Chọn hình thức tốt nghiệp
+              </span>
+              <span className="text-orbit-border/30">|</span>
+              <span className="flex items-center gap-1.5">
+                <Sparkle className="h-3.5 w-3.5 text-orbit-accent/60" weight="fill" />
+                Tự động sắp xếp lộ trình
+              </span>
+            </div>
+            <p className="text-[10px] text-orbit-text-muted italic tracking-wide">
+              Hãy cùng nhau sắp xếp lộ&nbsp;trình học&nbsp;tập 4 năm tại UIT nhé!
+            </p>
+            <button
+              onClick={() => setShowGuide(false)}
+              className="absolute top-2 right-2 h-5 w-5 rounded-lg flex items-center justify-center text-orbit-text-muted hover:text-orbit-text hover:bg-orbit-elevated/50 transition-all"
+            >
+              <X className="h-3 w-3" weight="bold" />
+            </button>
+          </motion.div>
+        </div>
+      )}
+
       {/* ─── Total credits bar ─── */}
-      <div className="shrink-0 px-6 pb-1 flex items-center gap-4">
+      <div className="shrink-0 px-6 pb-4 flex items-center gap-4">
         <div className="flex items-center gap-3 py-2 px-4 rounded-2xl bg-orbit-surface/60 border border-orbit-border/10">
-          <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-orbit-text-muted">
+          <span className="text-[12px] font-bold uppercase tracking-[0.15em] text-orbit-text-muted">
             Tổng TC đã xếp
           </span>
-          <span className="text-[22px] font-black text-orbit-text leading-none">
+          <span className="text-[25px] font-black text-orbit-text leading-none">
             {totalCredits}
           </span>
-          <span className="text-[9px] text-orbit-text-muted">TC</span>
+          <span className="text-[12px] text-orbit-text-muted">TC</span>
         </div>
         {englishLevel !== 'all' && (
           <div className="flex items-center gap-2 py-2 px-3 rounded-2xl bg-amber-400/5 border border-amber-400/10">
-            <span className="text-[9px] font-medium text-amber-400/80">
-              (+12 TC Anh văn đã tính)
+            <span className="text-[12px] font-medium text-amber-400/80">
+              (+{(() => {
+                const skipCodes = getEngSkipCodes(englishLevel)
+                let engTotal = 0
+                for (const code of skipCodes) {
+                  const node = nodes.find(n => n.code.toUpperCase() === code)
+                  engTotal += creditMap.get(node?.id ?? -1) ?? getCurriculumCredits(code) ?? 4
+                }
+                return engTotal
+              })()} TC Anh văn đã tính)
             </span>
           </div>
         )}
       </div>
 
       {/* ─── Kanban scrollable area ─── */}
-      <div className="flex-1 overflow-x-auto overflow-y-hidden px-6 py-3">
+      <div className="flex-1 overflow-x-auto px-6 py-3 pb-24">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCorners}
@@ -814,6 +821,46 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
           </DragOverlay>
         </DndContext>
       </div>
+
+      {/* ─── Bottom bar: Save / Restore / Auto-arrange ─── */}
+      <div className="fixed bottom-0 left-0 right-0 z-20 px-6 py-4 flex items-center justify-center gap-4 border-t border-orbit-border/10 bg-orbit-bg/90 backdrop-blur-xl">
+        <button
+          onClick={handleSave}
+          className={`flex items-center gap-3 px-6 py-3 rounded-2xl border text-[13px] font-bold uppercase tracking-[0.12em] transition-all shadow-sm ${
+            hasUnsavedChanges
+              ? 'border-orbit-accent/50 text-orbit-accent bg-orbit-accent/10 hover:bg-orbit-accent/20 shadow-orbit-accent/5'
+              : 'border-orbit-border/40 text-orbit-text-secondary bg-orbit-elevated/60 hover:text-orbit-text hover:border-orbit-border/70 hover:bg-orbit-elevated'
+          }`}
+        >
+          <FloppyDisk className="h-5 w-5" weight="regular" />
+          Lưu lộ trình
+        </button>
+        <button
+          onClick={handleLoad}
+          className="flex items-center gap-3 px-6 py-3 rounded-2xl border border-orbit-border/40 text-[13px] font-bold uppercase tracking-[0.12em] text-orbit-text-secondary bg-orbit-elevated/60 hover:text-orbit-text hover:border-orbit-border/70 hover:bg-orbit-elevated transition-all shadow-sm"
+        >
+          <ClockCounterClockwise className="h-5 w-5" weight="regular" />
+          Khôi phục
+        </button>
+        <button
+          onClick={handleAutoArrange}
+          className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-orbit-accent/10 border border-orbit-accent/30 text-[13px] font-bold uppercase tracking-[0.12em] text-orbit-accent hover:bg-orbit-accent/20 transition-all shadow-sm"
+        >
+          <Sparkle className="h-5 w-5" weight="fill" />
+          Tự động sắp xếp
+        </button>
+
+        {saveMessage && (
+          <motion.span
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 10 }}
+            className="text-[13px] font-medium text-orbit-accent"
+          >
+            {saveMessage}
+          </motion.span>
+        )}
+      </div>
     </div>
   )
 }
@@ -826,3 +873,4 @@ function hashSemesterMap(map: SemesterMap): string {
   }
   return h.toString(36)
 }
+

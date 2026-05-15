@@ -17,9 +17,9 @@ export function FrameSelector({
 
   return (
     <div className="glass-card p-8">
-      <h3 className="heading-5 text-ink mb-2">Choose a Frame</h3>
+      <h3 className="heading-5 text-ink mb-2">Chọn khung</h3>
       <p className="body-sm text-ink-secondary mb-6">
-        Select a style for your photo strip
+        Chọn kiểu cho dải ảnh của bạn
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -78,7 +78,7 @@ export function FrameSelector({
 
             <div className="mt-3 flex items-center gap-2">
               <span className="badge-tag text-xs">
-                {frame.photoCount} photos
+                {frame.photoCount} ảnh
               </span>
               <span className="badge-tag text-xs capitalize">
                 {frame.filter}

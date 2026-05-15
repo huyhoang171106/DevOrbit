@@ -27,9 +27,9 @@ export function PhotoUploadSection({
 
   return (
     <div className="orbit-card p-8">
-      <h3 className="text-sm font-semibold text-orbit-text tracking-wide mb-2">Upload Photos</h3>
+      <h3 className="text-sm font-semibold text-orbit-text tracking-wide mb-2">Tải ảnh lên</h3>
       <p className="text-xs text-zinc-400 mb-6">
-        {slotPhotos.filter(Boolean).length}/{frame.photoCount} photos ready
+        {slotPhotos.filter(Boolean).length}/{frame.photoCount} ảnh đã sẵn sàng
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -131,8 +131,30 @@ function SlotCard({
     ctx.fillStyle = "#1a1a2e";
     ctx.fillRect(0, 0, cw, ch);
 
-    // Base cover-fit crop matching slot aspect (same as compositor)
+    // Fit full image letterboxed into canvas
     const imgAspect = img.width / img.height;
+    let fullW: number, fullH: number, fullX: number, fullY: number;
+    if (imgAspect > 1) {
+      fullW = cw;
+      fullH = cw / imgAspect;
+      fullX = 0;
+      fullY = (ch - fullH) / 2;
+    } else {
+      fullH = ch;
+      fullW = ch * imgAspect;
+      fullX = (cw - fullW) / 2;
+      fullY = 0;
+    }
+
+    // Draw full image dimmed
+    const flt = off.filter && off.filter !== "normal" ? FILTER_PRESETS[off.filter]?.css : undefined;
+    ctx.globalAlpha = 0.35;
+    if (flt) ctx.filter = flt;
+    ctx.drawImage(img, fullX, fullY, fullW, fullH);
+    ctx.filter = "none";
+    ctx.globalAlpha = 1;
+
+    // Calculate crop region (same logic as compositor)
     let baseW = img.width, baseH = img.height;
     if (imgAspect > aspect) {
       baseW = img.height * aspect;
@@ -149,36 +171,37 @@ function SlotCard({
     const srcX = (img.width - viewW) / 2 + Math.max(-maxDx, Math.min(maxDx, off.dx));
     const srcY = (img.height - viewH) / 2 + Math.max(-maxDy, Math.min(maxDy, off.dy));
 
-    // Fit into canvas preserving crop aspect ratio
-    const fitAspect = viewW / viewH;
-    let drawW: number, drawH: number, dx: number, dy: number;
-    if (fitAspect > 1) {
-      drawW = cw;
-      drawH = cw / fitAspect;
-      dx = 0;
-      dy = (ch - drawH) / 2;
-    } else {
-      drawH = ch;
-      drawW = ch * fitAspect;
-      dx = (cw - drawW) / 2;
-      dy = 0;
-    }
+    // Draw crop region full brightness
+    const scaleX = fullW / img.width;
+    const scaleY = fullH / img.height;
+    const cropX = fullX + srcX * scaleX;
+    const cropY = fullY + srcY * scaleY;
+    const cropW = viewW * scaleX;
+    const cropH = viewH * scaleY;
 
     ctx.save();
     ctx.beginPath();
-    ctx.rect(dx, dy, drawW, drawH);
+    ctx.rect(cropX, cropY, cropW, cropH);
     ctx.clip();
-
-    const flt = off.filter && off.filter !== "normal" ? FILTER_PRESETS[off.filter]?.css : undefined;
-    if (flt) ctx.filter = flt;
-    ctx.drawImage(img, srcX, srcY, viewW, viewH, dx, dy, drawW, drawH);
-    ctx.filter = "none";
+    ctx.drawImage(img, fullX, fullY, fullW, fullH);
     ctx.restore();
 
-    // Border
+    // Dim outside crop
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, 0, cw, ch);
+    ctx.rect(cropX, cropY, cropW, cropH);
+    ctx.clip("evenodd");
+    ctx.fillStyle = "rgba(0,0,0,0.45)";
+    ctx.fillRect(0, 0, cw, ch);
+    ctx.restore();
+
+    // Crop border (dashed green)
     ctx.strokeStyle = borderColor;
-    ctx.lineWidth = 2;
-    ctx.strokeRect(dx, dy, drawW, drawH);
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([6, 4]);
+    ctx.strokeRect(cropX, cropY, cropW, cropH);
+    ctx.setLineDash([]);
 
     // Label
     ctx.fillStyle = "#ffffff";
@@ -192,7 +215,7 @@ function SlotCard({
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs font-bold text-zinc-300">Slot #{index + 1}</span>
         {file && (
-          <button onClick={(e) => { e.stopPropagation(); onFile(null); }} className="text-xs text-red-400 hover:text-red-300">Clear</button>
+          <button onClick={(e) => { e.stopPropagation(); onFile(null); }} className="text-xs text-red-400 hover:text-red-300">Xóa</button>
         )}
       </div>
 
@@ -203,14 +226,14 @@ function SlotCard({
       >
         {file ? (
           <>
-            <canvas ref={canvasRef} width={400} height={400} className="w-full" />
+            <canvas ref={canvasRef} width={500} height={500} className="w-full" />
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
-              <span className="text-xs text-white font-bold px-3 py-1.5 rounded-lg bg-white/20 backdrop-blur">Click to adjust</span>
+              <span className="text-xs text-white font-bold px-3 py-1.5 rounded-lg bg-white/20 backdrop-blur">Nhấn để chỉnh</span>
             </div>
           </>
         ) : (
           <div className="flex items-center justify-center" style={{ minHeight: "140px" }}>
-            <span className="text-[10px] font-mono text-zinc-500">No photo</span>
+            <span className="text-[10px] font-mono text-zinc-500">Chưa có ảnh</span>
           </div>
         )}
       </div>
@@ -220,13 +243,13 @@ function SlotCard({
           onClick={(e) => { e.stopPropagation(); inputRef.current?.click(); }}
           className="flex-1 text-xs px-3 py-2 rounded-lg border border-zinc-700 bg-zinc-800/60 hover:bg-zinc-700/60 text-zinc-300 transition-colors"
         >
-          📁 Upload
+          📁 Tải lên
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); onOpenCamera(); }}
           className="flex-1 text-xs px-3 py-2 rounded-lg border border-glass-border bg-glass-surface hover:bg-glass-surface-hover text-ink transition-colors"
         >
-          📷 Capture
+          📷 Chụp
         </button>
       </div>
 
@@ -365,7 +388,7 @@ function ImageAdjuster({
     ctx.fillStyle = "#ffffff";
     ctx.font = "bold 13px monospace";
     ctx.textAlign = "center";
-    ctx.fillText(`Drag to reposition`, cw / 2, ch - 10);
+    ctx.fillText(`Kéo để di chuyển`, cw / 2, ch - 10);
   }, [dx, dy, zoom, slotAspect]);
 
   useEffect(() => {
@@ -422,7 +445,7 @@ function ImageAdjuster({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="bg-clay-bg border border-glass-border rounded-2xl w-full max-w-lg p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="heading-5 text-ink">Adjust Photo - Slot #{slotIndex + 1}</h3>
+          <h3 className="heading-5 text-ink">Chỉnh ảnh - Slot #{slotIndex + 1}</h3>
           <button onClick={onClose} className="text-ink-muted hover:text-ink text-xl">&times;</button>
         </div>
 
@@ -439,11 +462,11 @@ function ImageAdjuster({
 
         <div className="mt-4 space-y-3">
           <div className="flex items-center gap-3">
-            <span className="text-xs text-zinc-500 w-8">Zoom:</span>
+            <span className="text-xs text-zinc-500 w-8">Thu phóng:</span>
             <button onClick={() => setZoom(z => Math.max(0.5, +(z - 0.1).toFixed(1)))} className="w-8 h-8 rounded-lg border border-glass-border bg-glass-surface hover:bg-glass-surface-hover text-ink text-sm font-bold flex items-center justify-center">−</button>
             <span className="text-xs text-ink-mono w-12 text-center font-mono">{zoom.toFixed(1)}×</span>
             <button onClick={() => setZoom(z => Math.min(3, +(z + 0.1).toFixed(1)))} className="w-8 h-8 rounded-lg border border-glass-border bg-glass-surface hover:bg-glass-surface-hover text-ink text-sm font-bold flex items-center justify-center">+</button>
-            <button onClick={() => { setZoom(1); setDx(0); setDy(0); }} className="text-xs text-ink-muted hover:text-ink ml-2">Reset</button>
+            <button onClick={() => { setZoom(1); setDx(0); setDy(0); }} className="text-xs text-ink-muted hover:text-ink ml-2">Đặt lại</button>
           </div>
           <div className="space-y-2">
             <label className="flex items-center gap-2">
@@ -475,7 +498,7 @@ function ImageAdjuster({
 
         <div className="mt-6 flex gap-3 justify-end">
           <button onClick={onClose} className="btn-ghost px-6 py-3">Cancel</button>
-          <button onClick={() => onSave({ dx, dy, zoom, filter: offset.filter ?? DEFAULT_FILTER })} className="btn-primary px-6 py-3">Save Position</button>
+          <button onClick={() => onSave({ dx, dy, zoom, filter: offset.filter ?? DEFAULT_FILTER })} className="btn-primary px-6 py-3">Lưu vị trí</button>
         </div>
       </div>
     </div>
@@ -505,7 +528,7 @@ function CameraCapture({
         setStream(s);
         if (videoRef.current) videoRef.current.srcObject = s;
       } catch (err: any) {
-        setError(err?.message || "Camera access denied");
+        setError(err?.message || "Không thể truy cập camera");
       }
     })();
     return () => {
@@ -541,7 +564,7 @@ function CameraCapture({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="bg-clay-bg border border-glass-border rounded-2xl w-full max-w-lg p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="heading-5 text-ink">Capture Photo</h3>
+          <h3 className="heading-5 text-ink">Chụp ảnh</h3>
           <button onClick={onClose} className="text-ink-muted hover:text-ink text-xl">&times;</button>
         </div>
 
@@ -569,7 +592,7 @@ function CameraCapture({
                 onChange={(e) => setMirrored(e.target.checked)}
                 className="rounded border-zinc-700"
               />
-              <span className="text-xs text-ink-secondary">Mirror image (flip horizontally)</span>
+              <span className="text-xs text-ink-secondary">Ảnh phản chiếu (lật ngang)</span>
             </label>
 
             <button

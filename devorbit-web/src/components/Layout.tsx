@@ -69,6 +69,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
           <div className="hidden md:flex items-center gap-4">
             <Link
+              to="/student/login"
+              className="flex items-center gap-2 text-[13px] font-medium text-orbit-text-muted hover:text-orbit-text-secondary transition-colors px-4 py-2 rounded-2xl hover:bg-orbit-surface"
+            >
+              <User className="h-4 w-4" weight="regular" />
+              Sinh viên
+            </Link>
+            <Link
               to="/admin/login"
               className="flex items-center gap-2 text-[13px] font-medium text-orbit-text-muted hover:text-orbit-text-secondary transition-colors px-4 py-2 rounded-2xl hover:bg-orbit-surface"
             >
@@ -126,6 +133,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   )
                 })}
                 <div className="pt-4 mt-4 border-t border-orbit-border space-y-3">
+                  <Link
+                    to="/student/login"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-3 px-5 py-4 text-[14px] font-medium text-orbit-text-muted rounded-2xl hover:bg-orbit-surface transition-colors"
+                  >
+                    <User className="h-4 w-4" weight="regular" />
+                    Sinh viên
+                  </Link>
                   <Link
                     to="/admin/login"
                     onClick={() => setMobileOpen(false)}

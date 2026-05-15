@@ -1,0 +1,92 @@
+strict_tdd: true
+context: |
+  portfolio is a Node.js/TypeScript, React, Next.js, Node.js/TypeScript ESM, Python project.
+  Detected markers: package.json, npm package manager, devorbit-showcase/package.json, devorbit-showcase/tsconfig.json, devorbit-showcase/bun package manager, devorbit-web/package.json, devorbit-web/tsconfig.json, devorbit-web/bun package manager, GitNexus/package.json, GitNexus/npm package manager, GitNexus\gitnexus/package.json, GitNexus\gitnexus/tsconfig.json, GitNexus\gitnexus/npm package manager, GitNexus\gitnexus-shared/package.json, GitNexus\gitnexus-shared/tsconfig.json, GitNexus\gitnexus-shared/npm package manager, GitNexus\gitnexus-web/package.json, GitNexus\gitnexus-web/tsconfig.json, GitNexus\gitnexus-web/npm package manager, GitNexus\gitnexus\test\fixtures\expo-app/package.json, GitNexus\gitnexus\test\fixtures\expo-app/npm package manager, GitNexus\gitnexus\test\fixtures\group\test-monorepo\services\auth/package.json, GitNexus\gitnexus\test\fixtures\group\test-monorepo\services\auth/npm package manager, GitNexus\gitnexus\test\fixtures\group\test-monorepo\services\gateway/package.json, GitNexus\gitnexus\test\fixtures\group\test-monorepo\services\gateway/npm package manager, GitNexus\gitnexus\test\fixtures\group\test-monorepo\services\orders/package.json, GitNexus\gitnexus\test\fixtures\group\test-monorepo\services\orders/npm package manager, GitNexus\gitnexus\test\fixtures\lang-resolution\api-e2e-test/package.json, GitNexus\gitnexus\test\fixtures\lang-resolution\api-e2e-test/npm package manager.
+  Package managers: npm, bun.
+  Additional evidence: Test-like files detected (328); examples: .pi\agents\sdd-spec.md, GitNexus\docker-server.test.mjs, GitNexus\gitnexus-web\e2e\debug-issues.spec.ts, GitNexus\gitnexus-web\e2e\heartbeat-reconnect.spec.ts, GitNexus\gitnexus-web\e2e\manual-record.spec.ts.
+  Primary test command: npm run vitest.
+  Unit tests: Vitest (npm run vitest); Vitest (cd devorbit-web && bun run test); Vitest (cd GitNexus\gitnexus && npm test); Vitest (cd GitNexus\gitnexus-web && npm test); pytest (pytest).
+  Integration tests: Testing Library (cd devorbit-web && bun run test); package integration script (cd GitNexus\gitnexus && npm run test:integration); Testing Library (cd GitNexus\gitnexus-web && npm test).
+  E2E tests: Playwright (npx playwright test); Playwright (cd GitNexus\gitnexus-web && npm run test:e2e).
+rules:
+  proposal:
+    require_problem_statement: true
+  spec:
+    require_acceptance_criteria: true
+  design:
+    require_tradeoffs: true
+  tasks:
+    protect_review_workload: true
+  apply:
+    test_command: "npm run vitest"
+  verify:
+    test_command: "npm run vitest"
+testing:
+  detected: "2026-05-13"
+  runner:
+    command: "npm run vitest"
+    framework: "Vitest"
+  layers:
+    unit: "Vitest, Vitest, Vitest, Vitest, pytest"
+    integration: "Testing Library, package integration script, Testing Library"
+    e2e: "Playwright, Playwright"
+  commands:
+    unit:
+      - scope: "."
+        command: "npm run vitest"
+        framework: "Vitest"
+      - scope: "devorbit-web"
+        command: "cd devorbit-web && bun run test"
+        framework: "Vitest"
+      - scope: "GitNexus\\gitnexus"
+        command: "cd GitNexus\\gitnexus && npm test"
+        framework: "Vitest"
+      - scope: "GitNexus\\gitnexus-web"
+        command: "cd GitNexus\\gitnexus-web && npm test"
+        framework: "Vitest"
+      - scope: "."
+        command: "pytest"
+        framework: "pytest"
+    integration:
+      - scope: "devorbit-web"
+        command: "cd devorbit-web && bun run test"
+        framework: "Testing Library"
+      - scope: "GitNexus\\gitnexus"
+        command: "cd GitNexus\\gitnexus && npm run test:integration"
+        framework: "package integration script"
+      - scope: "GitNexus\\gitnexus-web"
+        command: "cd GitNexus\\gitnexus-web && npm test"
+        framework: "Testing Library"
+    e2e:
+      - scope: "."
+        command: "npx playwright test"
+        framework: "Playwright"
+      - scope: "GitNexus\\gitnexus-web"
+        command: "cd GitNexus\\gitnexus-web && npm run test:e2e"
+        framework: "Playwright"
+  coverage:
+    command: "cd GitNexus\\gitnexus && npm run test:coverage"
+    commands:
+      - scope: "GitNexus\\gitnexus"
+        command: "cd GitNexus\\gitnexus && npm run test:coverage"
+        framework: "coverage"
+      - scope: "GitNexus\\gitnexus-web"
+        command: "cd GitNexus\\gitnexus-web && npm run test:coverage"
+        framework: "coverage"
+quality:
+  lint: "cd devorbit-showcase && bun run lint"
+  lint_commands:
+    - scope: "devorbit-showcase"
+      command: "cd devorbit-showcase && bun run lint"
+      framework: "linter"
+    - scope: "GitNexus"
+      command: "cd GitNexus && npm run lint"
+      framework: "linter"
+  typecheck: ""
+  typecheck_commands:
+    []
+  format: "cd GitNexus && npm run format"
+  format_commands:
+    - scope: "GitNexus"
+      command: "cd GitNexus && npm run format"
+      framework: "formatter"

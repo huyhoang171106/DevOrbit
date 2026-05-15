@@ -29,7 +29,7 @@ export function ScanForm({ onSubmit, loading }: ScanFormProps) {
   return (
     <form onSubmit={handleSubmit} className="glass-card space-y-5 p-6">
       <div>
-        <label className="label text-clay-text-muted">Target Course</label>
+        <label className="label text-clay-text-muted">Môn học mục tiêu</label>
         {fetchingCourses ? (
           <div className="h-10 w-full animate-pulse rounded-xl bg-clay-surface" />
         ) : (
@@ -49,13 +49,13 @@ export function ScanForm({ onSubmit, loading }: ScanFormProps) {
         )}
       </div>
       <div>
-        <label className="label text-clay-text-muted">Search Query</label>
+        <label className="label text-clay-text-muted">Từ khóa tìm kiếm</label>
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="input-field"
-          placeholder="e.g. react course repository"
+          placeholder="vd: react course repository"
           required
         />
         {courseId && (

@@ -26,10 +26,10 @@ export function DocumentUnlock({ isUnlocked, onUnlock }: DocumentUnlockProps) {
               clipRule="evenodd"
             />
           </svg>
-          Photobooth Unlocked!
+          Đã mở khóa Photobooth!
         </div>
         <p className="text-xs text-zinc-400">
-          You're ready to create your memories
+          Bạn đã sẵn sàng tạo kỷ niệm
         </p>
       </div>
     );
@@ -37,9 +37,9 @@ export function DocumentUnlock({ isUnlocked, onUnlock }: DocumentUnlockProps) {
 
   return (
     <div className="glass-card p-8">
-      <h3 className="text-sm font-semibold text-orbit-text tracking-wide mb-2">Unlock Your Memories</h3>
+      <h3 className="text-sm font-semibold text-orbit-text tracking-wide mb-2">Mở khóa kỷ niệm</h3>
       <p className="text-xs text-zinc-400 mb-6">
-        Upload any document to unlock the photobooth feature and start creating
+        Tải tài liệu lên để mở khóa tính năng photobooth và bắt đầu tạo
       </p>
 
       <button
@@ -67,15 +67,15 @@ export function DocumentUnlock({ isUnlocked, onUnlock }: DocumentUnlockProps) {
           </svg>
           <div className="text-center">
             <p className="text-xs font-semibold text-zinc-300">
-              Click to upload a document
+              Nhấn để tải tài liệu lên
             </p>
-            <p className="text-xs text-zinc-500">or drag and drop</p>
+            <p className="text-xs text-zinc-500">hoặc kéo thả</p>
           </div>
         </div>
       </button>
 
       <p className="text-xs text-zinc-600 mt-4 text-center">
-        PDF, DOC, Image files, or ZIP archives
+        PDF, DOC, ảnh hoặc ZIP
       </p>
     </div>
   );

@@ -77,15 +77,15 @@ export function DownloadSection({ canvas, frame }: DownloadSectionProps) {
                   d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                 />
               </svg>
-              Download as PNG (2000×2000px)
+              Download as PNG ({canvas?.width ?? 2000}&times;{canvas?.height ?? 2000}px)
             </>
           )}
         </button>
 
         {exportSuccess && (
-          <div className="p-3 bg-clay-primary/10 border border-clay-primary/30 rounded-lg flex items-center gap-2">
+          <div className="p-3 bg-emerald-400/10 border border-emerald-400/30 rounded-lg flex items-center gap-2">
             <svg
-              className="h-5 w-5 text-clay-primary flex-shrink-0"
+              className="h-5 w-5 text-emerald-400 flex-shrink-0"
               fill="currentColor"
               viewBox="0 0 20 20">
               <path

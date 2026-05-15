@@ -21,7 +21,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import vn.edu.uit.devorbit.mobile.domain.model.GraphNode
+import vn.edu.uit.devorbit.mobile.ui.CourseDetailScreen
+import vn.edu.uit.devorbit.mobile.ui.RepoDetailScreen
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.CourseViewModel
 
@@ -31,45 +34,119 @@ fun CourseHubScreen(
     viewModel: CourseViewModel = hiltViewModel()
 ) {
     var viewMode by remember { mutableStateOf(ViewMode.LIST) }
+    val selectedCourse by viewModel.selectedCourse.collectAsStateWithLifecycle()
+    val selectedRepo by viewModel.selectedRepo.collectAsStateWithLifecycle()
+    val repos by viewModel.detailRepos.collectAsStateWithLifecycle()
+    val tutorials by viewModel.detailTutorials.collectAsStateWithLifecycle()
+    val videos by viewModel.detailVideos.collectAsStateWithLifecycle()
+    val articles by viewModel.detailArticles.collectAsStateWithLifecycle()
+    val detailLoading by viewModel.detailLoading.collectAsStateWithLifecycle()
+    val detailError by viewModel.detailError.collectAsStateWithLifecycle()
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(CosmicTheme.spacing.medium),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "COURSE HUB",
-                style = CosmicTheme.typography.command,
-                color = Color.White
-            )
+    when {
+        selectedRepo != null -> RepoDetailScreen(
+            repo = selectedRepo!!,
+            onBack = { viewModel.backFromRepo() }
+        )
 
-            SingleChoiceSegmentedButtonRow {
-                SegmentedButton(
-                    selected = viewMode == ViewMode.LIST,
-                    onClick = { viewMode = ViewMode.LIST },
-                    shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
-                    icon = { Icon(Icons.Rounded.List, contentDescription = null) }
-                ) {
-                    Text("List")
-                }
-                SegmentedButton(
-                    selected = viewMode == ViewMode.GALAXY,
-                    onClick = { viewMode = ViewMode.GALAXY },
-                    shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
-                    icon = { Icon(Icons.Rounded.Star, contentDescription = null) }
-                ) {
-                    Text("Graph")
+        selectedCourse != null -> {
+            if (detailLoading) {
+                CourseDetailLoading(
+                    courseName = selectedCourse!!.tenMH,
+                    onBack = { viewModel.closeCourseDetail() }
+                )
+            } else {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    detailError?.let { error ->
+                        Text(
+                            text = error,
+                            style = CosmicTheme.typography.label,
+                            color = CosmicTheme.colors.supernova,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                    }
+                    CourseDetailScreen(
+                        courseName = selectedCourse!!.tenMH,
+                        repos = repos,
+                        tutorials = tutorials,
+                        videos = videos,
+                        articles = articles,
+                        onBack = { viewModel.closeCourseDetail() },
+                        onRepoClick = { viewModel.openRepo(it) }
+                    )
                 }
             }
         }
 
-        if (viewMode == ViewMode.LIST) {
-            CourseListScreen(viewModel = viewModel, onCourseClick = {})
-        } else {
-            SemesterGraphView(viewModel = viewModel)
+        else -> {
+            Column(modifier = Modifier.fillMaxSize()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(CosmicTheme.spacing.medium),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "COURSE HUB",
+                        style = CosmicTheme.typography.command,
+                        color = Color.White
+                    )
+
+                    SingleChoiceSegmentedButtonRow {
+                        SegmentedButton(
+                            selected = viewMode == ViewMode.LIST,
+                            onClick = { viewMode = ViewMode.LIST },
+                            shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
+                            icon = { Icon(Icons.Rounded.List, contentDescription = null) }
+                        ) {
+                            Text("List")
+                        }
+                        SegmentedButton(
+                            selected = viewMode == ViewMode.GALAXY,
+                            onClick = { viewMode = ViewMode.GALAXY },
+                            shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
+                            icon = { Icon(Icons.Rounded.Star, contentDescription = null) }
+                        ) {
+                            Text("Graph")
+                        }
+                    }
+                }
+
+                if (viewMode == ViewMode.LIST) {
+                    CourseListScreen(viewModel = viewModel, onCourseClick = { viewModel.openCourse(it) })
+                } else {
+                    SemesterGraphView(viewModel = viewModel)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CourseDetailLoading(
+    courseName: String,
+    onBack: () -> Unit
+) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        TextButton(onClick = onBack) {
+            Text("< Courses", color = Color.White)
+        }
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                CircularProgressIndicator(color = CosmicTheme.colors.plasma)
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    text = courseName,
+                    style = CosmicTheme.typography.command,
+                    color = Color.White
+                )
+                Text(
+                    text = "Loading course resources",
+                    style = CosmicTheme.typography.label,
+                    color = CosmicTheme.colors.textSecondary
+                )
+            }
         }
     }
 }

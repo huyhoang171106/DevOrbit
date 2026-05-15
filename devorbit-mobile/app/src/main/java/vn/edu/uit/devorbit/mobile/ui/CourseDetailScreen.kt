@@ -30,6 +30,10 @@ fun CourseDetailScreen(
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabs = listOf("Repos (${repos.size})", "Tutorials", "Videos", "Articles")
     val context = LocalContext.current
+    var selectedTechStack by remember(repos) { mutableStateOf<String?>(null) }
+    val repoFilterState = remember(repos, selectedTechStack) {
+        RepoFilterState(repos = repos, selectedTechStack = selectedTechStack)
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         TextButton(onClick = onBack) {
@@ -64,7 +68,17 @@ fun CourseDetailScreen(
         Box(modifier = Modifier.weight(1f)) {
             when (selectedTabIndex) {
                 0 -> {
-                    RepoListSection(repos = repos, onRepoClick = onRepoClick)
+                    RepoListSection(
+                        repos = repoFilterState.filteredRepos,
+                        resultCount = repoFilterState.filteredRepos.size,
+                        totalCount = repos.size,
+                        availableTechStacks = repoFilterState.availableTechStacks,
+                        selectedTechStack = repoFilterState.selectedTechStack,
+                        onTechStackSelected = { stack ->
+                            selectedTechStack = repoFilterState.selectTechStack(stack).selectedTechStack
+                        },
+                        onRepoClick = onRepoClick
+                    )
                 }
                 1 -> KnowledgeList(tutorials) {
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(it.url))

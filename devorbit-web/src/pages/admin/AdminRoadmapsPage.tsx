@@ -99,7 +99,7 @@ export function AdminRoadmapsPage() {
   }
 
   async function handleRmDelete(id: number) {
-    if (!confirm('Delete this roadmap and all its phases & items?')) return
+    if (!confirm('Xóa lộ trình này và toàn bộ dữ liệu liên quan?')) return
     try {
       await apiAdminDelete(`/api/admin/roadmaps/${id}`, token)
       setPhases((p) => { const n = { ...p }; delete n[id]; return n })
@@ -134,7 +134,7 @@ export function AdminRoadmapsPage() {
   }
 
   async function handlePhDelete(phaseId: number, rmId: number) {
-    if (!confirm('Delete this phase and all its items?')) return
+    if (!confirm('Xóa giai đoạn này và toàn bộ mục?')) return
     try {
       await apiAdminDelete(`/api/admin/roadmaps/phases/${phaseId}`, token)
       setItems((p) => { const n = { ...p }; delete n[phaseId]; return n })
@@ -160,7 +160,7 @@ export function AdminRoadmapsPage() {
   }
 
   async function handleItDelete(itemId: number) {
-    if (!confirm('Delete this item?')) return
+    if (!confirm('Xóa mục này?')) return
     try {
       await apiAdminDelete(`/api/admin/roadmaps/items/${itemId}`, token)
       const phaseId = Object.entries(items).find(([, v]) => v.some((i) => i.id === itemId))?.[0]
@@ -176,7 +176,7 @@ export function AdminRoadmapsPage() {
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
         </svg>
-        Loading...
+        Đang tải...
       </div>
     )
   }
@@ -185,12 +185,12 @@ export function AdminRoadmapsPage() {
     <div className="w-full max-w-[1280px] mx-auto px-[32px] py-[64px]">
       <div className="mb-[32px] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="display-sm text-clay-text mb-1">Learning Roadmaps</h1>
-          <p className="body-sm text-clay-text-muted">Manage student learning roadmaps, phases, and items.</p>
+          <h1 className="display-sm text-clay-text mb-1">Lộ trình học tập</h1>
+          <p className="body-sm text-clay-text-muted">Quản lý lộ trình học tập của sinh viên</p>
         </div>
         <button onClick={() => { setRmEdit(undefined); setRmEditId(null); setRmDialog(true) }} className="btn-primary self-start text-sm px-4 py-2">
           <svg className="mr-2 h-4 w-4 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
-          Create Roadmap
+          Tạo lộ trình
         </button>
       </div>
 
@@ -201,13 +201,13 @@ export function AdminRoadmapsPage() {
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
-            Loading roadmaps...
+            Đang tải lộ trình...
           </div>
         </div>
       ) : (
         <div className="space-y-[16px]">
           {(roadmaps ?? []).length === 0 && (
-            <div className="glass-card p-[32px] text-center body-sm text-clay-text-muted">No roadmaps yet.</div>
+            <div className="glass-card p-[32px] text-center body-sm text-clay-text-muted">Chưa có lộ trình nào</div>
           )}
           {(roadmaps ?? []).map((rm) => (
             <div key={rm.id} className="glass-card overflow-hidden p-0">
@@ -224,14 +224,14 @@ export function AdminRoadmapsPage() {
                   <div className="min-w-0">
                     <h3 className="heading-4 text-clay-text">{rm.title}</h3>
                     <p className="body-sm text-clay-text-muted mt-[4px]">
-                      {rm.studentCode} - {rm.studentName} &middot; {rm.isPublic ? 'Public' : 'Private'}
+                      {rm.studentCode} - {rm.studentName} &middot; {rm.isPublic ? 'Công khai' : 'Riêng tư'}
                       &middot; Updated {new Date(rm.updatedAt).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
                 <div className="flex gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
-                  <button onClick={() => openRmEdit(rm)} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs">Edit</button>
-                  <button onClick={() => handleRmDelete(rm.id)} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Delete</button>
+                  <button onClick={() => openRmEdit(rm)} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs">Sửa</button>
+                  <button onClick={() => handleRmDelete(rm.id)} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Xóa</button>
                 </div>
               </div>
 
@@ -242,7 +242,7 @@ export function AdminRoadmapsPage() {
                     <div>
                       {/* Phase list */}
                       {(phases[rm.id] ?? []).length === 0 && (
-                        <p className="px-[32px] py-[16px] body-sm text-clay-text-muted">No phases yet.</p>
+                        <p className="px-[32px] py-[16px] body-sm text-clay-text-muted">Chưa có giai đoạn nào</p>
                       )}
                       {(phases[rm.id] ?? []).map((ph) => (
                         <div key={ph.id}>
@@ -263,8 +263,8 @@ export function AdminRoadmapsPage() {
                               </div>
                             </div>
                             <div className="flex gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
-                              <button onClick={() => { setPhEdit({ title: ph.title, description: ph.description ?? '', sortOrder: ph.sortOrder }); setPhEditId(ph.id); setPhRoadmapId(null); setPhDialog(true) }} className="btn-secondary !py-0.5 !px-2 !bg-clay-bg !text-xs">Edit</button>
-                              <button onClick={() => handlePhDelete(ph.id, rm.id)} className="btn-secondary !py-0.5 !px-2 !bg-clay-bg !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Delete</button>
+                              <button onClick={() => { setPhEdit({ title: ph.title, description: ph.description ?? '', sortOrder: ph.sortOrder }); setPhEditId(ph.id); setPhRoadmapId(null); setPhDialog(true) }} className="btn-secondary !py-0.5 !px-2 !bg-clay-bg !text-xs">Sửa</button>
+                              <button onClick={() => handlePhDelete(ph.id, rm.id)} className="btn-secondary !py-0.5 !px-2 !bg-clay-bg !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Xóa</button>
                             </div>
                           </div>
 
@@ -274,7 +274,7 @@ export function AdminRoadmapsPage() {
                               {itLoading[ph.id] ? <Spinner /> : (
                                 <div className="py-2">
                                   {(items[ph.id] ?? []).length === 0 && (
-                                    <p className="pl-[72px] pr-8 py-2 body-sm text-clay-text-muted">No items yet.</p>
+                                    <p className="pl-[72px] pr-8 py-2 body-sm text-clay-text-muted">Chưa có mục nào</p>
                                   )}
                                   {(items[ph.id] ?? []).map((it) => (
                                     <div key={it.id} className="pl-[72px] pr-4 py-2 flex items-center justify-between hover:bg-glass-surface-raised transition-colors">
@@ -288,15 +288,15 @@ export function AdminRoadmapsPage() {
                                         {it.note && <span className="body-sm text-clay-text-muted italic truncate max-w-[150px]">{it.note}</span>}
                                       </div>
                                       <div className="flex gap-2 shrink-0">
-                                        <button onClick={() => { setItEdit({ targetType: it.targetType, targetId: it.targetId, title: it.title ?? '', note: it.note ?? '', sortOrder: it.sortOrder }); setItEditId(it.id); setItPhaseId(null); setItDialog(true) }} className="btn-secondary !py-0.5 !px-2 !bg-clay-surface !text-xs">Edit</button>
-                                        <button onClick={() => handleItDelete(it.id)} className="btn-secondary !py-0.5 !px-2 !bg-clay-surface !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Delete</button>
+                                        <button onClick={() => { setItEdit({ targetType: it.targetType, targetId: it.targetId, title: it.title ?? '', note: it.note ?? '', sortOrder: it.sortOrder }); setItEditId(it.id); setItPhaseId(null); setItDialog(true) }} className="btn-secondary !py-0.5 !px-2 !bg-clay-surface !text-xs">Sửa</button>
+                                        <button onClick={() => handleItDelete(it.id)} className="btn-secondary !py-0.5 !px-2 !bg-clay-surface !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Xóa</button>
                                       </div>
                                     </div>
                                   ))}
                                   {/* Add item button */}
                                   <div className="pl-[72px] pr-4 py-2">
                                     <button onClick={() => { setItEdit(undefined); setItEditId(null); setItPhaseId(ph.id); setItDialog(true) }} className="body-sm text-emerald-400 hover:text-emerald-400/80 transition-colors font-medium">
-                                      + Add Item
+                                      + Thêm mục
                                     </button>
                                   </div>
                                 </div>
@@ -308,7 +308,7 @@ export function AdminRoadmapsPage() {
                       {/* Add phase button */}
                       <div className="pl-[48px] pr-4 py-3">
                         <button onClick={() => { setPhEdit(undefined); setPhEditId(null); setPhRoadmapId(rm.id); setPhDialog(true) }} className="body-sm text-emerald-400 hover:text-emerald-400/80 transition-colors font-medium">
-                          + Add Phase
+                          + Thêm giai đoạn
                         </button>
                       </div>
                     </div>

@@ -7,9 +7,9 @@ type Props = {
 }
 
 const targetLabels: Record<string, string> = {
-  COURSE: 'Course',
-  REPO: 'Repository',
-  NONE: 'None',
+  COURSE: 'Môn học',
+  REPO: 'Kho mã nguồn',
+  NONE: 'Không',
 }
 
 export function NoteDetailDialog({ open, note, onClose }: Props) {
@@ -32,15 +32,15 @@ export function NoteDetailDialog({ open, note, onClose }: Props) {
         </div>
 
         <div className="mb-6">
-          <h3 className="label mb-2">Content</h3>
+          <h3 className="label mb-2">Nội dung</h3>
           <div className="rounded-xl bg-clay-surface border border-clay-border p-4 body-sm text-clay-text-muted whitespace-pre-wrap font-mono leading-relaxed">
-            {note.contentMarkdown || <span className="text-clay-text-muted/50 italic">No content</span>}
+            {note.contentMarkdown || <span className="text-clay-text-muted/50 italic">Không có nội dung</span>}
           </div>
         </div>
 
         {note.snippets.length > 0 && (
           <div>
-            <h3 className="label mb-3">Code Snippets ({note.snippets.length})</h3>
+            <h3 className="label mb-3">Đoạn mã ({note.snippets.length})</h3>
             <div className="space-y-4">
               {note.snippets.map((s) => (
                 <div key={s.id} className="rounded-xl bg-clay-surface border border-clay-border overflow-hidden">
@@ -60,7 +60,7 @@ export function NoteDetailDialog({ open, note, onClose }: Props) {
         )}
 
         <div className="flex justify-end pt-6 mt-2">
-          <button type="button" onClick={onClose} className="btn-secondary px-6">Close</button>
+          <button type="button" onClick={onClose} className="btn-secondary px-6">Đóng</button>
         </div>
       </div>
     </div>

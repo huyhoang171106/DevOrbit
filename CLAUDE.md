@@ -1,143 +1,78 @@
-﻿# <TÃŠN PROJECT>
+# DevOrbit
 
-> File nÃ y load má»i session khi lÃ m project nÃ y. Cá»™ng dá»“n vá»›i `~/.claude/CLAUDE.md` global. Chá»‰ chá»©a thá»© RIÃŠNG project, KHÃ”NG láº·p láº¡i global. Giá»¯ <80 dÃ²ng.
+## Mo ta project
 
-## MÃ´ táº£ project
-
-<1-2 cÃ¢u: project nÃ y lÃ m gÃ¬, dÃ¹ng cho ai, á»Ÿ stage nÃ o (MVP / production / maintenance).>
+DevOrbit la he thong full-stack quan ly va kham pha ma nguon hoc thuat cho sinh vien UIT. Giai doan phat trien tich cuc (production). Tich hop Spring Boot, React, Mobile Kotlin.
 
 ## Tech stack
 
-- **Language**: <vd: TypeScript 5.x, Python 3.12, Go 1.22>
-- **Framework**: <vd: Next.js 14 / NestJS / FastAPI / Spring Boot>
-- **Database**: <vd: PostgreSQL 16, Redis 7>
-- **Test**: <vd: Vitest, pytest, Go test>
-- **Build**: <vd: Vite, esbuild, Maven>
-- **Deploy**: <vd: Vercel, AWS ECS, GCP Cloud Run>
+- **Language**: Java 21, TypeScript ~5.7, Kotlin 2.0.21
+- **Backend Framework**: Spring Boot 4.0.6, Spring Data JPA, Spring Security, WebClient
+- **Frontend Framework**: React 19, Vite 6, Tailwind CSS 3.4, React Router 7
+- **Data (Frontend)**: TanStack React Query 5, Zustand 5
+- **Visualization**: D3 ForceGraph 2D, Three.js 0.184 / React Three Fiber 9.6
+- **Mobile**: Jetpack Compose BOM 2024.11, Navigation Compose 2.8.4, Retrofit 2.11
+- **Database**: PostgreSQL 16
+- **Auth**: JWT (jjwt 0.12.6)
+- **Build**: Maven (mvnw), Gradle 8.7.3
+- **Infrastructure**: Docker Compose, Nginx, Supabase Storage
 
-## Lá»‡nh quan trá»ng
+## Lenh quan trong
 
 ```bash
-<command-cÃ i-deps>           # vd: pnpm install
-<command-dev>                 # vd: pnpm dev
-<command-test>                # vd: pnpm test
-<command-test-watch>          # vd: pnpm test:watch
-<command-lint>                # vd: pnpm lint
-<command-typecheck>           # vd: pnpm typecheck
-<command-format>              # vd: pnpm format
-<command-build>               # vd: pnpm build
-<command-migrate-db>          # vd: pnpm db:migrate
+# Backend
+cd devorbit-api && .\mvnw.cmd spring-boot:run
+
+# Web frontend
+cd devorbit-web && npm install && npm run dev
+
+# Mobile
+cd devorbit-mobile && .\gradlew.bat :app:assembleDebug
+
+# Build all
+docker compose up -d --build
 ```
 
-## Cáº¥u trÃºc thÆ° má»¥c
+## Cau truc thu muc
 
 ```text
-src/
-â”œâ”€â”€ <module-1>/   # mÃ´ táº£ ngáº¯n
-â”œâ”€â”€ <module-2>/   # mÃ´ táº£ ngáº¯n
-â””â”€â”€ ...
-tests/
-docs/
+devorbit-api/            # Spring Boot backend
+  src/main/java/vn/edu/uit/devorbit_api/
+    config/              # Security, JWT, OpenAPI, GitHub client, Jackson
+    controller/          # 20 controllers
+    dto/                 # 43 DTOs
+    entity/              # 17 entities + 5 enums
+    repository/          # 18 repositories
+    service/             # 21 services
+devorbit-web/            # React SPA
+  src/pages/admin/       # 11 admin pages
+  src/pages/student/     # 11 student pages
+devorbit-mobile/         # Kotlin Android
+devorbit-showcase/       # Next.js showcase (WIP)
+docs/                    # Architecture, decisions, stories, templates
 ```
 
-<Chá»‰ note thÆ° má»¥c cÃ³ quy Æ°á»›c SPECIAL â€” khÃ´ng list tá»«ng folder.>
+## Convention RIENG project
 
-## Convention RIÃŠNG project
+- API endpoints: `/api` (public), `/api/admin` (admin), `/api/student` (student)
+- JWT tokens: `devorbit-admin-token`, `devorbit-student-token` (localStorage)
+- Entity fields: `@CreationTimestamp`, `@UpdateTimestamp` for audit
+- Soft-delete: `active` boolean field on entities
+- React pages: PascalCase.tsx in `pages/admin/` or `pages/student/`
+- API client: TanStack React Query for public pages, custom `useApiFetch` for admin
+- Galaxy 3D state: Zustand store (`useGalaxyStore`)
 
-<Chá»‰ ghi nhá»¯ng convention KHÃC global, hoáº·c cá»¥ thá»ƒ project nÃ y. Vd:>
-- Táº¥t cáº£ API endpoint tráº£ vá» `{ data, error, meta }`, khÃ´ng bare object.
-- TÃªn file React component: `PascalCase.tsx`. Hook: `useCamelCase.ts`.
-- DB column: `snake_case`. JS variable: `camelCase`. Model class: `PascalCase`.
-- Táº¥t cáº£ `useState` cho async data â†’ dÃ¹ng React Query thay tháº¿.
+## Module owner & noi can can than
 
-## Module owner & nÆ¡i cáº§n cáº©n tháº­n
+- `devorbit-api/src/main/java/vn/edu/uit/devorbit_api/config/SecurityConfig.java` — security sensitive
+- `devorbit-api/src/main/java/vn/edu/uit/devorbit_api/config/JwtAuthenticationFilter.java` — auth logic
+- `devorbit-web/src/pages/student/knowledge-graph/` — complex Three.js 3D visualization
+- `devorbit-web/src/lib/photoCompositor.ts` — Photobooth canvas compositing
 
-- `src/auth/*` â€” security sensitive, cáº§n test trÆ°á»›c khi sá»­a.
-- `src/payment/*` â€” KHÃ”NG sá»­a khi khÃ´ng cÃ³ ticket. Cháº¡m code nÃ y pháº£i cÃ³ review @<owner>.
-- `src/migration/*` â€” chá»‰ thÃªm migration má»›i, KHÃ”NG sá»­a migration cÅ© Ä‘Ã£ apply.
+## Vung cam / dieu can biet
 
-## VÃ¹ng cáº¥m / Ä‘iá»u cáº§n biáº¿t
-
-- KHÃ”NG Ä‘á»•i schema DB khÃ´ng cÃ³ migration file kÃ¨m.
-- KHÃ”NG `git push --force` lÃªn `main`/`develop`.
-- KHÃ”NG bypass pre-commit hook (lint/test pháº£i pass).
-- API breaking change pháº£i bump major version + cáº­p nháº­t `CHANGELOG.md`.
-
-## Compact Instructions (cho `/compact` cáº£ manual vÃ  auto)
-
-Khi compact, summary PHáº¢I giá»¯:
-1. **File Ä‘Ã£ sá»­a** trong session (full path) + lÃ½ do tá»«ng file.
-2. **Migration Ä‘Ã£ cháº¡y** / dependency Ä‘Ã£ thÃªm.
-3. **Quyáº¿t Ä‘á»‹nh kiáº¿n trÃºc** Ä‘Ã£ chá»‘t (kÃ¨m rationale 1 cÃ¢u).
-4. **BÆ°á»›c Ä‘ang dá»Ÿ** + bÆ°á»›c tiáº¿p theo cá»¥ thá»ƒ.
-5. **Bug Ä‘Ã£ reproduce** nhÆ°ng chÆ°a fix.
-Bá» qua: tool output dÃ i, build log, dead-end debugging.
-
-## Tham chiáº¿u
-
-- Docs project: <link Notion / Confluence / Wiki>
-- Design system: <link Figma>
-- API spec: <link Swagger / Postman>
-- Deployment runbook: <link>
-
-<!-- gitnexus:start -->
-# GitNexus â€” Code Intelligence
-
-This project is indexed by GitNexus as **DevOrbit** (33240 symbols, 47366 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
-
-> If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
-
-## Always Do
-
-- **MUST run impact analysis before editing any symbol.** Before modifying a function, class, or method, run `gitnexus_impact({target: "symbolName", direction: "upstream"})` and report the blast radius (direct callers, affected processes, risk level) to the user.
-- **MUST run `gitnexus_detect_changes()` before committing** to verify your changes only affect expected symbols and execution flows.
-- **MUST warn the user** if impact analysis returns HIGH or CRITICAL risk before proceeding with edits.
-- When exploring unfamiliar code, use `gitnexus_query({query: "concept"})` to find execution flows instead of grepping. It returns process-grouped results ranked by relevance.
-- When you need full context on a specific symbol â€” callers, callees, which execution flows it participates in â€” use `gitnexus_context({name: "symbolName"})`.
-
-## Never Do
-
-- NEVER edit a function, class, or method without first running `gitnexus_impact` on it.
-- NEVER ignore HIGH or CRITICAL risk warnings from impact analysis.
-- NEVER rename symbols with find-and-replace â€” use `gitnexus_rename` which understands the call graph.
-- NEVER commit changes without running `gitnexus_detect_changes()` to check affected scope.
-
-## Resources
-
-| Resource | Use for |
-|----------|---------|
-| `gitnexus://repo/DevOrbit/context` | Codebase overview, check index freshness |
-| `gitnexus://repo/DevOrbit/clusters` | All functional areas |
-| `gitnexus://repo/DevOrbit/processes` | All execution flows |
-| `gitnexus://repo/DevOrbit/process/{name}` | Step-by-step execution trace |
-
-## CLI
-
-| Task | Read this skill file |
-|------|---------------------|
-| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md` |
-| Blast radius / "What breaks if I change X?" | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
-| Trace bugs / "Why is X failing?" | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md` |
-| Rename / extract / split / refactor | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
-| Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
-| Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
-
-<!-- gitnexus:end -->
-
-<!-- cortex-hub:auto-mcp -->
-## Cortex Hub â€” MANDATORY (enforced by hooks)
-
-**YOUR FIRST ACTION in every conversation MUST be calling ``cortex_session_start``.**
-If you skip this, all Edit/Write/file-modifying Bash commands will return exit code 2 (BLOCKED).
-
-``cortex_session_start(repo: "https://github.com/huyhoang171106/DevOrbit.git", mode: "development", agentId: "claude-code")``
-
-Then:
-- If ``recentChanges.count > 0`` - warn user and ``git pull``
-- Read ``STATE.md`` if it exists
-
-### Quality gates (enforced - commit blocked without these)
-Run verify commands from ``.cortex/project-profile.json``.
-Call ``cortex_quality_report`` then ``cortex_session_end``.
-<!-- cortex-hub:auto-mcp -->
-
+- KHONG thay doi schema DB khong co migration file kem (data.sql)
+- KHONG `git push --force` len master
+- JWT secret mac dinh chi cho local, BAT BUOC override cho production
+- Breaking change API phai bump version + cap nhat CHANGELOG.md
+- Galaxy 3D visualizations (Three.js) co the khong hoat dong tren thiet bi yeu

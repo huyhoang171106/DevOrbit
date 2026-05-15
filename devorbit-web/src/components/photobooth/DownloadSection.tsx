@@ -102,14 +102,14 @@ export function DownloadSection({ canvas, frame }: DownloadSectionProps) {
       </div>
 
       <div className="mt-6 p-4 bg-glass-surface rounded-lg">
-        <div className="body-sm text-ink-secondary">
+        <p className="body-sm text-ink-secondary">
           <span className="font-semibold text-ink block mb-2">📸 Mẹo:</span>
           <ul className="space-y-1 ml-4 list-disc">
             <li>Sử dụng ảnh chân dung để có kết quả tốt nhất</li>
             <li>Đảm bảo ánh sáng tốt trong ảnh</li>
             <li>Chia sẻ tác phẩm lên mạng xã hội!</li>
           </ul>
-        </div>
+        </p>
       </div>
     </div>
   );

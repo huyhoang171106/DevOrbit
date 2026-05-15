@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { apiGet } from '../../lib/api'
+import { apiStudentGet, apiStudentDelete } from '../../lib/api'
+import { isStudentAuthenticated, clearStudentToken } from '../../lib/auth'
 import type { StudentBookmark } from '../../types/api'
 
 export function StudentBookmarksPage() {
@@ -9,11 +10,29 @@ export function StudentBookmarksPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    apiGet<StudentBookmark[]>('/api/student/bookmarks')
+    if (!isStudentAuthenticated()) {
+      navigate('/student/login')
+      return
+    }
+    apiStudentGet<StudentBookmark[]>('/api/student/bookmarks')
       .then(setBookmarks)
-      .catch(() => navigate('/courses'))
+      .catch(() => navigate('/student/login'))
       .finally(() => setLoading(false))
   }, [])
+
+  async function handleRemove(bookmarkId: number) {
+    try {
+      await apiStudentDelete(`/api/student/bookmarks/${bookmarkId}`)
+      setBookmarks((prev) => prev.filter((b) => b.id !== bookmarkId))
+    } catch {
+      // silently fail
+    }
+  }
+
+  function handleLogout() {
+    clearStudentToken()
+    navigate('/courses')
+  }
 
   if (loading) {
     return (
@@ -31,12 +50,17 @@ export function StudentBookmarksPage() {
 
   return (
     <div className="w-full max-w-[1280px] mx-auto px-[32px] py-[64px]">
-      <div className="mb-[32px]">
-        <p className="body-sm text-emerald-400 mb-[8px] font-medium tracking-wide uppercase">Lộ trình học tập</p>
-        <h1 className="display-sm text-clay-text">Đã đánh dấu</h1>
-        <p className="mt-[8px] max-w-2xl body-sm text-ink-secondary">
-          Các mục học tập bạn đã lưu. Bạn vẫn có thể duyệt công khai mà không cần đăng nhập.
-        </p>
+      <div className="mb-[32px] flex items-start justify-between">
+        <div>
+          <p className="body-sm text-emerald-400 mb-[8px] font-medium tracking-wide uppercase">Lộ trình học tập</p>
+          <h1 className="display-sm text-clay-text">Đã đánh dấu</h1>
+          <p className="mt-[8px] max-w-2xl body-sm text-ink-secondary">
+            Các mục học tập bạn đã lưu.
+          </p>
+        </div>
+        <button onClick={handleLogout} className="btn-secondary text-[13px]">
+          Đăng xuất
+        </button>
       </div>
 
       {bookmarks.length === 0 ? (
@@ -53,29 +77,37 @@ export function StudentBookmarksPage() {
       ) : (
         <div className="grid gap-[16px] sm:grid-cols-2">
           {bookmarks.map((bookmark) => (
-            <a
-              key={bookmark.id}
-              href={bookmark.url}
-              className="glass-card group block p-[24px] cursor-pointer"
-              target={bookmark.targetType === 'REPO' ? '_blank' : undefined}
-              rel={bookmark.targetType === 'REPO' ? 'noreferrer' : undefined}
-            >
-              <span className="badge-tag uppercase tracking-wider font-semibold bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
-                {bookmark.targetType}
-              </span>
-              <h2 className="mt-[16px] heading-4 text-clay-text group-hover:text-emerald-400 transition-colors">
-                {bookmark.title}
-              </h2>
-              {bookmark.subtitle && (
-                <p className="mt-[4px] body-sm text-ink-secondary">{bookmark.subtitle}</p>
-              )}
-              <div className="mt-[16px] flex items-center gap-[4px] code-sm text-ink-secondary group-hover:text-emerald-400 transition-colors font-medium">
-                <span>Truy cập</span>
-                <svg className="h-[14px] w-[14px] transition-transform group-hover:translate-x-[2px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M5 12h14M12 5l7 7-7 7" />
+            <div key={bookmark.id} className="glass-card group relative p-[24px]">
+              <a href={bookmark.url} className="block cursor-pointer"
+                target={bookmark.targetType === 'REPO' ? '_blank' : undefined}
+                rel={bookmark.targetType === 'REPO' ? 'noreferrer' : undefined}
+              >
+                <span className="badge-tag uppercase tracking-wider font-semibold bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+                  {bookmark.targetType}
+                </span>
+                <h2 className="mt-[16px] heading-4 text-clay-text group-hover:text-emerald-400 transition-colors pr-8">
+                  {bookmark.title}
+                </h2>
+                {bookmark.subtitle && (
+                  <p className="mt-[4px] body-sm text-ink-secondary">{bookmark.subtitle}</p>
+                )}
+                <div className="mt-[16px] flex items-center gap-[4px] code-sm text-ink-secondary group-hover:text-emerald-400 transition-colors font-medium">
+                  <span>Truy cập</span>
+                  <svg className="h-[14px] w-[14px] transition-transform group-hover:translate-x-[2px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </a>
+              <button
+                onClick={() => handleRemove(bookmark.id)}
+                className="absolute top-[16px] right-[16px] p-[6px] rounded-md text-ink-muted hover:text-red-400 hover:bg-red-500/10 transition-all"
+                title="Remove bookmark"
+              >
+                <svg className="h-[16px] w-[16px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6L6 18M6 6l12 12" />
                 </svg>
-              </div>
-            </a>
+              </button>
+            </div>
           ))}
         </div>
       )}

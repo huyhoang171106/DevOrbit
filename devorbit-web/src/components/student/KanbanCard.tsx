@@ -81,8 +81,8 @@ export function KanbanCard({
       {/* Warning toast */}
       {hasWarning && (
         <div className="absolute -top-2 -right-2 z-10">
-          <div className="px-2 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/30 text-[7px] font-black text-rose-400 uppercase tracking-wider whitespace-nowrap">
-            Pre-req sai kỳ
+          <div className="px-2 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/30 text-[10px] font-black text-rose-400 uppercase tracking-wider whitespace-nowrap">
+            Môn tiên quyết sai kỳ
           </div>
         </div>
       )}
@@ -90,14 +90,14 @@ export function KanbanCard({
       {/* Top row: code + credits */}
       <div className="flex items-center justify-between gap-2 mb-1.5">
         <span
-          className={`text-[10px] font-black uppercase tracking-wider ${
+          className={`text-[13px] font-black uppercase tracking-wider ${
             isRecommended ? cc.textLight : hasWarning ? 'text-rose-300' : 'text-zinc-400'
           }`}
         >
           {node.code}
         </span>
         <span
-          className={`px-2 py-0.5 rounded-md text-[9px] font-bold tabular-nums ${
+          className={`px-2 py-0.5 rounded-md text-[12px] font-bold tabular-nums ${
             isOverloaded
               ? 'bg-amber-500/15 text-amber-400'
               : 'bg-zinc-800 text-zinc-400'
@@ -109,7 +109,7 @@ export function KanbanCard({
 
       {/* Course name */}
       <p
-        className={`text-[12px] font-semibold leading-snug tracking-tight mb-1.5 ${
+        className={`text-[15px] font-semibold leading-snug tracking-tight mb-1.5 ${
           isRecommended ? 'text-orbit-text' : hasWarning ? 'text-rose-200' : 'text-zinc-300'
         } line-clamp-2`}
       >
@@ -122,14 +122,14 @@ export function KanbanCard({
           {prereqNames.map(p => (
             <span
               key={p.id}
-              className="px-1.5 py-0.5 rounded-md bg-zinc-800/50 border border-zinc-700/30 text-[8px] font-medium text-zinc-500 truncate max-w-[100px]"
+              className="px-1.5 py-0.5 rounded-md bg-zinc-800/50 border border-zinc-700/30 text-[11px] font-medium text-zinc-500 truncate max-w-[100px]"
               title={p.name}
             >
               {p.code}
             </span>
           ))}
           {prerequisites.length > 3 && (
-            <span className="px-1.5 py-0.5 text-[8px] text-zinc-600">
+            <span className="px-1.5 py-0.5 text-[11px] text-zinc-600">
               +{prerequisites.length - 3}
             </span>
           )}
@@ -140,14 +140,14 @@ export function KanbanCard({
       <div className="flex items-center justify-between pt-2 border-t border-white/5">
         {isRecommended && (
           <span
-            className="text-[8px] font-black uppercase tracking-[0.15em]"
+            className="text-[11px] font-black uppercase tracking-[0.15em]"
             style={{ color }}
           >
             Đề xuất
           </span>
         )}
         {hasWarning && (
-          <span className="text-[8px] font-bold text-rose-400/70">
+          <span className="text-[11px] font-bold text-rose-400/70">
             Cần {misplacedPrereqs.length} môn trước
           </span>
         )}
@@ -180,3 +180,4 @@ export function KanbanCard({
     </div>
   )
 }
+

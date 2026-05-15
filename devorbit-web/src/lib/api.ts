@@ -60,6 +60,33 @@ export const apiUpload = <T>(path: string, formData: FormData): Promise<T> => {
   })
 }
 
+function getStudentToken(): string | null {
+  try {
+    return localStorage.getItem('devorbit-student-token')
+  } catch {
+    return null
+  }
+}
+
+// --- Student API (authenticated) ---
+export const apiStudentGet = <T>(path: string) => {
+  const token = getStudentToken()
+  if (!token) throw new Error('Not authenticated')
+  return request<T>(path, { token })
+}
+
+export const apiStudentPost = <T>(path: string, body: unknown) => {
+  const token = getStudentToken()
+  if (!token) throw new Error('Not authenticated')
+  return request<T>(path, { method: 'POST', token, body })
+}
+
+export const apiStudentDelete = (path: string) => {
+  const token = getStudentToken()
+  if (!token) throw new Error('Not authenticated')
+  return request<void>(path, { method: 'DELETE', token })
+}
+
 // --- Admin API (authenticated) ---
 export const apiAdminGet = <T>(path: string, token: string) => request<T>(path, { token })
 export const apiAdminPost = <T>(path: string, token: string, body: unknown) =>

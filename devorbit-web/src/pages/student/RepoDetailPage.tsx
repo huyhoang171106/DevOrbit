@@ -1,17 +1,46 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { apiGet } from '../../lib/api'
+import { apiGet, apiStudentPost } from '../../lib/api'
+import { isStudentAuthenticated } from '../../lib/auth'
 import type { RepoSummary, AiResponse } from '../../types/api'
-import { ArrowLeft, Code, Star, MagicWand, GraduationCap, ArrowSquareOut, WarningCircle, GithubLogo } from '@phosphor-icons/react'
+import { ArrowLeft, Code, Star, MagicWand, GraduationCap, ArrowSquareOut, WarningCircle, GithubLogo, Bookmark, BookmarkSimple } from '@phosphor-icons/react'
 
 export function RepoDetailPage() {
   const { repoId } = useParams<{ repoId: string }>()
+  const navigate = useNavigate()
   const [repo, setRepo] = useState<RepoSummary | null>(null)
   const [summary, setSummary] = useState<AiResponse | null>(null)
   const [advice, setAdvice] = useState<AiResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [bookmarked, setBookmarked] = useState(false)
+  const [bookmarking, setBookmarking] = useState(false)
+
+  async function toggleBookmark() {
+    if (!isStudentAuthenticated()) {
+      navigate('/student/login')
+      return
+    }
+    if (!repo || bookmarking) return
+    setBookmarking(true)
+    try {
+      if (!bookmarked) {
+        await apiStudentPost('/api/student/bookmarks', {
+          targetType: 'REPO',
+          targetId: repo.id,
+          title: repo.displayName,
+          subtitle: repo.description?.slice(0, 100),
+          url: `/repos/${repo.id}`,
+        })
+        setBookmarked(true)
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setBookmarking(false)
+    }
+  }
 
   useEffect(() => {
     if (!repoId) return
@@ -150,16 +179,30 @@ export function RepoDetailPage() {
               ))}
             </div>
 
-            <a
-              href={repo.githubUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-primary text-[12px] inline-flex"
-            >
-              <GithubLogo className="h-4 w-4" weight="fill" />
-              Truy cập mã nguồn
-              <ArrowSquareOut className="h-4 w-4" weight="bold" />
-            </a>
+            <div className="flex flex-wrap items-center gap-3">
+              <a
+                href={repo.githubUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary text-[12px] inline-flex"
+              >
+                <GithubLogo className="h-4 w-4" weight="fill" />
+                Truy cập mã nguồn
+                <ArrowSquareOut className="h-4 w-4" weight="bold" />
+              </a>
+              <button
+                onClick={toggleBookmark}
+                disabled={bookmarking}
+                className={`btn-secondary text-[12px] inline-flex ${bookmarked ? 'border-emerald-500/30 bg-emerald-500/5' : ''}`}
+              >
+                {bookmarked ? (
+                  <BookmarkSimple className="h-4 w-4 text-emerald-400" weight="fill" />
+                ) : (
+                  <Bookmark className="h-4 w-4" weight="regular" />
+                )}
+                {bookmarked ? 'Đã đánh dấu' : 'Đánh dấu'}
+              </button>
+            </div>
           </div>
 
           {/* AI Cards */}

@@ -49,6 +49,7 @@ brain/
 .playwright-mcp
 .qoder
 .roo
+.github/prompts/ui-ux-pro-max/
 
 # Build & Cache
 build/
@@ -99,6 +100,9 @@ nul
 scratch/
 devorbit-api/scratch/
 scripts/scratch/
+api_output*.json
+devorbit-api/backups/
+devorbit-mobile/local.properties
 
 # Nested cloned repo (not a submodule)
 GitNexus/

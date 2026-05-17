@@ -1,27 +1,28 @@
 # Documentation Map
 
-This directory holds the project harness and any product contract derived from a
-future user-provided spec.
+This directory holds the project harness (Harness v0) and product contracts for
+DevOrbit.
 
 ## Main Files
 
 - `HARNESS.md`: how humans and agents collaborate.
 - `FEATURE_INTAKE.md`: how prompts become tiny, normal, or high-risk work.
-- `ARCHITECTURE.md`: architecture discovery and boundary rules.
+- `ARCHITECTURE.md`: system architecture, tech stack, API routes, data flow.
 - `TEST_MATRIX.md`: living map of behavior to proof.
 - `HARNESS_BACKLOG.md`: improvements discovered while working.
 - `GLOSSARY.md`: shared terms.
+- `KNOWLEDGE_GRAPH.md`: knowledge graph feature details (blueprint grid, simulation).
 
 ## Folders
 
-- `product/`: current product truth, empty until a spec is derived.
-- `stories/`: feature packets and backlog.
+- `product/`: product contracts (e.g., SE2025 curriculum).
+- `stories/`: feature packets and backlog (photobooth, simulation engine, AI roadmap, mobile features).
 - `decisions/`: durable decisions and tradeoffs.
-- `templates/`: reusable spec-intake, story, plan, decision, and validation
-  formats.
+- `templates/`: reusable spec-intake, story, plan, decision, and validation formats.
+- `plans/`: implementation plans.
 
 ## Current State
 
-Harness v0 exists before implementation. These docs define how the project will
-grow; they do not imply that app code, tests, CI, or deployment automation exist
-yet.
+The DevOrbit application is fully implemented with backend API, web frontend,
+mobile app, and infrastructure. These docs define both the product behavior and
+the agent operating model. See `README.md` for project status and stats.

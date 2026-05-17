@@ -8,6 +8,10 @@ type RequestOptions = {
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const headers: Record<string, string> = {}
+  // Allow browser cache for GET requests; react-query manages invalidation
+  if (!options.method || options.method === 'GET') {
+    headers['Cache-Control'] = 'max-age=0, must-revalidate'
+  }
   if (options.body) headers['Content-Type'] = 'application/json'
   if (options.token) headers['Authorization'] = `Bearer ${options.token}`
 
@@ -15,7 +19,6 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     method: options.method ?? 'GET',
     headers,
     body: options.body ? JSON.stringify(options.body) : undefined,
-    cache: 'no-cache',
   })
 
   if (!response.ok) {

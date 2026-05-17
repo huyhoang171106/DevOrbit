@@ -50,11 +50,11 @@ export function RepoCard({ repo }: { repo: RepoSummary }) {
             </p>
           </div>
 
-          {repo.stars !== null && repo.stars > 0 && (
+          {repo.stars !== null && (
             <div className="shrink-0">
-              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orbit-surface border border-orbit-border text-[11px] font-bold text-orbit-text-muted tabular-nums">
-                <Star className="h-3.5 w-3.5 text-amber-400" weight="fill" />
-                {repo.stars}
+              <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[11px] font-bold tabular-nums ${repo.stars > 0 ? 'bg-orbit-surface border-orbit-border text-orbit-text-muted' : 'bg-orbit-surface/50 border-orbit-border/50 text-orbit-text-muted/60'}`}>
+                <Star className={`h-3.5 w-3.5 ${repo.stars > 0 ? 'text-amber-400' : 'text-orbit-text-muted/40'}`} weight="fill" />
+                {repo.stars.toLocaleString('en-US')}
               </span>
             </div>
           )}

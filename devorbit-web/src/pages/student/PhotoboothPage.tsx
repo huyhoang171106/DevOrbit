@@ -115,7 +115,7 @@ export function PhotoboothPage() {
 
   if (!framesReady) {
     return (
-      <div className="min-h-screen bg-orbit-bg pt-24 pb-12 px-4 flex items-center justify-center">
+      <div className="min-h-screen pt-24 pb-12 px-4 flex items-center justify-center">
         <div className="inline-flex animate-spin">
           <svg className="h-8 w-8 text-emerald-400" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -128,20 +128,29 @@ export function PhotoboothPage() {
 
   if (!isUnlocked) {
     return (
-      <div className="min-h-screen bg-orbit-bg pt-24 pb-12 px-4">
+      <div className="min-h-screen pt-24 pb-12 px-4">
         <div className="mx-auto max-w-3xl">
           <div className="text-center mb-12">
+            <motion.span
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="section-label mb-8 inline-flex"
+            >
+              <ImageSquare size={12} className="h-3 w-3" weight="fill" />
+              Photobooth trực&nbsp;tuyến
+            </motion.span>
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
               className="hero-display text-orbit-text mb-4"
             >
-              <ImageSquare size={48} className="inline-block text-emerald-400 mb-2" weight="duotone" />
-              <br />Photobooth
+              Photobooth
             </motion.h1>
             <p className="subtitle text-zinc-400">
-              Create memorable moments with Korean-style photo strips
+              Tạo khoảnh khắc đáng nhớ với các frames chỉ có tại DevOrbit!<br />
+              Mừng UIT 20 tuổi!
             </p>
           </div>
           <motion.div
@@ -153,9 +162,9 @@ export function PhotoboothPage() {
             <DocumentUnlock isUnlocked={isUnlocked} onUnlock={handleUnlock} />
             <div className="orbit-card p-8 text-center">
               <p className="body-md text-zinc-400">
-                Upload a document to unlock exclusive photobooth frames and start creating photo strips with custom frames, including our special{" "}
+                Tải tài liệu lên để mở khóa khung photobooth độc quyền và bắt đầu tạo dải ảnh với khung tùy chỉnh, bao gồm khung{" "}
                 <span className="text-emerald-400 font-semibold">UIT 20th Anniversary</span>{" "}
-                frame!
+                đặc biệt!
               </p>
             </div>
           </motion.div>
@@ -171,21 +180,30 @@ export function PhotoboothPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
-        className="min-h-screen bg-orbit-bg pt-24 pb-12 px-4"
+        className="min-h-screen pt-24 pb-12 px-4"
       >
         <div className="mx-auto max-w-6xl">
           <div className="text-center mb-12">
+            <motion.span
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="section-label mb-8 inline-flex"
+            >
+              <ImageSquare size={12} className="h-3 w-3" weight="fill" />
+              Photobooth trực&nbsp;tuyến
+            </motion.span>
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: "easeOut" }}
               className="hero-display text-orbit-text mb-2"
             >
-              <ImageSquare size={48} className="inline-block text-emerald-400 mb-2" weight="duotone" />
-              <br />Photobooth
+              Photobooth
             </motion.h1>
             <p className="subtitle text-zinc-400 mb-4">
-              Create memorable moments with Korean-style photo strips
+              Tạo khoảnh khắc đáng nhớ với các frames chỉ có tại DevOrbit!<br />
+              Mừng UIT 20 tuổi!
             </p>
             <button
               onClick={() => {
@@ -194,7 +212,7 @@ export function PhotoboothPage() {
               }}
               className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-emerald-400 transition-colors"
             >
-              <LockSimple size={14} /> Lock feature
+              <LockSimple size={14} /> Khóa
             </button>
           </div>
 
@@ -258,8 +276,8 @@ export function PhotoboothPage() {
                   <ImageSquare size={20} className="text-emerald-400" weight="duotone" />
                 </div>
               </div>
-              <p className="text-sm font-semibold text-orbit-text mb-1">Responsive</p>
-              <p className="text-xs text-zinc-500">Works on all devices</p>
+              <p className="text-sm font-semibold text-orbit-text mb-1">Tương thích</p>
+              <p className="text-xs text-zinc-500">Hoạt động trên mọi thiết bị</p>
             </div>
             <div className="orbit-card p-5 text-center">
               <div className="flex justify-center mb-3">
@@ -267,8 +285,8 @@ export function PhotoboothPage() {
                   <Palette size={20} className="text-emerald-400" weight="duotone" />
                 </div>
               </div>
-              <p className="text-sm font-semibold text-orbit-text mb-1">Frames</p>
-              <p className="text-xs text-zinc-500">{FRAME_DEFINITIONS.length} styles available</p>
+              <p className="text-sm font-semibold text-orbit-text mb-1">Khung</p>
+              <p className="text-xs text-zinc-500">{FRAME_DEFINITIONS.length} kiểu có sẵn</p>
             </div>
             <div className="orbit-card p-5 text-center">
               <div className="flex justify-center mb-3">
@@ -276,8 +294,8 @@ export function PhotoboothPage() {
                   <Rocket size={20} className="text-emerald-400" weight="duotone" />
                 </div>
               </div>
-              <p className="text-sm font-semibold text-orbit-text mb-1">Fast</p>
-              <p className="text-xs text-zinc-500">Real-time compositing</p>
+              <p className="text-sm font-semibold text-orbit-text mb-1">Nhanh</p>
+              <p className="text-xs text-zinc-500">Ghép ảnh thời gian thực</p>
             </div>
           </motion.div>
         </div>

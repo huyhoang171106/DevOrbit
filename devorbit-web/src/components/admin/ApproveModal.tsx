@@ -26,7 +26,7 @@ export function ApproveModal({ candidate, onConfirm, onClose }: ApproveModalProp
       <div className="glass-card w-full max-w-lg p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-4">
           <h2 className="heading-5 text-clay-text">
-            Approve Repository
+            Phê duyệt kho
           </h2>
           <button
             type="button"
@@ -61,36 +61,36 @@ export function ApproveModal({ candidate, onConfirm, onClose }: ApproveModalProp
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="label">Description</label>
+            <label className="label">Mô tả</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
               className="input-field"
-              placeholder="A brief description of this repository..."
+              placeholder="Mô tả ngắn về kho này..."
             />
           </div>
 
           <div>
-            <label className="label">Tech Stacks</label>
+            <label className="label">Công nghệ</label>
             <input
               type="text"
               value={techStacks}
               onChange={(e) => setTechStacks(e.target.value)}
               className="input-field"
-              placeholder="e.g. React, Spring Boot, PostgreSQL"
+              placeholder="vd: React, Spring Boot, PostgreSQL"
             />
-            <p className="mt-1.5 text-xs text-clay-text-muted">Separate with commas</p>
+            <p className="mt-1.5 text-xs text-clay-text-muted">Phân cách bằng dấu phẩy</p>
           </div>
 
           <div>
-            <label className="label">Review Note</label>
+            <label className="label">Ghi chú duyệt</label>
             <input
               type="text"
               value={reviewNote}
               onChange={(e) => setReviewNote(e.target.value)}
               className="input-field"
-              placeholder="Optional note about this candidate"
+              placeholder="Ghi chú tùy chọn"
             />
           </div>
 
@@ -100,7 +100,7 @@ export function ApproveModal({ candidate, onConfirm, onClose }: ApproveModalProp
               onClick={onClose}
               className="btn-secondary"
             >
-              Cancel
+              Hủy
             </button>
             <button
               type="submit"
@@ -109,7 +109,7 @@ export function ApproveModal({ candidate, onConfirm, onClose }: ApproveModalProp
               <svg className="h-4 w-4 mr-2 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M20 6L9 17l-5-5" />
               </svg>
-              Confirm Approval
+              Xác nhận phê duyệt
             </button>
           </div>
         </form>

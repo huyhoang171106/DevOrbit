@@ -49,7 +49,7 @@ export function CourseKnowledgeGraph({ courseId }: { courseId: number }) {
       className="orbit-card-glow p-0 overflow-hidden"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
     >
       {/* Header */}
       <div className="px-8 py-5 border-b border-orbit-border/50 flex items-center justify-between">
@@ -81,7 +81,7 @@ export function CourseKnowledgeGraph({ courseId }: { courseId: number }) {
                   <Link
                     key={r.id}
                     to={`/courses/${r.courseId === courseId ? r.relatedCourseId : r.courseId}`}
-                    className="flex items-center justify-between px-4 py-3 rounded-2xl bg-orbit-surface/50 border border-orbit-border/50 hover:bg-orbit-accent/5 hover:border-orbit-accent/20 transition-all duration-300 group"
+                    className="flex items-center justify-between px-4 py-3 rounded-2xl bg-orbit-surface/50 border border-orbit-border/50 hover:bg-orbit-accent/5 hover:border-orbit-accent/20 transition-[background-color,border-color] duration-300 group"
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2.5 mb-0.5">
@@ -103,7 +103,7 @@ export function CourseKnowledgeGraph({ courseId }: { courseId: number }) {
                         </div>
                       )}
                     </div>
-                    <ArrowRight className="h-3 w-3 text-orbit-text-muted shrink-0 ml-4 group-hover:text-orbit-accent group-hover:translate-x-0.5 transition-all" weight="bold" />
+                    <ArrowRight className="h-3 w-3 text-orbit-text-muted shrink-0 ml-4 group-hover:text-orbit-accent group-hover:translate-x-0.5 transition-[color,transform]" weight="bold" />
                   </Link>
                 ))}
               </div>

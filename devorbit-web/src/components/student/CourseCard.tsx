@@ -38,7 +38,7 @@ export function CourseCard({ course }: { course: CourseSummary; index?: number }
             <Stack className="h-4 w-4" weight="regular" />
             {course.repoCount} Dự án
           </span>
-          <div className="flex items-center gap-2 text-[11px] font-bold text-orbit-accent opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+          <div className="flex items-center gap-2 text-[11px] font-bold text-orbit-accent opacity-0 group-hover:opacity-100 transition-[opacity,transform] duration-300 translate-x-2 group-hover:translate-x-0">
             Xem chi tiết
             <ArrowRight className="h-3.5 w-3.5" weight="bold" />
           </div>

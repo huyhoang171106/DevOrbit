@@ -1,0 +1,35 @@
+package vn.edu.uit.devorbit_api;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import vn.edu.uit.devorbit_api.repository.AdminUserRepository;
+import vn.edu.uit.devorbit_api.repository.CourseRepository;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@SpringBootTest
+@ActiveProfiles("test")
+class DevorbitApiApplicationTests {
+
+    @Autowired
+    private CourseRepository courseRepository;
+
+    @Autowired
+    private AdminUserRepository adminUserRepository;
+
+    @Test
+    void contextLoads() {
+    }
+
+    @Test
+    void shouldSeedAtLeastOneCourse() {
+        assertThat(courseRepository.count()).isGreaterThan(0);
+    }
+
+    @Test
+    void shouldSeedAdminUser() {
+        assertThat(adminUserRepository.findByUsername("admin")).isPresent();
+    }
+}

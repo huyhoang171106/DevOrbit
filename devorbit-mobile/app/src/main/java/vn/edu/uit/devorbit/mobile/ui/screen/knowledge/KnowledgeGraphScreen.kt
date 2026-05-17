@@ -26,6 +26,18 @@ fun KnowledgeGraphScreen(
     learningPath: List<GraphNode>,
     selectedNode: GraphNode?,
     onNodeClick: (GraphNode) -> Unit,
+    onInfoClick: (GraphNode) -> Unit = {},
+    searchQuery: String = "",
+    onSearchQueryChange: (String) -> Unit = {},
+    selectedSemester: Int? = null,
+    onSemesterFilterChange: (Int?) -> Unit = {},
+    completedNodeIds: Set<Long> = emptySet(),
+    onToggleComplete: (Long) -> Unit = {},
+    simulationMode: Boolean = false,
+    simulationFailedIds: Set<Long> = emptySet(),
+    onToggleSimulation: () -> Unit = {},
+    onClearSelection: () -> Unit = {},
+    totalNodeCount: Int = 0,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         // The interactive Galaxy - Spatial knowledge rendering

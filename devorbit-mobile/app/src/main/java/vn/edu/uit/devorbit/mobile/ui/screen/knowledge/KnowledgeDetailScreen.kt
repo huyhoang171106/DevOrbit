@@ -5,7 +5,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -27,6 +27,11 @@ fun KnowledgeDetailScreen(
     learningPath: List<GraphNode>,
     onSimulate: () -> Unit,
     onBack: () -> Unit,
+    onViewResources: (String) -> Unit = {},
+    onToggleComplete: (Long) -> Unit = {},
+    isCompleted: Boolean = false,
+    simulationMode: Boolean = false,
+    simulationFailedIds: Set<Long> = emptySet(),
 ) {
     val scrollState = rememberScrollState()
 
@@ -40,7 +45,7 @@ fun KnowledgeDetailScreen(
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) {
                 Icon(
-                    Icons.Default.ArrowBack,
+                    Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Quay lai",
                     tint = TextSecondary
                 )

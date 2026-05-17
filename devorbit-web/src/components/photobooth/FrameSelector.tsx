@@ -27,7 +27,7 @@ export function FrameSelector({
           <button
             key={frame.id}
             onClick={() => onFrameSelect(frame)}
-            className={`orbit-card p-4 text-left transition-all border-2 ${
+            className={`orbit-card p-4 text-left transition-[border-color,background-color] border-2 ${
               selectedFrame?.id === frame.id
                 ? "border-emerald-400 bg-emerald-400/10"
                 : "border-zinc-700/50 hover:border-emerald-400/50"

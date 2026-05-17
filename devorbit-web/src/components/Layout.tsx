@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ParticleNetwork } from './ParticleNetwork'
@@ -17,19 +17,26 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const isActive = (to: string) =>
     location.pathname === to || location.pathname.startsWith(to + '/')
 
+  // Only render particles on public pages — skip admin and galaxy (heavy 3D)
+  const showParticles = useMemo(() => {
+    return !location.pathname.startsWith('/admin') &&
+           !location.pathname.startsWith('/knowledge-graph') &&
+           !location.pathname.startsWith('/student')
+  }, [location.pathname])
+
   return (
     <div className="relative min-h-screen flex flex-col bg-orbit-bg selection:bg-orbit-accent selection:text-zinc-950">
-      <ParticleNetwork />
+      {showParticles && <ParticleNetwork />}
 
       {/* Top Navigation */}
-      <nav className="sticky top-0 z-50 w-full border-b border-orbit-border bg-orbit-bg/80 backdrop-blur-2xl">
+      <nav className="sticky top-0 z-50 w-full border-b border-orbit-border bg-orbit-bg/80 backdrop-blur-lg gpu">
         <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between px-6 md:px-10 h-[72px]">
           {/* Logo */}
           <Link
             to="/"
             className="relative flex items-center gap-3 font-heading text-xl font-black text-orbit-text tracking-tight group"
           >
-            <div className="relative h-9 w-9 rounded-xl bg-orbit-accent/10 border border-orbit-accent/20 flex items-center justify-center overflow-hidden group-hover:border-orbit-accent/40 transition-all duration-500">
+            <div className="relative h-9 w-9 rounded-xl bg-orbit-accent/10 border border-orbit-accent/20 flex items-center justify-center overflow-hidden group-hover:border-orbit-accent/40 transition-[border-color] duration-500">
               <Cube className="h-5 w-5 text-orbit-accent" weight="duotone" />
               <div className="absolute inset-0 bg-gradient-to-br from-orbit-accent/5 to-transparent" />
             </div>
@@ -44,7 +51,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <Link
                   key={link.to}
                   to={link.to}
-                  className={`relative flex items-center gap-2.5 px-5 text-[15px] font-bold transition-all duration-300 h-full group
+                  className={`relative flex items-center gap-2.5 px-5 text-[15px] font-bold transition-[color] duration-300 h-full group
                     ${isActive(link.to)
                       ? 'text-orbit-accent'
                       : 'text-orbit-text-secondary hover:text-orbit-text'
@@ -56,7 +63,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     <motion.div
                       layoutId="nav-indicator"
                       className="absolute bottom-0 left-4 right-4 h-[2px] bg-orbit-accent rounded-full"
-                      transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                     />
                   )}
                 </Link>
@@ -77,14 +84,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
           {/* Mobile hamburger */}
           <button
             type="button"
-            className="md:hidden relative h-10 w-10 rounded-xl bg-orbit-surface border border-orbit-border flex items-center justify-center text-orbit-text-secondary hover:text-orbit-text hover:border-orbit-accent/30 transition-all duration-300"
+            className="md:hidden relative h-10 w-10 rounded-xl bg-orbit-surface border border-orbit-border flex items-center justify-center text-orbit-text-secondary hover:text-orbit-text hover:border-orbit-accent/30 transition-[color,border-color] duration-300"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label={mobileOpen ? 'Đóng menu' : 'Mở menu'}
           >
             <div className="relative h-4 w-4 flex flex-col items-center justify-center gap-[3px]">
-              <span className={`block h-[2px] w-full bg-current rounded-full transition-all duration-300 ${mobileOpen ? 'rotate-45 translate-y-[2.5px]' : ''}`} />
-              <span className={`block h-[2px] w-full bg-current rounded-full transition-all duration-300 ${mobileOpen ? 'opacity-0' : ''}`} />
-              <span className={`block h-[2px] w-full bg-current rounded-full transition-all duration-300 ${mobileOpen ? '-rotate-45 -translate-y-[2.5px]' : ''}`} />
+              <span className={`block h-[2px] w-full bg-current rounded-full transition-[transform,opacity] duration-300 ${mobileOpen ? 'rotate-45 translate-y-[2.5px]' : ''}`} />
+              <span className={`block h-[2px] w-full bg-current rounded-full transition-[transform,opacity] duration-300 ${mobileOpen ? 'opacity-0' : ''}`} />
+              <span className={`block h-[2px] w-full bg-current rounded-full transition-[transform,opacity] duration-300 ${mobileOpen ? '-rotate-45 -translate-y-[2.5px]' : ''}`} />
             </div>
           </button>
         </div>
@@ -96,8 +103,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              transition={{ type: 'spring', stiffness: 100, damping: 20 }}
-              className="overflow-hidden border-b border-orbit-border bg-orbit-bg/95 backdrop-blur-2xl"
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="overflow-hidden border-b border-orbit-border bg-orbit-bg/95 backdrop-blur-lg"
             >
               <div className="px-6 py-6 space-y-1">
                 {navLinks.map((link) => {
@@ -107,7 +114,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       key={link.to}
                       to={link.to}
                       onClick={() => setMobileOpen(false)}
-                      className={`flex items-center gap-4 px-5 py-4 text-[16px] font-bold rounded-2xl transition-all duration-200
+                      className={`flex items-center gap-4 px-5 py-4 text-[16px] font-bold rounded-2xl transition-[background-color,color,border-color] duration-200
                         ${isActive(link.to)
                           ? 'text-orbit-accent bg-orbit-accent/5 border border-orbit-accent/20'
                           : 'text-orbit-text-secondary hover:text-orbit-text hover:bg-orbit-surface border border-transparent'

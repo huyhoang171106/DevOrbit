@@ -1,19 +1,33 @@
 # Agent Operating Guide
 
-This repository is in Harness v0. There is no product implementation yet.
+This repository contains a full-stack production application (**DevOrbit**)
+alongside the **Harness v0** collaboration framework.
 
-The current job of agents is to preserve and grow the collaboration harness
-before writing application code. Do not scaffold application source folders,
-platform shells, package scripts, CI, or tests unless a later story explicitly
-moves the project into implementation.
+- **Product**: DevOrbit — a multi-platform system for managing and discovering
+  academic source code, knowledge graphs, AI photobooth, and AI roadmaps for
+  UIT students. Built with Spring Boot 4 (Java 21), React 19 (Vite 6), and
+  Kotlin Jetpack Compose.
+- **Harness**: Harness v0 — the human-agent operating model for safe,
+  validated feature work. The harness was built first; product code was built
+  on top of it.
+
+Agent work splits into two categories:
+
+1. **Product work** — implementing features, fixing bugs, updating routes,
+   adding entities, writing API endpoints, modifying React components.
+2. **Harness work** — improving how humans and agents collaborate (docs,
+   templates, validation expectations, decision records).
+
+Do not create product scaffolding unless a story explicitly requires it.
+Do not break the harness when making product changes.
 
 ## Source Of Truth
 
 Read in this order:
 
 1. `README.md` for project status.
-2. `docs/HARNESS.md` for the human-agent operating model.
-3. `docs/FEATURE_INTAKE.md` before turning any prompt into work.
+2. `docs/HARNESS.md` for the human-agent operating model (GSD methodology — defines the interaction loop, task classification, risk lanes, and done definition).
+3. `docs/FEATURE_INTAKE.md` before turning any prompt into work (GSD methodology — classifies requests as spec slices, change requests, maintenance, or harness improvements).
 4. The user-provided spec or prompt, when one exists.
 5. `docs/product/` for current product contracts.
 6. `docs/ARCHITECTURE.md` before proposing implementation shape.

@@ -12,12 +12,12 @@ export function ApprovedRepoTable({ repos, onEdit, onDeactivate }: ApprovedRepoT
       <table className="min-w-full text-sm">
         <thead>
           <tr className="border-b border-clay-border bg-clay-surface">
-            <th className="text-left font-medium text-clay-text-muted py-3 px-4">Name</th>
-            <th className="text-left font-medium text-clay-text-muted py-3 px-4">Course</th>
-            <th className="text-left font-medium text-clay-text-muted py-3 px-4">Language</th>
-            <th className="text-left font-medium text-clay-text-muted py-3 px-4">Stars</th>
-            <th className="text-left font-medium text-clay-text-muted py-3 px-4">Tech Stacks</th>
-            <th className="text-right font-medium text-clay-text-muted py-3 px-4">Actions</th>
+            <th className="text-left font-medium text-clay-text-muted py-3 px-4">Tên</th>
+            <th className="text-left font-medium text-clay-text-muted py-3 px-4">Môn học</th>
+            <th className="text-left font-medium text-clay-text-muted py-3 px-4">Ngôn ngữ</th>
+            <th className="text-left font-medium text-clay-text-muted py-3 px-4">Sao</th>
+            <th className="text-left font-medium text-clay-text-muted py-3 px-4">Công nghệ</th>
+            <th className="text-right font-medium text-clay-text-muted py-3 px-4">Thao tác</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-clay-border bg-clay-bg">
@@ -29,7 +29,7 @@ export function ApprovedRepoTable({ repos, onEdit, onDeactivate }: ApprovedRepoT
                   <path d="M8 14s1.5 2 4 2 4-2 4-2" />
                   <path d="M9 9h.01M15 9h.01" />
                 </svg>
-                No approved repos.
+                Chưa có kho nào được duyệt
               </td>
             </tr>
           )}

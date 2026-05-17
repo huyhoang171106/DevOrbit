@@ -5,6 +5,7 @@ import { apiGet, apiStudentPost } from '../../lib/api'
 import { isStudentAuthenticated } from '../../lib/auth'
 import type { RepoSummary, AiResponse } from '../../types/api'
 import { ArrowLeft, Code, Star, MagicWand, GraduationCap, ArrowSquareOut, WarningCircle, GithubLogo, Bookmark, BookmarkSimple } from '@phosphor-icons/react'
+import { cleanAiContent } from '../../lib/contentCleaner'
 
 export function RepoDetailPage() {
   const { repoId } = useParams<{ repoId: string }>()
@@ -114,7 +115,7 @@ export function RepoDetailPage() {
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           className="mb-10"
         >
           <Link
@@ -132,7 +133,7 @@ export function RepoDetailPage() {
           className="space-y-8"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         >
           {/* Main card */}
           <div className="orbit-card-glow p-8 md:p-12">
@@ -145,13 +146,15 @@ export function RepoDetailPage() {
                 <h1 className="display-md">{repo.displayName}</h1>
               </div>
 
-              {repo.stars !== null && repo.stars > 0 && (
+              {repo.stars !== null && (
                 <div className="flex flex-col items-end">
-                  <div className="flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-amber-500/5 border border-amber-500/20">
-                    <Star className="h-5 w-5 text-amber-400" weight="fill" />
-                    <span className="text-xl font-black text-amber-300 tabular-nums">{repo.stars}</span>
+                  <div className={`flex items-center gap-2.5 px-5 py-3 rounded-2xl border ${repo.stars > 0 ? 'bg-amber-500/5 border-amber-500/20' : 'bg-orbit-surface border-orbit-border'}`}>
+                    <Star className={`h-5 w-5 ${repo.stars > 0 ? 'text-amber-400' : 'text-orbit-text-muted/50'}`} weight="fill" />
+                    <span className={`text-xl font-black tabular-nums ${repo.stars > 0 ? 'text-amber-300' : 'text-orbit-text-muted'}`}>
+                      {repo.stars.toLocaleString('en-US')}
+                    </span>
                   </div>
-                  <span className="text-[10px] font-black uppercase tracking-[0.15em] text-amber-500/60 mt-2">Lượt yêu thích</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.15em] text-orbit-text-muted/50 mt-2">Lượt yêu thích</span>
                 </div>
               )}
             </div>
@@ -215,8 +218,8 @@ export function RepoDetailPage() {
                 <h3 className="heading-4 mb-6 text-orbit-text flex items-center gap-3">
                   Phân tích nội dung
                 </h3>
-                <p className="body-md text-[14px] leading-[1.8] text-orbit-text-secondary">
-                  {summary.content}
+                <p className="body-md text-[14px] leading-[1.8] text-orbit-text-secondary whitespace-pre-line">
+                  {cleanAiContent(summary.content)}
                 </p>
               </div>
             )}
@@ -229,8 +232,8 @@ export function RepoDetailPage() {
                 <h3 className="heading-4 mb-6 text-orbit-text flex items-center gap-3">
                   Chiến lược học tập
                 </h3>
-                <p className="body-md text-[14px] leading-[1.8] text-orbit-text-secondary italic">
-                  {advice.content}
+                <p className="body-md text-[14px] leading-[1.8] text-orbit-text-secondary italic whitespace-pre-line">
+                  {cleanAiContent(advice.content)}
                 </p>
               </div>
             )}

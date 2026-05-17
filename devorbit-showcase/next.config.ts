@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Performance: enable Turbopack for faster dev (use 'next dev --turbopack')
+  images: {
+    formats: ['image/avif', 'image/webp'],
+  },
   /* config options here */
   // skip strict mode
   reactStrictMode: false,

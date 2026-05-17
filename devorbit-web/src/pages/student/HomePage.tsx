@@ -8,7 +8,7 @@ const staggerContainer = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.12, delayChildren: 0.2 },
+    transition: { staggerChildren: 0.06, delayChildren: 0.05 },
   },
 }
 
@@ -17,7 +17,7 @@ const fadeUp = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { type: 'spring' as const, stiffness: 100, damping: 20 },
+    transition: { type: 'spring' as const, stiffness: 300, damping: 30 },
   },
 }
 
@@ -44,11 +44,11 @@ export function HomePage() {
   return (
     <div className="w-full">
       {/* ─── HERO: Split-screen asymmetric ─── */}
-      <section className="relative w-full overflow-hidden min-h-[100dvh] flex items-center border-b border-orbit-border">
+      <section className="relative w-full overflow-hidden min-h-[100dvh] flex items-center border-b border-orbit-border gpu">
         {/* Background orbs */}
         <div className="absolute inset-0 pointer-events-none z-0">
-          <div className="absolute top-[-20%] right-[-10%] w-[70%] h-[80%] bg-orbit-accent/8 blur-[250px] rounded-full" />
-          <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[50%] bg-emerald-500/5 blur-[200px] rounded-full" />
+          <div className="absolute top-[-20%] right-[-10%] w-[70%] h-[80%] bg-orbit-accent/8 blur-[80px] rounded-full" />
+          <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[50%] bg-emerald-500/5 blur-[60px] rounded-full" />
           <div
             className="absolute inset-0 opacity-[0.015]"
             style={{ backgroundImage: 'radial-gradient(rgba(52, 211, 153, 0.5) 1px, transparent 1px)', backgroundSize: '48px 48px' }}
@@ -158,9 +158,9 @@ export function HomePage() {
                         <AnimatePresence mode="wait">
                           <motion.div
                             key={slideIndex}
-                            initial={{ opacity: 0, x: 30 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -30 }}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
                             transition={{ duration: 0.35 }}
                             className="flex flex-col items-center justify-center"
                           >
@@ -180,7 +180,7 @@ export function HomePage() {
                       {slides.map((_slide, i) => (
                         <div
                           key={i}
-                          className={`h-2 rounded-full transition-all duration-300 ${
+                          className={`h-2 rounded-full transition-[border-color,background-color] duration-300 ${
                             i === slideIndex ? 'w-6 bg-orbit-accent' : 'w-2 bg-orbit-border/30'
                           }`}
                         />
@@ -195,14 +195,14 @@ export function HomePage() {
       </section>
 
       {/* ─── AI TUTOR: Bento Section ─── */}
-      <section className="relative w-full overflow-hidden pt-28 md:pt-36 pb-16 md:pb-20">
+      <section className="relative w-full overflow-hidden pt-28 md:pt-36 pb-16 md:pb-20" style={{ contentVisibility: "auto" }}>
         <div className="w-full max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12">
           <motion.div
             className="max-w-xl mb-16"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-100px' }}
-            transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           >
             <span className="section-label mb-6 inline-flex">
               <MagicWand className="h-3 w-3" weight="fill" />
@@ -275,7 +275,7 @@ export function HomePage() {
             {/* Tóm tắt Card */}
             <motion.div
               variants={fadeUp}
-              className="orbit-card-glow p-10 md:p-12 flex flex-col items-start justify-between group"
+              className="orbit-card-glow p-10 md:p-12 flex flex-col items-start justify-between group will-change-transform"
             >
               <div className="h-16 w-16 rounded-2xl bg-orbit-accent/10 border border-orbit-accent/20 flex items-center justify-center mb-8 group-hover:scale-105 transition-transform duration-500">
                 <Code className="h-8 w-8 text-orbit-accent" weight="duotone" />
@@ -296,7 +296,7 @@ export function HomePage() {
             {/* Lộ trình Card */}
             <motion.div
               variants={fadeUp}
-              className="md:col-span-3 orbit-card-glow p-10 md:p-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-8 group"
+              className="md:col-span-3 orbit-card-glow p-10 md:p-12 flex flex-col will-change-transform md:flex-row items-start md:items-center justify-between gap-8 group"
             >
               <div className="flex items-start gap-6">
                 <div className="h-16 w-16 rounded-2xl bg-orbit-accent/10 border border-orbit-accent/20 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-500">
@@ -320,14 +320,14 @@ export function HomePage() {
       </section>
 
       {/* ─── DISCOVERY FEED ─── */}
-      <section className="relative py-28 md:py-36">
+      <section className="relative py-28 md:py-36" style={{ contentVisibility: "auto" }}>
         <div className="w-full max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12">
           <motion.div
             className="max-w-xl mb-16"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-100px' }}
-            transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           >
             <span className="section-label-muted mb-6 inline-flex">
               <Compass className="h-3 w-3" weight="regular" />

@@ -1,7 +1,4 @@
 /* ── Fontsource (MUST precede @tailwind per PostCSS rules) ── */
-@import '@fontsource/baloo-2/400.css';
-@import '@fontsource/baloo-2/500.css';
-@import '@fontsource/baloo-2/600.css';
 @import '@fontsource/baloo-2/700.css';
 @import '@fontsource/baloo-2/800.css';
 @import '@fontsource/inter/400.css';
@@ -9,8 +6,6 @@
 @import '@fontsource/inter/600.css';
 @import '@fontsource/inter/700.css';
 @import '@fontsource/geist-mono/400.css';
-@import '@fontsource/geist-mono/500.css';
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -78,13 +73,17 @@
   .glass-card { @apply orbit-card; }
   .glass-card-glow { @apply orbit-card-glow; }
   .clay-card-hover { @apply orbit-card-interactive; }
+
+  /* Force GPU compositing for animated elements */
+  .gpu { transform: translateZ(0); }
+  .gpu-3d { transform: translate3d(0, 0, 0); }
 }
 
 @layer components {
   /* ─── Cards ─── */
   .orbit-card {
     @apply bg-orbit-surface border border-orbit-border rounded-4xl p-8 
-           shadow-diffusion transition-all duration-500;
+           shadow-diffusion transition-[border-color,box-shadow,transform] duration-500;
   }
 
   .orbit-card:hover {
@@ -112,7 +111,7 @@
   .btn-primary {
     @apply inline-flex items-center justify-center gap-3 px-8 py-4 
            bg-orbit-accent text-zinc-950 font-bold rounded-2xl
-           transition-all duration-300 text-[14px] uppercase tracking-wider;
+           transition-[background-color,box-shadow,transform] duration-300 text-[14px] uppercase tracking-wider;
   }
 
   .btn-primary:hover {
@@ -130,7 +129,7 @@
   .btn-secondary {
     @apply inline-flex items-center justify-center gap-3 px-8 py-4 
            bg-transparent text-orbit-text border border-orbit-border 
-           rounded-2xl transition-all duration-300 text-[14px] uppercase tracking-wider font-semibold;
+           rounded-2xl transition-[background-color,border-color,color,transform] duration-300 text-[14px] uppercase tracking-wider font-semibold;
   }
 
   .btn-secondary:hover {
@@ -144,7 +143,7 @@
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 px-5 py-3 
            text-orbit-text-secondary font-medium rounded-2xl 
-           transition-all duration-200 text-[14px];
+           transition-[background-color,color] duration-200 text-[14px];
   }
 
   .btn-ghost:hover {
@@ -168,7 +167,7 @@
   .input-field {
     @apply w-full bg-orbit-surface border border-orbit-border rounded-2xl 
            px-6 py-4 text-orbit-text placeholder:text-orbit-text-muted/60
-           transition-all duration-300 text-[15px]
+           transition-[border-color,box-shadow] duration-300 text-[15px]
            focus:outline-none focus:border-orbit-accent/40 focus:ring-4 focus:ring-orbit-accent/5;
   }
 

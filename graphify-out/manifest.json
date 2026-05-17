@@ -15654,11 +15654,6 @@
     "ast_hash": "eda17b84ba3868cf463c59dd80f00840",
     "semantic_hash": ""
   },
-  "D:\\temp\\devorbit\\scratch\\check_pass.py": {
-    "mtime": 1778347064.4436574,
-    "ast_hash": "19430313f7aaddb815fc9a7c0e36e1c8",
-    "semantic_hash": ""
-  },
   "D:\\temp\\devorbit\\scratch\\compare_courses.py": {
     "mtime": 1778516175.914639,
     "ast_hash": "4ed46a6125621f90685834ba028faee0",
@@ -15679,16 +15674,6 @@
     "ast_hash": "92d8089cedc8f7d4a018c90eb1920620",
     "semantic_hash": ""
   },
-  "D:\\temp\\devorbit\\scratch\\login.json": {
-    "mtime": 1778347129.6844993,
-    "ast_hash": "4624a6830dc613991b9a96146fecb6e2",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\scratch\\login_wrong.json": {
-    "mtime": 1778347192.19355,
-    "ast_hash": "dce975f9289e33fa60175b323f52d649",
-    "semantic_hash": ""
-  },
   "D:\\temp\\devorbit\\scratch\\parse_curriculum.py": {
     "mtime": 1778515011.7236004,
     "ast_hash": "71b04f8fe0e07853ebf026159464b4f7",
@@ -15697,11 +15682,6 @@
   "D:\\temp\\devorbit\\scratch\\parse_se2025.py": {
     "mtime": 1778512564.416073,
     "ast_hash": "e3ab64ae6875851b77fe51595359b739",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\scratch\\PasswordCheck.java": {
-    "mtime": 1778347049.4129677,
-    "ast_hash": "7d3facd06d8a4a9953903cabf5a1d4c5",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\scripts\\auto-review-candidates.py": {
@@ -15789,16 +15769,6 @@
     "ast_hash": "0d33d8a0e141c7306e1d26e052951f63",
     "semantic_hash": ""
   },
-  "D:\\temp\\devorbit\\CHANGELOG.md": {
-    "mtime": 1778875160.8288767,
-    "ast_hash": "770f03393f4e09221efc635d651368ee",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\CLAUDE.md": {
-    "mtime": 1778873973.2408247,
-    "ast_hash": "406be686f033a45b0237bd793524e365",
-    "semantic_hash": ""
-  },
   "D:\\temp\\devorbit\\daa.uit.edu.vn_content_cu-nhan-nganh-ky-thuat-phan-mem-ap-dung-tu-khoa-20-2025.2026-05-11T12_20_52.521Z.md": {
     "mtime": 1778509085.8591242,
     "ast_hash": "295b198d93151a58cac2d21b559a88fa",
@@ -15814,21 +15784,6 @@
     "ast_hash": "d81276b0d48505e50c6ef53ad82aec23",
     "semantic_hash": ""
   },
-  "D:\\temp\\devorbit\\GSD-STYLE.md": {
-    "mtime": 1778874052.384248,
-    "ast_hash": "c3f1131c17c8797311925b2907619490",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\model_capabilities.yaml": {
-    "mtime": 1778847960.554179,
-    "ast_hash": "745e4df48a2c433edc0c24812b02edfa",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\PROJECT_RULES.md": {
-    "mtime": 1778873981.5567243,
-    "ast_hash": "ddf89e2ce47dbb22b2c517a215f91dfd",
-    "semantic_hash": ""
-  },
   "D:\\temp\\devorbit\\README.md": {
     "mtime": 1778875145.0898733,
     "ast_hash": "5571e9bbdd157edb2ae34e624d205a5c",
@@ -15837,11 +15792,6 @@
   "D:\\temp\\devorbit\\student.uit.edu.vn_content_bang-tom-tat-mon-hoc.2026-05-11T14_18_28.286Z.md": {
     "mtime": 1778762998.819265,
     "ast_hash": "51e763139b2edf810e9120af81438dc6",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.agent\\skills\\ui-ux-pro-max\\SKILL.md": {
-    "mtime": 1778874551.6135783,
-    "ast_hash": "44bc8b6597b0cd9b189bc5aaa6e92b21",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\.agent\\workflows\\add-phase.md": {
@@ -16299,11 +16249,6 @@
     "ast_hash": "e0052057fd261a9fc3ab5d449ed0c606",
     "semantic_hash": ""
   },
-  "D:\\temp\\devorbit\\.gemini\\skills\\ui-ux-pro-max\\SKILL.md": {
-    "mtime": 1778874517.6005602,
-    "ast_hash": "88fb205e35cc197a017296d2731977c7",
-    "semantic_hash": ""
-  },
   "D:\\temp\\devorbit\\.github\\prompts\\ui-ux-pro-max\\PROMPT.md": {
     "mtime": 1778874526.530327,
     "ast_hash": "1d4dc38f884f86ddf320aef630cddd7c",
@@ -16544,151 +16489,6 @@
     "ast_hash": "4833697fe7b4061f2fa4ba4328942d6a",
     "semantic_hash": ""
   },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\AGENTS.md": {
-    "mtime": 1778441135.8535676,
-    "ast_hash": "bcc5de3fc853dd0ab0e5600b7cd935df",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\AGENTS.md": {
-    "mtime": 1778441135.8462112,
-    "ast_hash": "988e0ead428a462fc2d3c2a36215597f",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\ARCHITECTURE.md": {
-    "mtime": 1778441135.8383038,
-    "ast_hash": "b9c272f101fa10fb2a1cf9fe925bb773",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\deployment-guide.md": {
-    "mtime": 1778441135.7416039,
-    "ast_hash": "2fab70777b5a17921ea0776bd26047f6",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\FEATURE_INTAKE.md": {
-    "mtime": 1778441135.83318,
-    "ast_hash": "91f76e652dc3f088f0e18f05fd8431a3",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\GLOSSARY.md": {
-    "mtime": 1778441135.8259873,
-    "ast_hash": "d414e8563d8ae87efee525520b5f9552",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\HARNESS.md": {
-    "mtime": 1778441135.8165164,
-    "ast_hash": "db2c3dfbb9dc50152546ad66915ea248",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\HARNESS_BACKLOG.md": {
-    "mtime": 1778441135.808536,
-    "ast_hash": "9de8696fb65f1f133d9dc1d8d6a5102b",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\model-selection-playbook.md": {
-    "mtime": 1778441135.7316477,
-    "ast_hash": "2e7807bd36bcb7e8ab3f8c7959e4421c",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\project-audit.md": {
-    "mtime": 1778441135.7090263,
-    "ast_hash": "a7de740a58a3a7de97a9d0a41ba29014",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\README.md": {
-    "mtime": 1778441135.8018162,
-    "ast_hash": "ade3e84cf54c4df19be2bcb78340c2dc",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\runbook.md": {
-    "mtime": 1778441135.7004397,
-    "ast_hash": "a917c4f0d6fcbf174e1354b5230735d9",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\TEST_MATRIX.md": {
-    "mtime": 1778441135.7946947,
-    "ast_hash": "8db373b4831d901e482996cb3c75b79b",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\decisions\\0001-harness-first-development.md": {
-    "mtime": 1778441135.7861922,
-    "ast_hash": "1d7c051a75ba9e546eb60ca5d789c7c8",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\decisions\\0002-post-spec-product-lifecycle.md": {
-    "mtime": 1778441135.7786407,
-    "ast_hash": "f7094712aa4f29776681f6deb2f0124f",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\decisions\\0003-generic-spec-intake-harness.md": {
-    "mtime": 1778441135.7700112,
-    "ast_hash": "d5ad786ecbadc37332f617c57d871a70",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\decisions\\README.md": {
-    "mtime": 1778441135.7577162,
-    "ast_hash": "853e16789dd0aeef428455ae101c2148",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\product\\README.md": {
-    "mtime": 1778441135.7175808,
-    "ast_hash": "bb6f7d09bbd6a17bb06de547a9272355",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\stories\\backlog.md": {
-    "mtime": 1778441135.6774466,
-    "ast_hash": "0e7d028ea034a9235da0efc3c7dc107b",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\stories\\README.md": {
-    "mtime": 1778441135.6885686,
-    "ast_hash": "6bcc29d74dd4e11ac79ec5c41b526350",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\templates\\decision.md": {
-    "mtime": 1778441135.6668315,
-    "ast_hash": "9b052ebacec4a9a842f4ab839e230772",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\templates\\spec-intake.md": {
-    "mtime": 1778441135.6152847,
-    "ast_hash": "830b445c44edd4b71b774c0b5661ce87",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\templates\\story.md": {
-    "mtime": 1778441135.6050196,
-    "ast_hash": "4e062f61b8a7d7e09fb80629650bf785",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\templates\\validation-report.md": {
-    "mtime": 1778441135.5960789,
-    "ast_hash": "86ded39d9adc11afa2a0ebb3f53d25e2",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\templates\\high-risk-story\\design.md": {
-    "mtime": 1778441135.655087,
-    "ast_hash": "752ee0e99f72c047506154859f6b0eba",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\templates\\high-risk-story\\execplan.md": {
-    "mtime": 1778441135.6439774,
-    "ast_hash": "e34091761dca583454765b23b6c4a0ab",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\templates\\high-risk-story\\overview.md": {
-    "mtime": 1778441135.6354291,
-    "ast_hash": "60b5afaa9881b2e8fd4871d55925f8f3",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\docs\\templates\\high-risk-story\\validation.md": {
-    "mtime": 1778441135.6253667,
-    "ast_hash": "1614afe335c5db052ae1905c490544bb",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\.harness-backup\\20260508153251\\scripts\\README.md": {
-    "mtime": 1778441135.5707867,
-    "ast_hash": "0462b02d736600f30fa120242e74e02b",
-    "semantic_hash": ""
-  },
   "D:\\temp\\devorbit\\.roo\\rules\\claude-mem-context.md": {
     "mtime": 1778492615.1405077,
     "ast_hash": "05fdb49e5ef90a3e8b36d968027c0ebe",
@@ -16712,196 +16512,6 @@
   "D:\\temp\\devorbit\\devorbit-api\\AGENTS.md": {
     "mtime": 1778873857.1287768,
     "ast_hash": "04a0e539af42eb959af560e864e28e44",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase\\SKILL.md": {
-    "mtime": 1778847953.869742,
-    "ast_hash": "4c96ef53a06a37828bac92b477ff852a",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase\\assets\\feedback-issue-template.md": {
-    "mtime": 1778847953.894513,
-    "ast_hash": "e2c8b4f1a20e46315dd7609540d9b8d4",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase\\references\\skill-feedback.md": {
-    "mtime": 1778847953.9145453,
-    "ast_hash": "c9fa098e2ec8bdce9d6a0f8a64d2c6c0",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\SKILL.md": {
-    "mtime": 1778847953.174847,
-    "ast_hash": "76523dd6bc0fb5d7893efa728a8707a6",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\advanced-full-text-search.md": {
-    "mtime": 1778847953.280514,
-    "ast_hash": "327f8367de51b0982b963f2928184c35",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\advanced-jsonb-indexing.md": {
-    "mtime": 1778847953.2980142,
-    "ast_hash": "413ba907ff4408d6fd3545f839101ebf",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\conn-idle-timeout.md": {
-    "mtime": 1778847953.3205106,
-    "ast_hash": "8bbe8b609d5241351672cefc19036db6",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\conn-limits.md": {
-    "mtime": 1778847953.3362632,
-    "ast_hash": "661b3efcf0e35136352b3923ff265d5c",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\conn-pooling.md": {
-    "mtime": 1778847953.3500628,
-    "ast_hash": "c90dab7d0ab47443b41f17d5bc9f04b3",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\conn-prepared-statements.md": {
-    "mtime": 1778847953.369871,
-    "ast_hash": "b53eb9dea11d6da338a8b6f9e67a3622",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\data-batch-inserts.md": {
-    "mtime": 1778847953.3864021,
-    "ast_hash": "6801a3a2d414dfd6a4c79970a37e795d",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\data-n-plus-one.md": {
-    "mtime": 1778847953.4018366,
-    "ast_hash": "c3ed0702a116d654602120bd5cd7713e",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\data-pagination.md": {
-    "mtime": 1778847953.415524,
-    "ast_hash": "59be210a420d34780949ce16d5b4a8d5",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\data-upsert.md": {
-    "mtime": 1778847953.4287853,
-    "ast_hash": "3ae132bce8b5368e1e4a426d55ca4567",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\lock-advisory.md": {
-    "mtime": 1778847953.441705,
-    "ast_hash": "ff943eb307d8b6e12cc6ab2bcb6e2d18",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\lock-deadlock-prevention.md": {
-    "mtime": 1778847953.458779,
-    "ast_hash": "685b04bcae3a0720e84f1507d243e959",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\lock-short-transactions.md": {
-    "mtime": 1778847953.4759269,
-    "ast_hash": "3c947d59e0359f3b236bf2ad1da52c61",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\lock-skip-locked.md": {
-    "mtime": 1778847953.4945724,
-    "ast_hash": "098d38542f44b656aa55923f06db74c1",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\monitor-explain-analyze.md": {
-    "mtime": 1778847953.5155623,
-    "ast_hash": "1fd19c373a0ff272129edd215a96e3a1",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\monitor-pg-stat-statements.md": {
-    "mtime": 1778847953.532153,
-    "ast_hash": "2f0cab7f72ad9dfe2cba469aaaacc733",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\monitor-vacuum-analyze.md": {
-    "mtime": 1778847953.5469844,
-    "ast_hash": "25e738451079707ac54d21364b5538e1",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\query-composite-indexes.md": {
-    "mtime": 1778847953.5684144,
-    "ast_hash": "5017f09940ed04b5b3ad836e426d9084",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\query-covering-indexes.md": {
-    "mtime": 1778847953.5861573,
-    "ast_hash": "fd05c38771229d97f2d4065d0af0df70",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\query-index-types.md": {
-    "mtime": 1778847953.6021128,
-    "ast_hash": "e2395c6ef69ea2f147c9ab1d18c7f879",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\query-missing-indexes.md": {
-    "mtime": 1778847953.6183982,
-    "ast_hash": "786767ec677862bad060fc1b4ae0a94f",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\query-partial-indexes.md": {
-    "mtime": 1778847953.6335378,
-    "ast_hash": "249d8fccca68c332e946b499531f21d8",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\schema-constraints.md": {
-    "mtime": 1778847953.6497529,
-    "ast_hash": "476ca283cfda6c5517d94c25c41de775",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\schema-data-types.md": {
-    "mtime": 1778847953.664581,
-    "ast_hash": "cd65e34969ebce0bce84f622f5072477",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\schema-foreign-key-indexes.md": {
-    "mtime": 1778847953.6918247,
-    "ast_hash": "8b99b21a07cadd2d85c6c16f416b5464",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\schema-lowercase-identifiers.md": {
-    "mtime": 1778847953.7162404,
-    "ast_hash": "632ea53a0da6fe7651e354f3744d998e",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\schema-partitioning.md": {
-    "mtime": 1778847953.7516627,
-    "ast_hash": "0f2fe9016bf9aa79dd30d7d6a4a03358",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\schema-primary-keys.md": {
-    "mtime": 1778847953.779755,
-    "ast_hash": "a732b1a95b6c231d47af14b715c6b9b0",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\security-privileges.md": {
-    "mtime": 1778847953.8162935,
-    "ast_hash": "e6fbc325f8f3af1cab3e1cb99d9f146a",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\security-rls-basics.md": {
-    "mtime": 1778847953.8338683,
-    "ast_hash": "82ee8b214f39f78c9e88061b6f890508",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\security-rls-performance.md": {
-    "mtime": 1778847953.8497384,
-    "ast_hash": "c506171f00f9f350382f2d85ca21dcfd",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\_contributing.md": {
-    "mtime": 1778847953.2244835,
-    "ast_hash": "32c800fa6621705288dc651da22c9366",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\_sections.md": {
-    "mtime": 1778847953.2419243,
-    "ast_hash": "8547fba7fd9fae3b6be916c6f55b0f62",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\.agents\\skills\\supabase-postgres-best-practices\\references\\_template.md": {
-    "mtime": 1778847953.2585678,
-    "ast_hash": "74ec7e2bdd6c8ddbb354fcceec038bc2",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\.pi\\agents\\supervisor.md": {
@@ -16959,54 +16569,14 @@
     "ast_hash": "dcbb97dc6c2d6060d69de2e14f0e152a",
     "semantic_hash": ""
   },
-  "D:\\temp\\devorbit\\devorbit-mobile\\.gsd\\DECISIONS.md": {
-    "mtime": 1778873907.7364614,
-    "ast_hash": "53daf83a82005d5a866aeea983355bea",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-mobile\\.gsd\\ROADMAP.md": {
-    "mtime": 1778873898.8190894,
-    "ast_hash": "8bf19fd0c03d4f75540d7618ea0adca3",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-mobile\\.gsd\\SPEC.md": {
-    "mtime": 1778873961.8470972,
-    "ast_hash": "9489ac18f838eaf14d04a0aeae6eb05c",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-mobile\\.gsd\\STATE.md": {
-    "mtime": 1778873890.5891714,
-    "ast_hash": "27c597005aba8fc202d26858d865cbd7",
-    "semantic_hash": ""
-  },
   "D:\\temp\\devorbit\\devorbit-mobile\\.gsd\\phases\\course-hub-enhancement-plan.md": {
     "mtime": 1778873954.292818,
     "ast_hash": "3a6fec233394b924b070ece519525c8b",
     "semantic_hash": ""
   },
-  "D:\\temp\\devorbit\\devorbit-mobile\\.gsd\\phases\\1\\1.1-PLAN.md": {
-    "mtime": 1778873916.972383,
-    "ast_hash": "d9f550fd8c8deff4e4a04eb905f9caad",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-mobile\\.gsd\\phases\\1\\1.2-PLAN.md": {
-    "mtime": 1778873922.2428875,
-    "ast_hash": "7062e3496564298e4d8f2a8a6ae943f1",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-mobile\\.gsd\\phases\\1\\1.3-PLAN.md": {
-    "mtime": 1778873929.267429,
-    "ast_hash": "9386399a1272ea47a41f1129ff88b635",
-    "semantic_hash": ""
-  },
   "D:\\temp\\devorbit\\devorbit-mobile\\.gsd\\phases\\1\\1.4-PLAN.md": {
     "mtime": 1778860449.0462031,
     "ast_hash": "6dce622c388a62a5ed246d223d31d1c4",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-mobile\\.gsd\\phases\\1\\RESEARCH.md": {
-    "mtime": 1778873940.1917436,
-    "ast_hash": "0cee8a558aa2155efa23054e5f348f7d",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\AGENTS.md": {
@@ -17852,11 +17422,6 @@
   "D:\\temp\\devorbit\\GitNexus\\gitnexus-web\\index.html": {
     "mtime": 1778491650.0811944,
     "ast_hash": "77f5cc48c2c5f2d3b2c733c92707f36e",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\openspec\\config.yaml": {
-    "mtime": 1778847960.568898,
-    "ast_hash": "60b0c7614b70a432f3f89ab2555cd7e7",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\plan-tot-nghiep\\dashboard-improvement-plan.md": {

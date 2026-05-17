@@ -566,7 +566,7 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
           </label>
           <button
             onClick={() => setShowEnglishMenu(!showEnglishMenu)}
-            className="flex items-center gap-3 px-5 py-3 min-w-[260px] rounded-2xl border border-orbit-border/30 bg-orbit-surface/60 text-[14px] font-medium text-orbit-text hover:border-orbit-accent/40 hover:bg-orbit-accent/[0.02] transition-all"
+            className="flex items-center gap-3 px-5 py-3 min-w-[260px] rounded-2xl border border-orbit-border/30 bg-orbit-surface/60 text-[14px] font-medium text-orbit-text hover:border-orbit-accent/40 hover:bg-orbit-accent/[0.02] transition-[border-color,background-color]"
           >
             <span className="flex-1 text-left">
               {ENG_LEVEL_LABELS[englishLevel]}
@@ -585,7 +585,7 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
                   <button
                     key={level}
                     onClick={() => { setEnglishLevel(level); setShowEnglishMenu(false) }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 text-left text-[14px] font-medium transition-all hover:bg-orbit-accent/5 ${
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-left text-[14px] font-medium transition-[background-color] hover:bg-orbit-accent/5 ${
                       englishLevel === level
                         ? 'text-orbit-accent bg-orbit-accent/5'
                         : 'text-orbit-text'
@@ -736,7 +736,7 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
             </p>
             <button
               onClick={() => setShowGuide(false)}
-              className="absolute top-2 right-2 h-5 w-5 rounded-lg flex items-center justify-center text-orbit-text-muted hover:text-orbit-text hover:bg-orbit-elevated/50 transition-all"
+              className="absolute top-2 right-2 h-5 w-5 rounded-lg flex items-center justify-center text-orbit-text-muted hover:text-orbit-text hover:bg-orbit-elevated/50 transition-[color,background-color]"
             >
               <X className="h-3 w-3" weight="bold" />
             </button>
@@ -837,14 +837,14 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
         </button>
         <button
           onClick={handleLoad}
-          className="flex items-center gap-3 px-6 py-3 rounded-2xl border border-orbit-border/40 text-[13px] font-bold uppercase tracking-[0.12em] text-orbit-text-secondary bg-orbit-elevated/60 hover:text-orbit-text hover:border-orbit-border/70 hover:bg-orbit-elevated transition-all shadow-sm"
+          className="flex items-center gap-3 px-6 py-3 rounded-2xl border border-orbit-border/40 text-[13px] font-bold uppercase tracking-[0.12em] text-orbit-text-secondary bg-orbit-elevated/60 hover:text-orbit-text hover:border-orbit-border/70 hover:bg-orbit-elevated transition-[color,border-color,background-color] shadow-sm"
         >
           <ClockCounterClockwise className="h-5 w-5" weight="regular" />
           Khôi phục
         </button>
         <button
           onClick={handleAutoArrange}
-          className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-orbit-accent/10 border border-orbit-accent/30 text-[13px] font-bold uppercase tracking-[0.12em] text-orbit-accent hover:bg-orbit-accent/20 transition-all shadow-sm"
+          className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-orbit-accent/10 border border-orbit-accent/30 text-[13px] font-bold uppercase tracking-[0.12em] text-orbit-accent hover:bg-orbit-accent/20 transition-[background-color] shadow-sm"
         >
           <Sparkle className="h-5 w-5" weight="fill" />
           Tự động sắp xếp

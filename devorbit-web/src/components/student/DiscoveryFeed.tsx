@@ -61,7 +61,7 @@ export function DiscoveryFeed() {
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-100px' }}
-        transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       >
         <div className="flex items-center justify-between mb-10">
           <div className="space-y-2">
@@ -81,8 +81,8 @@ export function DiscoveryFeed() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.05, type: 'spring', stiffness: 100, damping: 20 }}
-                className="px-8 py-4 rounded-3xl bg-orbit-surface border border-orbit-border hover:border-orbit-accent/30 hover:bg-orbit-accent/5 transition-all duration-300 cursor-default group"
+                transition={{ delay: i * 0.05, type: 'spring', stiffness: 300, damping: 30 }}
+                className="px-8 py-4 rounded-3xl bg-orbit-surface border border-orbit-border hover:border-orbit-accent/30 hover:bg-orbit-accent/5 transition-[border-color,background-color] duration-300 cursor-default group"
               >
                 <span className="text-[15px] font-bold text-orbit-text-secondary group-hover:text-orbit-accent transition-colors tracking-wide">
                   {stack}
@@ -102,7 +102,7 @@ export function DiscoveryFeed() {
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-100px' }}
-        transition={{ delay: 0.1, type: 'spring', stiffness: 100, damping: 20 }}
+        transition={{ delay: 0.1, type: 'spring', stiffness: 300, damping: 30 }}
       >
         <div className="flex items-center justify-between mb-10">
           <div className="space-y-2">
@@ -126,7 +126,7 @@ export function DiscoveryFeed() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.08, type: 'spring', stiffness: 80, damping: 18 }}
+                transition={{ delay: i * 0.08, type: 'spring', stiffness: 300, damping: 30 }}
               >
                 <RepoCard repo={repo} />
               </motion.div>

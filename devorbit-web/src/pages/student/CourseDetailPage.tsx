@@ -13,7 +13,7 @@ const stagger = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+    transition: { staggerChildren: 0.05, delayChildren: 0.03 },
   },
 }
 
@@ -22,7 +22,7 @@ const fadeUp = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { type: 'spring' as const, stiffness: 100, damping: 20 },
+    transition: { type: 'spring' as const, stiffness: 300, damping: 30 },
   },
 }
 
@@ -90,7 +90,7 @@ export function CourseDetailPage() {
   if (loading) {
     return (
       <div className="relative min-h-[80vh] flex items-center justify-center">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-orbit-accent/5 blur-[120px] rounded-full animate-pulse-soft" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-orbit-accent/5 blur-[40px] rounded-full animate-pulse-soft" />
         <div className="relative flex flex-col items-center gap-6">
           <div className="relative h-16 w-16">
             <div className="absolute inset-0 rounded-full border-2 border-orbit-accent/10" />
@@ -124,11 +124,11 @@ export function CourseDetailPage() {
   }
 
   return (
-    <div className="relative w-full min-h-screen pb-32">
+    <div className="relative w-full min-h-screen pb-32 gpu">
       {/* Ambient background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-0 right-0 w-[50%] h-[600px] bg-orbit-accent/5 blur-[150px] rounded-full -translate-y-1/4 translate-x-1/4" />
-        <div className="absolute bottom-0 left-0 w-[35%] h-[400px] bg-emerald-500/3 blur-[120px] rounded-full" />
+        <div className="absolute top-0 right-0 w-[50%] h-[600px] bg-orbit-accent/5 blur-[60px] rounded-full -translate-y-1/4 translate-x-1/4" />
+        <div className="absolute bottom-0 left-0 w-[35%] h-[400px] bg-emerald-500/3 blur-[40px] rounded-full" />
       </div>
 
       <div className="relative z-10 w-full max-w-[1300px] mx-auto px-6 md:px-10 lg:px-12 py-10">
@@ -137,11 +137,11 @@ export function CourseDetailPage() {
           className="mb-12 flex items-center gap-4"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         >
           <Link
             to="/courses"
-            className="group flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-orbit-surface border border-orbit-border hover:border-orbit-accent/30 hover:bg-orbit-accent/5 transition-all duration-300"
+            className="group flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-orbit-surface border border-orbit-border hover:border-orbit-accent/30 hover:bg-orbit-accent/5 transition-[border-color,background-color] duration-300"
           >
             <ArrowLeft className="h-4 w-4 text-orbit-text-muted group-hover:text-orbit-accent transition-colors group-hover:-translate-x-0.5 duration-300" weight="bold" />
             <span className="text-[11px] font-semibold uppercase tracking-[0.15em] text-orbit-text-secondary group-hover:text-orbit-text transition-colors">Danh mục</span>
@@ -230,9 +230,9 @@ export function CourseDetailPage() {
               return (
                 <div
                   key={i}
-                  className="orbit-card p-5 flex items-center gap-5 hover:border-orbit-border transition-all duration-500 group cursor-default"
+                  className="orbit-card p-5 flex items-center gap-5 hover:border-orbit-border transition-[border-color,opacity] duration-500 group cursor-default"
                 >
-                  <div className={`h-12 w-12 rounded-2xl bg-orbit-surface border border-orbit-border flex items-center justify-center group-hover:border-orbit-accent/20 group-hover:bg-orbit-accent/5 transition-all duration-500`}>
+                  <div className={`h-12 w-12 rounded-2xl bg-orbit-surface border border-orbit-border flex items-center justify-center group-hover:border-orbit-accent/20 group-hover:bg-orbit-accent/5 transition-[border-color,background-color] duration-500`}>
                     <Icon className={`h-6 w-6 text-orbit-text-muted group-hover:${stat.color} transition-colors duration-500`} weight="duotone" />
                   </div>
                   <div>
@@ -275,7 +275,7 @@ export function CourseDetailPage() {
             <motion.section
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, type: 'spring', stiffness: 100, damping: 20 }}
+              transition={{ delay: 0.3, type: 'spring', stiffness: 300, damping: 30 }}
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10">
                 <h2 className="heading-3 flex items-center gap-4">
@@ -304,8 +304,7 @@ export function CourseDetailPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{
                       type: 'spring',
-                      stiffness: 80,
-                      damping: 18,
+                      stiffness: 300, damping: 30,
                       delay: 0.4 + index * 0.08,
                     }}
                   >
@@ -334,7 +333,7 @@ export function CourseDetailPage() {
               className="sticky top-24 space-y-8"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4, type: 'spring', stiffness: 100, damping: 20 }}
+              transition={{ delay: 0.4, type: 'spring', stiffness: 300, damping: 30 }}
             >
               {/* Knowledge Graph sidebar */}
               <div className="relative group">

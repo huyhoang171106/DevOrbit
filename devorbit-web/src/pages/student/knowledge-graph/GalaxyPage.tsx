@@ -385,7 +385,7 @@ export default function GalaxyPage() {
                 initial={{ opacity: 0, scale: 0.92 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.92 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 className="pointer-events-auto w-[420px]"
               >
               <div className="orbit-glass-strong p-6 rounded-[2.5rem]">

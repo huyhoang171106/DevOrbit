@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "nodemailer": "^8.0.7",
+    "tsc": "^2.0.4"
+  }
+}

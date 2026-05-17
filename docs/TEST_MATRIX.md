@@ -2,9 +2,6 @@
 
 This file maps product behavior to proof.
 
-No product behavior has been defined or implemented yet. Do not mark a row
-implemented until tests or validation evidence exist.
-
 ## Status Values
 
 | Status | Meaning |

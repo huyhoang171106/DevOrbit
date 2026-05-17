@@ -7,7 +7,6 @@ build/
 *.class
 *.jar
 *.war
-!**/gradle/wrapper/gradle-wrapper.jar
 
 # Environment variables
 .env
@@ -61,7 +60,6 @@ node_modules/
 *.class
 *.jar
 *.war
-!**/gradle/wrapper/gradle-wrapper.jar
 tsconfig.tsbuildinfo
 
 # OS
@@ -96,16 +94,11 @@ CLAUDE.local.md
 # Generated artifacts
 *.hprof
 nul
-api_output*.json
 
 # Scratch / working data
 scratch/
 devorbit-api/scratch/
 scripts/scratch/
-devorbit-api/backups/
-
-# Local machine config
-local.properties
 
 # Nested cloned repo (not a submodule)
 GitNexus/

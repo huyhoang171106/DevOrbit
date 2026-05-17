@@ -45,7 +45,7 @@ export function KanbanColumn({
 
   return (
     <div
-      className={`flex flex-col flex-shrink-0 w-[260px] rounded-3xl transition-all duration-300 ${
+      className={`flex flex-col flex-shrink-0 w-[300px] rounded-3xl transition-all duration-300 ${
         isOver ? 'bg-orbit-accent/5 border-orbit-accent/30' : ''
       }`}
       style={{
@@ -63,7 +63,7 @@ export function KanbanColumn({
               className="h-2.5 w-2.5 rounded-full shrink-0"
               style={{ backgroundColor: color, boxShadow: `0 0 6px ${color}60` }}
             />
-            <span className="text-[11px] font-black uppercase tracking-[0.12em] text-orbit-text truncate">
+            <span className="text-[14px] font-black uppercase tracking-[0.12em] text-orbit-text truncate">
               {label}
             </span>
           </div>
@@ -72,13 +72,13 @@ export function KanbanColumn({
             {!isUnassigned && (
               <>
                 <span
-                  className={`text-[9px] font-black tabular-nums ${
+                  className={`text-[12px] font-black tabular-nums ${
                     isOverloaded ? 'text-rose-400' : isWarning ? 'text-amber-400' : 'text-zinc-400'
                   }`}
                 >
                   {totalCredits}
                 </span>
-                <span className="text-[8px] text-zinc-600 font-bold">/ {MAX_CREDITS_PER_SEMESTER} TC</span>
+                <span className="text-[11px] text-zinc-600 font-bold">/ {MAX_CREDITS_PER_SEMESTER} TC</span>
               </>
             )}
           </div>
@@ -108,11 +108,11 @@ export function KanbanColumn({
 
         {/* Course count */}
         <div className="flex items-center justify-between">
-          <span className="text-[9px] text-zinc-500 font-medium">
+          <span className="text-[12px] text-zinc-500 font-medium">
             {nodes.length} môn
           </span>
           {isOverloaded && (
-            <span className="text-[8px] text-rose-400 font-bold uppercase tracking-wider">
+            <span className="text-[11px] text-rose-400 font-bold uppercase tracking-wider">
               Quá tải
             </span>
           )}
@@ -122,11 +122,11 @@ export function KanbanColumn({
       {/* Drop zone */}
       <div
         ref={setNodeRef}
-        className="flex-1 p-3 space-y-2.5 min-h-[100px] overflow-y-auto"
+        className="flex-1 p-3 space-y-2.5 min-h-[100px]"
       >
         {nodes.length === 0 ? (
           <div className="flex items-center justify-center h-20 rounded-2xl border border-dashed border-white/5">
-            <span className="text-[10px] font-medium text-zinc-600">
+            <span className="text-[13px] font-medium text-zinc-600">
               Kéo thả môn học vào đây
             </span>
           </div>
@@ -154,3 +154,4 @@ export function KanbanColumn({
 }
 
 export { MAX_CREDITS_PER_SEMESTER }
+

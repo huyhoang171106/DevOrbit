@@ -11,5 +11,10 @@
 
   "_notes": "Variable expansion: ${VAR} hoặc ${VAR:-default}. Secret KHÔNG hard-code — luôn dùng env var. Per-user override (KHÔNG commit): <project>/.claude/settings.local.json với 'enabledMcpjsonServers' / 'disabledMcpjsonServers'.",
 
-  "mcpServers": {}
+  "mcpServers": {
+    "vercel": {
+      "type": "http",
+      "url": "https://mcp.vercel.com"
+    }
+  }
 }

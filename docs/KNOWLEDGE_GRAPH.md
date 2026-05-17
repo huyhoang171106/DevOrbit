@@ -54,4 +54,4 @@ Sơ đồ kiến thức đã được chuyển đổi từ dạng tự do (Force
 - **Backend**: `Spring Boot`, `Hibernate/JPA`, `PostgreSQL`.
 
 ---
-**Cập nhật lần cuối**: 11/05/2026 bởi Antigravity.
+**Cap nhat lan cuoi**: 11/05/2026.

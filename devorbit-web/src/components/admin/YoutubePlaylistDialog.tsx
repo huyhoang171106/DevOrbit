@@ -32,7 +32,7 @@ export function YoutubePlaylistDialog({ open, onClose, onSubmit, initial }: Prop
       <div className="glass-card w-full max-w-lg p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-4">
           <h2 className="heading-5 text-clay-text">
-            {initial ? 'Edit YouTube Playlist' : 'Add YouTube Playlist'}
+            {initial ? 'Sửa danh sách' : 'Thêm danh sách'}
           </h2>
           <button type="button" onClick={onClose} className="rounded-lg p-1 text-clay-text-muted hover:bg-glass-surface-raised hover:text-clay-text transition-colors">
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 18L18 6M6 6l12 12" /></svg>
@@ -40,24 +40,24 @@ export function YoutubePlaylistDialog({ open, onClose, onSubmit, initial }: Prop
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="label">Title *</label>
+            <label className="label">Tiêu đề *</label>
             <input name="title" value={form.title} onChange={handleChange} className="input-field" required />
           </div>
           <div>
-            <label className="label">URL *</label>
+            <label className="label">Đường dẫn *</label>
             <input name="url" value={form.url} onChange={handleChange} className="input-field" required placeholder="https://youtube.com/playlist?list=..." />
           </div>
           <div>
-            <label className="label">Channel Name</label>
+            <label className="label">Tên kênh</label>
             <input name="channelName" value={form.channelName ?? ''} onChange={handleChange} className="input-field" />
           </div>
           <div>
-            <label className="label">Description</label>
+            <label className="label">Mô tả</label>
             <textarea name="description" value={form.description ?? ''} onChange={handleChange} rows={3} className="input-field" />
           </div>
           <div className="flex justify-end gap-3 pt-4">
-            <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
-            <button type="submit" className="btn-primary">{initial ? 'Update' : 'Create'}</button>
+            <button type="button" onClick={onClose} className="btn-secondary">Hủy</button>
+            <button type="submit" className="btn-primary">{initial ? 'Cập nhật' : 'Thêm'}</button>
           </div>
         </form>
       </div>

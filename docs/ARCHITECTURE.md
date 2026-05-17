@@ -31,7 +31,7 @@ C4Context
 
 | Layer | Technology |
 |-------|-----------|
-| **Backend** | Java 21, Spring Boot 3.4.6, Spring Security, JWT, WebClient |
+| **Backend** | Java 21, Spring Boot 4.0.6, Spring Security, JWT, WebClient |
 | **Database** | PostgreSQL 16 |
 | **Web** | React 19, Vite 6, TypeScript, Tailwind CSS 3.4, React Router 7 |
 | **State (Web)** | TanStack React Query 5, Zustand 5 |
@@ -68,6 +68,8 @@ graph TB
     anrc[AdminCourseRelationshipController]
     anc[AdminNoteController]
     arc2[AdminCourseResourceController]
+    pfc[PhotoboothFrameController]
+    fuc[FileUploadController]
     pc[PublicCourseController]
     prc[PublicRepoController]
     pcc[PublicCourseRelationshipController]
@@ -75,6 +77,8 @@ graph TB
     pai[PublicAiController]
     pdc[PublicDiscoveryController]
     hc[HealthController]
+    sac[StudentAuthController]
+    sbc[StudentBookmarkController]
   end
 
   subgraph Service Layer
@@ -93,6 +97,11 @@ graph TB
     js[JwtService]
     ais[AiService]
     tss[TechStackService]
+    pfs[PhotoboothFrameService]
+    sas[StudentAuthService]
+    sbs[StudentBookmarkService]
+    es[EmailService]
+    sss[SupabaseStorageService]
   end
 
   subgraph Repository Layer
@@ -111,6 +120,9 @@ graph TB
     aur[AdminUserRepository]
     sur[StudentUserRepository]
     tr[TechStackRepository]
+    pfr[PhotoboothFrameRepository]
+    sbr[StudentBookmarkRepository]
+    or[OtpRepository]
   end
 
   subgraph Entity Layer
@@ -129,6 +141,9 @@ graph TB
     e_ca[CourseArticle]
     e_ct[CourseTutorial]
     e_cyp[CourseYoutubePlaylist]
+    e_pf[PhotoboothFrame]
+    e_sb[StudentBookmark]
+    e_o[Otp]
   end
 
   subgraph Security / Config
@@ -136,6 +151,8 @@ graph TB
     jf[JwtAuthenticationFilter]
     gc[GithubClientConfig]
     oac[OpenApiConfig]
+    jc[JacksonConfig]
+    egc[ElectiveGroupConfig]
   end
 
   ac --> cs
@@ -176,23 +193,27 @@ graph LR
     ptsc["/tech-stacks"] --> tss[TechStackService]
     pai["/ai/{repoId}"] --> ais[AiService]
     pdc["/discovery"] --> grs
-    sl["/student/login"] --> aas[AdminAuthService]
-    sr["/student/register"] --> aas
+    prd["/roadmap/generate"] --> ls[LearningRoadmapService]
+    ppf["/photobooth-frames"] --> pfs[PhotoboothFrameService]
+    psc["/file/upload"] --> fuc[FileUploadController]
+    sl["/student/login"] --> sas[StudentAuthService]
+    sr["/student/register"] --> sas
+    sb["/student/bookmarks"] --> sbs[StudentBookmarkService]
+    sp["/student/profile"] --> sas
   end
 
   subgraph "Admin API (/api/admin)"
-    aa["/auth/login"] --> aas
+    aa["/auth/login"] --> aas[AdminAuthService]
     ac["/courses"] --> cs
     ac2["/courses/{id}"] --> cs
     acr["/courses/{id}/resources/**"] --> cas/cts/cyps
-    ag["/scan"] --> gss[GithubScanService]
-    agc["/repo-candidates"] --> rcs[RepoCandidateService]
-    agc2["/repo-candidates/{id}/approve"] --> rcs
-    agc3["/repo-candidates/{id}/reject"] --> rcs
+    ag["/scan/**"] --> gss[GithubScanService]
+    agc["/repo-candidates/**"] --> rcs[RepoCandidateService]
     ar["/repos/{id}"] --> grs
     arm["/roadmaps/**"] --> ls[LearningRoadmapService]
     arl["/relationships"] --> crs
-    an["/notes"] --> ans[AdminNoteService]
+    an["/notes/**"] --> ans[AdminNoteService]
+    apf["/photobooth-frames/**"] --> pfs[PhotoboothFrameService]
   end
 ```
 
@@ -352,21 +373,21 @@ graph TB
   end
 
   subgraph "Student Pages"
-    Home
+    Home["/"]
     CourseList["/courses"]
     CourseDetail["/courses/:id"]
-    RepoDetail["/repos/:id"]
-    KnowledgeGraph["/knowledge-graph (2D ForceGraph)"]
-    Galaxy["/galaxy (3D Three.js)"]
+    RepoDetail["/repos/:repoId"]
+    KnowledgeGraph["/knowledge-graph (3D Galaxy + 2D Switch)"]
     PhotoBooth["/photobooth"]
     PhotoGallery["/photograph"]
-    Bookmarks["/bookmarks"]
-    Login["/login"]
+    Bookmarks["/student/bookmarks"]
+    Login["/student/login"]
   end
 
   subgraph "Admin Pages"
     Dashboard["/admin"]
     AdminCourses["/admin/courses"]
+    AdminCourseDetail["/admin/courses/:id"]
     AdminCourseResources["/admin/courses/:id/resources"]
     Scan["/admin/scan"]
     Candidates["/admin/candidates"]
@@ -374,6 +395,7 @@ graph TB
     Roadmaps["/admin/roadmaps"]
     Relationships["/admin/relationships"]
     Notes["/admin/notes"]
+    PhotoboothFrames["/admin/photobooth-frames"]
     AdminLogin["/admin/login"]
   end
 
@@ -382,7 +404,6 @@ graph TB
   public --> CourseDetail
   public --> RepoDetail
   public --> KnowledgeGraph
-  public --> Galaxy
   public --> PhotoBooth
   public --> PhotoGallery
   public --> Bookmarks
@@ -390,6 +411,7 @@ graph TB
 
   admin --> Dashboard
   admin --> AdminCourses
+  admin --> AdminCourseDetail
   admin --> AdminCourseResources
   admin --> Scan
   admin --> Candidates
@@ -397,6 +419,7 @@ graph TB
   admin --> Roadmaps
   admin --> Relationships
   admin --> Notes
+  admin --> PhotoboothFrames
   admin --> AdminLogin
 ```
 
@@ -423,6 +446,7 @@ graph TB
     AdminCourseResourcesPage --> YoutubePlaylistDialog
     AdminCourseResourcesPage --> ArticleDialog
     AdminCourseResourcesPage --> TutorialDialog
+    AdminPhotoboothFramesPage --> FrameEditor
   end
 
   subgraph "Student Components"
@@ -441,9 +465,6 @@ graph TB
     CourseListPage --> CourseCard
     RepoDetailPage --> RepoCard
     RepoDetailPage --> RepoFilterBar
-  end
-
-  subgraph "Photobooth Components"
     PhotoboothPage --> DocumentUnlock
     PhotoboothPage --> FrameSelector
     PhotoboothPage --> PhotoUploadSection
@@ -451,7 +472,27 @@ graph TB
     PhotoboothPage --> DownloadSection
     PreviewCanvas --> photoCompositor[lib/photoCompositor.ts]
     FrameSelector --> frameDefinitions[lib/frames/frameDefinitions.ts]
+    PhotographPage --> PhotoGalleryViewer
   end
+
+  subgraph "Galaxy 3D Subcomponents"
+    GalaxyCanvas --> Starfield
+    GalaxyCanvas --> OrbitRings
+    GalaxyCanvas --> GalaxyCamera
+    GalaxyCanvas --> PlanetPositionContext["PlanetPositionContext (Context)"]
+    GalaxyCanvas --> WormholeSystem
+    ConstellationSystem --> OrbitalGroup
+    OrbitalGroup --> Planet
+    OrbitalGroup --> PlanetTrail
+    GalaxyPage --> GalaxyOverlay
+    GalaxyPage --> TimeTravelSlider
+  end
+
+  %% NOTE: The 3D subcomponents above exist on disk but are dead code pending cleanup.
+  %% GalaxyPage renders a 2D KanbanBoard, not a 3D galaxy. The 3D components
+  %% (GalaxyCanvas, ConstellationSystem, WormholeSystem, Starfield, OrbitRings,
+  %% GalaxyCamera, OrbitalGroup, Planet, PlanetTrail, GalaxyOverlay, TimeTravelSlider)
+  %% are preserved for potential future revival.
 ```
 
 ### State Management
@@ -463,6 +504,7 @@ graph TB
 | **Galaxy/3D state** | Zustand store (`useGalaxyStore`) — simulation mode, time travel, failed/blocked nodes |
 | **Planet positions (3D)** | React Context (`PlanetPositionContext`) — shared position map for trail rendering |
 | **Auth tokens** | `localStorage` (`devorbit-admin-token` / `devorbit-student-token`) via `lib/auth.ts` |
+| **Photobooth unlock** | `sessionStorage` — document unlock state per session |
 
 ## Data Flow: Knowledge Graph
 
@@ -478,7 +520,7 @@ flowchart LR
   subgraph "Web Frontend"
     hook["useKnowledgeGraph()\nReact Query"] --> fg2d["ForceGraph2D (2D)"]
     hook --> gl["galaxyLayout.ts\nspiralize()"]
-    gl --> gal["GalaxyPage (3D)"]
+    gl --> gal["GalaxyPage (2D Kanban)"]
     fg2d --> sim["Simulation Mode\ncomputeBlocked()"]
     gal --> ss[Zustand Store]
     sim --> ov["GalaxyOverlay\nRisk Analysis"]
@@ -552,21 +594,21 @@ services:
 devorbit/
 ├── devorbit-api/           # Spring Boot backend
 │   └── src/main/java/vn/edu/uit/devorbit_api/
-│       ├── config/         # Security, JWT, GitHub client, OpenAPI
-│       ├── controller/     # 17 REST controllers
-│       ├── dto/            # 30+ request/response DTOs
-│       ├── entity/         # 16 JPA entities
-│       ├── repository/     # 16 Spring Data repositories
-│       └── service/        # 15 business services
+│       ├── config/         # Security, JWT, GitHub client, OpenAPI, Jackson
+│       ├── controller/     # 21 REST controllers
+│       ├── dto/            # 43 request/response DTOs
+│       ├── entity/         # 18 JPA entities + 4 enums
+│       ├── repository/     # 18 Spring Data repositories
+│       └── service/        # 25 business services (20 main + 5 AI sub-services)
 ├── devorbit-web/           # React SPA
 │   └── src/
 │       ├── components/     # Reusable UI (admin, student, photobooth)
 │       ├── hooks/          # Custom hooks (useKnowledgeGraph)
-│       ├── lib/            # API client, auth, colors, photoCompositor
-│       ├── pages/          # 20 route pages (admin + student)
+│       ├── lib/            # API client, auth, colors, photoCompositor, frames
+│       ├── pages/          # 22 route pages (admin + student + subdirs)
 │       └── types/          # TypeScript interfaces
 ├── devorbit-mobile/        # Kotlin Android app
-├── devorbit-showcase/      # Next.js showcase site
-├── docs/                   # Architecture, glossary, test matrix
-└── .gsd/                   # GSD methodology artifacts
+├── devorbit-showcase/      # Next.js showcase site (WIP)
+├── docs/                   # Architecture, glossary, test matrix, decisions, stories, plans
+└── docker-compose.yml      # 3 services (db, api, web)
 ```

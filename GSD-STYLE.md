@@ -1,42 +1,39 @@
 # GSD-STYLE.md
 
-> **Comprehensive reference.** Core rules auto-load from `.gemini/GEMINI.md`. This document provides deep explanations and examples for when you need the full picture.
+> **Comprehensive reference for DevOrbit.**
 
-This document explains how GSD is written so future AI instances can contribute consistently.
+This document explains how DevOrbit documentation and plans are written so AI
+agents can contribute consistently.
 
 ## Core Philosophy
 
-GSD is a **meta-prompting system** where every file is both implementation and specification. Files teach the AI how to build software systematically. The system optimizes for:
+DevOrbit uses GSD methodology adapted for a full-stack production application.
+The system optimizes for:
 
 - **Solo developer + AI workflow** (no enterprise patterns)
 - **Context engineering** (manage the context window deliberately)
-- **Plans as prompts** (PLAN.md files are executable, not documents to transform)
+- **Plans as executable prompts** (PLAN.md / story files are executed directly)
 
 ---
 
 ## File Structure Conventions
 
-### Workflows (`.agent/workflows/*.md`)
+### Workflows
 
-Slash commands the user invokes. Each workflow:
-- Has YAML frontmatter with `description`
-- Contains XML-structured process blocks
-- Ends with "Next Steps" routing
+Project workflows are defined in `AGENTS.md` at the project root. Key workflows:
 
-### Skills (`.agents/skills/*/SKILL.md`)
+- **Feature intake**: Classify prompts using `docs/FEATURE_INTAKE.md`
+- **Story packets**: Create/update stories under `docs/stories/`
+- **Implementation**: Edit source files in `devorbit-api/`, `devorbit-web/`, etc.
+- **Validation**: Update `docs/TEST_MATRIX.md` with proof
 
-Specialized agent behaviors. Each skill:
-- Has YAML frontmatter with `name` and `description`
-- Contains detailed methodology
-- Is referenced by parent workflows
+### Templates (`.docs/templates/`)
 
-### Templates (`.gsd/templates/*.md`)
+Reusable document structures for stories, decisions, specs, and validation reports.
 
-Reusable document structures. Copy, don't reference.
+### Stories (`docs/stories/`)
 
-### References (`.gsd/examples/*.md`)
-
-Read-only documentation and examples.
+Active and planned story packets describing bounded feature work.
 
 ---
 

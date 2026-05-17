@@ -1,26 +1,75 @@
-# mohitvirli.github.io
-Hello there! I'm Mohit Virli, frontend engineer by profession, a creative at heart.
+# UIT 20th Anniversary Showcase
 
-This the updated version of my personal website which is now in 3D. LFG!
+An immersive 3D interactive showcase celebrating 20 years of the University of Information Technology (UIT) — VNU-HCM. Built with Next.js, React Three Fiber (R3F), and GSAP, this project takes visitors on a scroll-driven journey through UIT's history, achievements, and the DevOrbit ecosystem.
 
-Checkout the live version at [mohitvirli.github.io](https://mohitvirli.github.io/)
+> **Live site:** [uit.edu.vn](https://uit.edu.vn)
+
+## Features
+
+- **3D Window Metaphor** — Scroll to open the window and reveal the experience section
+- **UIT History Timeline** — Navigate 20 milestone years (2006–2026) with animated 3D path and timeline points
+- **DevOrbit Ecosystem** — Explore 8 smart learning tools via interactive feature panels
+- **Dual Theme** — Light/dark mode toggle with persisted preference
+- **Responsive** — Optimized for desktop and mobile with device-specific interactions
+- **Smooth Animations** — GSAP-powered scroll animations, camera transitions, and portal effects
 
 ## Tech Stack
 
-- Next.js
-- React
-- React-three-fiber
-- DREI
-- GSAP
-- Zustand
-- Tailwind
+| Category     | Technology          | Purpose                         |
+|-------------|---------------------|---------------------------------|
+| Framework   | Next.js 16          | App Router, SSR, static export  |
+| UI          | React 19            | Component model                 |
+| 3D Engine   | Three.js            | WebGL rendering                 |
+| R3F         | @react-three/fiber  | React bindings for Three.js     |
+| R3D Utils   | @react-three/drei   | Helpers, controls, materials    |
+| Animation   | GSAP                | Scroll-triggered animations     |
+| State       | Zustand             | Theme, scroll, portal stores    |
+| Styling     | Tailwind CSS 4      | Utility-first CSS               |
+| Language    | TypeScript          | Type safety                     |
+| Package Mgr | npm / Bun           | Dependency management           |
 
-## Preview
-Some of the sample images from the app. Better to check it out live!
+## Getting Started
 
-<img width="1242" alt="image" src="https://github.com/user-attachments/assets/877b0685-8d86-4f8b-b123-f3cc17d46fc7" />
-<img width="1241" alt="image" src="https://github.com/user-attachments/assets/09a92647-1781-4124-ba3f-1d6fb66f6974" />
-<img width="1241" alt="image" src="https://github.com/user-attachments/assets/a15017f4-f1f2-459e-b895-b3c14703635b" />
-<img width="1428" height="830" alt="image" src="https://github.com/user-attachments/assets/9f78c2e8-991c-4507-8ffb-72e61513c031" />
+```bash
+# Install dependencies
+npm install
 
+# Run development server (with Webpack)
+npm run dev
 
+# Build for production
+npm run build
+
+# Start production server
+npm start
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Project Structure
+
+```
+app/
+  page.tsx              # Entry point (CanvasLoader > ScrollWrapper > Hero/Experience/Footer)
+  layout.tsx            # Root layout, fonts, Google Analytics, metadata
+  globals.css           # Tailwind, custom styles, scrollbar, theme variables
+  constants/            # Data (work timeline, projects, footer links, DevOrbit features)
+  stores/               # Zustand stores (portalStore, scrollStore, themeStore)
+  types/                # TypeScript interfaces
+  components/
+    common/             # CanvasLoader, ScrollWrapper, ThemeSwitcher, ProgressLoader, etc.
+    hero/               # Hero section (3D window, clouds, stars, text)
+    experience/         # Portal grid (Work timeline + DevOrbit features)
+      work/             # UIT history timeline (3D animated path)
+      projects/         # DevOrbit feature panels with Wanderer model
+    models/             # 3D models (Cloud, Stars, WindowModel, UITCore, Memory, Wanderer)
+    footer/             # 3D footer with social links
+```
+
+## Deployment
+
+The project is deployed to **GitHub Pages** via a GitHub Actions workflow (`.github/workflows/nextjs.yml`). The build generates a static export (`next build`) and uploads the `out/` directory.
+
+## License
+
+This project is developed for the UIT 20th Anniversary celebration.

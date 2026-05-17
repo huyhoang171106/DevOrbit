@@ -7,11 +7,20 @@ export default defineConfig({
   server: {
     port: 5173,
     allowedHosts: ["provide-significance-consumer-guys.trycloudflare.com"],
+    watch: { usePolling: false },
+    fs: { cached: true },
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://104.214.179.110:8080',
         changeOrigin: true,
       }
     }
-  }
+  },
+  build: {
+    target: 'esnext',
+    modulePreload: { polyfill: false },
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', 'framer-motion', '@phosphor-icons/react'],
+  },
 })

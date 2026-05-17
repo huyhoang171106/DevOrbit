@@ -32,7 +32,7 @@ public class PhotoboothFrame {
     @JdbcTypeCode(SqlTypes.JSON)
     private JsonNode slots;
 
-    @Column(name = "overlay_image_url")
+    @Column(name = "overlay_image_url", columnDefinition = "TEXT")
     private String overlayImageUrl;
 
     @Column(columnDefinition = "text default 'normal'")

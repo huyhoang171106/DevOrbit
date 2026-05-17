@@ -2,18 +2,20 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useRequireAuth } from "../../lib/hooks";
 import { frameService } from "../../lib/frames/frameService";
-import { reloadFrames } from "../../lib/frames/frameDefinitions";
+import { reloadFrames, normalizeStoredFrameSlots } from "../../lib/frames/frameDefinitions";
 import type { StoredFrame, StoredSlot } from "../../types/frames";
 
-const CANVAS_SIZE = 2000;
+const LOGICAL_MAX = 2000;
+
+// ─── Canvas helpers ───
 
 function emptySlots(count: number): StoredSlot[] {
-  const h = Math.round(CANVAS_SIZE / count);
+  const h = Math.round(LOGICAL_MAX / count);
   return Array.from({ length: count }, (_, i) => ({
     id: `slot${i + 1}`,
     x: 0,
     y: i * h,
-    width: CANVAS_SIZE,
+    width: LOGICAL_MAX,
     height: h,
     borderRadius: 0,
   }));
@@ -25,7 +27,7 @@ export function AdminPhotoboothFramesPage() {
   const [frames, setFrames] = useState<StoredFrame[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [editing, setEditing] = useState<StoredFrame | null>(null);
+  const [editingSlots, setEditingSlots] = useState<StoredFrame | null>(null);
   const [showUpload, setShowUpload] = useState(false);
 
   const load = useCallback(async () => {
@@ -33,9 +35,10 @@ export function AdminPhotoboothFramesPage() {
     setError(null);
     try {
       const list = await frameService.list();
-      setFrames(list);
+      const normalized = await Promise.all(list.map(normalizeStoredFrameSlots));
+      setFrames(normalized);
     } catch (err: any) {
-      setError(err?.message || "Failed to load frames");
+      setError(err?.message || "Không thể tải danh sách khung");
     }
     setLoading(false);
   }, []);
@@ -45,43 +48,61 @@ export function AdminPhotoboothFramesPage() {
   }, [load]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this frame?")) return;
+    if (!confirm("Xóa khung này?")) return;
     setError(null);
-    const ok = await frameService.delete(id);
-    if (!ok) { setError("Failed to delete frame"); return; }
-    await reloadFrames();
-    load();
+    try {
+      const ok = await frameService.delete(id);
+      if (!ok) { setError("Xóa khung thất bại"); return; }
+      reloadFrames();
+      load();
+    } catch (e: any) {
+      setError(e?.message || "Xóa khung thất bại");
+    }
   };
 
   const handleRename = async (frame: StoredFrame, newDisplayName: string) => {
     setError(null);
-    const ok = await frameService.upsert({ ...frame, displayName: newDisplayName });
-    if (!ok) { setError("Failed to rename frame"); return; }
-    await reloadFrames();
-    setFrames((prev) => prev.map((f) => (f.id === frame.id ? { ...f, displayName: newDisplayName } : f)));
+    try {
+      const ok = await frameService.upsert({ ...frame, displayName: newDisplayName });
+      if (!ok) { setError("Đổi tên khung thất bại"); return; }
+      reloadFrames();
+      setFrames((prev) => prev.map((f) => (f.id === frame.id ? { ...f, displayName: newDisplayName } : f)));
+    } catch (e: any) {
+      setError(e?.message || "Đổi tên khung thất bại");
+    }
   };
 
   const handleSaveSlots = async (updated: StoredFrame) => {
     setError(null);
-    const ok = await frameService.upsert(updated);
-    if (!ok) { setError("Failed to save slots"); return; }
-    await reloadFrames();
-    setEditing(null);
-    load();
+    try {
+      const ok = await frameService.upsert(updated);
+      if (!ok) { setError("Lưu slot thất bại"); setEditingSlots(null); return; }
+      const saved = await frameService.get(updated.id);
+      if (saved) {
+        const normalized = await normalizeStoredFrameSlots(saved);
+        setFrames(prev => prev.map(f => f.id === normalized.id ? normalized : f));
+      }
+    } catch (e: any) {
+      setError(e?.message || "Lưu slot thất bại");
+    }
+    setEditingSlots(null);
   };
 
   const handleUpload = async (frame: StoredFrame, file: File | null) => {
     setError(null);
-    let imageUrl = frame.overlayImage;
-    if (file) {
-      const url = await frameService.uploadImage(frame.id, file);
-      if (!url) { setError("Failed to upload image"); return; }
-      imageUrl = url;
+    try {
+      let imageUrl = frame.overlayImage;
+      if (file) {
+        const url = await frameService.uploadImage(frame.id, file);
+        if (!url) { setError("Tải ảnh lên thất bại"); setShowUpload(false); return; }
+        imageUrl = url;
+      }
+      frame.overlayImage = imageUrl;
+      const ok = await frameService.upsert(frame);
+      if (!ok) { setError("Lưu khung thất bại"); setShowUpload(false); return; }
+    } catch (e: any) {
+      setError(e?.message || "Lưu khung thất bại");
     }
-    frame.overlayImage = imageUrl;
-    const ok = await frameService.upsert(frame);
-    if (!ok) { setError("Failed to save frame"); return; }
-    await reloadFrames();
     setShowUpload(false);
     load();
   };
@@ -103,13 +124,13 @@ export function AdminPhotoboothFramesPage() {
     <div className="w-full max-w-[1280px] mx-auto px-[32px] py-[64px]">
       <div className="mb-[32px] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="display-sm text-clay-text mb-1">Photobooth Frames</h1>
+          <h1 className="display-sm text-clay-text mb-1">Khung Photobooth</h1>
           <p className="body-sm text-ink-secondary">
-            Configure frame overlays and photo slot positions
+            Cấu hình ảnh nền và vị trí slot ảnh
           </p>
         </div>
         <button onClick={() => setShowUpload(true)} className="btn-primary self-start">
-          + Upload New Frame
+          + Tải khung mới
         </button>
       </div>
 
@@ -122,7 +143,7 @@ export function AdminPhotoboothFramesPage() {
 
       {frames.length === 0 ? (
         <div className="glass-card p-12 text-center">
-          <p className="body-md text-ink-secondary">No frames yet. Upload your first frame!</p>
+          <p className="body-md text-ink-secondary">Chưa có khung nào. Tải khung đầu tiên!</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -130,7 +151,7 @@ export function AdminPhotoboothFramesPage() {
             <FrameCard
               key={frame.id}
               frame={frame}
-              onEdit={() => setEditing(frame)}
+              onEditSlots={() => setEditingSlots(frame)}
               onDelete={() => handleDelete(frame.id)}
               onRename={handleRename}
             />
@@ -138,11 +159,11 @@ export function AdminPhotoboothFramesPage() {
         </div>
       )}
 
-      {editing && (
+      {editingSlots && (
         <SlotEditor
-          frame={editing}
+          frame={editingSlots}
           onSave={handleSaveSlots}
-          onClose={() => setEditing(null)}
+          onClose={() => setEditingSlots(null)}
         />
       )}
 
@@ -158,12 +179,12 @@ export function AdminPhotoboothFramesPage() {
 
 function FrameCard({
   frame,
-  onEdit,
+  onEditSlots,
   onDelete,
   onRename,
 }: {
   frame: StoredFrame;
-  onEdit: () => void;
+  onEditSlots: () => void;
   onDelete: () => void;
   onRename: (f: StoredFrame, name: string) => void;
 }) {
@@ -231,11 +252,11 @@ function FrameCard({
           {frame.photoCount} photos &middot; {frame.slots.length} slots
         </p>
         <div className="mt-3 flex gap-2">
-          <button onClick={onEdit} className="btn-primary text-xs px-4 py-2">
-            Edit Slots
-          </button>
-          <button onClick={onDelete} className="btn-ghost text-xs px-4 py-2 text-red-400 hover:text-red-300">
-            Delete
+          <button onClick={onEditSlots} className="btn-primary text-xs px-4 py-2">
+              Sửa Slot
+            </button>
+            <button onClick={onDelete} className="btn-ghost text-xs px-4 py-2 text-red-400 hover:text-red-300">
+              Xóa
           </button>
         </div>
       </div>
@@ -276,11 +297,18 @@ function roundCanvasRect(
   ctx.closePath();
 }
 
-function scaleToCanvas(clientX: number, clientY: number, canvas: HTMLCanvasElement) {
+function getLogicalSize(imgW: number, imgH: number) {
+  const maxDim = Math.max(imgW, imgH);
+  if (maxDim === 0) return { w: LOGICAL_MAX, h: LOGICAL_MAX };
+  const scale = LOGICAL_MAX / maxDim;
+  return { w: Math.round(imgW * scale), h: Math.round(imgH * scale) };
+}
+
+function scaleToCanvas(clientX: number, clientY: number, canvas: HTMLCanvasElement, logicalW: number, logicalH: number) {
   const rect = canvas.getBoundingClientRect();
   return {
-    x: (clientX - rect.left) * (CANVAS_SIZE / rect.width),
-    y: (clientY - rect.top) * (CANVAS_SIZE / rect.height),
+    x: (clientX - rect.left) * (logicalW / rect.width),
+    y: (clientY - rect.top) * (logicalH / rect.height),
   };
 }
 
@@ -301,8 +329,13 @@ function SlotEditor({
   const mousePosRef = useRef<{ x: number; y: number } | null>(null);
   const [imgSize, setImgSize] = useState<{ w: number; h: number } | null>(null);
 
+  const logicalSize = useMemo(() => {
+    if (!imgSize) return { w: LOGICAL_MAX, h: LOGICAL_MAX };
+    return getLogicalSize(imgSize.w, imgSize.h);
+  }, [imgSize]);
+
   const displaySize = useMemo(() => {
-    if (!imgSize) return { w: CANVAS_DISPLAY_SIZE, h: CANVAS_DISPLAY_SIZE };
+    if (!imgSize) return { w: LOGICAL_MAX, h: LOGICAL_MAX };
     const maxDim = Math.max(imgSize.w, imgSize.h);
     const scale = CANVAS_DISPLAY_SIZE / maxDim;
     return {
@@ -318,16 +351,17 @@ function SlotEditor({
     if (!ctx) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const scaleX = canvas.width / CANVAS_SIZE;
-    const scaleY = canvas.height / CANVAS_SIZE;
+    const { w: lw, h: lh } = logicalSize;
+    const scaleX = canvas.width / lw;
+    const scaleY = canvas.height / lh;
     ctx.save();
     ctx.scale(scaleX, scaleY);
 
     ctx.fillStyle = "#1a1a2e";
-    ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+    ctx.fillRect(0, 0, lw, lh);
 
     if (imgRef.current) {
-      ctx.drawImage(imgRef.current, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
+      ctx.drawImage(imgRef.current, 0, 0, lw, lh);
     }
 
     slots.forEach((slot, i) => {
@@ -366,7 +400,7 @@ function SlotEditor({
     }
 
     ctx.restore();
-  }, [slots, selectedIdx, corner1]);
+  }, [slots, selectedIdx, corner1, logicalSize]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -387,7 +421,8 @@ function SlotEditor({
   const handleCanvasClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const { x, y } = scaleToCanvas(e.clientX, e.clientY, canvas);
+    const { w: lw, h: lh } = logicalSize;
+    const { x, y } = scaleToCanvas(e.clientX, e.clientY, canvas, lw, lh);
     if (!corner1) { setCorner1({ x, y }); return; }
     const sx = Math.round(Math.min(corner1.x, x));
     const sy = Math.round(Math.min(corner1.y, y));
@@ -400,16 +435,17 @@ function SlotEditor({
       setSlots((prev) => [...prev, { id: `slot${prev.length + 1}`, x: sx, y: sy, width: sw, height: sh, borderRadius: 0 }]);
     }
     setCorner1(null);
-  }, [corner1, selectedIdx]);
+  }, [corner1, selectedIdx, logicalSize]);
 
   const handleCanvasMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!corner1) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const { x, y } = scaleToCanvas(e.clientX, e.clientY, canvas);
+    const { w: lw, h: lh } = logicalSize;
+    const { x, y } = scaleToCanvas(e.clientX, e.clientY, canvas, lw, lh);
     mousePosRef.current = { x, y };
     redraw();
-  }, [corner1, redraw]);
+  }, [corner1, redraw, logicalSize]);
 
   const handleCanvasMouseLeave = useCallback(() => {
     mousePosRef.current = null;
@@ -429,10 +465,11 @@ function SlotEditor({
   const autoDetectSlots = useCallback(async () => {
     if (!imgRef.current) return;
     const img = imgRef.current;
+    const { w: lw, h: lh } = getLogicalSize(img.naturalWidth, img.naturalHeight);
 
     const offscreen = document.createElement("canvas");
-    offscreen.width = img.naturalWidth || CANVAS_SIZE;
-    offscreen.height = img.naturalHeight || CANVAS_SIZE;
+    offscreen.width = img.naturalWidth || LOGICAL_MAX;
+    offscreen.height = img.naturalHeight || LOGICAL_MAX;
     const ctx = offscreen.getContext("2d");
     if (!ctx) return;
 
@@ -487,8 +524,8 @@ function SlotEditor({
 
     if (regions.length === 0) return;
 
-    const scaleX = CANVAS_SIZE / w;
-    const scaleY = CANVAS_SIZE / h;
+    const scaleX = lw / w;
+    const scaleY = lh / h;
 
     const detected: StoredSlot[] = regions
       .filter((r) => (r.maxX - r.minX) > 20 && (r.maxY - r.minY) > 20)
@@ -512,11 +549,11 @@ function SlotEditor({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="bg-clay-bg border border-glass-border rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="heading-5 text-ink">Edit Slots: {frame.displayName}</h2>
+          <h2 className="heading-5 text-ink">Sửa Slot: {frame.displayName}</h2>
           <button onClick={onClose} className="text-ink-muted hover:text-ink text-xl">&times;</button>
         </div>
         <p className="body-sm text-ink-secondary mb-4">
-          Click <strong>Auto Detect</strong> to find transparent areas automatically &mdash; or click two points on the canvas to set a slot manually
+          Nhấn <strong>Auto Detect</strong> để tự động tìm vùng trong suốt &mdash; hoặc nhấn hai điểm trên ảnh để đặt slot thủ công
         </p>
         <div className="flex flex-col lg:flex-row gap-6">
           <div className="flex-1 flex flex-col items-center">
@@ -532,15 +569,15 @@ function SlotEditor({
             />
             {corner1 && (
               <p className="body-xs text-emerald-400 mt-2 text-center">
-                Corner 1 set &mdash; click again to set opposite corner
+                Đã chọn góc 1 &mdash; nhấn lại để chọn góc đối diện
               </p>
             )}
           </div>
           <div className="w-full lg:w-80 space-y-3">
             <div className="flex items-center justify-between">
               <p className="body-sm-medium text-ink">Slots ({slots.length})</p>
-              <button onClick={autoDetectSlots} className="text-xs text-emerald-400 hover:text-emerald-300" title="Auto-detect transparent areas as slots">
-                Auto Detect
+              <button onClick={autoDetectSlots} className="text-xs text-emerald-400 hover:text-emerald-300" title="Tự động phát hiện vùng trong suốt">
+Tự động
               </button>
             </div>
             {slots.map((slot, i) => (
@@ -551,19 +588,19 @@ function SlotEditor({
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-ink">Slot #{i + 1}</span>
-                  <button onClick={(e) => { e.stopPropagation(); removeSlot(i); }} className="text-xs text-red-400 hover:text-red-300">Remove</button>
+                  <button onClick={(e) => { e.stopPropagation(); removeSlot(i); }} className="text-xs text-red-400 hover:text-red-300">Xóa</button>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {(["x", "y", "width", "height"] as const).map((field) => (
                     <label key={field} className="flex flex-col">
                       <span className="text-[10px] uppercase tracking-wider text-ink-muted mb-0.5">{field}</span>
                       <input type="number" value={slot[field]} onChange={(e) => updateSlot(i, field, Number(e.target.value))}
-                        className="w-full rounded border border-glass-border bg-glass-surface px-2 py-1 text-xs text-ink" min={0} max={CANVAS_SIZE} />
+                        className="w-full rounded border border-glass-border bg-glass-surface px-2 py-1 text-xs text-ink" min={0} max={LOGICAL_MAX} />
                     </label>
                   ))}
                 </div>
                 <label className="flex flex-col">
-                  <span className="text-[10px] uppercase tracking-wider text-ink-muted mb-0.5">Border Radius</span>
+                  <span className="text-[10px] uppercase tracking-wider text-ink-muted mb-0.5">Bo góc</span>
                   <input type="number" value={slot.borderRadius} onChange={(e) => updateSlot(i, "borderRadius", Number(e.target.value))}
                     className="w-full rounded border border-glass-border bg-glass-surface px-2 py-1 text-xs text-ink" min={0} max={200} />
                 </label>
@@ -572,8 +609,8 @@ function SlotEditor({
           </div>
         </div>
         <div className="mt-6 flex gap-3 justify-end">
-          <button onClick={onClose} className="btn-ghost px-6 py-3">Cancel</button>
-          <button onClick={() => onSave({ ...frame, slots, photoCount: slots.length as 1 | 2 | 3 | 4 | 6 })} className="btn-primary px-6 py-3">Save Slots</button>
+          <button onClick={onClose} className="btn-ghost px-6 py-3">Hủy</button>
+          <button onClick={() => onSave({ ...frame, slots, photoCount: slots.length as 1 | 2 | 3 | 4 | 6 })} className="btn-primary px-6 py-3">Lưu Slot</button>
         </div>
       </div>
     </div>,
@@ -618,7 +655,7 @@ function UploadDialog({
         name: name.trim(),
         displayName: displayName.trim() || name.trim(),
         photoCount: photoCount as 1 | 2 | 3 | 4 | 6,
-        description: `${photoCount} photos with decorative frame overlay`,
+        description: `Khung ${photoCount} ảnh với ảnh nền trang trí`,
         slots: emptySlots(photoCount),
         overlayImage: "",
         filter: "normal",
@@ -626,7 +663,7 @@ function UploadDialog({
       };
       await onUpload(frame, file);
     } catch (e: any) {
-      setErr(e?.message || "Upload failed");
+      setErr(e?.message || "Tải lên thất bại");
     } finally {
       setUploading(false);
     }
@@ -636,7 +673,7 @@ function UploadDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="bg-clay-bg border border-glass-border rounded-2xl w-full max-w-lg p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="heading-5 text-ink">Upload New Frame</h2>
+          <h2 className="heading-5 text-ink">Tải khung mới</h2>
           <button onClick={onClose} className="text-ink-muted hover:text-ink text-xl">&times;</button>
         </div>
 
@@ -649,31 +686,31 @@ function UploadDialog({
 
         <div className="space-y-4">
           <label className="flex flex-col">
-            <span className="body-sm-medium text-ink mb-1">Frame ID / Name *</span>
+            <span className="body-sm-medium text-ink mb-1">Mã khung / Tên *</span>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. my-frame"
+              placeholder="vd: khung-cua-toi"
               className="w-full rounded-lg border border-glass-border bg-glass-surface px-4 py-3 text-ink"
               disabled={uploading}
             />
           </label>
 
           <label className="flex flex-col">
-            <span className="body-sm-medium text-ink mb-1">Display Name</span>
+            <span className="body-sm-medium text-ink mb-1">Tên hiển thị</span>
             <input
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="e.g. My Custom Frame"
+              placeholder="vd: Khung Của Tôi"
               className="w-full rounded-lg border border-glass-border bg-glass-surface px-4 py-3 text-ink"
               disabled={uploading}
             />
           </label>
 
           <label className="flex flex-col">
-            <span className="body-sm-medium text-ink mb-1">Number of Photos</span>
+            <span className="body-sm-medium text-ink mb-1">Số lượng ảnh</span>
             <select
               value={photoCount}
               onChange={(e) => setPhotoCount(Number(e.target.value))}
@@ -689,7 +726,7 @@ function UploadDialog({
           </label>
 
           <label className="flex flex-col">
-            <span className="body-sm-medium text-ink mb-1">Frame Overlay Image</span>
+            <span className="body-sm-medium text-ink mb-1">Ảnh nền khung</span>
             <input
               type="file"
               accept="image/png,image/jpeg,image/webp"
@@ -708,7 +745,7 @@ function UploadDialog({
 
         <div className="mt-6 flex gap-3 justify-end">
           <button onClick={onClose} className="btn-ghost px-6 py-3" disabled={uploading}>
-            Cancel
+            Hủy
           </button>
           <button
             onClick={handleSubmit}
@@ -721,7 +758,7 @@ function UploadDialog({
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
             )}
-            {uploading ? "Uploading..." : "Upload Frame"}
+            {uploading ? "Đang tải lên..." : "Tải khung lên"}
           </button>
         </div>
       </div>

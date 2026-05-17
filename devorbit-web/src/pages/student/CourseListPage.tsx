@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { apiGet } from '../../lib/api'
 import { CourseCard } from '../../components/student/CourseCard'
 import { Link } from 'react-router-dom'
@@ -11,6 +11,18 @@ export function CourseListPage() {
   const [courses, setCourses] = useState<CourseSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedQuery, setDebouncedQuery] = useState('')
+  const searchTimer = useRef()
+
+  // Debounce search by 200ms to avoid re-filtering on every keystroke
+  const handleSearchChange = useCallback((e) => {
+    const val = e.target.value
+    setSearchQuery(val)
+    if (searchTimer.current) clearTimeout(searchTimer.current)
+    searchTimer.current = setTimeout(() => setDebouncedQuery(val), 200)
+  }, [])
+
+  useEffect(() => () => { if (searchTimer.current) clearTimeout(searchTimer.current) }, [])
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(0)
 
@@ -25,8 +37,8 @@ export function CourseListPage() {
   }, [])
 
   const filteredCourses = courses.filter(c =>
-    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.code.toLowerCase().includes(searchQuery.toLowerCase())
+    c.name.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+    c.code.toLowerCase().includes(debouncedQuery.toLowerCase())
   )
 
   const sortedCourses = useMemo(() =>
@@ -117,12 +129,12 @@ export function CourseListPage() {
                   type="text"
                   placeholder="Tìm kiếm môn học theo tên hoặc mã..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={handleSearchChange}
                   className="w-full bg-orbit-surface/80 backdrop-blur-xl border border-orbit-border rounded-3xl py-5 pl-14 pr-14 text-orbit-text placeholder:text-orbit-text-muted/50 focus:outline-none focus:border-orbit-accent/40 focus:ring-4 focus:ring-orbit-accent/5 transition-all text-[15px]"
                 />
                 {searchQuery && (
                   <button
-                    onClick={() => setSearchQuery('')}
+                    onClick={() => { setSearchQuery(''); setDebouncedQuery(''); }}
                     className="absolute right-5 h-8 w-8 rounded-full bg-orbit-elevated border border-orbit-border flex items-center justify-center text-orbit-text-muted hover:text-orbit-text hover:border-orbit-accent/30 transition-all"
                   >
                     <X className="h-4 w-4" weight="bold" />
@@ -133,7 +145,7 @@ export function CourseListPage() {
 
             <Link
               to="/knowledge-graph"
-              className="btn-secondary group shrink-0 text-[12px] px-8 py-5"
+              className="btn-secondary group shrink-0 text-[12px] px-8 py-5 will-change-transform"
             >
               <Graph className="h-5 w-5" weight="regular" />
               Sơ đồ kiến thức
@@ -158,9 +170,7 @@ export function CourseListPage() {
           <>
             <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
               {paged.map((c) => (
-                <div key={c.id}>
-                  <CourseCard course={c} />
-                </div>
+                <CourseCard key={c.id} course={c} />
               ))}
             </div>
 

@@ -6,9 +6,9 @@ import { RelationshipDialog } from '../../components/admin/RelationshipDialog'
 import type { CourseRelationshipResponse, CourseSummary } from '../../types/api'
 
 const typeLabels: Record<string, string> = {
-  PREREQUISITE: 'Prerequisite',
-  COMPLEMENTARY: 'Complementary',
-  COREQUISITE: 'Corequisite',
+  PREREQUISITE: 'Tiên quyết',
+  COMPLEMENTARY: 'Bổ sung',
+  COREQUISITE: 'Song hành',
 }
 
 export function AdminRelationshipsPage() {
@@ -36,7 +36,7 @@ export function AdminRelationshipsPage() {
   }
 
   async function handleDelete(id: number) {
-    if (!confirm('Delete this relationship?')) return
+    if (!confirm('Xóa quan hệ này?')) return
     try {
       await apiAdminDelete(`/api/admin/courses/relationships/${id}`, token)
       refetch()
@@ -53,19 +53,19 @@ export function AdminRelationshipsPage() {
     <div className="w-full max-w-[1280px] mx-auto px-[32px] py-[64px]">
       <div className="mb-[32px] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="display-sm text-clay-text mb-1">Course Relationships</h1>
-          <p className="body-sm text-clay-text-muted">Define prerequisites, complementary, and corequisite relationships.</p>
+          <h1 className="display-sm text-clay-text mb-1">Quan hệ môn học</h1>
+          <p className="body-sm text-clay-text-muted">Định nghĩa môn tiên quyết, bổ sung và song hành</p>
         </div>
         <button onClick={() => setDialogOpen(true)} className="btn-primary self-start text-sm px-4 py-2">
           <svg className="mr-2 h-4 w-4 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
-          Add Relationship
+          Thêm quan hệ
         </button>
       </div>
 
       {/* Filter */}
       <div className="mb-[24px]">
         <input
-          placeholder="Filter by course code..."
+          placeholder="Lọc theo mã môn..."
           value={filterCourse}
           onChange={(e) => setFilterCourse(e.target.value)}
           className="input-field max-w-xs"
@@ -79,7 +79,7 @@ export function AdminRelationshipsPage() {
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
-            Loading relationships...
+            Đang tải quan hệ...
           </div>
         </div>
       ) : (
@@ -87,16 +87,16 @@ export function AdminRelationshipsPage() {
           <table className="min-w-full text-sm">
             <thead>
               <tr className="border-b border-clay-border bg-glass-surface-raised">
-                <th className="table-header text-left font-medium text-clay-text-muted py-3 px-4">Course</th>
-                <th className="table-header text-left font-medium text-clay-text-muted py-3 px-4">Type</th>
-                <th className="table-header text-left font-medium text-clay-text-muted py-3 px-4">Related Course</th>
-                <th className="table-header text-right font-medium text-clay-text-muted py-3 px-4">Actions</th>
+                <th className="table-header text-left font-medium text-clay-text-muted py-3 px-4">Môn học</th>
+                <th className="table-header text-left font-medium text-clay-text-muted py-3 px-4">Loại</th>
+                <th className="table-header text-left font-medium text-clay-text-muted py-3 px-4">Môn liên quan</th>
+                <th className="table-header text-right font-medium text-clay-text-muted py-3 px-4">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-clay-border bg-clay-bg">
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-4 py-10 text-center body-sm text-clay-text-muted">No relationships found.</td>
+                  <td colSpan={4} className="px-4 py-10 text-center body-sm text-clay-text-muted">Không tìm thấy quan hệ nào</td>
                 </tr>
               )}
               {filtered.map((r) => (
@@ -115,7 +115,7 @@ export function AdminRelationshipsPage() {
                     <span className="ml-2 body-sm text-clay-text font-medium">{r.relatedCourseName}</span>
                   </td>
                   <td className="table-cell text-right py-3 px-4">
-                    <button onClick={() => handleDelete(r.id)} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Delete</button>
+                    <button onClick={() => handleDelete(r.id)} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Xóa</button>
                   </td>
                 </tr>
               ))}

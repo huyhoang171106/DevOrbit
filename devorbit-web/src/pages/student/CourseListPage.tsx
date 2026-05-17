@@ -1,16 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { apiGet } from '../../lib/api'
 import { CourseCard } from '../../components/student/CourseCard'
 import { Link } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
 import type { CourseSummary } from '../../types/api'
-import { MagnifyingGlass, Graph, Funnel, X, GraduationCap, BookOpen } from '@phosphor-icons/react'
+import { MagnifyingGlass, Graph, Funnel, X, GraduationCap, BookOpen, CaretLeft, CaretRight } from '@phosphor-icons/react'
+
+const PAGE_SIZE = 30
 
 export function CourseListPage() {
   const [courses, setCourses] = useState<CourseSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [page, setPage] = useState(0)
 
   useEffect(() => {
     apiGet<CourseSummary[]>('/api/courses')
@@ -26,6 +28,17 @@ export function CourseListPage() {
     c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     c.code.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  const sortedCourses = useMemo(() =>
+    [...filteredCourses].sort((a, b) => b.repoCount - a.repoCount),
+    [filteredCourses]
+  )
+
+  // Reset page on search
+  useEffect(() => { setPage(0) }, [searchQuery])
+
+  const totalPages = Math.ceil(sortedCourses.length / PAGE_SIZE)
+  const paged = sortedCourses.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
   if (loading) {
     return (
@@ -71,14 +84,9 @@ export function CourseListPage() {
       </div>
 
       <div className="relative z-10 w-full max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12 py-16 md:py-24">
-        {/* ─── HEADER: Left-aligned, asymmetric ─── */}
+        {/* ─── HEADER ─── */}
         <header className="mb-20">
-          <motion.div
-            className="max-w-3xl"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ type: 'spring', stiffness: 100, damping: 20 }}
-          >
+          <div className="max-w-3xl">
             <span className="section-label mb-8 inline-flex">
               <GraduationCap className="h-3 w-3" weight="fill" />
               Danh mục môn học trực tuyến
@@ -94,18 +102,13 @@ export function CourseListPage() {
             </h1>
 
             <p className="body-lg text-[17px] md:text-[18px] leading-relaxed max-w-2xl mb-10">
-              Khám phá hệ sinh thái kiến thức UIT. Tìm kiếm các repository chuyên sâu,
-              sơ đồ mạng lưới tương tác và kinh nghiệm từ bạn bè cho mọi môn học trong chương trình.
+               Khám phá hệ&nbsp;sinh thái kiến&nbsp;thức SE - UIT. Tìm kiếm các repository chuyên&nbsp;sâu,
+              sơ&nbsp;đồ mạng&nbsp;lưới tương&nbsp;tác và kinh&nbsp;nghiệm từ bạn bè cho mọi môn&nbsp;học trong chương&nbsp;trình.
             </p>
-          </motion.div>
+          </div>
 
           {/* Search + CTA row */}
-          <motion.div
-            className="flex flex-col lg:flex-row gap-5 items-stretch lg:items-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, type: 'spring', stiffness: 100, damping: 20 }}
-          >
+          <div className="flex flex-col lg:flex-row gap-5 items-stretch lg:items-center">
             <div className="relative flex-1 max-w-xl group">
               <div className="absolute -inset-1 bg-gradient-to-r from-orbit-accent/20 to-emerald-500/20 rounded-3xl blur opacity-0 group-focus-within:opacity-100 transition duration-500" />
               <div className="relative flex items-center">
@@ -135,77 +138,105 @@ export function CourseListPage() {
               <Graph className="h-5 w-5" weight="regular" />
               Sơ đồ kiến thức
             </Link>
-          </motion.div>
+          </div>
         </header>
 
         {/* ─── RESULT COUNT ─── */}
-        <motion.div
-          className="flex items-center justify-between mb-12 pb-6 border-b border-orbit-border/50"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        >
+        <div className="flex items-center justify-between mb-12 pb-6 border-b border-orbit-border/50">
           <div className="flex items-center gap-3">
             <span className="h-6 w-1 bg-orbit-accent rounded-full" />
             <h2 className="text-[15px] font-bold text-orbit-text">Danh sách môn học</h2>
           </div>
           <div className="px-4 py-2 rounded-full bg-orbit-surface border border-orbit-border text-[10px] font-black uppercase tracking-widest text-orbit-text-muted tabular-nums">
             <Funnel className="h-3 w-3 inline-block mr-2" weight="regular" />
-            {filteredCourses.length} kết quả
+            {sortedCourses.length} kết quả
           </div>
-        </motion.div>
+        </div>
 
-        {/* ─── COURSE GRID (2-col asymmetric + 3-col on xl) ─── */}
-        <AnimatePresence mode="wait">
-          {filteredCourses.length > 0 ? (
-            <motion.div
-              key="grid"
-              className="grid gap-6 md:grid-cols-2 xl:grid-cols-3"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              {filteredCourses.map((c, index) => (
-                <div
-                  key={c.id}
-                  className={index === 0 ? 'md:col-span-2 xl:col-span-1' : ''}
-                >
-                  <CourseCard course={c} index={index} />
+        {/* ─── COURSE GRID ─── */}
+        {sortedCourses.length > 0 ? (
+          <>
+            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+              {paged.map((c) => (
+                <div key={c.id}>
+                  <CourseCard course={c} />
                 </div>
               ))}
-            </motion.div>
-          ) : (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="orbit-card p-16 md:p-24 text-center border-dashed border-2 border-orbit-accent/10"
-            >
-              <div className="h-20 w-20 rounded-2xl bg-orbit-surface border border-orbit-border flex items-center justify-center mx-auto mb-8">
-                <BookOpen className="h-10 w-10 text-orbit-text-muted" weight="light" />
-              </div>
-              <h3 className="heading-4 mb-4 text-orbit-text">
-                {searchQuery ? 'Không tìm thấy kết quả' : 'Hệ thống trống'}
-              </h3>
-              <p className="body-md text-[14px] max-w-md mx-auto leading-relaxed mb-8">
-                {searchQuery
-                  ? `Chúng tôi không tìm thấy môn học nào khớp với "${searchQuery}".`
-                  : 'Ma trận học thuật hiện đang được đồng bộ hóa. Vui lòng quay lại sau vài phút.'
-                }
-              </p>
-              {searchQuery && (
+            </div>
+
+            {/* ─── PAGINATION ─── */}
+            {totalPages > 1 && (
+              <div className="mt-16 flex items-center justify-center gap-3">
                 <button
-                  onClick={() => setSearchQuery('')}
-                  className="btn-primary text-[12px]"
+                  onClick={() => setPage(p => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                  className="btn-secondary px-4 py-3 disabled:opacity-30"
                 >
-                  <X className="h-4 w-4" weight="bold" />
-                  Xoá bộ lọc
+                  <CaretLeft className="h-4 w-4" weight="bold" />
                 </button>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+
+                {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+                  // Show pages around current
+                  let pageNum: number
+                  if (totalPages <= 7) {
+                    pageNum = i
+                  } else if (page < 4) {
+                    pageNum = i
+                  } else if (page > totalPages - 5) {
+                    pageNum = totalPages - 7 + i
+                  } else {
+                    pageNum = page - 3 + i
+                  }
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setPage(pageNum)}
+                      className={`px-4 py-3 rounded-xl text-[12px] font-bold transition-all ${
+                        pageNum === page
+                          ? 'bg-orbit-accent text-white shadow-glow'
+                          : 'bg-orbit-surface border border-orbit-border text-orbit-text-muted hover:text-orbit-text'
+                      }`}
+                    >
+                      {pageNum + 1}
+                    </button>
+                  )
+                })}
+
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                  disabled={page >= totalPages - 1}
+                  className="btn-secondary px-4 py-3 disabled:opacity-30"
+                >
+                  <CaretRight className="h-4 w-4" weight="bold" />
+                </button>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="orbit-card p-16 md:p-24 text-center border-dashed border-2 border-orbit-accent/10">
+            <div className="h-20 w-20 rounded-2xl bg-orbit-surface border border-orbit-border flex items-center justify-center mx-auto mb-8">
+              <BookOpen className="h-10 w-10 text-orbit-text-muted" weight="light" />
+            </div>
+            <h3 className="heading-4 mb-4 text-orbit-text">
+              {searchQuery ? 'Không tìm thấy kết quả' : 'Hệ thống trống'}
+            </h3>
+            <p className="body-md text-[14px] max-w-md mx-auto leading-relaxed mb-8">
+              {searchQuery
+                ? `Chúng tôi không tìm thấy môn học nào khớp với "${searchQuery}".`
+                : 'Ma trận học thuật hiện đang được đồng bộ hóa. Vui lòng quay lại sau vài phút.'
+              }
+            </p>
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="btn-primary text-[12px]"
+              >
+                <X className="h-4 w-4" weight="bold" />
+                Xoá bộ lọc
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )

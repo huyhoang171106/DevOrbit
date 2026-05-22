@@ -11,6 +11,24 @@ kotlin {
     jvmToolchain(17)
 }
 
+fun loadDotEnv(file: String): Map<String, String> {
+    val envFile = rootProject.file(file)
+    if (!envFile.exists()) return emptyMap()
+    val props = java.util.Properties()
+    java.io.FileReader(envFile).use { reader -> props.load(reader) }
+    return props.entries.associate { (k, v) ->
+        val raw = v.toString()
+        // Strip surrounding quotes if present
+        val cleaned = if (raw.startsWith("\"") && raw.endsWith("\"")) {
+            raw.substring(1, raw.length - 1)
+        } else raw
+        k.toString() to cleaned
+    }
+}
+
+val mobileEnv = loadDotEnv(".env")
+val apiBaseUrl: String = mobileEnv["MOBILE_API_BASE_URL"] ?: "http://10.0.2.2:8080"
+
 android {
     namespace = "vn.edu.uit.devorbit.mobile"
     compileSdk = 35
@@ -22,17 +40,15 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        // Overridden per buildType.
-        buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8080/\"")
+        buildConfigField("String", "API_BASE_URL", "\"${apiBaseUrl}/\"")
     }
 
     buildTypes {
         debug {
-            buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8080/\"")
+            buildConfigField("String", "API_BASE_URL", "\"${apiBaseUrl}/\"")
         }
         release {
-            // TODO: set to your real HTTPS endpoint for production releases.
-            buildConfigField("String", "API_BASE_URL", "\"https://example.invalid/\"")
+            buildConfigField("String", "API_BASE_URL", "\"${apiBaseUrl}/\"")
         }
     }
 

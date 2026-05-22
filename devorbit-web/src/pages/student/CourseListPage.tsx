@@ -4,6 +4,7 @@ import { CourseCard } from '../../components/student/CourseCard'
 import { Link } from 'react-router-dom'
 import type { CourseSummary } from '../../types/api'
 import { MagnifyingGlass, Graph, Funnel, X, GraduationCap, BookOpen, CaretLeft, CaretRight } from '@phosphor-icons/react'
+import { BlurReveal, FadeReveal, StaggerReveal, StaggerItem, SectionTransition, ParallaxLayer } from '../../motion'
 
 const PAGE_SIZE = 30
 
@@ -12,10 +13,10 @@ export function CourseListPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
-  const searchTimer = useRef()
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Debounce search by 200ms to avoid re-filtering on every keystroke
-  const handleSearchChange = useCallback((e) => {
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value
     setSearchQuery(val)
     if (searchTimer.current) clearTimeout(searchTimer.current)
@@ -88,35 +89,43 @@ export function CourseListPage() {
   }
 
   return (
-    <div className="relative w-full min-h-screen pb-32">
-      {/* Background ambient */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[10%] left-[-10%] w-[40%] h-[600px] bg-orbit-accent/5 blur-[180px] rounded-full" />
-        <div className="absolute bottom-[20%] right-[-10%] w-[35%] h-[500px] bg-emerald-500/3 blur-[150px] rounded-full" />
-      </div>
+    <SectionTransition atmosphere="light" className="relative w-full min-h-screen pb-32">
+      {/* Background ambient with parallax */}
+      <ParallaxLayer speed={0.15} range={100}>
+        <div className="fixed inset-0 pointer-events-none z-0">
+          <div className="absolute top-[10%] left-[-10%] w-[40%] h-[600px] bg-orbit-accent/5 blur-[180px] rounded-full" />
+          <div className="absolute bottom-[20%] right-[-10%] w-[35%] h-[500px] bg-emerald-500/3 blur-[150px] rounded-full" />
+        </div>
+      </ParallaxLayer>
 
       <div className="relative z-10 w-full max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12 py-16 md:py-24">
         {/* ─── HEADER ─── */}
         <header className="mb-20">
           <div className="max-w-3xl">
-            <span className="section-label mb-8 inline-flex">
-              <GraduationCap className="h-3 w-3" weight="fill" />
-              Danh mục môn học trực tuyến
-            </span>
+            <BlurReveal blur={8} duration={0.7}>
+              <span className="section-label mb-8 inline-flex">
+                <GraduationCap className="h-3 w-3" weight="fill" />
+                Danh mục môn học trực tuyến
+              </span>
+            </BlurReveal>
 
-            <h1 className="display-lg mt-6 mb-6 leading-[1.05]">
-              Lộ trình{' '}
-              <span className="text-orbit-accent relative inline-block">
-                Học tập
-                <span className="absolute -bottom-2 left-0 w-full h-1 bg-orbit-accent/20 rounded-full blur-[2px]" />
-              </span>{' '}
-              của Bạn
-            </h1>
+            <BlurReveal blur={6} delay={0.1} y={0}>
+              <h1 className="display-lg mt-6 mb-6 leading-[1.05]">
+                Lộ trình{' '}
+                <span className="text-orbit-accent relative inline-block">
+                  Học tập
+                  <span className="absolute -bottom-2 left-0 w-full h-1 bg-orbit-accent/20 rounded-full blur-[2px]" />
+                </span>{' '}
+                của Bạn
+              </h1>
+            </BlurReveal>
 
-            <p className="body-lg text-[17px] md:text-[18px] leading-relaxed max-w-2xl mb-10">
-               Khám phá hệ&nbsp;sinh thái kiến&nbsp;thức SE - UIT. Tìm kiếm các repository chuyên&nbsp;sâu,
-              sơ&nbsp;đồ mạng&nbsp;lưới tương&nbsp;tác và kinh&nbsp;nghiệm từ bạn bè cho mọi môn&nbsp;học trong chương&nbsp;trình.
-            </p>
+            <FadeReveal y={16} delay={0.2}>
+              <p className="body-lg text-[17px] md:text-[18px] leading-relaxed max-w-2xl mb-10">
+                Khám phá hệ&nbsp;sinh thái kiến&nbsp;thức SE - UIT. Tìm kiếm các repository chuyên&nbsp;sâu,
+                sơ&nbsp;đồ mạng&nbsp;lưới tương&nbsp;tác và kinh&nbsp;nghiệm từ bạn bè cho mọi môn&nbsp;học trong chương&nbsp;trình.
+              </p>
+            </FadeReveal>
           </div>
 
           {/* Search + CTA row */}
@@ -168,11 +177,15 @@ export function CourseListPage() {
         {/* ─── COURSE GRID ─── */}
         {sortedCourses.length > 0 ? (
           <>
-            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-              {paged.map((c) => (
-                <CourseCard key={c.id} course={c} />
-              ))}
-            </div>
+            <StaggerReveal stagger={0.04} y={20}>
+              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                {paged.map((c) => (
+                  <StaggerItem key={c.id}>
+                    <CourseCard course={c} />
+                  </StaggerItem>
+                ))}
+              </div>
+            </StaggerReveal>
 
             {/* ─── PAGINATION ─── */}
             {totalPages > 1 && (
@@ -248,6 +261,6 @@ export function CourseListPage() {
           </div>
         )}
       </div>
-    </div>
+    </SectionTransition>
   )
 }

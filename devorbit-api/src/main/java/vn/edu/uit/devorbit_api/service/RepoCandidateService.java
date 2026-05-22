@@ -141,11 +141,4 @@ public class RepoCandidateService {
         return RepoCandidateResponse.from(candidate);
     }
 
-    @Transactional
-    public void updateReviewNote(Long candidateId, String reviewNote) {
-        RepoCandidate candidate = repoCandidateRepository.findById(candidateId)
-            .orElseThrow(() -> new NotFoundException("Candidate not found: " + candidateId));
-        candidate.setReviewNote(reviewNote);
-        repoCandidateRepository.save(candidate);
-    }
 }

@@ -4,6 +4,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.servers.Server;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -11,6 +12,12 @@ import java.util.List;
 
 @Configuration
 public class OpenApiConfig {
+
+    @Value("${app.openapi.local-dev-url:http://localhost:8080}")
+    private String localDevUrl;
+
+    @Value("${app.openapi.contact-email:devorbit@uit.edu.vn}")
+    private String contactEmail;
 
     @Bean
     public OpenAPI customOpenAPI() {
@@ -21,9 +28,9 @@ public class OpenApiConfig {
                         .description("REST API for DevOrbit - GitHub repository management and candidate tracking system")
                         .contact(new Contact()
                                 .name("DevOrbit Team")
-                                .email("devorbit@uit.edu.vn")))
+                                .email(contactEmail)))
                 .servers(List.of(
-                        new Server().url("http://localhost:8080").description("Local development"),
+                        new Server().url(localDevUrl).description("Local development"),
                         new Server().url("/").description("Production / Docker")
                 ));
     }

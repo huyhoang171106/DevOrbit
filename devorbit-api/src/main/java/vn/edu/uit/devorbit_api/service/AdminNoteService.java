@@ -19,15 +19,12 @@ public class AdminNoteService {
     private final NoteRepository noteRepo;
     private final NoteCodeSnippetRepository snippetRepo;
 
+    // ================ NOTE CRUD ================
+
     public List<NoteResponse> getAll() {
         return noteRepo.findAllByOrderByUpdatedAtDesc().stream()
                 .map(this::toNoteResponse)
                 .toList();
-    }
-
-    public NoteResponse getById(Long id) {
-        return toNoteResponse(noteRepo.findById(id)
-                .orElseThrow(() -> new NotFoundException("Note not found: " + id)));
     }
 
     @Transactional
@@ -37,11 +34,7 @@ public class AdminNoteService {
         noteRepo.delete(entity);
     }
 
-    public List<NoteCodeSnippetResponse> getSnippets(Long noteId) {
-        return snippetRepo.findByNoteIdOrderBySortOrderAsc(noteId).stream()
-                .map(this::toSnippetResponse)
-                .toList();
-    }
+    // ================ HELPERS ================
 
     private NoteResponse toNoteResponse(Note entity) {
         List<NoteCodeSnippetResponse> snippets = snippetRepo

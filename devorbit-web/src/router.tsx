@@ -45,7 +45,7 @@ export function AppRoutes() {
       <Route path="/repos/:repoId" element={<Suspense fallback={<PageFallback />}><RepoDetailPage /></Suspense>} />
       <Route path="/student/login" element={<Suspense fallback={<PageFallback />}><StudentLoginPage /></Suspense>} />
       <Route path="/student/bookmarks" element={<Suspense fallback={<PageFallback />}><StudentBookmarksPage /></Suspense>} />
-      <Route path="/student/photobooth" element={<Suspense fallback={<PageFallback />}><PhotoboothPage /></Suspense>} />
+      <Route path="/photobooth" element={<Suspense fallback={<PageFallback />}><PhotoboothPage /></Suspense>} />
       <Route path="/admin/login" element={<Suspense fallback={<PageFallback />}><LoginPage /></Suspense>} />
       <Route path="/admin" element={<Suspense fallback={<PageFallback />}><AdminDashboardPage /></Suspense>} />
       <Route path="/admin/courses" element={<Suspense fallback={<PageFallback />}><AdminCoursesPage /></Suspense>} />

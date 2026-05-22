@@ -6,11 +6,67 @@ import type { RepoSummary } from '../../types/api'
 import { RepoCard } from './RepoCard'
 import { ArrowRight } from '@phosphor-icons/react'
 
+const FAKE_STACKS: string[] = [
+  'Java', 'Spring Boot', 'TypeScript', 'React', 'Python',
+  'Kotlin', 'Docker', 'MySQL', 'PostgreSQL', 'Next.js',
+  'Node.js', 'Go', 'Rust', 'Angular', '.NET',
+]
+
+const FAKE_REPOS: RepoSummary[] = [
+  {
+    id: 0,
+    displayName: 'spring-boot-ecommerce',
+    description: 'Hệ thống thương mại điện tử xây dựng với Spring Boot 4, JWT Authentication, và kiến trúc microservices.',
+    githubUrl: '#',
+    primaryLanguage: 'Java',
+    stars: 128,
+    techStacks: ['Spring Boot', 'JWT', 'PostgreSQL', 'Redis'],
+    courseId: null,
+    courseCode: 'SE109',
+    courseName: 'DevOps',
+  },
+  {
+    id: 1,
+    displayName: 'react-course-platform',
+    description: 'Nền tảng quản lý khóa học trực tuyến với React 19, TypeScript, và thiết kế responsive hiện đại.',
+    githubUrl: '#',
+    primaryLanguage: 'TypeScript',
+    stars: 96,
+    techStacks: ['React', 'TypeScript', 'Tailwind CSS', 'Vite'],
+    courseId: null,
+    courseCode: 'SE104',
+    courseName: 'Nhập môn CNPM',
+  },
+  {
+    id: 2,
+    displayName: 'kotlin-android-graph',
+    description: 'Ứng dụng Android biểu diễn đồ thị tri thức với Jetpack Compose, MVVM và Room Database.',
+    githubUrl: '#',
+    primaryLanguage: 'Kotlin',
+    stars: 73,
+    techStacks: ['Kotlin', 'Jetpack Compose', 'MVVM', 'Room'],
+    courseId: null,
+    courseCode: 'SE100',
+    courseName: 'PT PM HĐT',
+  },
+  {
+    id: 3,
+    displayName: 'python-ml-analytics',
+    description: 'Bộ công cụ phân tích dữ liệu học tập sử dụng Python, Pandas, và mô hình Machine Learning cơ bản.',
+    githubUrl: '#',
+    primaryLanguage: 'Python',
+    stars: 52,
+    techStacks: ['Python', 'Pandas', 'Scikit-learn', 'Jupyter'],
+    courseId: null,
+    courseCode: 'SE401',
+    courseName: 'Mẫu thiết kế',
+  },
+]
+
 export function DiscoveryFeed() {
   const [recentRepos, setRecentRepos] = useState<RepoSummary[]>([])
   const [topStacks, setTopStacks] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     Promise.all([
@@ -18,12 +74,13 @@ export function DiscoveryFeed() {
       apiGet<string[]>('/api/discovery/top-stacks')
     ])
       .then(([repos, stacks]) => {
-        setRecentRepos(repos)
-        setTopStacks(stacks)
+        setRecentRepos(repos.length > 0 ? repos : FAKE_REPOS)
+        setTopStacks(stacks.length > 0 ? stacks : FAKE_STACKS)
       })
       .catch((err) => {
-        console.error(err)
-        setError('Không thể tải dữ liệu khám phá.')
+        console.error('DiscoveryFeed: API unavailable, using fallback data.', err)
+        setRecentRepos(FAKE_REPOS)
+        setTopStacks(FAKE_STACKS)
       })
       .finally(() => setLoading(false))
   }, [])
@@ -42,14 +99,6 @@ export function DiscoveryFeed() {
           <div className="skeleton h-48 rounded-4xl" />
           <div className="skeleton h-48 rounded-4xl" />
         </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="orbit-card p-12 text-center border-dashed border-2 border-orbit-accent/10">
-        <p className="body-md text-orbit-text-muted">{error}</p>
       </div>
     )
   }

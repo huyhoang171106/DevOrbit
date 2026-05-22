@@ -1,13 +1,14 @@
 import { useState, useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useScroll, useTransform, LayoutGroup } from 'framer-motion'
 import { ParticleNetwork } from './ParticleNetwork'
 import { Cube, Graph, Compass, BookOpen, Camera } from '@phosphor-icons/react'
+import { ScrollProgressIndicator } from '../motion'
 
 const navLinks = [
   { to: '/courses', label: 'Môn Học', icon: BookOpen },
   { to: '/knowledge-graph', label: 'Lộ Trình Học Tập', icon: Graph },
-  { to: '/student/photobooth', label: 'Photobooth', icon: Camera },
+  { to: '/photobooth', label: 'Photobooth', icon: Camera },
 ]
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -17,19 +18,40 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const isActive = (to: string) =>
     location.pathname === to || location.pathname.startsWith(to + '/')
 
-  // Only render particles on public pages — skip admin and galaxy (heavy 3D)
+  // Scroll-driven nav background opacity
+  const { scrollY } = useScroll()
+
+  // Only skip admin pages
   const showParticles = useMemo(() => {
-    return !location.pathname.startsWith('/admin') &&
-           !location.pathname.startsWith('/knowledge-graph') &&
-           !location.pathname.startsWith('/student')
+    return !location.pathname.startsWith('/admin')
   }, [location.pathname])
 
   return (
     <div className="relative min-h-screen flex flex-col bg-orbit-bg selection:bg-orbit-accent selection:text-zinc-950">
       {showParticles && <ParticleNetwork />}
 
-      {/* Top Navigation */}
-      <nav className="sticky top-0 z-50 w-full border-b border-orbit-border bg-orbit-bg/80 backdrop-blur-lg gpu">
+      {/* Scroll Progress Indicator — only on non-admin pages */}
+      {!location.pathname.startsWith('/admin') && (
+        <ScrollProgressIndicator position="right" showLabel={false} />
+      )}
+
+      {/* Top Navigation — scroll-aware */}
+      <motion.nav
+        className="sticky top-0 z-50 w-full border-b gpu"
+        style={{
+          borderColor: useTransform(scrollY, [0, 100], ['rgba(39,39,42,0.3)', 'rgba(39,39,42,0.8)']),
+        }}
+      >
+        {/* Background layer with animated opacity */}
+        <motion.div
+          className="absolute inset-0 -z-10"
+          style={{
+            background: 'rgba(9,9,11,0.95)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            opacity: useTransform(scrollY, [0, 80], [0.3, 1]),
+          }}
+        />
         <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between px-6 md:px-10 h-[72px]">
           {/* Logo */}
           <Link
@@ -44,6 +66,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </Link>
 
           {/* Desktop nav */}
+          <LayoutGroup>
           <div className="hidden md:flex items-center h-[72px] gap-1">
             {navLinks.map((link) => {
               const Icon = link.icon
@@ -70,6 +93,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               )
             })}
           </div>
+          </LayoutGroup>
 
           <div className="hidden md:flex items-center gap-4">
             <Link
@@ -139,7 +163,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </motion.div>
           )}
         </AnimatePresence>
-      </nav>
+      </motion.nav>
 
       {/* Main content */}
       <main className="relative z-10 flex-1 w-full">

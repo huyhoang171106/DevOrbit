@@ -11,17 +11,38 @@ import vn.edu.uit.devorbit_api.service.GithubRepoService;
 
 import java.util.List;
 
+/**
+ * PUBLIC REPO CONTROLLER = endpoints for browsing GitHub repos.
+ *
+ * Only shows APPROVED repos (active = true).
+ * No authentication required.
+ *
+ * Note: class-level @RequestMapping is "/api", individual methods
+ * define the full path. This is slightly unusual — most controllers
+ * put the shared prefix at the class level.
+ */
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class PublicRepoController {
     private final GithubRepoService githubRepoService;
 
+    /**
+     * GET /api/repos/{repoId}
+     * Returns details of ONE approved repo.
+     */
     @GetMapping("/repos/{repoId}")
     public RepoSummaryResponse getRepoById(@PathVariable Long repoId) {
         return githubRepoService.getApprovedRepoById(repoId);
     }
 
+    /**
+     * GET /api/courses/{courseId}/repos
+     * Returns ALL approved repos for a course.
+     * Optionally filter by techStack query parameter.
+     *
+     * Example: GET /api/courses/1/repos?techStack=React
+     */
     @GetMapping("/courses/{courseId}/repos")
     public List<RepoSummaryResponse> getReposByCourse(
         @PathVariable Long courseId,

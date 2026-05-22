@@ -19,11 +19,15 @@ public class CourseYoutubePlaylistService {
     private final CourseYoutubePlaylistRepository repository;
     private final CourseRepository courseRepository;
 
+    // ================ READ ================
+
     public List<YoutubePlaylistResponse> getByCourse(Long courseId) {
         return repository.findByCourseIdOrderByCreatedAtDesc(courseId).stream()
                 .map(this::toResponse)
                 .toList();
     }
+
+    // ================ CUD ================
 
     @Transactional
     public YoutubePlaylistResponse create(Long courseId, YoutubePlaylistRequest request) {
@@ -56,6 +60,8 @@ public class CourseYoutubePlaylistService {
                 .orElseThrow(() -> new NotFoundException("Youtube playlist not found: " + id));
         repository.delete(entity);
     }
+
+    // ================ HELPER ================
 
     private YoutubePlaylistResponse toResponse(CourseYoutubePlaylist entity) {
         return new YoutubePlaylistResponse(

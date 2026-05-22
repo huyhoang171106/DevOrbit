@@ -12,6 +12,14 @@ import vn.edu.uit.devorbit_api.service.GithubRepoService;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * ADMIN REPO CONTROLLER = manage the approved GitHub repos.
+ *
+ * Once a RepoCandidate is APPROVED, it becomes a GithubRepo that
+ * students can see. This controller handles CRUD on those approved repos.
+ *
+ * All endpoints require ROLE_ADMIN.
+ */
 @RestController
 @RequestMapping("/api/admin/repos")
 @RequiredArgsConstructor
@@ -20,11 +28,13 @@ public class AdminRepoController {
     private final GithubRepoRepository githubRepoRepository;
     private final RepoCandidateRepository repoCandidateRepository;
 
+    /** List ALL approved repos */
     @GetMapping
     public List<RepoSummaryResponse> getAllApprovedRepos() {
         return githubRepoService.getAllApprovedRepos();
     }
 
+    /** Update a repo's details */
     @PutMapping("/{repoId}")
     public RepoSummaryResponse updateRepo(
         @PathVariable Long repoId,
@@ -33,19 +43,10 @@ public class AdminRepoController {
         return githubRepoService.updateApprovedRepo(repoId, request);
     }
 
+    /** Soft-delete a repo (sets active=false, doesn't actually remove it) */
     @DeleteMapping("/{repoId}")
     public void deleteRepo(@PathVariable Long repoId) {
         githubRepoService.deleteApprovedRepo(repoId);
     }
 
-    @GetMapping("/consistency")
-    public Map<String, Object> checkConsistency() {
-        long approvedCandidates = repoCandidateRepository.countByStatus(RepoCandidateStatus.APPROVED);
-        long activeRepos = githubRepoRepository.countByActiveTrue();
-        return Map.of(
-            "approvedCandidates", approvedCandidates,
-            "activeRepos", activeRepos,
-            "consistent", approvedCandidates == activeRepos
-        );
-    }
 }

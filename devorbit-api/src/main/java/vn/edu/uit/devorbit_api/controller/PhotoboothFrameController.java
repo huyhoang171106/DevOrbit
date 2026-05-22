@@ -14,35 +14,52 @@ import vn.edu.uit.devorbit_api.service.SupabaseStorageService;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * PHOTOBOOTH FRAME CONTROLLER = manage AI Photobooth frame templates.
+ *
+ * Photobooth frames define how AI-generated photos are laid out:
+ * - Where photos appear
+ * - Background colors, filters
+ * - Overlay decorations
+ *
+ * Public endpoints (GET) are open; write endpoints require ROLE_ADMIN.
+ * See SecurityConfig for the rule:
+ *   GET /api/photobooth/** → permitAll
+ *   all other /api/photobooth/** → ROLE_ADMIN
+ */
 @RestController
 @RequestMapping("/api/photobooth/frames")
 @RequiredArgsConstructor
-@Tag(name = "Photobooth", description = "API quản lý frame Photobooth")
+@Tag(name = "Photobooth", description = "Photobooth frame management")
 public class PhotoboothFrameController {
 
     private final PhotoboothFrameService frameService;
     private final SupabaseStorageService storageService;
 
-    @Operation(summary = "Lấy danh sách tất cả frame")
+    /** Get ALL photobooth frames */
+    @Operation(summary = "List all frames")
     @GetMapping
     public ResponseEntity<List<PhotoboothFrameDTO>> listFrames() {
         return ResponseEntity.ok(frameService.listFrames());
     }
 
-    @Operation(summary = "Lấy frame theo frameId")
+    /** Get ONE frame by its frameId (not the database ID) */
+    @Operation(summary = "Get frame by frameId")
     @GetMapping("/{frameId}")
     public ResponseEntity<PhotoboothFrameDTO> getFrame(@PathVariable String frameId) {
         PhotoboothFrameDTO dto = frameService.getFrame(frameId);
         return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
     }
 
-    @Operation(summary = "Tạo hoặc cập nhật frame")
+    /** Create a NEW frame or UPDATE an existing one */
+    @Operation(summary = "Create or update a frame")
     @PostMapping
     public ResponseEntity<PhotoboothFrameDTO> upsertFrame(@RequestBody PhotoboothFrameDTO dto) {
         return ResponseEntity.ok(frameService.upsertFrame(dto));
     }
 
-    @Operation(summary = "Xoá frame")
+    /** Delete a frame */
+    @Operation(summary = "Delete a frame")
     @DeleteMapping("/{frameId}")
     public ResponseEntity<Void> deleteFrame(@PathVariable String frameId) {
         return frameService.deleteFrame(frameId)
@@ -50,7 +67,8 @@ public class PhotoboothFrameController {
                 : ResponseEntity.notFound().build();
     }
 
-    @Operation(summary = "Upload ảnh overlay cho frame")
+    /** Upload an overlay image (PNG with transparency) for a frame */
+    @Operation(summary = "Upload overlay image for a frame")
     @PostMapping(value = "/{frameId}/overlay", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadOverlay(
             @PathVariable String frameId,

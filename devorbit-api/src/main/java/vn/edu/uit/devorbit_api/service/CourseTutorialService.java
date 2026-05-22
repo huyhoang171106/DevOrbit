@@ -19,11 +19,15 @@ public class CourseTutorialService {
     private final CourseTutorialRepository repository;
     private final CourseRepository courseRepository;
 
+    // ================ READ ================
+
     public List<TutorialResponse> getByCourse(Long courseId) {
         return repository.findByCourseIdOrderByCreatedAtDesc(courseId).stream()
                 .map(this::toResponse)
                 .toList();
     }
+
+    // ================ CUD ================
 
     @Transactional
     public TutorialResponse create(Long courseId, TutorialRequest request) {
@@ -56,6 +60,8 @@ public class CourseTutorialService {
                 .orElseThrow(() -> new NotFoundException("Tutorial not found: " + id));
         repository.delete(entity);
     }
+
+    // ================ HELPER ================
 
     private TutorialResponse toResponse(CourseTutorial entity) {
         return new TutorialResponse(

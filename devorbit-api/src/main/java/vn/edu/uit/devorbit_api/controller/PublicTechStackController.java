@@ -9,18 +9,19 @@ import vn.edu.uit.devorbit_api.service.TechStackService;
 
 import java.util.List;
 
+/**
+ * PUBLIC TECH STACK CONTROLLER = browse available tech stacks.
+ *
+ * No authentication required.
+ */
 @RestController
 @RequiredArgsConstructor
 public class PublicTechStackController {
     private final TechStackService techStackService;
 
+    /** Get ALL tech stacks (list of technology names) */
     @GetMapping("/api/tech-stacks")
     public List<TechStackResponse> getAllTechStacks() {
         return techStackService.getAllTechStacks();
-    }
-
-    @GetMapping("/api/repos/{repoId}/tech-stacks")
-    public List<TechStackResponse> getTechStacks(@PathVariable Long repoId) {
-        return techStackService.getTechStacksByRepo(repoId);
     }
 }

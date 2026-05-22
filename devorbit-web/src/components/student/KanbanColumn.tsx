@@ -45,7 +45,7 @@ export function KanbanColumn({
 
   return (
     <div
-      className={`flex flex-col flex-shrink-0 w-[300px] rounded-3xl transition-all duration-300 ${
+      className={`flex flex-col flex-shrink-0 w-[260px] rounded-3xl transition-all duration-300 ${
         isOver ? 'bg-orbit-accent/5 border-orbit-accent/30' : ''
       }`}
       style={{
@@ -56,14 +56,14 @@ export function KanbanColumn({
       }}
     >
       {/* Column header */}
-      <div className="px-4 pt-4 pb-3 border-b border-white/5 space-y-2">
+      <div className="px-3 pt-3 pb-2 border-b border-white/5 space-y-1.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5 min-w-0">
             <div
               className="h-2.5 w-2.5 rounded-full shrink-0"
               style={{ backgroundColor: color, boxShadow: `0 0 6px ${color}60` }}
             />
-            <span className="text-[14px] font-black uppercase tracking-[0.12em] text-orbit-text truncate">
+            <span className="text-[12px] font-black uppercase tracking-[0.12em] text-orbit-text truncate">
               {label}
             </span>
           </div>
@@ -78,7 +78,7 @@ export function KanbanColumn({
                 >
                   {totalCredits}
                 </span>
-                <span className="text-[11px] text-zinc-600 font-bold">/ {MAX_CREDITS_PER_SEMESTER} TC</span>
+                <span className="text-[10px] text-zinc-600 font-bold">/ {MAX_CREDITS_PER_SEMESTER} TC</span>
               </>
             )}
           </div>
@@ -108,7 +108,7 @@ export function KanbanColumn({
 
         {/* Course count */}
         <div className="flex items-center justify-between">
-          <span className="text-[12px] text-zinc-500 font-medium">
+          <span className="text-[11px] text-zinc-500 font-medium">
             {nodes.length} môn
           </span>
           {isOverloaded && (
@@ -122,11 +122,11 @@ export function KanbanColumn({
       {/* Drop zone */}
       <div
         ref={setNodeRef}
-        className="flex-1 p-3 space-y-2.5 min-h-[100px]"
+        className="flex-1 p-2 space-y-2 min-h-[80px]"
       >
         {nodes.length === 0 ? (
-          <div className="flex items-center justify-center h-20 rounded-2xl border border-dashed border-white/5">
-            <span className="text-[13px] font-medium text-zinc-600">
+          <div className="flex items-center justify-center h-14 rounded-2xl border border-dashed border-white/5">
+            <span className="text-[11px] font-medium text-zinc-600">
               Kéo thả môn học vào đây
             </span>
           </div>

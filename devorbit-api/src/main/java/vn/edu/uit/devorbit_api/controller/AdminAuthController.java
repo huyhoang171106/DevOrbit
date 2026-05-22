@@ -10,6 +10,20 @@ import vn.edu.uit.devorbit_api.dto.admin.LoginRequest;
 import vn.edu.uit.devorbit_api.dto.admin.LoginResponse;
 import vn.edu.uit.devorbit_api.service.AdminAuthService;
 
+/**
+ * ADMIN AUTH CONTROLLER = login endpoint for admin users.
+ *
+ * POST /api/admin/auth/login
+ *   Body: { username, password }
+ *   Returns: { token, username }
+ *
+ * The returned JWT token must be sent as:
+ *   Authorization: Bearer <token>
+ * in all subsequent /api/admin/** requests.
+ *
+ * Other /api/admin/** endpoints are protected by SecurityConfig.
+ * Only this login endpoint is publicly accessible.
+ */
 @RestController
 @RequestMapping("/api/admin/auth")
 @RequiredArgsConstructor

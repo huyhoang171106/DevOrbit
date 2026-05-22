@@ -9,6 +9,16 @@ import vn.edu.uit.devorbit_api.service.LearningRoadmapService;
 
 import java.util.List;
 
+/**
+ * ADMIN ROADMAP CONTROLLER = full CRUD for learning roadmaps.
+ *
+ * Roadmaps have a hierarchy:
+ *   LearningRoadmap → RoadmapPhase → RoadmapItem
+ *
+ * Admins can manage all three levels through this controller.
+ *
+ * All endpoints require ROLE_ADMIN.
+ */
 @RestController
 @RequestMapping("/api/admin/roadmaps")
 @RequiredArgsConstructor
@@ -16,14 +26,11 @@ public class AdminRoadmapController {
 
     private final LearningRoadmapService roadmapService;
 
+    // ===== ROADMAP LEVEL =====
+
     @GetMapping
     public List<RoadmapResponse> list() {
         return roadmapService.getAll();
-    }
-
-    @GetMapping("/{id}")
-    public RoadmapResponse detail(@PathVariable Long id) {
-        return roadmapService.getById(id);
     }
 
     @PostMapping
@@ -41,6 +48,8 @@ public class AdminRoadmapController {
         roadmapService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    // ===== PHASE LEVEL =====
 
     @GetMapping("/{roadmapId}/phases")
     public List<PhaseResponse> getPhases(@PathVariable Long roadmapId) {
@@ -66,6 +75,8 @@ public class AdminRoadmapController {
         roadmapService.deletePhase(phaseId);
         return ResponseEntity.noContent().build();
     }
+
+    // ===== ITEM LEVEL =====
 
     @GetMapping("/phases/{phaseId}/items")
     public List<ItemResponse> getItems(@PathVariable Long phaseId) {

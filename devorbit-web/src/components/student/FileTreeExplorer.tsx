@@ -1,7 +1,12 @@
 import { useState, useMemo } from 'react'
 import { CaretRight, Folder, FolderOpen, FileCode, FileImage, FileText, FileZip, FilePy, FileTsx, FileJs, FileCss, FileHtml, FileMd, FileSql, FileVideo, FileAudio, FilePdf, FileIni, FileLock } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
-import type { RepoTreeItem } from '../../types/api'
+type RepoTreeItem = {
+  name: string
+  path: string
+  type: 'blob' | 'tree'
+  size: number | null
+}
 
 type TreeNode = {
   name: string

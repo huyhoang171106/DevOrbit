@@ -8,6 +8,7 @@ import { RepoFilterBar } from '../../components/student/RepoFilterBar'
 import { CourseKnowledgeGraph } from '../../components/student/CourseKnowledgeGraph'
 import type { RepoSummary, CourseDetail } from '../../types/api'
 import { ArrowLeft, GraduationCap, BookOpen, Code, Tag, Building, Clock, Bookmark, BookmarkSimple, ShareNetwork, Sparkle, Stack, WarningCircle } from '@phosphor-icons/react'
+import { StaggerReveal, StaggerItem, SectionTransition, ParallaxLayer } from '../../motion'
 
 const stagger = {
   hidden: { opacity: 0 },
@@ -124,12 +125,14 @@ export function CourseDetailPage() {
   }
 
   return (
-    <div className="relative w-full min-h-screen pb-32 gpu">
-      {/* Ambient background */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-0 right-0 w-[50%] h-[600px] bg-orbit-accent/5 blur-[60px] rounded-full -translate-y-1/4 translate-x-1/4" />
-        <div className="absolute bottom-0 left-0 w-[35%] h-[400px] bg-emerald-500/3 blur-[40px] rounded-full" />
-      </div>
+    <SectionTransition atmosphere="deep" className="relative w-full min-h-screen pb-32 gpu">
+      {/* Ambient background with parallax */}
+      <ParallaxLayer speed={0.1} range={80}>
+        <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+          <div className="absolute top-0 right-0 w-[50%] h-[600px] bg-orbit-accent/5 blur-[60px] rounded-full -translate-y-1/4 translate-x-1/4" />
+          <div className="absolute bottom-0 left-0 w-[35%] h-[400px] bg-emerald-500/3 blur-[40px] rounded-full" />
+        </div>
+      </ParallaxLayer>
 
       <div className="relative z-10 w-full max-w-[1300px] mx-auto px-6 md:px-10 lg:px-12 py-10">
         {/* ─── Breadcrumb ─── */}
@@ -296,22 +299,15 @@ export function CourseDetailPage() {
                 </div>
               )}
 
-              <div className="grid sm:grid-cols-2 gap-5">
-                {filtered.map((r, index) => (
-                  <motion.div
-                    key={r.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{
-                      type: 'spring',
-                      stiffness: 300, damping: 30,
-                      delay: 0.4 + index * 0.08,
-                    }}
-                  >
-                    <RepoCard repo={r} />
-                  </motion.div>
-                ))}
-              </div>
+              <StaggerReveal stagger={0.05} y={16}>
+                <div className="grid sm:grid-cols-2 gap-5">
+                  {filtered.map((r) => (
+                    <StaggerItem key={r.id}>
+                      <RepoCard repo={r} />
+                    </StaggerItem>
+                  ))}
+                </div>
+              </StaggerReveal>
 
               {filtered.length === 0 && (
                 <div className="orbit-card py-24 text-center border-dashed border-2 border-orbit-accent/10">
@@ -388,6 +384,6 @@ export function CourseDetailPage() {
           </aside>
         </div>
       </div>
-    </div>
+    </SectionTransition>
   )
 }

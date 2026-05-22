@@ -12,16 +12,6 @@ import java.util.List;
 public class TechStackService {
     private final TechStackRepository techStackRepository;
 
-    public List<TechStackResponse> getTechStacksByRepo(Long repoId) {
-        var stacks = techStackRepository.findByRepoIdFromJoinTable(repoId);
-        if (stacks.isEmpty()) {
-            stacks = techStackRepository.findByRepoId(repoId);
-        }
-        return stacks.stream()
-                .map(techStack -> new TechStackResponse(techStack.getName()))
-                .toList();
-    }
-
     public List<TechStackResponse> getAllTechStacks() {
         return techStackRepository.findAllDistinctOrderByName().stream()
                 .map(techStack -> new TechStackResponse(techStack.getName()))

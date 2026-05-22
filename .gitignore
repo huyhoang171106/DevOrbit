@@ -124,3 +124,6 @@ GitNexus/
 # Scraped web page data (source artifacts with timestamps)
 daa.uit.edu.vn_*.md
 student.uit.edu.vn_*.md
+
+# Codebase wiki — compiled artifact, regenerated from source
+.codebase-wiki/

@@ -11,18 +11,19 @@ public class GithubClientConfig {
     @Bean
     public WebClient githubWebClient(GithubProperties githubProperties) {
         String token = githubProperties.token();
+        String baseUrl = githubProperties.apiUrl();
+        String userAgent = githubProperties.userAgent();
+
+        WebClient.Builder builder = WebClient.builder()
+            .baseUrl(baseUrl)
+            .defaultHeader(HttpHeaders.USER_AGENT, userAgent);
+
         if (token == null || token.isBlank()) {
-            System.err.println("WARNING: GITHUB_TOKEN environment variable is not set. GitHub API scan will be unavailable.");
-            return WebClient.builder()
-                .baseUrl("https://api.github.com")
-                .defaultHeader(HttpHeaders.USER_AGENT, "DevOrbit/1.0")
-                .build();
+            System.err.println("WARNING: GITHUB_TOKEN is not set. GitHub API scan will be unavailable.");
+        } else {
+            builder.defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
         }
 
-        return WebClient.builder()
-            .baseUrl("https://api.github.com")
-            .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-            .defaultHeader(HttpHeaders.USER_AGENT, "DevOrbit/1.0")
-            .build();
+        return builder.build();
     }
 }

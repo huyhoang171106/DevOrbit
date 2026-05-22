@@ -12,6 +12,15 @@ import vn.edu.uit.devorbit_api.repository.TechStackRepository;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * PUBLIC DISCOVERY CONTROLLER = explore recent repos and popular tech stacks.
+ *
+ * Used by the "Discover" page on the frontend to show:
+ * - Recently added GitHub repos
+ * - Most popular tech stacks
+ *
+ * No authentication required.
+ */
 @RestController
 @RequestMapping("/api/discovery")
 @RequiredArgsConstructor
@@ -20,6 +29,7 @@ public class PublicDiscoveryController {
     private final GithubRepoRepository repoRepository;
     private final TechStackRepository techStackRepository;
 
+    /** Get the 10 most recently added active repos */
     @GetMapping("/recent-repos")
     public List<RepoSummaryResponse> getRecentRepos() {
         return repoRepository.findTop10ByActiveTrueOrderByIdDesc().stream()
@@ -39,6 +49,7 @@ public class PublicDiscoveryController {
                 .toList();
     }
 
+    /** Get the 10 most used tech stacks */
     @GetMapping("/top-stacks")
     public List<String> getTopStacks() {
         return techStackRepository.findTop10TechStacksByUsage();

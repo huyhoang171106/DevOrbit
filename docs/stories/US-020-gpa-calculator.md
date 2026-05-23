@@ -53,3 +53,4 @@ No harness changes required.
 - `devorbit-web`: `npm test -- GpaCalculatorPage router` passed, 4 tests.
 - `devorbit-web`: `npm run build` passed.
 - Updated to Vietnamese-only UI copy, DevOrbit dark visual style, and 10-point GPA only.
+- Added GPA calculator entry to the shared student navigation.

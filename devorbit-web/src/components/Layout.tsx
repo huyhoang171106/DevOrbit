@@ -2,14 +2,9 @@ import { useState, useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence, useScroll, useTransform, LayoutGroup } from 'framer-motion'
 import { ParticleNetwork } from './ParticleNetwork'
-import { Cube, Graph, Compass, BookOpen, Camera } from '@phosphor-icons/react'
+import { Cube, Compass } from '@phosphor-icons/react'
 import { ScrollProgressIndicator } from '../motion'
-
-const navLinks = [
-  { to: '/courses', label: 'Môn Học', icon: BookOpen },
-  { to: '/knowledge-graph', label: 'Lộ Trình Học Tập', icon: Graph },
-  { to: '/photobooth', label: 'Photobooth', icon: Camera },
-]
+import { navLinks } from './navigation'
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation()

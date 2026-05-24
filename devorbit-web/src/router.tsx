@@ -8,6 +8,7 @@ const RepoDetailPage = lazy(() => import('./pages/student/RepoDetailPage').then(
 const StudentLoginPage = lazy(() => import('./pages/student/StudentLoginPage').then(m => ({ default: m.StudentLoginPage })))
 const StudentBookmarksPage = lazy(() => import('./pages/student/StudentBookmarksPage').then(m => ({ default: m.StudentBookmarksPage })))
 const PhotoboothPage = lazy(() => import('./pages/student/PhotoboothPage').then(m => ({ default: m.PhotoboothPage })))
+const GpaCalculatorPage = lazy(() => import('./pages/student/GpaCalculatorPage').then(m => ({ default: m.GpaCalculatorPage })))
 const LoginPage = lazy(() => import('./pages/admin/LoginPage').then(m => ({ default: m.LoginPage })))
 const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })))
 const AdminCoursesPage = lazy(() => import('./pages/admin/AdminCoursesPage').then(m => ({ default: m.AdminCoursesPage })))
@@ -45,7 +46,8 @@ export function AppRoutes() {
       <Route path="/repos/:repoId" element={<Suspense fallback={<PageFallback />}><RepoDetailPage /></Suspense>} />
       <Route path="/student/login" element={<Suspense fallback={<PageFallback />}><StudentLoginPage /></Suspense>} />
       <Route path="/student/bookmarks" element={<Suspense fallback={<PageFallback />}><StudentBookmarksPage /></Suspense>} />
-      <Route path="/student/photobooth" element={<Suspense fallback={<PageFallback />}><PhotoboothPage /></Suspense>} />
+      <Route path="/photobooth" element={<Suspense fallback={<PageFallback />}><PhotoboothPage /></Suspense>} />
+      <Route path="/gpa-calculator" element={<Suspense fallback={<PageFallback />}><GpaCalculatorPage /></Suspense>} />
       <Route path="/admin/login" element={<Suspense fallback={<PageFallback />}><LoginPage /></Suspense>} />
       <Route path="/admin" element={<Suspense fallback={<PageFallback />}><AdminDashboardPage /></Suspense>} />
       <Route path="/admin/courses" element={<Suspense fallback={<PageFallback />}><AdminCoursesPage /></Suspense>} />

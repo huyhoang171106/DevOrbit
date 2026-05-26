@@ -15,12 +15,15 @@ type CourseResult = {
   grade10: number
 }
 
+type SemesterMap = Record<number, number | null>
+
 const initialCourses: CourseInput[] = [
   { id: 1, name: '', credits: '3', grade10: '' },
   { id: 2, name: '', credits: '3', grade10: '' },
 ]
 
 const semesters = [1, 2, 3, 4, 5, 6, 7, 8]
+const savedRoadmapKey = 'devorbit_kanban_semester_map'
 
 function parseCourse(course: CourseInput): CourseResult | null {
   const credits = Number(course.credits)
@@ -56,9 +59,30 @@ function courseToInput(course: CourseSummary, index: number): CourseInput {
   }
 }
 
+function readSavedSemesterMap(): SemesterMap | null {
+  try {
+    const saved = localStorage.getItem(savedRoadmapKey)
+    if (!saved) return null
+    return JSON.parse(saved) as SemesterMap
+  } catch {
+    return null
+  }
+}
+
+function getSemesterCourses(catalogue: CourseSummary[], semester: number, semesterMap: SemesterMap | null): CourseSummary[] {
+  return catalogue
+    .filter((course) => {
+      const roadmapSemester = semesterMap?.[course.id]
+      const effectiveSemester = roadmapSemester === undefined ? course.semester : roadmapSemester
+      return effectiveSemester === semester && Number(course.credits ?? 0) > 0
+    })
+    .sort((a, b) => a.code.localeCompare(b.code))
+}
+
 export function GpaCalculatorPage() {
   const [courses, setCourses] = useState<CourseInput[]>(initialCourses)
   const [catalogue, setCatalogue] = useState<CourseSummary[]>([])
+  const [savedSemesterMap, setSavedSemesterMap] = useState<SemesterMap | null>(() => readSavedSemesterMap())
   const [selectedSemester, setSelectedSemester] = useState('1')
   const [presetStatus, setPresetStatus] = useState('Đang tải danh sách môn học...')
 
@@ -82,11 +106,8 @@ export function GpaCalculatorPage() {
   }, [])
 
   const semesterCourses = useMemo(() => {
-    const semester = Number(selectedSemester)
-    return catalogue
-      .filter((course) => course.semester === semester && Number(course.credits ?? 0) > 0)
-      .sort((a, b) => a.code.localeCompare(b.code))
-  }, [catalogue, selectedSemester])
+    return getSemesterCourses(catalogue, Number(selectedSemester), savedSemesterMap)
+  }, [catalogue, savedSemesterMap, selectedSemester])
 
   const summary = useMemo(() => {
     const validCourses = courses.map(parseCourse).filter((course): course is CourseResult => course !== null)
@@ -126,8 +147,11 @@ export function GpaCalculatorPage() {
   }
 
   const applySemesterPreset = () => {
-    if (semesterCourses.length === 0) return
-    setCourses(semesterCourses.map(courseToInput))
+    const latestSemesterMap = readSavedSemesterMap()
+    const latestSemesterCourses = getSemesterCourses(catalogue, Number(selectedSemester), latestSemesterMap)
+    setSavedSemesterMap(latestSemesterMap)
+    if (latestSemesterCourses.length === 0) return
+    setCourses(latestSemesterCourses.map(courseToInput))
   }
 
   const removeCourse = (id: number) => {

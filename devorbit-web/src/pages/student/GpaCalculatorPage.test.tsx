@@ -23,6 +23,17 @@ function buttonByText(pattern: RegExp): HTMLButtonElement {
   return element as HTMLButtonElement
 }
 
+const mojibakePattern = new RegExp([
+  '\\u00c2.',
+  '\\u00c3.',
+  '\\u00c4.',
+  '\\u00c5.',
+  '\\u00c6.',
+  '\\u00e1\\u00ba.',
+  '\\u00e1\\u00bb.',
+  '\\ufffd',
+].join('|'))
+
 afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
@@ -50,12 +61,13 @@ describe('GpaCalculatorPage', () => {
     expect(screen.queryByText(/he 4/i)).not.toBeInTheDocument()
     expect(screen.getByText('7.86')).toBeInTheDocument()
     expect(screen.getByText(/7.*t/i)).toBeInTheDocument()
+    expect(document.body.textContent).not.toMatch(mojibakePattern)
   })
 
   test('adds and removes course rows', () => {
     render(<GpaCalculatorPage />)
 
-    fireEvent.click(buttonByText(/Th|ThÃ/))
+    fireEvent.click(buttonByText(/Thêm môn/))
     expect(input('course-name-3')).toBeInTheDocument()
 
     fireEvent.click(screen.getAllByRole('button', { name: /x/i })[2])
@@ -86,7 +98,7 @@ describe('GpaCalculatorPage', () => {
 
     await screen.findByText(/DevOrbit|preset/i)
     fireEvent.change(select('semester-preset'), { target: { value: '1' } })
-    fireEvent.click(buttonByText(/p d|Ãp d|Ap d/i))
+    fireEvent.click(buttonByText(/Áp dụng học kỳ/))
 
     expect(screen.getByDisplayValue('MA006 - Giai tich')).toBeInTheDocument()
     expect(screen.getByDisplayValue('IT001 - Nhap mon lap trinh')).toBeInTheDocument()
@@ -109,7 +121,7 @@ describe('GpaCalculatorPage', () => {
 
     await screen.findByText(/DevOrbit|preset/i)
     fireEvent.change(select('semester-preset'), { target: { value: '1' } })
-    fireEvent.click(buttonByText(/p d|Ãp d|Ap d/i))
+    fireEvent.click(buttonByText(/Áp dụng học kỳ/))
 
     expect(screen.getByDisplayValue('MA006 - Giai tich')).toBeInTheDocument()
     expect(screen.getByDisplayValue('IT002 - Lap trinh huong doi tuong')).toBeInTheDocument()
@@ -124,11 +136,11 @@ describe('GpaCalculatorPage', () => {
     fireEvent.change(input('course-credits-2'), { target: { value: '3' } })
     fireEvent.change(input('course-grade-2'), { target: { value: '7' } })
 
-    fireEvent.click(buttonByText(/tích|tÃ­ch|tich|lũy|lÅ©y|luy/i))
+    fireEvent.click(buttonByText(/tích lũy/i))
     fireEvent.change(input('current-gpa'), { target: { value: '7' } })
     fireEvent.change(input('completed-credits'), { target: { value: '20' } })
 
-    expect(screen.getAllByText(/GPA.*dự|GPA.*du|GPA.*dá»±|GPA.*tích|GPA.*tich|GPA.*tÃ­ch/i).length).toBeGreaterThan(0)
+    expect(screen.getByText(/GPA tích lũy dự kiến/i)).toBeInTheDocument()
     expect(screen.getByText('7.22')).toBeInTheDocument()
     expect(screen.getByText(/27.*t/i)).toBeInTheDocument()
   })

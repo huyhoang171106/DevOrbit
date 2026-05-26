@@ -15,6 +15,7 @@ DevOrbit includes a student-facing GPA calculator so students can quickly estima
 - Students can add or remove course rows.
 - Students can load a semester preset from the DevOrbit course catalogue.
 - Semester presets use `/api/courses`, include only matching semester courses with credits greater than 0, and leave grade cells empty for student input.
+- If the student has saved a learning roadmap, semester presets use `devorbit_kanban_semester_map` before falling back to the catalogue semester.
 - The calculator ignores invalid rows and shows guidance when no valid credits exist.
 - Results include total credits, weighted 10-point GPA, and a simple academic classification.
 - The calculator does not display or convert to a 4-point scale.

@@ -16,6 +16,7 @@ type CourseResult = {
 }
 
 type SemesterMap = Record<number, number | null>
+type CalculationMode = 'semester' | 'cumulative'
 
 const initialCourses: CourseInput[] = [
   { id: 1, name: '', credits: '3', grade10: '' },
@@ -84,6 +85,9 @@ export function GpaCalculatorPage() {
   const [catalogue, setCatalogue] = useState<CourseSummary[]>([])
   const [savedSemesterMap, setSavedSemesterMap] = useState<SemesterMap | null>(() => readSavedSemesterMap())
   const [selectedSemester, setSelectedSemester] = useState('1')
+  const [calculationMode, setCalculationMode] = useState<CalculationMode>('semester')
+  const [currentGpa, setCurrentGpa] = useState('')
+  const [completedCredits, setCompletedCredits] = useState('')
   const [presetStatus, setPresetStatus] = useState('Đang tải danh sách môn học...')
 
   useEffect(() => {
@@ -131,6 +135,37 @@ export function GpaCalculatorPage() {
     }
   }, [courses])
 
+  const cumulativeSummary = useMemo(() => {
+    const existingGpa = Number(currentGpa)
+    const existingCredits = Number(completedCredits)
+    const termCredits = summary.totalCredits
+    const totalCreditsAfterTerm = Number.isFinite(existingCredits) && existingCredits >= 0
+      ? existingCredits + termCredits
+      : termCredits
+
+    if (
+      !Number.isFinite(existingGpa)
+      || !Number.isFinite(existingCredits)
+      || existingGpa < 0
+      || existingGpa > 10
+      || existingCredits < 0
+      || termCredits <= 0
+      || totalCreditsAfterTerm <= 0
+    ) {
+      return {
+        projectedGpa: 0,
+        totalCreditsAfterTerm,
+        valid: false,
+      }
+    }
+
+    return {
+      projectedGpa: ((existingGpa * existingCredits) + (summary.average10 * termCredits)) / totalCreditsAfterTerm,
+      totalCreditsAfterTerm,
+      valid: true,
+    }
+  }, [completedCredits, currentGpa, summary.average10, summary.totalCredits])
+
   const updateCourse = (id: number, field: keyof Omit<CourseInput, 'id'>, value: string) => {
     setCourses((current) =>
       current.map((course) =>
@@ -177,6 +212,71 @@ export function GpaCalculatorPage() {
           <p className="mb-8 max-w-3xl text-[16px] leading-7 text-orbit-text-secondary">
             Nhập tín chỉ và điểm hệ 10 của từng môn. Công cụ chỉ tính GPA hệ 10 theo trọng số tín chỉ, phù hợp để sinh viên ước lượng nhanh kết quả học kỳ.
           </p>
+
+          <div className="mb-6 flex flex-wrap gap-3">
+            <div className="inline-flex rounded-[8px] border border-orbit-border bg-orbit-surface p-1 shadow-diffusion">
+              <button
+                type="button"
+                onClick={() => setCalculationMode('semester')}
+                className={`h-10 rounded-[6px] px-4 text-[13px] font-bold transition-colors ${
+                  calculationMode === 'semester'
+                    ? 'bg-orbit-accent text-zinc-950'
+                    : 'text-orbit-text-secondary hover:text-orbit-text'
+                }`}
+              >
+                Tính GPA học kỳ
+              </button>
+              <button
+                type="button"
+                onClick={() => setCalculationMode('cumulative')}
+                className={`h-10 rounded-[6px] px-4 text-[13px] font-bold transition-colors ${
+                  calculationMode === 'cumulative'
+                    ? 'bg-orbit-accent text-zinc-950'
+                    : 'text-orbit-text-secondary hover:text-orbit-text'
+                }`}
+              >
+                Ước lượng GPA tích lũy
+              </button>
+            </div>
+          </div>
+
+          {calculationMode === 'cumulative' && (
+            <div className="mb-6 rounded-[8px] border border-orbit-border bg-orbit-surface p-4 shadow-diffusion">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="mb-2 block text-[12px] font-bold uppercase tracking-[0.12em] text-orbit-text-muted" htmlFor="current-gpa">
+                    GPA hiện tại
+                  </label>
+                  <input
+                    id="current-gpa"
+                    type="number"
+                    min="0"
+                    max="10"
+                    step="0.01"
+                    value={currentGpa}
+                    onChange={(event) => setCurrentGpa(event.target.value)}
+                    placeholder="7.50"
+                    className="h-11 w-full rounded-[8px] border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-[12px] font-bold uppercase tracking-[0.12em] text-orbit-text-muted" htmlFor="completed-credits">
+                    Tín chỉ đã tích lũy
+                  </label>
+                  <input
+                    id="completed-credits"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={completedCredits}
+                    onChange={(event) => setCompletedCredits(event.target.value)}
+                    placeholder="60"
+                    className="h-11 w-full rounded-[8px] border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="mb-6 rounded-[8px] border border-orbit-border bg-orbit-surface p-4 shadow-diffusion">
             <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_180px] md:items-end">
@@ -281,7 +381,7 @@ export function GpaCalculatorPage() {
           <p className="text-[12px] font-black uppercase tracking-[0.16em] text-orbit-text-muted">Kết quả tạm tính</p>
 
           <div className="mt-6 rounded-[8px] border border-orbit-accent/20 bg-orbit-accent/10 p-5">
-            <p className="text-[13px] font-bold text-orbit-accent">GPA hệ 10</p>
+            <p className="text-[13px] font-bold text-orbit-accent">GPA học kỳ</p>
             <p className="mt-2 font-heading text-[56px] font-black leading-none text-orbit-text">
               {formatNumber(summary.average10)}
             </p>
@@ -289,14 +389,34 @@ export function GpaCalculatorPage() {
 
           <dl className="mt-6 space-y-4">
             <div className="flex items-center justify-between border-b border-orbit-border pb-4">
-              <dt className="text-[14px] text-orbit-text-secondary">Tổng tín chỉ</dt>
+              <dt className="text-[14px] text-orbit-text-secondary">Tín chỉ kỳ này</dt>
               <dd className="text-[15px] font-bold text-orbit-text">{summary.totalCredits} tín chỉ</dd>
             </div>
             <div className="flex items-center justify-between">
               <dt className="text-[14px] text-orbit-text-secondary">Xếp loại</dt>
               <dd className="text-right text-[15px] font-bold text-orbit-text">{summary.classification}</dd>
             </div>
+            {calculationMode === 'cumulative' && (
+              <>
+                <div className="flex items-center justify-between border-t border-orbit-border pt-4">
+                  <dt className="text-[14px] text-orbit-text-secondary">GPA tích lũy dự kiến</dt>
+                  <dd className="text-[15px] font-bold text-orbit-text">
+                    {cumulativeSummary.valid ? formatNumber(cumulativeSummary.projectedGpa) : '--'}
+                  </dd>
+                </div>
+                <div className="flex items-center justify-between">
+                  <dt className="text-[14px] text-orbit-text-secondary">Tổng tín chỉ sau kỳ này</dt>
+                  <dd className="text-[15px] font-bold text-orbit-text">{cumulativeSummary.totalCreditsAfterTerm} tín chỉ</dd>
+                </div>
+              </>
+            )}
           </dl>
+
+          {calculationMode === 'cumulative' && !cumulativeSummary.valid && (
+            <p className="mt-4 rounded-[8px] border border-orbit-border bg-orbit-bg p-3 text-[13px] leading-6 text-orbit-text-secondary">
+              Nhập GPA hiện tại, tín chỉ đã tích lũy và điểm kỳ này hợp lệ để ước lượng GPA mới.
+            </p>
+          )}
 
           <div className="mt-6 rounded-[8px] border border-orbit-border bg-orbit-bg p-4 text-[13px] leading-6 text-orbit-text-secondary">
             Công thức: tổng của <span className="font-semibold text-orbit-text">điểm x tín chỉ</span> chia cho tổng tín chỉ hợp lệ. Kết quả chỉ mang tính tham khảo.

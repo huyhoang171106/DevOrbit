@@ -8,6 +8,7 @@ import { GpaCalculatorPage } from './GpaCalculatorPage'
 afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
+  localStorage.clear()
 })
 
 beforeEach(() => {
@@ -74,5 +75,26 @@ describe('GpaCalculatorPage', () => {
     expect(screen.getByDisplayValue('IT001 - Nhập môn lập trình')).toBeInTheDocument()
     expect(screen.queryByDisplayValue('PE0231 - Giáo dục thể chất 1')).not.toBeInTheDocument()
     expect(screen.getAllByDisplayValue('4')).toHaveLength(2)
+  })
+
+  test('uses saved learning roadmap semester assignments before catalogue semesters', async () => {
+    localStorage.setItem('devorbit_kanban_semester_map', JSON.stringify({ 1: 1, 4: 1, 5: 2 }))
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: async () => [
+        { id: 1, code: 'MA006', name: 'Giải tích', repoCount: 0, semester: 1, credits: 4 },
+        { id: 4, code: 'IT002', name: 'Lập trình hướng đối tượng', repoCount: 0, semester: 2, credits: 4 },
+        { id: 5, code: 'IT003', name: 'Cấu trúc dữ liệu và giải thuật', repoCount: 0, semester: 1, credits: 4 },
+      ],
+    } as Response)
+
+    render(<GpaCalculatorPage />)
+
+    fireEvent.change(await screen.findByLabelText(/Chọn học kỳ/i), { target: { value: '1' } })
+    fireEvent.click(screen.getByRole('button', { name: /Áp dụng học kỳ/i }))
+
+    expect(screen.getByDisplayValue('MA006 - Giải tích')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('IT002 - Lập trình hướng đối tượng')).toBeInTheDocument()
+    expect(screen.queryByDisplayValue('IT003 - Cấu trúc dữ liệu và giải thuật')).not.toBeInTheDocument()
   })
 })

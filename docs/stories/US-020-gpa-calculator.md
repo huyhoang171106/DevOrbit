@@ -23,6 +23,7 @@ DevOrbit provides a public student-facing GPA calculator that estimates 10-point
 - Students can add and remove course rows.
 - Students can select a semester preset that fills rows from the DevOrbit course catalogue.
 - Semester presets skip zero-credit courses and keep grade fields blank.
+- Semester presets respect saved learning roadmap assignments from `devorbit_kanban_semester_map` before falling back to catalogue semesters.
 - The calculator shows weighted total credits, weighted GPA on the 10-point scale, and academic classification.
 - The calculator does not show or convert to the 4-point scale.
 - Invalid or zero-credit rows do not break the calculation and show guidance when no valid credits exist.
@@ -33,14 +34,14 @@ DevOrbit provides a public student-facing GPA calculator that estimates 10-point
 - Queries: public course catalogue query for semester presets.
 - API: `GET /api/courses` for client-side preset loading.
 - Tables: none.
-- Domain rules: client-side calculator using weighted 10-point average by credits; semester presets include only courses with `semester` matching the selected term and `credits > 0`.
+- Domain rules: client-side calculator using weighted 10-point average by credits; semester presets include only courses with the effective semester matching the selected term and `credits > 0`. Effective semester comes from the saved learning roadmap map when present, otherwise from the course catalogue.
 - UI surfaces: `devorbit-web/src/pages/student/GpaCalculatorPage.tsx`, route `/gpa-calculator`.
 
 ## Validation
 
 | Layer | Expected proof |
 | --- | --- |
-| Unit | Vitest render tests for weighted 10-point GPA calculation, row add/remove, validation guidance, no 4-point output, semester preset loading, and route rendering |
+| Unit | Vitest render tests for weighted 10-point GPA calculation, row add/remove, validation guidance, no 4-point output, semester preset loading, saved learning roadmap assignment precedence, and route rendering |
 | Integration | Not required; preset uses existing public course catalogue endpoint without changing backend contract |
 | E2E | Not required for this static route slice |
 | Platform | Vite production build |
@@ -57,3 +58,4 @@ No harness changes required.
 - Updated to Vietnamese-only UI copy, DevOrbit dark visual style, and 10-point GPA only.
 - Added GPA calculator entry to the shared student navigation.
 - Added API-backed semester presets from the DevOrbit course catalogue, excluding zero-credit courses.
+- Fixed semester presets to respect saved learning roadmap assignments instead of only catalogue semesters.

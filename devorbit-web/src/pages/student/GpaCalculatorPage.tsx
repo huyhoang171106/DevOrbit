@@ -1,5 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Calculator, Plus, Trash2 } from 'lucide-react'
+import { apiGet } from '../../lib/api'
+import type { CourseSummary } from '../../types/api'
 
 type CourseInput = {
   id: number
@@ -17,6 +19,8 @@ const initialCourses: CourseInput[] = [
   { id: 1, name: '', credits: '3', grade10: '' },
   { id: 2, name: '', credits: '3', grade10: '' },
 ]
+
+const semesters = [1, 2, 3, 4, 5, 6, 7, 8]
 
 function parseCourse(course: CourseInput): CourseResult | null {
   const credits = Number(course.credits)
@@ -43,8 +47,46 @@ function formatNumber(value: number): string {
   return value.toFixed(2)
 }
 
+function courseToInput(course: CourseSummary, index: number): CourseInput {
+  return {
+    id: course.id || index + 1,
+    name: `${course.code} - ${course.name}`,
+    credits: String(course.credits ?? 3),
+    grade10: '',
+  }
+}
+
 export function GpaCalculatorPage() {
   const [courses, setCourses] = useState<CourseInput[]>(initialCourses)
+  const [catalogue, setCatalogue] = useState<CourseSummary[]>([])
+  const [selectedSemester, setSelectedSemester] = useState('1')
+  const [presetStatus, setPresetStatus] = useState('Đang tải danh sách môn học...')
+
+  useEffect(() => {
+    let active = true
+
+    apiGet<CourseSummary[]>('/api/courses')
+      .then((data) => {
+        if (!active) return
+        setCatalogue(data)
+        setPresetStatus(data.length > 0 ? 'Chọn học kỳ để tự điền môn học từ dữ liệu DevOrbit.' : 'Chưa có dữ liệu môn học để tạo preset.')
+      })
+      .catch(() => {
+        if (!active) return
+        setPresetStatus('Không tải được preset. Bạn vẫn có thể nhập môn thủ công.')
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  const semesterCourses = useMemo(() => {
+    const semester = Number(selectedSemester)
+    return catalogue
+      .filter((course) => course.semester === semester && Number(course.credits ?? 0) > 0)
+      .sort((a, b) => a.code.localeCompare(b.code))
+  }, [catalogue, selectedSemester])
 
   const summary = useMemo(() => {
     const validCourses = courses.map(parseCourse).filter((course): course is CourseResult => course !== null)
@@ -83,6 +125,11 @@ export function GpaCalculatorPage() {
     ])
   }
 
+  const applySemesterPreset = () => {
+    if (semesterCourses.length === 0) return
+    setCourses(semesterCourses.map(courseToInput))
+  }
+
   const removeCourse = (id: number) => {
     setCourses((current) => current.length === 1 ? current : current.filter((course) => course.id !== id))
   }
@@ -106,6 +153,38 @@ export function GpaCalculatorPage() {
           <p className="mb-8 max-w-3xl text-[16px] leading-7 text-orbit-text-secondary">
             Nhập tín chỉ và điểm hệ 10 của từng môn. Công cụ chỉ tính GPA hệ 10 theo trọng số tín chỉ, phù hợp để sinh viên ước lượng nhanh kết quả học kỳ.
           </p>
+
+          <div className="mb-6 rounded-[8px] border border-orbit-border bg-orbit-surface p-4 shadow-diffusion">
+            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_180px] md:items-end">
+              <div>
+                <p className="text-[12px] font-black uppercase tracking-[0.14em] text-orbit-accent">Preset theo học kỳ</p>
+                <p className="mt-2 text-[13px] leading-6 text-orbit-text-secondary">{presetStatus}</p>
+              </div>
+              <div>
+                <label className="mb-2 block text-[12px] font-bold uppercase tracking-[0.12em] text-orbit-text-muted" htmlFor="semester-preset">
+                  Chọn học kỳ
+                </label>
+                <select
+                  id="semester-preset"
+                  value={selectedSemester}
+                  onChange={(event) => setSelectedSemester(event.target.value)}
+                  className="h-11 w-full rounded-[8px] border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text outline-none transition-colors focus:border-orbit-accent/60"
+                >
+                  {semesters.map((semester) => (
+                    <option key={semester} value={semester}>Học kỳ {semester}</option>
+                  ))}
+                </select>
+              </div>
+              <button
+                type="button"
+                onClick={applySemesterPreset}
+                disabled={semesterCourses.length === 0}
+                className="inline-flex h-11 items-center justify-center rounded-[8px] bg-orbit-accent px-5 text-[13px] font-bold uppercase tracking-[0.12em] text-zinc-950 transition-colors hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Áp dụng học kỳ
+              </button>
+            </div>
+          </div>
 
           <div className="overflow-hidden rounded-[8px] border border-orbit-border bg-orbit-surface shadow-diffusion">
             <div className="grid grid-cols-[minmax(180px,1fr)_96px_128px_56px] gap-3 border-b border-orbit-border bg-orbit-elevated/40 px-4 py-3 text-[12px] font-black uppercase tracking-[0.12em] text-orbit-text-muted">

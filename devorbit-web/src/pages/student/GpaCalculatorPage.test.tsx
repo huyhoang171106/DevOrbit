@@ -42,6 +42,8 @@ const mojibakePattern = new RegExp([
   '\\ufffd',
 ].join('|'))
 
+const draftKey = 'devorbit_gpa_calculator_draft_v1'
+
 afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
@@ -273,5 +275,63 @@ describe('GpaCalculatorPage', () => {
     expect(input('course-name-1')).toBeInTheDocument()
     expect(input('course-name-2')).toBeInTheDocument()
     expect(document.querySelector('#course-name-3')).not.toBeInTheDocument()
+  })
+
+  test('restores a saved browser draft on reload', () => {
+    localStorage.setItem(draftKey, JSON.stringify({
+      courses: [
+        { id: 1, name: 'Nhap mon lap trinh', credits: '4', grade10: '8.5' },
+        { id: 2, name: 'Cau truc du lieu', credits: '3', grade10: '7.5' },
+      ],
+      calculationMode: 'goal',
+      currentGpa: '7',
+      completedCredits: '20',
+      targetGpa: '7.8',
+      selectedSemester: '3',
+      updatedAt: '2026-05-27T03:00:00.000Z',
+    }))
+
+    render(<GpaCalculatorPage />)
+
+    expect(input('course-name-1').value).toBe('Nhap mon lap trinh')
+    expect(input('course-credits-1').value).toBe('4')
+    expect(input('course-grade-2').value).toBe('7.5')
+    expect(input('current-gpa').value).toBe('7')
+    expect(input('completed-credits').value).toBe('20')
+    expect(input('target-gpa').value).toBe('7.8')
+    expect(select('semester-preset').value).toBe('3')
+    expect(screen.getByText(/Đã lưu tạm trên trình duyệt|Da luu tam tren trinh duyet/i)).toBeInTheDocument()
+  })
+
+  test('autosaves calculator changes to localStorage', () => {
+    render(<GpaCalculatorPage />)
+
+    fireEvent.change(input('course-name-1'), { target: { value: 'Nhap mon lap trinh' } })
+    fireEvent.change(input('course-credits-1'), { target: { value: '4' } })
+    fireEvent.click(buttonByText(/Mục tiêu GPA|Muc tieu GPA/i))
+    fireEvent.change(input('target-gpa'), { target: { value: '8' } })
+
+    const saved = JSON.parse(localStorage.getItem(draftKey) ?? '{}')
+    expect(saved.courses[0]).toMatchObject({ name: 'Nhap mon lap trinh', credits: '4' })
+    expect(saved.calculationMode).toBe('goal')
+    expect(saved.targetGpa).toBe('8')
+    expect(typeof saved.updatedAt).toBe('string')
+  })
+
+  test('ignores a corrupt browser draft without crashing', () => {
+    localStorage.setItem(draftKey, '{bad-json')
+
+    render(<GpaCalculatorPage />)
+
+    expect(input('course-name-1').value).toBe('')
+    expect(input('course-credits-1').value).toBe('3')
+    expect(screen.getByRole('heading', { name: /Tính GPA|Tinh GPA/i })).toBeInTheDocument()
+  })
+
+  test('does not show the saved draft clearing action yet', () => {
+    render(<GpaCalculatorPage />)
+
+    expect(screen.getByText(/Đã lưu tạm trên trình duyệt|Da luu tam tren trinh duyet/i)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Xóa bản lưu|Xoa ban luu/i })).not.toBeInTheDocument()
   })
 })

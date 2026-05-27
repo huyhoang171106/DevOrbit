@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Calculator, Plus, Trash2 } from 'lucide-react'
+import { Calculator, Copy, Plus, RotateCcw, Trash2 } from 'lucide-react'
 import { apiGet } from '../../lib/api'
 import type { CourseSummary } from '../../types/api'
 
@@ -19,6 +19,11 @@ type CourseResult = {
 type SemesterMap = Record<number, number | null>
 type CalculationMode = 'semester' | 'cumulative' | 'goal'
 type GoalStatus = 'needs-input' | 'no-term-credits' | 'not-feasible' | 'already-above-target' | 'difficult' | 'feasible'
+type CourseValidation = {
+  creditsReason: string | null
+  gradeReason: string | null
+  valid: boolean
+}
 
 const initialCourses: CourseInput[] = [
   { id: 1, name: '', credits: '3', grade10: '' },
@@ -28,8 +33,31 @@ const initialCourses: CourseInput[] = [
 const semesters = [1, 2, 3, 4, 5, 6, 7, 8]
 const savedRoadmapKey = 'devorbit_kanban_semester_map'
 
+function validateCourse(course: CourseInput): CourseValidation {
+  const creditsText = course.credits.trim()
+  const gradeText = course.grade10.trim()
+  const credits = Number(creditsText)
+  const grade10 = Number(gradeText)
+  const creditsReason = creditsText === ''
+    ? 'Nhập tín chỉ'
+    : !Number.isFinite(credits) || credits <= 0
+      ? 'Tín chỉ phải lớn hơn 0'
+      : null
+  const gradeReason = gradeText === ''
+    ? 'Nhập điểm'
+    : !Number.isFinite(grade10) || grade10 < 0 || grade10 > 10
+      ? 'Điểm phải từ 0 đến 10'
+      : null
+
+  return {
+    creditsReason,
+    gradeReason,
+    valid: creditsReason === null && gradeReason === null,
+  }
+}
+
 function parseCourse(course: CourseInput): CourseResult | null {
-  if (course.credits.trim() === '' || course.grade10.trim() === '') return null
+  if (!validateCourse(course).valid) return null
 
   const credits = Number(course.credits)
   const grade10 = Number(course.grade10)
@@ -142,7 +170,12 @@ export function GpaCalculatorPage() {
   }, [catalogue, savedSemesterMap, selectedSemester])
 
   const summary = useMemo(() => {
-    const validCourses = courses.map(parseCourse).filter((course): course is CourseResult => course !== null)
+    const parsedCourses = courses.map((course) => ({
+      course: parseCourse(course),
+      validation: validateCourse(course),
+    }))
+    const validCourses = parsedCourses.map((item) => item.course).filter((course): course is CourseResult => course !== null)
+    const ignoredRows = parsedCourses.filter((item) => !item.validation.valid).length
     const totalCredits = validCourses.reduce((sum, course) => sum + course.credits, 0)
 
     if (totalCredits === 0) {
@@ -150,6 +183,7 @@ export function GpaCalculatorPage() {
         totalCredits: 0,
         average10: 0,
         classification: 'Nhập tín chỉ và điểm hợp lệ',
+        ignoredRows,
       }
     }
 
@@ -160,6 +194,7 @@ export function GpaCalculatorPage() {
       totalCredits,
       average10,
       classification: classifyGrade10(average10),
+      ignoredRows,
     }
   }, [courses])
 
@@ -269,6 +304,42 @@ export function GpaCalculatorPage() {
       ...current,
       { id: Math.max(...current.map((course) => course.id)) + 1, name: '', credits: '3', grade10: '' },
     ])
+  }
+
+  const addFiveCourses = () => {
+    setCourses((current) => {
+      const startId = Math.max(...current.map((course) => course.id)) + 1
+      return [
+        ...current,
+        ...Array.from({ length: 5 }, (_, index) => ({
+          id: startId + index,
+          name: '',
+          credits: '3',
+          grade10: '',
+        })),
+      ]
+    })
+  }
+
+  const clearCourses = () => {
+    setCourses([{ id: 1, name: '', credits: '', grade10: '' }])
+  }
+
+  const resetCourses = () => {
+    setCourses(initialCourses)
+  }
+
+  const duplicateCourse = (id: number) => {
+    setCourses((current) => {
+      const index = current.findIndex((course) => course.id === id)
+      if (index === -1) return current
+      const withDuplicate = [
+        ...current.slice(0, index + 1),
+        { ...current[index] },
+        ...current.slice(index + 1),
+      ]
+      return withDuplicate.map((course, courseIndex) => ({ ...course, id: courseIndex + 1 }))
+    })
   }
 
   const applySemesterPreset = () => {
@@ -430,7 +501,7 @@ export function GpaCalculatorPage() {
           </div>
 
           <div className="overflow-hidden rounded-[8px] border border-orbit-border bg-orbit-surface shadow-diffusion">
-            <div className="grid grid-cols-[minmax(180px,1fr)_96px_128px_56px] gap-3 border-b border-orbit-border bg-orbit-elevated/40 px-4 py-3 text-[12px] font-black uppercase tracking-[0.12em] text-orbit-text-muted">
+            <div className="grid grid-cols-[minmax(180px,1fr)_96px_128px_104px] gap-3 border-b border-orbit-border bg-orbit-elevated/40 px-4 py-3 text-[12px] font-black uppercase tracking-[0.12em] text-orbit-text-muted">
               <span>Môn học</span>
               <span>Tín chỉ</span>
               <span>Điểm hệ 10</span>
@@ -438,62 +509,124 @@ export function GpaCalculatorPage() {
             </div>
 
             <div className="divide-y divide-orbit-border">
-              {courses.map((course, index) => (
-                <div key={course.id} className="grid grid-cols-[minmax(180px,1fr)_96px_128px_56px] gap-3 px-4 py-4">
-                  <label className="sr-only" htmlFor={`course-name-${course.id}`}>Tên môn {index + 1}</label>
-                  <input
-                    id={`course-name-${course.id}`}
-                    value={course.name}
-                    onChange={(event) => updateCourse(course.id, 'name', event.target.value)}
-                    placeholder={`Môn ${index + 1}`}
-                    className="h-11 rounded-[8px] border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
-                  />
-
-                  <label className="sr-only" htmlFor={`course-credits-${course.id}`}>Tín chỉ {index + 1}</label>
-                  <input
-                    id={`course-credits-${course.id}`}
-                    type="number"
-                    min="0"
-                    step="0.5"
-                    value={course.credits}
-                    onChange={(event) => updateCourse(course.id, 'credits', event.target.value)}
-                    className="h-11 rounded-[8px] border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text outline-none transition-colors focus:border-orbit-accent/60"
-                  />
-
-                  <label className="sr-only" htmlFor={`course-grade-${course.id}`}>Điểm hệ 10 môn {index + 1}</label>
-                  <input
-                    id={`course-grade-${course.id}`}
-                    type="number"
-                    min="0"
-                    max="10"
-                    step="0.1"
-                    value={course.grade10}
-                    onChange={(event) => updateCourse(course.id, 'grade10', event.target.value)}
-                    className="h-11 rounded-[8px] border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text outline-none transition-colors focus:border-orbit-accent/60"
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() => removeCourse(course.id)}
-                    className="flex h-11 w-11 items-center justify-center rounded-[8px] border border-orbit-border text-orbit-text-muted transition-colors hover:border-rose-300/60 hover:text-rose-300 disabled:cursor-not-allowed disabled:opacity-40"
-                    disabled={courses.length === 1}
-                    aria-label="Xóa môn"
+              {courses.map((course, index) => {
+                const validation = validateCourse(course)
+                const warningInputClass = 'border-amber-300/60 bg-amber-300/10 focus:border-amber-200'
+                const defaultInputClass = 'border-orbit-border bg-orbit-bg focus:border-orbit-accent/60'
+                return (
+                  <div
+                    key={course.id}
+                    className={`grid grid-cols-[minmax(180px,1fr)_96px_128px_104px] gap-3 px-4 py-4 ${
+                      validation.valid ? '' : 'bg-amber-300/[0.03]'
+                    }`}
                   >
-                    <Trash2 className="h-4 w-4" aria-hidden="true" />
-                  </button>
-                </div>
-              ))}
+                    <div>
+                      <label className="sr-only" htmlFor={`course-name-${course.id}`}>Tên môn {index + 1}</label>
+                      <input
+                        id={`course-name-${course.id}`}
+                        value={course.name}
+                        onChange={(event) => updateCourse(course.id, 'name', event.target.value)}
+                        placeholder={`Môn ${index + 1}`}
+                        className="h-11 w-full rounded-[8px] border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="sr-only" htmlFor={`course-credits-${course.id}`}>Tín chỉ {index + 1}</label>
+                      <input
+                        id={`course-credits-${course.id}`}
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        value={course.credits}
+                        onChange={(event) => updateCourse(course.id, 'credits', event.target.value)}
+                        className={`h-11 w-full rounded-[8px] border px-3 text-[14px] text-orbit-text outline-none transition-colors ${
+                          validation.creditsReason ? warningInputClass : defaultInputClass
+                        }`}
+                      />
+                      {validation.creditsReason && (
+                        <p className="mt-1 text-[11px] font-semibold leading-4 text-amber-200">{validation.creditsReason}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="sr-only" htmlFor={`course-grade-${course.id}`}>Điểm hệ 10 môn {index + 1}</label>
+                      <input
+                        id={`course-grade-${course.id}`}
+                        type="number"
+                        min="0"
+                        max="10"
+                        step="0.1"
+                        value={course.grade10}
+                        onChange={(event) => updateCourse(course.id, 'grade10', event.target.value)}
+                        className={`h-11 w-full rounded-[8px] border px-3 text-[14px] text-orbit-text outline-none transition-colors ${
+                          validation.gradeReason ? warningInputClass : defaultInputClass
+                        }`}
+                      />
+                      {validation.gradeReason && (
+                        <p className="mt-1 text-[11px] font-semibold leading-4 text-amber-200">{validation.gradeReason}</p>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => duplicateCourse(course.id)}
+                        className="flex h-11 w-11 items-center justify-center rounded-[8px] border border-orbit-border text-orbit-text-muted transition-colors hover:border-orbit-accent/60 hover:text-orbit-accent"
+                        aria-label="Nhân bản dòng"
+                      >
+                        <Copy className="h-4 w-4" aria-hidden="true" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeCourse(course.id)}
+                        className="flex h-11 w-11 items-center justify-center rounded-[8px] border border-orbit-border text-orbit-text-muted transition-colors hover:border-rose-300/60 hover:text-rose-300 disabled:cursor-not-allowed disabled:opacity-40"
+                        disabled={courses.length === 1}
+                        aria-label="Xóa môn"
+                      >
+                        <Trash2 className="h-4 w-4" aria-hidden="true" />
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={addCourse}
-            className="mt-5 inline-flex h-11 items-center gap-2 rounded-[8px] bg-orbit-accent px-5 text-[13px] font-bold uppercase tracking-[0.12em] text-zinc-950 transition-colors hover:bg-emerald-300"
-          >
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            Thêm môn
-          </button>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={addCourse}
+              className="inline-flex h-11 items-center gap-2 rounded-[8px] bg-orbit-accent px-5 text-[13px] font-bold uppercase tracking-[0.12em] text-zinc-950 transition-colors hover:bg-emerald-300"
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Thêm môn
+            </button>
+            <button
+              type="button"
+              onClick={addFiveCourses}
+              className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-orbit-border px-4 text-[13px] font-bold uppercase tracking-[0.12em] text-orbit-text-secondary transition-colors hover:border-orbit-accent/60 hover:text-orbit-text"
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Thêm 5 môn
+            </button>
+            <button
+              type="button"
+              onClick={clearCourses}
+              className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-orbit-border px-4 text-[13px] font-bold uppercase tracking-[0.12em] text-orbit-text-secondary transition-colors hover:border-rose-300/60 hover:text-rose-300"
+            >
+              <Trash2 className="h-4 w-4" aria-hidden="true" />
+              Xóa tất cả
+            </button>
+            <button
+              type="button"
+              onClick={resetCourses}
+              className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-orbit-border px-4 text-[13px] font-bold uppercase tracking-[0.12em] text-orbit-text-secondary transition-colors hover:border-orbit-accent/60 hover:text-orbit-text"
+            >
+              <RotateCcw className="h-4 w-4" aria-hidden="true" />
+              Reset mẫu
+            </button>
+          </div>
         </div>
 
         <aside className="h-fit rounded-[8px] border border-orbit-border bg-orbit-surface p-6 shadow-diffusion md:sticky md:top-24">
@@ -548,6 +681,12 @@ export function GpaCalculatorPage() {
               </>
             )}
           </dl>
+
+          {summary.ignoredRows > 0 && (
+            <p className="mt-4 rounded-[8px] border border-amber-300/30 bg-amber-300/10 p-3 text-[13px] leading-6 text-amber-100">
+              Đang bỏ qua {summary.ignoredRows} dòng chưa hợp lệ.
+            </p>
+          )}
 
           {calculationMode === 'cumulative' && !cumulativeSummary.valid && (
             <p className="mt-4 rounded-[8px] border border-orbit-border bg-orbit-bg p-3 text-[13px] leading-6 text-orbit-text-secondary">

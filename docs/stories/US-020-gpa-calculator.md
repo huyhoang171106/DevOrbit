@@ -21,6 +21,7 @@ DevOrbit provides a public student-facing GPA calculator that estimates 10-point
 - A new `/gpa-calculator` route renders independently from existing student pages.
 - Students can enter course name, credits, and grade on the 10-point scale.
 - Students can add and remove course rows.
+- Students can duplicate a row, clear all rows, add five blank rows quickly, and reset to the default two-row template.
 - Students can choose between semester GPA calculation and cumulative GPA estimation.
 - Students can choose a GPA goal planning mode.
 - Semester GPA mode only uses the entered course rows for the current term.
@@ -35,6 +36,8 @@ DevOrbit provides a public student-facing GPA calculator that estimates 10-point
 - The calculator shows current-term credits, weighted semester GPA on the 10-point scale, academic classification, and projected cumulative GPA when cumulative mode is active.
 - The calculator does not show or convert to the 4-point scale.
 - Invalid or zero-credit rows do not break the calculation and show guidance when no valid credits exist.
+- Invalid rows show row-level reasons for missing credits, invalid credits, missing grades, and grades outside the 0-10 scale.
+- The summary panel shows how many invalid rows are ignored.
 
 ## Design Notes
 
@@ -49,7 +52,7 @@ DevOrbit provides a public student-facing GPA calculator that estimates 10-point
 
 | Layer | Expected proof |
 | --- | --- |
-| Unit | Vitest render tests for weighted 10-point GPA calculation, row add/remove, validation guidance, no 4-point output, semester preset loading, saved learning roadmap assignment precedence, cumulative GPA estimate, goal GPA reverse calculation, infeasible goals, already-above-target goals, per-course target rows, and route rendering |
+| Unit | Vitest render tests for weighted 10-point GPA calculation, row add/remove, validation guidance, row-level validation reasons, ignored-row count, quick row actions, no 4-point output, semester preset loading, saved learning roadmap assignment precedence, cumulative GPA estimate, goal GPA reverse calculation, infeasible goals, already-above-target goals, per-course target rows, and route rendering |
 | Integration | Not required; preset uses existing public course catalogue endpoint without changing backend contract |
 | E2E | Not required for this static route slice |
 | Platform | Vite production build |
@@ -70,3 +73,4 @@ No harness changes required.
 - Fixed semester presets to respect saved learning roadmap assignments instead of only catalogue semesters.
 - Added separate semester GPA and cumulative GPA estimate modes.
 - Added GPA goal planner mode with reverse GPA calculation, feasibility states, and per-course target estimates.
+- Added row-level validation reasons, ignored-row summary notice, duplicate row, clear all, add five rows, and reset default quick actions.

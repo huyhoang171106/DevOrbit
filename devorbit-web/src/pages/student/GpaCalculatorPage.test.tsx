@@ -23,6 +23,10 @@ function buttonByText(pattern: RegExp): HTMLButtonElement {
   return element as HTMLButtonElement
 }
 
+function textExactly(value: string) {
+  return (_content: string, element: Element | null) => element?.textContent === value
+}
+
 function switchToGoalMode() {
   fireEvent.click(buttonByText(/Mục tiêu GPA|Muc tieu GPA/i))
 }
@@ -71,7 +75,7 @@ describe('GpaCalculatorPage', () => {
   test('adds and removes course rows', () => {
     render(<GpaCalculatorPage />)
 
-    fireEvent.click(buttonByText(/Thêm môn/))
+    fireEvent.click(buttonByText(/Thêm môn|Them mon/i))
     expect(input('course-name-3')).toBeInTheDocument()
 
     fireEvent.click(screen.getAllByRole('button', { name: /x/i })[2])
@@ -102,7 +106,7 @@ describe('GpaCalculatorPage', () => {
 
     await screen.findByText(/DevOrbit|preset/i)
     fireEvent.change(select('semester-preset'), { target: { value: '1' } })
-    fireEvent.click(buttonByText(/Áp dụng học kỳ/))
+    fireEvent.click(buttonByText(/Áp dụng học kỳ|Ap dung hoc ky/i))
 
     expect(screen.getByDisplayValue('MA006 - Giai tich')).toBeInTheDocument()
     expect(screen.getByDisplayValue('IT001 - Nhap mon lap trinh')).toBeInTheDocument()
@@ -125,7 +129,7 @@ describe('GpaCalculatorPage', () => {
 
     await screen.findByText(/DevOrbit|preset/i)
     fireEvent.change(select('semester-preset'), { target: { value: '1' } })
-    fireEvent.click(buttonByText(/Áp dụng học kỳ/))
+    fireEvent.click(buttonByText(/Áp dụng học kỳ|Ap dung hoc ky/i))
 
     expect(screen.getByDisplayValue('MA006 - Giai tich')).toBeInTheDocument()
     expect(screen.getByDisplayValue('IT002 - Lap trinh huong doi tuong')).toBeInTheDocument()
@@ -140,11 +144,11 @@ describe('GpaCalculatorPage', () => {
     fireEvent.change(input('course-credits-2'), { target: { value: '3' } })
     fireEvent.change(input('course-grade-2'), { target: { value: '7' } })
 
-    fireEvent.click(buttonByText(/tích lũy/i))
+    fireEvent.click(buttonByText(/tích lũy|tich luy/i))
     fireEvent.change(input('current-gpa'), { target: { value: '7' } })
     fireEvent.change(input('completed-credits'), { target: { value: '20' } })
 
-    expect(screen.getByText(/GPA tích lũy dự kiến/i)).toBeInTheDocument()
+    expect(screen.getByText(/GPA tích lũy dự kiến|GPA tich luy du kien/i)).toBeInTheDocument()
     expect(screen.getByText('7.22')).toBeInTheDocument()
     expect(screen.getByText(/27.*t/i)).toBeInTheDocument()
   })
@@ -214,5 +218,60 @@ describe('GpaCalculatorPage', () => {
     fireEvent.change(input('target-gpa'), { target: { value: '7.5' } })
 
     expect(screen.getByText(/Thêm môn hoặc nhập tín chỉ kỳ này hợp lệ|Them mon hoac nhap tin chi ky nay hop le/i)).toBeInTheDocument()
+  })
+
+  test('shows row-level validation reasons for invalid course inputs', () => {
+    render(<GpaCalculatorPage />)
+
+    fireEvent.change(input('course-credits-1'), { target: { value: '' } })
+    fireEvent.change(input('course-grade-1'), { target: { value: '' } })
+    fireEvent.change(input('course-credits-2'), { target: { value: '-1' } })
+    fireEvent.change(input('course-grade-2'), { target: { value: '11' } })
+
+    expect(screen.getByText(textExactly('Nhập tín chỉ'))).toBeInTheDocument()
+    expect(screen.getByText(textExactly('Nhập điểm'))).toBeInTheDocument()
+    expect(screen.getByText(textExactly('Tín chỉ phải lớn hơn 0'))).toBeInTheDocument()
+    expect(screen.getByText(textExactly('Điểm phải từ 0 đến 10'))).toBeInTheDocument()
+  })
+
+  test('shows how many invalid rows are ignored in the summary', () => {
+    render(<GpaCalculatorPage />)
+
+    fireEvent.change(input('course-credits-1'), { target: { value: '4' } })
+    fireEvent.change(input('course-grade-1'), { target: { value: '8' } })
+    fireEvent.change(input('course-credits-2'), { target: { value: '3' } })
+    fireEvent.change(input('course-grade-2'), { target: { value: '12' } })
+
+    expect(screen.getByText(/Đang bỏ qua 1 dòng chưa hợp lệ|Dang bo qua 1 dong chua hop le/i)).toBeInTheDocument()
+    expect(screen.getByText('8.00')).toBeInTheDocument()
+  })
+
+  test('duplicates a course row directly below the source row', () => {
+    render(<GpaCalculatorPage />)
+
+    fireEvent.change(input('course-name-1'), { target: { value: 'Nhap mon lap trinh' } })
+    fireEvent.change(input('course-credits-1'), { target: { value: '4' } })
+    fireEvent.change(input('course-grade-1'), { target: { value: '8.5' } })
+    fireEvent.click(screen.getAllByRole('button', { name: /Nhân bản dòng|Nhan ban dong/i })[0])
+
+    expect(input('course-name-2').value).toBe('Nhap mon lap trinh')
+    expect(input('course-credits-2').value).toBe('4')
+    expect(input('course-grade-2').value).toBe('8.5')
+  })
+
+  test('supports clear all, add five courses, and reset default quick actions', () => {
+    render(<GpaCalculatorPage />)
+
+    fireEvent.click(buttonByText(/Thêm 5 môn|Them 5 mon/i))
+    expect(input('course-name-7')).toBeInTheDocument()
+
+    fireEvent.click(buttonByText(/Xóa tất cả|Xoa tat ca/i))
+    expect(input('course-name-1')).toBeInTheDocument()
+    expect(document.querySelector('#course-name-2')).not.toBeInTheDocument()
+
+    fireEvent.click(buttonByText(/Reset mẫu|Reset mau/i))
+    expect(input('course-name-1')).toBeInTheDocument()
+    expect(input('course-name-2')).toBeInTheDocument()
+    expect(document.querySelector('#course-name-3')).not.toBeInTheDocument()
   })
 })

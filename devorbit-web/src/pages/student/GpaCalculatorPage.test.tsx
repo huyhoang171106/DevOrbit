@@ -23,6 +23,10 @@ function buttonByText(pattern: RegExp): HTMLButtonElement {
   return element as HTMLButtonElement
 }
 
+function switchToGoalMode() {
+  fireEvent.click(buttonByText(/Mục tiêu GPA|Muc tieu GPA/i))
+}
+
 const mojibakePattern = new RegExp([
   '\\u00c2.',
   '\\u00c3.',
@@ -143,5 +147,72 @@ describe('GpaCalculatorPage', () => {
     expect(screen.getByText(/GPA tích lũy dự kiến/i)).toBeInTheDocument()
     expect(screen.getByText('7.22')).toBeInTheDocument()
     expect(screen.getByText(/27.*t/i)).toBeInTheDocument()
+  })
+
+  test('calculates the required current-term GPA for a target cumulative GPA', () => {
+    render(<GpaCalculatorPage />)
+
+    fireEvent.change(input('course-name-1'), { target: { value: 'Nhap mon lap trinh' } })
+    fireEvent.change(input('course-credits-1'), { target: { value: '4' } })
+    fireEvent.change(input('course-grade-1'), { target: { value: '8' } })
+    fireEvent.change(input('course-name-2'), { target: { value: 'Cau truc du lieu' } })
+    fireEvent.change(input('course-credits-2'), { target: { value: '3' } })
+    fireEvent.change(input('course-grade-2'), { target: { value: '8' } })
+
+    switchToGoalMode()
+    fireEvent.change(input('current-gpa'), { target: { value: '7' } })
+    fireEvent.change(input('completed-credits'), { target: { value: '20' } })
+    fireEvent.change(input('target-gpa'), { target: { value: '7.5' } })
+
+    expect(screen.getByText(/Kỳ này cần trung bình|Ky nay can trung binh/i)).toBeInTheDocument()
+    expect(screen.getAllByText('8.93').length).toBeGreaterThan(0)
+    expect(screen.getByText(/Mục tiêu khó nhưng còn khả thi|Muc tieu kho nhung con kha thi/i)).toBeInTheDocument()
+    expect(screen.getByText(/Nhap mon lap trinh/i)).toBeInTheDocument()
+    expect(screen.getByText(/Cau truc du lieu/i)).toBeInTheDocument()
+  })
+
+  test('marks the target as not feasible when required term GPA is above 10', () => {
+    render(<GpaCalculatorPage />)
+
+    fireEvent.change(input('course-credits-1'), { target: { value: '3' } })
+    fireEvent.change(input('course-grade-1'), { target: { value: '8' } })
+    fireEvent.change(input('course-credits-2'), { target: { value: '3' } })
+    fireEvent.change(input('course-grade-2'), { target: { value: '8' } })
+
+    switchToGoalMode()
+    fireEvent.change(input('current-gpa'), { target: { value: '5' } })
+    fireEvent.change(input('completed-credits'), { target: { value: '100' } })
+    fireEvent.change(input('target-gpa'), { target: { value: '8' } })
+
+    expect(screen.getByText(/không khả thi|khong kha thi/i)).toBeInTheDocument()
+    expect(screen.getByText(/cần cao hơn 10|can cao hon 10/i)).toBeInTheDocument()
+  })
+
+  test('shows already above target when no extra GPA pressure is required', () => {
+    render(<GpaCalculatorPage />)
+
+    fireEvent.change(input('course-credits-1'), { target: { value: '4' } })
+    fireEvent.change(input('course-grade-1'), { target: { value: '8' } })
+    fireEvent.change(input('course-credits-2'), { target: { value: '3' } })
+    fireEvent.change(input('course-grade-2'), { target: { value: '8' } })
+
+    switchToGoalMode()
+    fireEvent.change(input('current-gpa'), { target: { value: '9' } })
+    fireEvent.change(input('completed-credits'), { target: { value: '80' } })
+    fireEvent.change(input('target-gpa'), { target: { value: '7' } })
+
+    expect(screen.getByText(/đã vượt mục tiêu|da vuot muc tieu/i)).toBeInTheDocument()
+    expect(screen.getByText(/không cần áp lực điểm thêm|khong can ap luc diem them/i)).toBeInTheDocument()
+  })
+
+  test('shows goal guidance when target inputs or term credits are invalid', () => {
+    render(<GpaCalculatorPage />)
+
+    switchToGoalMode()
+    fireEvent.change(input('current-gpa'), { target: { value: '7' } })
+    fireEvent.change(input('completed-credits'), { target: { value: '20' } })
+    fireEvent.change(input('target-gpa'), { target: { value: '7.5' } })
+
+    expect(screen.getByText(/Thêm môn hoặc nhập tín chỉ kỳ này hợp lệ|Them mon hoac nhap tin chi ky nay hop le/i)).toBeInTheDocument()
   })
 })

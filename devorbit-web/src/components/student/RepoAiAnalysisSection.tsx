@@ -1,4 +1,5 @@
-import { BookOpen, CheckCircle, GraduationCap, MagicWand, RocketLaunch, Stack, WarningCircle } from '@phosphor-icons/react'
+import { useState } from 'react'
+import { BookOpen, CaretDown, CheckCircle, GraduationCap, MagicWand, RocketLaunch, Stack, WarningCircle } from '@phosphor-icons/react'
 import type { Icon } from '@phosphor-icons/react'
 import type { RepoAnalysisResult } from '../../lib/repoAnalysisService'
 import type { RepoAiAnalysisSection as RepoAiAnalysisSectionModel, RepoAiAnalysisTone } from '../../lib/repoAiAnalysis'
@@ -84,6 +85,8 @@ const badgeToneClasses: Record<RepoAiAnalysisTone, string> = {
 }
 
 export function RepoAiAnalysisSection({ analysis, loading, error }: RepoAiAnalysisSectionProps) {
+  const [detailsOpen, setDetailsOpen] = useState(false)
+
   if (loading) {
     return (
       <section className="orbit-card-glow p-8 border-orbit-accent/10">
@@ -122,6 +125,13 @@ export function RepoAiAnalysisSection({ analysis, loading, error }: RepoAiAnalys
 
   const sectionsByKey = new Map(analysis.sections.map((section) => [section.key, section]))
   const summary = buildAiSummary(sectionsByKey)
+  const detailGroups = Object.entries(groupKeys)
+    .map(([groupKey, keys]) => ({
+      groupKey,
+      sections: keys.map((key) => sectionsByKey.get(key)).filter(Boolean) as RepoAiAnalysisSectionModel[],
+    }))
+    .filter((group) => group.sections.length > 0)
+  const detailSectionCount = detailGroups.reduce((total, group) => total + group.sections.length, 0)
 
   return (
     <section className="space-y-8">
@@ -157,34 +167,57 @@ export function RepoAiAnalysisSection({ analysis, loading, error }: RepoAiAnalys
         </div>
       )}
 
-      {Object.entries(groupKeys).map(([groupKey, keys]) => {
-        const sections = keys.map((key) => sectionsByKey.get(key)).filter(Boolean) as RepoAiAnalysisSectionModel[]
-        if (sections.length === 0) return null
-
-        return (
-          <div key={groupKey} className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div>
-                <h3 className="text-[15px] font-black text-orbit-text uppercase tracking-[0.08em]">
-                  {groupTitles[groupKey]}
-                </h3>
-                <p className="mt-1 text-[12px] leading-relaxed text-orbit-text-muted">
-                  {groupDescriptions[groupKey]}
-                </p>
-              </div>
-              <span className="text-[10px] font-black uppercase tracking-[0.15em] text-orbit-text-muted/70">
-                {sections.length} mục
-              </span>
-            </div>
-
-            <div className={`grid gap-5 ${sections.length === 1 ? 'md:grid-cols-1' : 'md:grid-cols-2'}`}>
-              {sections.map((section) => (
-                <AnalysisCard key={section.key} section={section} />
-              ))}
-            </div>
+      <div className="orbit-card p-5 md:p-6 border-orbit-border bg-orbit-surface/60">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 className="text-[15px] font-black text-orbit-text">Phân tích chi tiết</h3>
+            <p className="mt-1 text-[12px] leading-relaxed text-orbit-text-muted">
+              README insights, công nghệ, mức độ phù hợp, chiến lược học và cảnh báo vẫn được giữ đầy đủ ở đây.
+            </p>
           </div>
-        )
-      })}
+          <button
+            type="button"
+            onClick={() => setDetailsOpen((open) => !open)}
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-orbit-border bg-orbit-elevated px-4 py-3 text-[11px] font-black uppercase tracking-[0.12em] text-orbit-text-secondary transition-all hover:border-orbit-accent/30 hover:text-orbit-text"
+            aria-expanded={detailsOpen}
+          >
+            {detailsOpen ? 'Ẩn phân tích chi tiết' : 'Xem phân tích chi tiết'}
+            <CaretDown className={`h-4 w-4 transition-transform ${detailsOpen ? 'rotate-180' : ''}`} weight="bold" />
+          </button>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-[0.14em] text-orbit-text-muted/70">
+          <span className="rounded-full border border-orbit-border px-3 py-1.5">{detailSectionCount} mục chi tiết</span>
+          <span className="rounded-full border border-orbit-border px-3 py-1.5">{detailGroups.length} nhóm</span>
+        </div>
+      </div>
+
+      {detailsOpen && (
+        <div className="space-y-8">
+          {detailGroups.map(({ groupKey, sections }) => (
+            <div key={groupKey} className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <h3 className="text-[15px] font-black text-orbit-text uppercase tracking-[0.08em]">
+                    {groupTitles[groupKey]}
+                  </h3>
+                  <p className="mt-1 text-[12px] leading-relaxed text-orbit-text-muted">
+                    {groupDescriptions[groupKey]}
+                  </p>
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-orbit-text-muted/70">
+                  {sections.length} mục
+                </span>
+              </div>
+
+              <div className={`grid gap-5 ${sections.length === 1 ? 'md:grid-cols-1' : 'md:grid-cols-2'}`}>
+                {sections.map((section) => (
+                  <AnalysisCard key={section.key} section={section} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   )
 }

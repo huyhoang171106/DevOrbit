@@ -4,15 +4,13 @@ import { motion } from 'framer-motion'
 import { apiGet, apiStudentPost } from '../../lib/api'
 import { isStudentAuthenticated } from '../../lib/auth'
 import { RepoAiAnalysisSection } from '../../components/student/RepoAiAnalysisSection'
-import type { RepoSummary, AiResponse } from '../../types/api'
+import type { RepoSummary } from '../../types/api'
 import { ArrowLeft, Code, Star, ArrowSquareOut, WarningCircle, GithubLogo, Bookmark, BookmarkSimple } from '@phosphor-icons/react'
 
 export function RepoDetailPage() {
   const { repoId } = useParams<{ repoId: string }>()
   const navigate = useNavigate()
   const [repo, setRepo] = useState<RepoSummary | null>(null)
-  const [summary, setSummary] = useState<AiResponse | null>(null)
-  const [advice, setAdvice] = useState<AiResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [bookmarked, setBookmarked] = useState(false)
@@ -47,15 +45,9 @@ export function RepoDetailPage() {
     if (!repoId) return
     setLoading(true)
 
-    Promise.all([
-      apiGet<RepoSummary>(`/api/repos/${repoId}`),
-      apiGet<AiResponse>(`/api/ai/repo/${repoId}/summary`).catch(() => null),
-      apiGet<AiResponse>(`/api/ai/repo/${repoId}/advice`).catch(() => null),
-    ])
-      .then(([repoData, summaryData, adviceData]) => {
+    apiGet<RepoSummary>(`/api/repos/${repoId}`)
+      .then((repoData) => {
         setRepo(repoData)
-        setSummary(summaryData)
-        setAdvice(adviceData)
       })
       .catch((err) => {
         console.error(err)
@@ -208,7 +200,7 @@ export function RepoDetailPage() {
             </div>
           </div>
 
-          <RepoAiAnalysisSection summary={summary} advice={advice} />
+          <RepoAiAnalysisSection repo={repo} />
         </motion.div>
       </div>
     </div>

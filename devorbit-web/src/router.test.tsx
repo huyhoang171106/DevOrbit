@@ -20,6 +20,12 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 })
 
+vi.stubGlobal('IntersectionObserver', class {
+  observe = vi.fn()
+  unobserve = vi.fn()
+  disconnect = vi.fn()
+})
+
 afterEach(() => {
   cleanup()
 })

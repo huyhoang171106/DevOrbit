@@ -36,6 +36,7 @@ const sectionIcons: Record<string, Icon> = {
   overview: MagicWand,
   technology: Stack,
   fit: CheckCircle,
+  readmeInsights: BookOpen,
   reviewFirst: BookOpen,
   strategy: GraduationCap,
   nextSteps: RocketLaunch,
@@ -57,7 +58,7 @@ const groupDescriptions: Record<string, string> = {
 }
 
 const groupKeys: Record<string, RepoAiAnalysisSectionModel['key'][]> = {
-  content: ['overview', 'technology', 'fit'],
+  content: ['overview', 'readmeInsights', 'technology', 'fit'],
   learning: ['reviewFirst', 'strategy'],
   action: ['nextSteps'],
   warnings: ['warnings'],

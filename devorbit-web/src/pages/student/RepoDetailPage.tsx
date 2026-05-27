@@ -5,12 +5,16 @@ import { apiGet, apiStudentPost } from '../../lib/api'
 import { isStudentAuthenticated } from '../../lib/auth'
 import { RepoAiAnalysisSection } from '../../components/student/RepoAiAnalysisSection'
 import type { RepoSummary } from '../../types/api'
+import { analyzeRepository, type RepoAnalysisResult } from '../../lib/repoAnalysisService'
 import { ArrowLeft, Code, Star, ArrowSquareOut, WarningCircle, GithubLogo, Bookmark, BookmarkSimple } from '@phosphor-icons/react'
 
 export function RepoDetailPage() {
   const { repoId } = useParams<{ repoId: string }>()
   const navigate = useNavigate()
   const [repo, setRepo] = useState<RepoSummary | null>(null)
+  const [analysis, setAnalysis] = useState<RepoAnalysisResult | null>(null)
+  const [analysisLoading, setAnalysisLoading] = useState(false)
+  const [analysisError, setAnalysisError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [bookmarked, setBookmarked] = useState(false)
@@ -44,16 +48,30 @@ export function RepoDetailPage() {
   useEffect(() => {
     if (!repoId) return
     setLoading(true)
+    setAnalysis(null)
+    setAnalysisError(null)
 
     apiGet<RepoSummary>(`/api/repos/${repoId}`)
       .then((repoData) => {
         setRepo(repoData)
+        setLoading(false)
+        setAnalysisLoading(true)
+        analyzeRepository(repoData)
+          .then((result) => {
+            setAnalysis(result)
+            setAnalysisError(result.errorMessage ?? null)
+          })
+          .catch((analysisErr) => {
+            console.error(analysisErr)
+            setAnalysisError('Không thể tạo phân tích repository từ dữ liệu hiện có.')
+          })
+          .finally(() => setAnalysisLoading(false))
       })
       .catch((err) => {
         console.error(err)
         setError('Không thể tải dữ liệu repository.')
+        setLoading(false)
       })
-      .finally(() => setLoading(false))
   }, [repoId])
 
   if (loading) {
@@ -200,7 +218,7 @@ export function RepoDetailPage() {
             </div>
           </div>
 
-          <RepoAiAnalysisSection repo={repo} />
+          <RepoAiAnalysisSection analysis={analysis} loading={analysisLoading} error={analysisError} />
         </motion.div>
       </div>
     </div>

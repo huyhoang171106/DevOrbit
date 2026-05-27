@@ -28,6 +28,7 @@ This file maps product behavior to proof.
 | US-024 | Repo Analysis UI Groups | pass | no | no | Vite build | implemented | `devorbit-web`: `npm run test -- repoAiAnalysis repoAnalysisService`; `npm run build` |
 | US-025 | Repo Analysis Data Driven Content | pass | no | no | Vite build | implemented | `devorbit-web`: `npm run test -- repoAiAnalysis repoAnalysisService`; `npm run build` |
 | US-026 | Repo README Insights | pass | no | no | Vite build | implemented | `devorbit-web`: `npm run test -- repoAiAnalysis repoAnalysisService`; `npm run build` |
+| US-027 | Repo Analysis Summary Priority | pass | no | no | Vite build | implemented | `devorbit-web`: `npm run test -- repoAiAnalysis repoAnalysisService`; `npm run build` |
 
 ## Evidence Rules
 

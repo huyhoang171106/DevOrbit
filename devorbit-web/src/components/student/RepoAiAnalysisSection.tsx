@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { BookOpen, CaretDown, CheckCircle, GraduationCap, MagicWand, RocketLaunch, Stack, WarningCircle } from '@phosphor-icons/react'
-import type { Icon } from '@phosphor-icons/react'
+import { BookOpen, CaretDown, CheckCircle, MagicWand, RocketLaunch, WarningCircle } from '@phosphor-icons/react'
 import type { RepoAnalysisResult } from '../../lib/repoAnalysisService'
 import type { RepoAiAnalysisSection as RepoAiAnalysisSectionModel, RepoAiAnalysisTone } from '../../lib/repoAiAnalysis'
 
@@ -10,78 +9,27 @@ type RepoAiAnalysisSectionProps = {
   error: string | null
 }
 
-type AiSummary = {
-  summary: string
-  firstAction: string
+type DecisionLabel = 'Nên xem' | 'Xem có chọn lọc' | 'Chỉ tham khảo' | 'Không đủ dữ liệu'
+
+type DecisionView = {
+  conclusion: string
+  decision: DecisionLabel
+  tone: RepoAiAnalysisTone
+  reason: string
+  strengths: string[]
+  weaknesses: string[]
   actions: string[]
-  badges: Array<{
-    label: string
-    value: string
-    tone: RepoAiAnalysisTone
+  details: Array<{
+    title: string
+    items: string[]
   }>
-  warning?: string
 }
 
-const toneClasses: Record<RepoAiAnalysisTone, { border: string; icon: string; iconBox: string }> = {
-  accent: {
-    border: 'border-orbit-accent/10 hover:border-orbit-accent/30',
-    icon: 'text-orbit-accent',
-    iconBox: 'bg-orbit-accent/5 border-orbit-accent/10',
-  },
-  indigo: {
-    border: 'border-indigo-500/10 hover:border-indigo-500/30',
-    icon: 'text-indigo-400',
-    iconBox: 'bg-indigo-500/5 border-indigo-500/10',
-  },
-  amber: {
-    border: 'border-amber-500/10 hover:border-amber-500/30',
-    icon: 'text-amber-400',
-    iconBox: 'bg-amber-500/5 border-amber-500/10',
-  },
-  rose: {
-    border: 'border-rose-500/10 hover:border-rose-500/30',
-    icon: 'text-rose-400',
-    iconBox: 'bg-rose-500/5 border-rose-500/10',
-  },
-}
-
-const sectionIcons: Record<string, Icon> = {
-  overview: MagicWand,
-  technology: Stack,
-  fit: CheckCircle,
-  readmeInsights: BookOpen,
-  reviewFirst: BookOpen,
-  strategy: GraduationCap,
-  nextSteps: RocketLaunch,
-  warnings: WarningCircle,
-}
-
-const groupTitles: Record<string, string> = {
-  content: 'Phân tích nội dung',
-  learning: 'Chiến lược học tập',
-  action: 'Việc nên làm tiếp theo',
-  warnings: 'Cảnh báo/chú ý',
-}
-
-const groupDescriptions: Record<string, string> = {
-  content: 'Repo đang nói về gì, stack chính là gì, và có phù hợp với môn học/deadline không.',
-  learning: 'Cách đọc repo theo thứ tự để biến source code thành kiến thức dùng được.',
-  action: 'Các bước thực tế nên làm sau khi xem metadata và phân tích ban đầu.',
-  warnings: 'Những điểm còn thiếu trong dữ liệu public, cần kiểm tra trực tiếp trên GitHub.',
-}
-
-const groupKeys: Record<string, RepoAiAnalysisSectionModel['key'][]> = {
-  content: ['overview', 'readmeInsights', 'technology', 'fit'],
-  learning: ['reviewFirst', 'strategy'],
-  action: ['nextSteps'],
-  warnings: ['warnings'],
-}
-
-const badgeToneClasses: Record<RepoAiAnalysisTone, string> = {
-  accent: 'border-orbit-accent/20 bg-orbit-accent/10 text-orbit-accent',
+const decisionToneClasses: Record<RepoAiAnalysisTone, string> = {
+  accent: 'border-orbit-accent/25 bg-orbit-accent/10 text-orbit-accent',
   indigo: 'border-indigo-500/20 bg-indigo-500/10 text-indigo-300',
-  amber: 'border-amber-500/20 bg-amber-500/10 text-amber-300',
-  rose: 'border-rose-500/20 bg-rose-500/10 text-rose-300',
+  amber: 'border-amber-500/25 bg-amber-500/10 text-amber-300',
+  rose: 'border-rose-500/25 bg-rose-500/10 text-rose-300',
 }
 
 export function RepoAiAnalysisSection({ analysis, loading, error }: RepoAiAnalysisSectionProps) {
@@ -97,7 +45,7 @@ export function RepoAiAnalysisSection({ analysis, loading, error }: RepoAiAnalys
           <div>
             <h3 className="text-[18px] font-black text-orbit-text">Đang chuẩn bị phân tích</h3>
             <p className="mt-2 text-[13px] leading-relaxed text-orbit-text-secondary">
-              DevOrbit đang đọc metadata repository và tạo phân tích phù hợp cho sinh viên KTPM UIT.
+              DevOrbit đang đọc dữ liệu repo để đưa ra đánh giá ngắn gọn, dễ quyết định.
             </p>
           </div>
         </div>
@@ -115,7 +63,7 @@ export function RepoAiAnalysisSection({ analysis, loading, error }: RepoAiAnalys
           <div>
             <h3 className="text-[18px] font-black text-orbit-text">Chưa có phân tích</h3>
             <p className="mt-2 text-[13px] leading-relaxed text-orbit-text-secondary">
-              {error || 'Chưa đủ dữ liệu để tạo phân tích repository. Hãy mở GitHub để kiểm tra README và source trực tiếp.'}
+              {error || 'Chưa đủ dữ liệu để phân tích sâu. Hãy mở GitHub để kiểm tra README và source trực tiếp.'}
             </p>
           </div>
         </div>
@@ -124,17 +72,10 @@ export function RepoAiAnalysisSection({ analysis, loading, error }: RepoAiAnalys
   }
 
   const sectionsByKey = new Map(analysis.sections.map((section) => [section.key, section]))
-  const summary = buildAiSummary(sectionsByKey)
-  const detailGroups = Object.entries(groupKeys)
-    .map(([groupKey, keys]) => ({
-      groupKey,
-      sections: keys.map((key) => sectionsByKey.get(key)).filter(Boolean) as RepoAiAnalysisSectionModel[],
-    }))
-    .filter((group) => group.sections.length > 0)
-  const detailSectionCount = detailGroups.reduce((total, group) => total + group.sections.length, 0)
+  const decision = buildDecisionView(sectionsByKey)
 
   return (
-    <section className="space-y-8">
+    <section className="space-y-7">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-5">
         <div>
           <span className="section-label mb-4 inline-flex">
@@ -143,7 +84,7 @@ export function RepoAiAnalysisSection({ analysis, loading, error }: RepoAiAnalys
           </span>
           <h2 className="heading-3 text-orbit-text">Phân tích repository</h2>
           <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-orbit-text-secondary">
-            Nội dung dưới đây được tạo từ metadata thật của repo hiện có trong DevOrbit. Nếu thiếu README, topics hoặc file tree, phần cảnh báo sẽ nói rõ thay vì suy đoán.
+            Đánh giá nhanh để quyết định repo này có đáng mở, đáng học, hay chỉ nên tham khảo.
           </p>
         </div>
         <div className="flex items-center gap-3 rounded-2xl border border-orbit-border bg-orbit-surface px-4 py-3">
@@ -154,25 +95,30 @@ export function RepoAiAnalysisSection({ analysis, loading, error }: RepoAiAnalys
         </div>
       </div>
 
-      <AiSummaryCard summary={summary} />
+      <QuickDecisionCard decision={decision} />
 
       {(error || analysis.errorMessage || analysis.fallbackUsed) && (
         <div className="orbit-card p-5 border-amber-500/20 bg-amber-500/5">
           <div className="flex items-start gap-3">
             <WarningCircle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" weight="duotone" />
             <p className="text-[13px] leading-relaxed text-orbit-text-secondary">
-              {error || analysis.errorMessage || 'AI provider chưa khả dụng, đang dùng phân tích rule-based từ dữ liệu repo hiện có.'}
+              {error || analysis.errorMessage || 'Không thể tạo phân tích chi tiết, đang dùng phân tích cơ bản từ dữ liệu repo hiện có.'}
             </p>
           </div>
         </div>
       )}
+
+      <div className="grid gap-5 lg:grid-cols-[1fr_0.9fr]">
+        <StrengthWeaknessCard strengths={decision.strengths} weaknesses={decision.weaknesses} />
+        <NextActionsCard actions={decision.actions} />
+      </div>
 
       <div className="orbit-card p-5 md:p-6 border-orbit-border bg-orbit-surface/60">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h3 className="text-[15px] font-black text-orbit-text">Phân tích chi tiết</h3>
             <p className="mt-1 text-[12px] leading-relaxed text-orbit-text-muted">
-              README insights, công nghệ, mức độ phù hợp, chiến lược học và cảnh báo vẫn được giữ đầy đủ ở đây.
+              Mở khi cần xem lý do phía sau đánh giá nhanh.
             </p>
           </div>
           <button
@@ -185,36 +131,12 @@ export function RepoAiAnalysisSection({ analysis, loading, error }: RepoAiAnalys
             <CaretDown className={`h-4 w-4 transition-transform ${detailsOpen ? 'rotate-180' : ''}`} weight="bold" />
           </button>
         </div>
-        <div className="mt-4 flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-[0.14em] text-orbit-text-muted/70">
-          <span className="rounded-full border border-orbit-border px-3 py-1.5">{detailSectionCount} mục chi tiết</span>
-          <span className="rounded-full border border-orbit-border px-3 py-1.5">{detailGroups.length} nhóm</span>
-        </div>
       </div>
 
       {detailsOpen && (
-        <div className="space-y-8">
-          {detailGroups.map(({ groupKey, sections }) => (
-            <div key={groupKey} className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div>
-                  <h3 className="text-[15px] font-black text-orbit-text uppercase tracking-[0.08em]">
-                    {groupTitles[groupKey]}
-                  </h3>
-                  <p className="mt-1 text-[12px] leading-relaxed text-orbit-text-muted">
-                    {groupDescriptions[groupKey]}
-                  </p>
-                </div>
-                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-orbit-text-muted/70">
-                  {sections.length} mục
-                </span>
-              </div>
-
-              <div className={`grid gap-5 ${sections.length === 1 ? 'md:grid-cols-1' : 'md:grid-cols-2'}`}>
-                {sections.map((section) => (
-                  <AnalysisCard key={section.key} section={section} />
-                ))}
-              </div>
-            </div>
+        <div className="grid gap-5 lg:grid-cols-3">
+          {decision.details.map((group) => (
+            <DetailGroupCard key={group.title} title={group.title} items={group.items} />
           ))}
         </div>
       )}
@@ -222,178 +144,313 @@ export function RepoAiAnalysisSection({ analysis, loading, error }: RepoAiAnalys
   )
 }
 
-function AiSummaryCard({ summary }: { summary: AiSummary }) {
+function QuickDecisionCard({ decision }: { decision: DecisionView }) {
   return (
     <article className="orbit-card-glow p-6 md:p-8 border-orbit-accent/20 bg-orbit-accent/5">
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-        <div className="min-w-0 flex-1">
-          <div className="mb-4 flex items-center gap-3">
-            <div className="h-11 w-11 rounded-2xl border border-orbit-accent/20 bg-orbit-accent/10 flex items-center justify-center shrink-0">
-              <MagicWand className="h-5 w-5 text-orbit-accent" weight="duotone" />
-            </div>
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-orbit-accent">AI Summary</p>
-              <h3 className="mt-1 text-[20px] font-black text-orbit-text leading-tight">Nên hiểu repo này thế nào?</h3>
-            </div>
+      <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex items-center gap-3">
+          <div className="h-11 w-11 rounded-2xl border border-orbit-accent/20 bg-orbit-accent/10 flex items-center justify-center shrink-0">
+            <MagicWand className="h-5 w-5 text-orbit-accent" weight="duotone" />
           </div>
-
-          <p className="max-w-3xl text-[15px] leading-[1.75] text-orbit-text-secondary">
-            {summary.summary}
-          </p>
-
-          <div className="mt-5 flex flex-wrap gap-2">
-            {summary.badges.map((badge) => (
-              <span
-                key={`${badge.label}-${badge.value}`}
-                className={`inline-flex items-center gap-2 rounded-2xl border px-3.5 py-2 text-[10px] font-black uppercase tracking-[0.12em] ${badgeToneClasses[badge.tone]}`}
-              >
-                <span className="text-orbit-text-muted">{badge.label}</span>
-                <span>{badge.value}</span>
-              </span>
-            ))}
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-orbit-accent">Đánh giá nhanh</p>
+            <h3 className="mt-1 text-[20px] font-black text-orbit-text leading-tight">Repo này có đáng xem không?</h3>
           </div>
-
-          {summary.warning && (
-            <div className="mt-5 flex items-start gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4">
-              <WarningCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" weight="duotone" />
-              <p className="text-[13px] leading-relaxed text-orbit-text-secondary">{summary.warning}</p>
-            </div>
-          )}
         </div>
-
-        <div className="w-full lg:max-w-sm rounded-2xl border border-orbit-border bg-orbit-surface/70 p-5">
-          <div className="mb-4 flex items-center gap-2">
-            <RocketLaunch className="h-4 w-4 text-orbit-accent" weight="duotone" />
-            <h4 className="text-[13px] font-black uppercase tracking-[0.12em] text-orbit-text">Việc nên làm ngay</h4>
-          </div>
-          <p className="mb-4 text-[13px] leading-relaxed text-orbit-text-secondary">
-            {summary.firstAction}
-          </p>
-          <ul className="space-y-3">
-            {summary.actions.slice(1).map((action) => (
-              <li key={action} className="flex gap-3 text-[13px] leading-relaxed text-orbit-text-secondary">
-                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-orbit-accent shrink-0" />
-                <span>{action}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-    </article>
-  )
-}
-
-function AnalysisCard({ section }: { section: RepoAiAnalysisSectionModel }) {
-  const IconComponent = sectionIcons[section.key] ?? MagicWand
-  const tone = toneClasses[section.tone]
-  const isWarning = section.tone === 'rose'
-  const items = section.key === 'nextSteps' ? section.items?.slice(0, 3) : section.items
-
-  return (
-    <article
-      className={`orbit-card-glow p-6 md:p-7 transition-all duration-500 ${tone.border} ${
-        isWarning ? 'md:col-span-1 bg-rose-500/5' : ''
-      }`}
-    >
-      <div className="flex items-start gap-4 mb-5">
-        <div className={`h-11 w-11 rounded-2xl border flex items-center justify-center shrink-0 ${tone.iconBox}`}>
-          <IconComponent className={`h-5 w-5 ${tone.icon}`} weight="duotone" />
-        </div>
-        <div className="min-w-0">
-          <h4 className="text-[17px] font-black text-orbit-text leading-snug">
-            {section.title}
-          </h4>
-          <div className={`mt-2 h-1 w-12 rounded-full ${isWarning ? 'bg-rose-400/60' : 'bg-orbit-accent/50'}`} />
-        </div>
+        <span className={`w-fit rounded-2xl border px-4 py-2 text-[11px] font-black uppercase tracking-[0.12em] ${decisionToneClasses[decision.tone]}`}>
+          {decision.decision}
+        </span>
       </div>
 
-      <p className="text-[14px] leading-[1.75] text-orbit-text-secondary">
-        {section.content}
+      <p className="text-[16px] font-bold leading-relaxed text-orbit-text">
+        {decision.conclusion}
       </p>
-
-      {items && items.length > 0 && (
-        <ul className="mt-5 divide-y divide-orbit-border/40">
-          {items.map((item) => (
-            <li key={item} className="flex gap-3 py-3 first:pt-0 last:pb-0 text-[13px] leading-relaxed text-orbit-text-secondary">
-              <span className={`mt-2 h-1.5 w-1.5 rounded-full shrink-0 ${isWarning ? 'bg-rose-400' : 'bg-orbit-accent'}`} />
-              <span>{item}</span>
-            </li>
-          ))}
-        </ul>
-      )}
+      <p className="mt-3 max-w-3xl text-[14px] leading-relaxed text-orbit-text-secondary">
+        {decision.reason}
+      </p>
     </article>
   )
 }
 
-function buildAiSummary(sectionsByKey: Map<RepoAiAnalysisSectionModel['key'], RepoAiAnalysisSectionModel>): AiSummary {
-  const overview = sectionsByKey.get('overview')
-  const fit = sectionsByKey.get('fit')
-  const nextSteps = sectionsByKey.get('nextSteps')
-  const warnings = sectionsByKey.get('warnings')
-  const summary = summarizeText(overview?.content ?? 'Chưa đủ dữ liệu để phân tích sâu.')
-  const actions = prioritizeActions(nextSteps?.items ?? [])
-  const firstAction = actions[0] ?? 'Đọc README hoặc mở GitHub để kiểm tra source chính trước.'
-  const fitLevel = extractValue(fit?.items, /Mức độ phù hợp học tập:\s*([^.(]+)/i)
-  const completeness = extractValue(overview?.items, /Mức độ đầy đủ thông tin:\s*([^(]+)/i)
-  const warning = warnings?.items?.[0]
-  const badges: AiSummary['badges'] = [
-    {
-      label: 'Phù hợp',
-      value: fitLevel ?? 'chưa rõ',
-      tone: fitLevel === 'cao' ? 'accent' : fitLevel === 'thấp' ? 'rose' : 'amber',
-    },
-    {
-      label: 'Dữ liệu',
-      value: completeness ?? 'ít',
-      tone: completeness === 'đầy đủ' ? 'accent' : completeness === 'ít' ? 'rose' : 'amber',
-    },
-  ]
+function StrengthWeaknessCard({ strengths, weaknesses }: { strengths: string[]; weaknesses: string[] }) {
+  return (
+    <article className="orbit-card p-6 border-orbit-border bg-orbit-surface/70">
+      <div className="mb-5 flex items-center gap-3">
+        <CheckCircle className="h-5 w-5 text-orbit-accent" weight="duotone" />
+        <h3 className="text-[15px] font-black text-orbit-text">Điểm mạnh / Điểm yếu</h3>
+      </div>
+      <div className="grid gap-5 sm:grid-cols-2">
+        <DecisionList title="Điểm mạnh" items={strengths} tone="accent" />
+        <DecisionList title="Điểm yếu" items={weaknesses} tone="amber" />
+      </div>
+    </article>
+  )
+}
 
-  if (warning) {
-    badges.push({
-      label: 'Cảnh báo',
-      value: 'cần kiểm tra',
+function NextActionsCard({ actions }: { actions: string[] }) {
+  return (
+    <article className="orbit-card p-6 border-orbit-border bg-orbit-surface/70">
+      <div className="mb-5 flex items-center gap-3">
+        <RocketLaunch className="h-5 w-5 text-orbit-accent" weight="duotone" />
+        <h3 className="text-[15px] font-black text-orbit-text">Hành động tiếp theo</h3>
+      </div>
+      <ol className="space-y-4">
+        {actions.map((action, index) => (
+          <li key={action} className="flex gap-3 text-[13px] leading-relaxed text-orbit-text-secondary">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-orbit-accent/20 bg-orbit-accent/10 text-[11px] font-black text-orbit-accent">
+              {index + 1}
+            </span>
+            <span>{action}</span>
+          </li>
+        ))}
+      </ol>
+    </article>
+  )
+}
+
+function DetailGroupCard({ title, items }: { title: string; items: string[] }) {
+  return (
+    <article className="orbit-card-glow p-6 border-orbit-border">
+      <div className="mb-5 flex items-center gap-3">
+        <BookOpen className="h-5 w-5 text-orbit-accent" weight="duotone" />
+        <h3 className="text-[15px] font-black text-orbit-text">{title}</h3>
+      </div>
+      <ul className="space-y-3">
+        {items.map((item) => (
+          <li key={item} className="flex gap-3 text-[13px] leading-relaxed text-orbit-text-secondary">
+            <span className="mt-2 h-1.5 w-1.5 rounded-full bg-orbit-accent shrink-0" />
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </article>
+  )
+}
+
+function DecisionList({ title, items, tone }: { title: string; items: string[]; tone: 'accent' | 'amber' }) {
+  return (
+    <div>
+      <h4 className={`mb-3 text-[11px] font-black uppercase tracking-[0.14em] ${tone === 'accent' ? 'text-orbit-accent' : 'text-amber-300'}`}>
+        {title}
+      </h4>
+      <ul className="space-y-3">
+        {items.map((item) => (
+          <li key={item} className="flex gap-3 text-[13px] leading-relaxed text-orbit-text-secondary">
+            <span className={`mt-2 h-1.5 w-1.5 rounded-full shrink-0 ${tone === 'accent' ? 'bg-orbit-accent' : 'bg-amber-400'}`} />
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+function buildDecisionView(sectionsByKey: Map<RepoAiAnalysisSectionModel['key'], RepoAiAnalysisSectionModel>): DecisionView {
+  const overview = sectionsByKey.get('overview')
+  const technology = sectionsByKey.get('technology')
+  const fit = sectionsByKey.get('fit')
+  const readme = sectionsByKey.get('readmeInsights')
+  const reviewFirst = sectionsByKey.get('reviewFirst')
+  const warnings = sectionsByKey.get('warnings')
+  const fitLevel = extractLevel(fit?.items, ['cao', 'vừa', 'thấp'])
+  const completeness = extractLevel(overview?.items, ['đầy đủ', 'trung bình', 'ít'])
+  const warningItems = prioritizeWarnings(warnings?.items ?? [])
+  const hasReadme = Boolean(readme && !containsAny(readme.content, ['Chưa có README', 'thiếu README']))
+  const decision = chooseDecision(fitLevel, completeness, hasReadme)
+  const strengths = buildStrengths(overview, technology, fit, readme)
+  const weaknesses = buildWeaknesses(warningItems, hasReadme)
+  const actions = buildActions(hasReadme, technology, completeness)
+
+  return {
+    ...decision,
+    strengths,
+    weaknesses,
+    actions,
+    details: [
+      {
+        title: 'Repo nói về gì?',
+        items: compactItems([
+          hasConcreteOverview(overview) ? 'Repo có mô tả đủ để xác định hướng đọc ban đầu.' : 'Chưa rõ mục tiêu repo; cần kiểm tra README hoặc source.',
+          hasReadme ? summarizeReadme(readme) : null,
+          technology?.items?.[0] ? simplifyTechItem(technology.items[0]) : null,
+        ], 3),
+      },
+      {
+        title: 'Có áp dụng được không?',
+        items: compactItems([
+          buildFitDetail(fitLevel),
+          hasReadme ? 'Có thể cân nhắc dùng cho học tập nếu README hướng dẫn chạy rõ.' : 'Chưa nên dùng làm nguồn chính cho deadline khi thiếu README/setup.',
+          technology?.items?.[1] ? simplifyLearningPrep(technology.items[1]) : null,
+        ], 3),
+      },
+      {
+        title: 'Cần kiểm tra trước khi tin',
+        items: compactItems([
+          ...warningItems.slice(0, 3).map(simplifyWarning),
+          warningItems.length === 0 ? reviewFirst?.items?.[0] : null,
+        ], 3),
+      },
+    ],
+  }
+}
+
+function chooseDecision(
+  fitLevel: string | null,
+  completeness: string | null,
+  hasReadme: boolean,
+): Pick<DecisionView, 'conclusion' | 'decision' | 'tone' | 'reason'> {
+  if (completeness === 'ít') {
+    return {
+      decision: 'Không đủ dữ liệu',
+      tone: 'rose',
+      conclusion: 'Chưa đủ dữ liệu để đánh giá repo này là nguồn học đáng tin.',
+      reason: 'Nên mở GitHub kiểm tra README, source chính và cách chạy trước. Nếu chưa xác minh được setup, chỉ dùng repo để tham khảo ý tưởng.',
+    }
+  }
+
+  if (fitLevel === 'cao' && hasReadme) {
+    return {
+      decision: 'Nên xem',
+      tone: 'accent',
+      conclusion: 'Repo này đáng xem vì có đủ tín hiệu để bắt đầu học hoặc tham khảo code.',
+      reason: 'Vẫn cần kiểm tra repo có chạy được không trước khi dùng cho deadline. Nếu README/setup rõ, đây có thể là nguồn tham khảo tốt.',
+    }
+  }
+
+  if (fitLevel === 'thấp') {
+    return {
+      decision: 'Chỉ tham khảo',
       tone: 'amber',
-    })
+      conclusion: 'Repo này chỉ nên dùng để lấy ý tưởng, chưa nên xem là nguồn chính.',
+      reason: 'Dữ liệu hiện có chưa đủ mạnh để tin vào chất lượng hoặc khả năng chạy. Trước khi dùng cho deadline, cần xác minh README và source.',
+    }
   }
 
   return {
-    summary,
-    firstAction,
-    actions,
-    badges: badges.slice(0, 3),
-    warning,
+    decision: 'Xem có chọn lọc',
+    tone: 'amber',
+    conclusion: 'Repo này có thể hữu ích, nhưng cần kiểm tra kỹ trước khi dùng.',
+    reason: hasReadme
+      ? 'Có một số tín hiệu tốt, nhưng vẫn nên xác nhận setup, source chính và phạm vi project trước khi dựa vào repo.'
+      : 'Thiếu README hoặc tín hiệu sâu, nên chỉ nên đọc chọn lọc và không dùng làm nguồn chính khi chưa kiểm chứng.',
   }
 }
 
-function prioritizeActions(items: string[]): string[] {
-  const priority = [
-    /readme/i,
-    /source|src/i,
-    /setup|build|run|config|dependency|package|pom|gradle|docker/i,
-    /clone|fork/i,
-    /docs?/i,
-  ]
-  const sorted = [...items].sort((a, b) => scoreAction(b, priority) - scoreAction(a, priority))
-  return sorted.slice(0, 3)
+function buildStrengths(
+  overview: RepoAiAnalysisSectionModel | undefined,
+  technology: RepoAiAnalysisSectionModel | undefined,
+  fit: RepoAiAnalysisSectionModel | undefined,
+  readme: RepoAiAnalysisSectionModel | undefined,
+): string[] {
+  return compactItems([
+    hasConcreteOverview(overview) ? 'Có mô tả giúp hiểu repo đang giải quyết việc gì.' : null,
+    technology?.items?.[0] && !technology.items[0].includes('Chưa') ? simplifyTechItem(technology.items[0]) : null,
+    readme && !readme.content.includes('Chưa có README') ? 'Có README để kiểm tra mục tiêu hoặc cách chạy.' : null,
+    fit?.items?.[1]?.includes('môn') ? 'Có ngữ cảnh môn học để đối chiếu khi học.' : null,
+  ], 2, ['Chưa thấy điểm mạnh rõ từ dữ liệu hiện có.'])
 }
 
-function scoreAction(action: string, priority: RegExp[]): number {
-  const index = priority.findIndex((pattern) => pattern.test(action))
+function buildWeaknesses(warnings: string[], hasReadme: boolean): string[] {
+  return compactItems([
+    !hasReadme ? 'Thiếu README nên chưa biết cách chạy/setup.' : null,
+    ...warnings.map(simplifyWarning),
+  ], 2, ['Chưa thấy rủi ro lớn ngoài việc cần kiểm tra trực tiếp trên GitHub.'])
+}
+
+function buildActions(
+  hasReadme: boolean,
+  technology: RepoAiAnalysisSectionModel | undefined,
+  completeness: string | null,
+): string[] {
+  const configHint = technology?.items?.find((item) => /File nên kiểm tra|package|pom|gradle|config|dependency/i.test(item))
+  return [
+    hasReadme ? 'Đọc README để xác nhận mục tiêu, setup và cách chạy.' : 'Kiểm tra repo có README không; nếu thiếu, đọc description và source trước.',
+    configHint ? simplifyConfigHint(configHint) : 'Mở source chính hoặc file build/config để xác nhận project chạy được.',
+    completeness === 'đầy đủ'
+      ? 'Nếu setup rõ, clone/fork để chạy thử trước khi dùng cho deadline.'
+      : 'Chỉ dùng repo làm tham khảo nếu chưa xác minh được setup.',
+  ]
+}
+
+function compactItems(items: Array<string | null | undefined>, limit: number, fallback: string[] = []): string[] {
+  const seen = new Set<string>()
+  const result: string[] = []
+  for (const item of items) {
+    const normalized = item?.trim()
+    if (!normalized) continue
+    const key = normalized.toLowerCase()
+    if (seen.has(key)) continue
+    seen.add(key)
+    result.push(normalized)
+    if (result.length >= limit) break
+  }
+  return result.length > 0 ? result : fallback
+}
+
+function extractLevel(items: string[] | undefined, levels: string[]): string | null {
+  const text = (items ?? []).join(' ').toLowerCase()
+  return levels.find((level) => text.includes(level)) ?? null
+}
+
+function hasConcreteOverview(section: RepoAiAnalysisSectionModel | undefined): boolean {
+  if (!section) return false
+  return !containsAny(section.content, ['Chưa đủ dữ liệu', 'thiếu description'])
+}
+
+function summarizeReadme(section: RepoAiAnalysisSectionModel | undefined): string | null {
+  if (!section || section.content.includes('Chưa có README')) return null
+  if (/setup|run|mvn|npm|docker|gradle|pip|python/i.test(section.content)) {
+    return 'README có tín hiệu về setup hoặc cách chạy.'
+  }
+  return 'README có thêm ngữ cảnh để hiểu mục tiêu repo.'
+}
+
+function buildFitDetail(fitLevel: string | null): string {
+  if (fitLevel === 'cao') return 'Phù hợp để học hoặc tham khảo code nếu chạy được.'
+  if (fitLevel === 'vừa') return 'Phù hợp để xem chọn lọc, chưa nên dùng nguyên làm nguồn chính.'
+  if (fitLevel === 'thấp') return 'Chỉ nên dùng để lấy ý tưởng ban đầu.'
+  return 'Chưa đủ dữ liệu để kết luận mức độ áp dụng.'
+}
+
+function prioritizeWarnings(items: string[]): string[] {
+  const priority = [/README/i, /mô tả|description/i, /techStacks|công nghệ|primaryLanguage/i, /topics/i, /course/i, /updatedAt|forks/i]
+  return [...items].sort((a, b) => warningScore(b, priority) - warningScore(a, priority))
+}
+
+function warningScore(item: string, priority: RegExp[]): number {
+  const index = priority.findIndex((pattern) => pattern.test(item))
   return index === -1 ? 0 : priority.length - index
 }
 
-function extractValue(items: string[] | undefined, pattern: RegExp): string | null {
-  if (!items) return null
-  for (const item of items) {
-    const match = item.match(pattern)
-    if (match?.[1]) return match[1].trim().toLowerCase()
-  }
-  return null
+function simplifyWarning(item: string): string {
+  if (/README/i.test(item)) return 'Thiếu README nên chưa biết cách chạy/setup.'
+  if (/description|mô tả/i.test(item)) return 'Thiếu mô tả nên chưa rõ mục tiêu repo.'
+  if (/techStacks|primaryLanguage|công nghệ/i.test(item)) return 'Chưa rõ stack nên cần mở source/config để kiểm tra.'
+  if (/topics/i.test(item)) return 'Thiếu topics nên khó xác định phạm vi project.'
+  if (/course|courseCode|courseName/i.test(item)) return 'Chưa rõ repo gắn với môn học nào.'
+  if (/updatedAt|lastPushedAt/i.test(item)) return 'Chưa biết repo còn được cập nhật gần đây không.'
+  if (/forks/i.test(item)) return 'Chưa có forks để tham khảo mức độ được dùng lại.'
+  return stripPrefix(item)
 }
 
-function summarizeText(value: string): string {
-  if (value.includes('Chưa đủ dữ liệu')) return 'Chưa đủ dữ liệu để phân tích sâu. Hãy kiểm tra README, source chính và metadata còn thiếu trước khi dùng repo cho deadline.'
-  if (value.length <= 280) return value
-  return `${value.slice(0, 279).trim()}…`
+function simplifyTechItem(item: string): string {
+  return stripPrefix(item)
+    .replace('Tech stack đang có:', 'Stack chính:')
+    .replace('Ngôn ngữ chính được GitHub ghi nhận là', 'Ngôn ngữ chính:')
+}
+
+function simplifyLearningPrep(item: string): string {
+  return stripPrefix(item).replace('Người học nên chuẩn bị:', 'Cần chuẩn bị:')
+}
+
+function simplifyConfigHint(item: string): string {
+  return stripPrefix(item).replace('File nên kiểm tra sớm:', 'Mở file cấu hình/build:')
+}
+
+function stripPrefix(value: string): string {
+  return value.replace(/\s+/g, ' ').trim()
+}
+
+function containsAny(value: string, terms: string[]): boolean {
+  return terms.some((term) => value.toLowerCase().includes(term.toLowerCase()))
 }

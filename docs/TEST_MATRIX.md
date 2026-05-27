@@ -22,6 +22,7 @@ This file maps product behavior to proof.
 | US-018 | Mobile Repo Tech Stack Filter | pass | no | no | Gradle unit test | implemented | `devorbit-mobile`: `.\gradlew.bat :app:testDebugUnitTest` |
 | US-019 | Mobile Course Hub Detail Navigation | pass | no | no | Gradle unit test | implemented | `devorbit-mobile`: `.\gradlew.bat :app:testDebugUnitTest` |
 | US-020 | GPA Calculator + Semester Presets + Cumulative Estimate + Goal Planner + Row UX + Browser Draft + Background Atmosphere | pass | no | no | Vite build | implemented | `devorbit-web`: `npm test -- GpaCalculatorPage router`; `npm run build` |
+| US-021 | Repo AI Analysis Structure | pass | no | no | Vite build | implemented | `devorbit-web`: `npm run test -- repoAiAnalysis`; `npm run build` |
 
 ## Evidence Rules
 

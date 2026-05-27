@@ -24,6 +24,7 @@ This file maps product behavior to proof.
 | US-020 | GPA Calculator + Semester Presets + Cumulative Estimate + Goal Planner + Row UX + Browser Draft + Background Atmosphere | pass | no | no | Vite build | implemented | `devorbit-web`: `npm test -- GpaCalculatorPage router`; `npm run build` |
 | US-021 | Repo AI Analysis Structure | pass | no | no | Vite build | implemented | `devorbit-web`: `npm run test -- repoAiAnalysis`; `npm run build` |
 | US-022 | Repo Rule-Based Analysis | pass | no | no | Vite build | implemented | `devorbit-web`: `npm run test -- repoAiAnalysis`; `npm run build` |
+| US-023 | Repo Analysis Provider Interface | pass | no | no | Vite build | implemented | `devorbit-web`: `npm run test -- repoAiAnalysis repoAnalysisService`; `npm run build` |
 
 ## Evidence Rules
 

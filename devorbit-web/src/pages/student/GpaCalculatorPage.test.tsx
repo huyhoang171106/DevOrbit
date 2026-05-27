@@ -47,10 +47,29 @@ const draftKey = 'devorbit_gpa_calculator_draft_v1'
 afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
+  vi.unstubAllGlobals()
   localStorage.clear()
 })
 
 beforeEach(() => {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: vi.fn().mockImplementation((query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  })
+  vi.stubGlobal('IntersectionObserver', class {
+    observe = vi.fn()
+    unobserve = vi.fn()
+    disconnect = vi.fn()
+  })
   vi.spyOn(globalThis, 'fetch').mockResolvedValue({
     ok: true,
     json: async () => [],
@@ -61,8 +80,13 @@ describe('GpaCalculatorPage', () => {
   test('renders the shared student background atmosphere', () => {
     render(<GpaCalculatorPage />)
 
-    expect(document.querySelector('[data-testid="gpa-atmosphere"]')).toBeInTheDocument()
-    expect(document.querySelector('section')).toHaveClass('relative', 'overflow-hidden')
+    const section = document.querySelector('section')
+    const atmosphere = document.querySelector('[data-testid="gpa-shared-atmosphere"]')
+    expect(section).toHaveAttribute('data-atmosphere', 'none')
+    expect(atmosphere).toHaveClass('fixed', 'inset-0', 'pointer-events-none', 'z-0')
+    expect(atmosphere?.querySelector('.bg-orbit-accent\\/5')).toBeInTheDocument()
+    expect(atmosphere?.querySelector('.bg-emerald-500\\/3')).toBeInTheDocument()
+    expect(document.querySelector('[data-testid="gpa-atmosphere"]')).not.toBeInTheDocument()
   })
 
   test('calculates weighted GPA on the 10-point scale only', () => {

@@ -13,10 +13,12 @@ type CourseInput = {
 type CourseResult = {
   credits: number
   grade10: number
+  name: string
 }
 
 type SemesterMap = Record<number, number | null>
-type CalculationMode = 'semester' | 'cumulative'
+type CalculationMode = 'semester' | 'cumulative' | 'goal'
+type GoalStatus = 'needs-input' | 'no-term-credits' | 'not-feasible' | 'already-above-target' | 'difficult' | 'feasible'
 
 const initialCourses: CourseInput[] = [
   { id: 1, name: '', credits: '3', grade10: '' },
@@ -27,6 +29,8 @@ const semesters = [1, 2, 3, 4, 5, 6, 7, 8]
 const savedRoadmapKey = 'devorbit_kanban_semester_map'
 
 function parseCourse(course: CourseInput): CourseResult | null {
+  if (course.credits.trim() === '' || course.grade10.trim() === '') return null
+
   const credits = Number(course.credits)
   const grade10 = Number(course.grade10)
 
@@ -36,6 +40,7 @@ function parseCourse(course: CourseInput): CourseResult | null {
   return {
     credits,
     grade10,
+    name: course.name.trim() || 'Môn chưa đặt tên',
   }
 }
 
@@ -49,6 +54,28 @@ function classifyGrade10(average10: number): string {
 
 function formatNumber(value: number): string {
   return value.toFixed(2)
+}
+
+function clampGrade10(value: number): number {
+  return Math.min(10, Math.max(0, value))
+}
+
+function goalStatusLabel(status: GoalStatus): string {
+  if (status === 'not-feasible') return 'Mục tiêu không khả thi trong kỳ này'
+  if (status === 'already-above-target') return 'Đã vượt mục tiêu'
+  if (status === 'difficult') return 'Mục tiêu khó nhưng còn khả thi'
+  if (status === 'feasible') return 'Mục tiêu khả thi'
+  if (status === 'no-term-credits') return 'Chưa có tín chỉ kỳ này'
+  return 'Cần thêm dữ liệu'
+}
+
+function goalGuidance(status: GoalStatus): string {
+  if (status === 'not-feasible') return 'Kỳ này cần cao hơn 10 điểm trung bình, nên mục tiêu này chưa khả thi với số tín chỉ hiện tại.'
+  if (status === 'already-above-target') return 'GPA hiện tại đã đủ cao, kỳ này không cần áp lực điểm thêm để giữ mục tiêu đã nhập.'
+  if (status === 'difficult') return 'Mức điểm cần đạt khá cao nhưng vẫn nằm trong thang 10.'
+  if (status === 'feasible') return 'Mức điểm cần đạt nằm trong thang 10 và có thể dùng để lập kế hoạch học tập.'
+  if (status === 'no-term-credits') return 'Thêm môn hoặc nhập tín chỉ kỳ này hợp lệ để tính ngược GPA mục tiêu.'
+  return 'Nhập GPA hiện tại, tín chỉ đã tích lũy và GPA mục tiêu trong khoảng 0 đến 10.'
 }
 
 function courseToInput(course: CourseSummary, index: number): CourseInput {
@@ -88,6 +115,7 @@ export function GpaCalculatorPage() {
   const [calculationMode, setCalculationMode] = useState<CalculationMode>('semester')
   const [currentGpa, setCurrentGpa] = useState('')
   const [completedCredits, setCompletedCredits] = useState('')
+  const [targetGpa, setTargetGpa] = useState('')
   const [presetStatus, setPresetStatus] = useState('Đang tải danh sách môn học...')
 
   useEffect(() => {
@@ -166,6 +194,68 @@ export function GpaCalculatorPage() {
     }
   }, [completedCredits, currentGpa, summary.average10, summary.totalCredits])
 
+  const goalSummary = useMemo(() => {
+    const existingGpa = Number(currentGpa)
+    const existingCredits = Number(completedCredits)
+    const desiredGpa = Number(targetGpa)
+    const validCourses = courses.map(parseCourse).filter((course): course is CourseResult => course !== null)
+    const termCredits = validCourses.reduce((sum, course) => sum + course.credits, 0)
+    const totalCreditsAfterTerm = Number.isFinite(existingCredits) && existingCredits >= 0
+      ? existingCredits + termCredits
+      : termCredits
+
+    if (termCredits <= 0) {
+      return {
+        status: 'no-term-credits' as GoalStatus,
+        requiredTermGpa: 0,
+        totalCreditsAfterTerm,
+        courseTargets: [],
+        valid: false,
+      }
+    }
+
+    if (
+      !Number.isFinite(existingGpa)
+      || !Number.isFinite(existingCredits)
+      || !Number.isFinite(desiredGpa)
+      || existingGpa < 0
+      || existingGpa > 10
+      || existingCredits < 0
+      || desiredGpa < 0
+      || desiredGpa > 10
+      || totalCreditsAfterTerm <= 0
+    ) {
+      return {
+        status: 'needs-input' as GoalStatus,
+        requiredTermGpa: 0,
+        totalCreditsAfterTerm,
+        courseTargets: [],
+        valid: false,
+      }
+    }
+
+    const requiredTermGpa = ((desiredGpa * totalCreditsAfterTerm) - (existingGpa * existingCredits)) / termCredits
+    const status: GoalStatus = requiredTermGpa > 10
+      ? 'not-feasible'
+      : requiredTermGpa < 0
+        ? 'already-above-target'
+        : requiredTermGpa >= 8.5
+          ? 'difficult'
+          : 'feasible'
+
+    return {
+      status,
+      requiredTermGpa,
+      totalCreditsAfterTerm,
+      courseTargets: validCourses.map((course) => ({
+        name: course.name,
+        credits: course.credits,
+        targetGrade: clampGrade10(requiredTermGpa),
+      })),
+      valid: true,
+    }
+  }, [completedCredits, courses, currentGpa, targetGpa])
+
   const updateCourse = (id: number, field: keyof Omit<CourseInput, 'id'>, value: string) => {
     setCourses((current) =>
       current.map((course) =>
@@ -237,12 +327,23 @@ export function GpaCalculatorPage() {
               >
                 Ước lượng GPA tích lũy
               </button>
+              <button
+                type="button"
+                onClick={() => setCalculationMode('goal')}
+                className={`h-10 rounded-[6px] px-4 text-[13px] font-bold transition-colors ${
+                  calculationMode === 'goal'
+                    ? 'bg-orbit-accent text-zinc-950'
+                    : 'text-orbit-text-secondary hover:text-orbit-text'
+                }`}
+              >
+                Mục tiêu GPA
+              </button>
             </div>
           </div>
 
-          {calculationMode === 'cumulative' && (
+          {(calculationMode === 'cumulative' || calculationMode === 'goal') && (
             <div className="mb-6 rounded-[8px] border border-orbit-border bg-orbit-surface p-4 shadow-diffusion">
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className={`grid gap-4 ${calculationMode === 'goal' ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
                 <div>
                   <label className="mb-2 block text-[12px] font-bold uppercase tracking-[0.12em] text-orbit-text-muted" htmlFor="current-gpa">
                     GPA hiện tại
@@ -274,6 +375,24 @@ export function GpaCalculatorPage() {
                     className="h-11 w-full rounded-[8px] border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
                   />
                 </div>
+                {calculationMode === 'goal' && (
+                  <div>
+                    <label className="mb-2 block text-[12px] font-bold uppercase tracking-[0.12em] text-orbit-text-muted" htmlFor="target-gpa">
+                      GPA mục tiêu
+                    </label>
+                    <input
+                      id="target-gpa"
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.01"
+                      value={targetGpa}
+                      onChange={(event) => setTargetGpa(event.target.value)}
+                      placeholder="8.00"
+                      className="h-11 w-full rounded-[8px] border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -410,6 +529,24 @@ export function GpaCalculatorPage() {
                 </div>
               </>
             )}
+            {calculationMode === 'goal' && (
+              <>
+                <div className="flex items-center justify-between border-t border-orbit-border pt-4">
+                  <dt className="text-[14px] text-orbit-text-secondary">Kỳ này cần trung bình</dt>
+                  <dd className="text-[15px] font-bold text-orbit-text">
+                    {goalSummary.valid ? formatNumber(clampGrade10(goalSummary.requiredTermGpa)) : '--'}
+                  </dd>
+                </div>
+                <div className="flex items-center justify-between">
+                  <dt className="text-[14px] text-orbit-text-secondary">Trạng thái mục tiêu</dt>
+                  <dd className="text-right text-[15px] font-bold text-orbit-text">{goalStatusLabel(goalSummary.status)}</dd>
+                </div>
+                <div className="flex items-center justify-between">
+                  <dt className="text-[14px] text-orbit-text-secondary">Tổng tín chỉ sau kỳ này</dt>
+                  <dd className="text-[15px] font-bold text-orbit-text">{goalSummary.totalCreditsAfterTerm} tín chỉ</dd>
+                </div>
+              </>
+            )}
           </dl>
 
           {calculationMode === 'cumulative' && !cumulativeSummary.valid && (
@@ -418,8 +555,25 @@ export function GpaCalculatorPage() {
             </p>
           )}
 
+          {calculationMode === 'goal' && (
+            <div className="mt-4 rounded-[8px] border border-orbit-border bg-orbit-bg p-3 text-[13px] leading-6 text-orbit-text-secondary">
+              <p>{goalGuidance(goalSummary.status)}</p>
+              {goalSummary.courseTargets.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  <p className="text-[12px] font-black uppercase tracking-[0.12em] text-orbit-accent">Gợi ý từng môn</p>
+                  {goalSummary.courseTargets.map((course, index) => (
+                    <div key={`${course.name}-${index}`} className="flex items-center justify-between gap-3 border-t border-orbit-border pt-2">
+                      <span className="min-w-0 text-orbit-text-secondary">{course.name} ({course.credits} tín chỉ)</span>
+                      <span className="shrink-0 font-bold text-orbit-text">{formatNumber(course.targetGrade)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="mt-6 rounded-[8px] border border-orbit-border bg-orbit-bg p-4 text-[13px] leading-6 text-orbit-text-secondary">
-            Công thức: tổng của <span className="font-semibold text-orbit-text">điểm x tín chỉ</span> chia cho tổng tín chỉ hợp lệ. Kết quả chỉ mang tính tham khảo.
+            Công thức: tổng của <span className="font-semibold text-orbit-text">điểm x tín chỉ</span> chia cho tổng tín chỉ hợp lệ. Với mục tiêu GPA, app tính ngược điểm trung bình kỳ này cần đạt. Kết quả chỉ mang tính tham khảo.
           </div>
         </aside>
       </div>

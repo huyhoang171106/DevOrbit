@@ -14,6 +14,7 @@ DevOrbit includes a student-facing GPA calculator so students can quickly estima
 - Each row accepts course name, credits, and grade on the 10-point scale.
 - Students can add or remove course rows.
 - Students can duplicate a course row, clear all rows, add five blank rows at once, and reset to the default two-row template.
+- The calculator autosaves draft rows, mode, semester, and GPA inputs to browser `localStorage` and restores them after reload.
 - Students can switch between semester GPA mode and cumulative GPA estimate mode.
 - Students can load a semester preset from the DevOrbit course catalogue.
 - Semester presets use `/api/courses`, include only matching semester courses with credits greater than 0, and leave grade cells empty for student input.
@@ -36,6 +37,6 @@ DevOrbit includes a student-facing GPA calculator so students can quickly estima
 ## Scope Boundaries
 
 - This page is a client-side planning calculator.
-- It reads course catalogue data for presets but does not save grades or calculator rows.
+- It reads course catalogue data for presets and saves draft calculator state only in the current browser.
 - If catalogue loading fails, manual entry remains available.
 - It does not replace official UIT transcript or academic office results.

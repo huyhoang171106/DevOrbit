@@ -15,6 +15,7 @@ DevOrbit includes a student-facing GPA calculator so students can quickly estima
 - Students can add or remove course rows.
 - Students can duplicate a course row, clear all rows, add five blank rows at once, and reset to the default two-row template.
 - The calculator autosaves draft rows, mode, semester, and GPA inputs to browser `localStorage` and restores them after reload.
+- The calculator uses the same shared DevOrbit student-page background atmosphere pattern as the course list screen.
 - Students can switch between semester GPA mode and cumulative GPA estimate mode.
 - Students can load a semester preset from the DevOrbit course catalogue.
 - Semester presets use `/api/courses`, include only matching semester courses with credits greater than 0, and leave grade cells empty for student input.

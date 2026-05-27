@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Calculator, Copy, Plus, RotateCcw, Trash2 } from 'lucide-react'
 import { apiGet } from '../../lib/api'
+import { ParallaxLayer } from '../../motion/primitives/ParallaxLayer'
+import { SectionTransition } from '../../motion/primitives/SectionTransition'
 import type { CourseSummary } from '../../types/api'
 
 type CourseInput = {
@@ -426,15 +428,13 @@ export function GpaCalculatorPage() {
   }
 
   return (
-    <section className="relative min-h-[calc(100vh-72px)] overflow-hidden bg-orbit-bg text-orbit-text">
-      <div className="absolute inset-0 pointer-events-none" data-testid="gpa-atmosphere">
-        <div className="absolute top-[-12%] right-[-8%] h-[560px] w-[48%] rounded-full bg-orbit-accent/5 blur-[150px]" />
-        <div className="absolute bottom-[8%] left-[-10%] h-[460px] w-[36%] rounded-full bg-indigo-500/4 blur-[130px]" />
-        <div
-          className="absolute inset-0 opacity-[0.025]"
-          style={{ backgroundImage: 'radial-gradient(rgba(52, 211, 153, 0.55) 1px, transparent 1px)', backgroundSize: '44px 44px' }}
-        />
-      </div>
+    <SectionTransition atmosphere="light" className="relative w-full min-h-[calc(100vh-72px)] pb-10 text-orbit-text">
+      <ParallaxLayer speed={0.15} range={100}>
+        <div className="fixed inset-0 pointer-events-none z-0" data-testid="gpa-shared-atmosphere">
+          <div className="absolute top-[10%] left-[-10%] w-[40%] h-[600px] bg-orbit-accent/5 blur-[180px] rounded-full" />
+          <div className="absolute bottom-[20%] right-[-10%] w-[35%] h-[500px] bg-emerald-500/3 blur-[150px] rounded-full" />
+        </div>
+      </ParallaxLayer>
       <div className="relative z-10 mx-auto grid w-full max-w-[1440px] gap-8 px-6 py-10 md:grid-cols-[minmax(0,1fr)_360px] md:px-10 lg:px-14">
         <div>
           <div className="mb-8 flex items-center gap-3">
@@ -799,6 +799,6 @@ export function GpaCalculatorPage() {
           </div>
         </aside>
       </div>
-    </section>
+    </SectionTransition>
   )
 }

@@ -2,7 +2,15 @@ import { describe, expect, test } from 'vitest'
 import { buildRepoAiAnalysisSections } from './repoAiAnalysis'
 import type { RepoSummary } from '../types/api'
 
-function repo(overrides: Partial<RepoSummary> = {}): RepoSummary {
+type RepoSummaryWithOptionalMetadata = RepoSummary & {
+  topics?: string[] | string | null
+  forks?: number | null
+  updatedAt?: string | null
+  readmeExcerpt?: string | null
+  deadline?: string | null
+}
+
+function repo(overrides: Partial<RepoSummaryWithOptionalMetadata> = {}): RepoSummaryWithOptionalMetadata {
   return {
     id: 1,
     displayName: 'spring-course-api',
@@ -31,9 +39,25 @@ describe('buildRepoAiAnalysisSections', () => {
       'nextSteps',
       'warnings',
     ])
-    expect(sections.find((section) => section.key === 'overview')?.content).toContain('backend hoặc full-stack')
-    expect(sections.find((section) => section.key === 'technology')?.items).toContain('Tech stack liên quan: Spring Boot, PostgreSQL.')
-    expect(sections.find((section) => section.key === 'fit')?.content).toContain('SE104')
+    expect(sections.find((section) => section.key === 'overview')?.content).toContain('REST API for course management')
+    expect(sections.find((section) => section.key === 'technology')?.items).toContain('Tech stack đang có: Spring Boot, PostgreSQL.')
+    expect(sections.find((section) => section.key === 'fit')?.items).toContain('Mức độ phù hợp học tập: vừa.')
+  })
+
+  test('uses optional readme and topics when they are available', () => {
+    const sections = buildRepoAiAnalysisSections(repo({
+      topics: ['course-management', 'spring-security'],
+      forks: 4,
+      updatedAt: '2026-05-20T10:00:00Z',
+      readmeExcerpt: 'Run with Maven, configure PostgreSQL, then start the Spring Boot API.',
+    }))
+
+    expect(sections.find((section) => section.key === 'overview')?.items).toContain(
+      'Topics/tags gợi ý phạm vi: course-management, spring-security.',
+    )
+    expect(sections.find((section) => section.key === 'fit')?.items).toContain('Mức độ phù hợp học tập: cao.')
+    expect(sections.find((section) => section.key === 'reviewFirst')?.items?.[0]).toContain('README: Run with Maven')
+    expect(sections.find((section) => section.key === 'nextSteps')?.items).toContain('Forks hiện có: 4; có thể tham khảo mức độ được tái sử dụng.')
   })
 
   test('warns clearly when repository data is sparse', () => {
@@ -48,12 +72,17 @@ describe('buildRepoAiAnalysisSections', () => {
     }))
 
     const warnings = sections.find((section) => section.key === 'warnings')
+    expect(sections.find((section) => section.key === 'overview')?.content).toContain('Chưa đủ dữ liệu để phân tích sâu')
+    expect(sections.find((section) => section.key === 'fit')?.items).toContain('Mức độ phù hợp học tập: thấp.')
     expect(warnings?.items).toEqual(expect.arrayContaining([
-      'Thiếu description nên chưa xác định chắc repo đang giải quyết bài toán gì.',
-      'Thiếu primaryLanguage nên chưa thể suy luận chắc cách build/chạy.',
-      'Thiếu techStacks nên phân tích công nghệ chỉ dựa trên metadata tối thiểu.',
+      'Thiếu mô tả nên chưa xác định chắc repo đang giải quyết bài toán gì.',
+      'Chưa rõ công nghệ chính vì thiếu primaryLanguage.',
+      'Thiếu techStacks nên cần mở source/config để xác nhận framework và dependency.',
+      'Thiếu topics/tags nên khó nhận diện domain hoặc mục tiêu repo từ metadata.',
+      'Thiếu README excerpt; hãy đọc README trên GitHub trước khi dùng repo cho deadline.',
       'Thiếu courseCode/courseName nên chưa đánh giá được mức độ khớp với môn học UIT cụ thể.',
-      'Public repo detail hiện chưa có README excerpt, topics, forks hoặc last pushed date.',
+      'Chưa có forks để tham khảo mức độ được tái sử dụng.',
+      'Chưa có updatedAt/lastPushedAt nên chưa biết repo còn được duy trì gần đây hay không.',
     ]))
   })
 })

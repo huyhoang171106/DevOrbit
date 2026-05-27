@@ -24,6 +24,15 @@ type CourseValidation = {
   gradeReason: string | null
   valid: boolean
 }
+type GpaDraft = {
+  courses: CourseInput[]
+  calculationMode: CalculationMode
+  currentGpa: string
+  completedCredits: string
+  targetGpa: string
+  selectedSemester: string
+  updatedAt: string
+}
 
 const initialCourses: CourseInput[] = [
   { id: 1, name: '', credits: '3', grade10: '' },
@@ -32,6 +41,51 @@ const initialCourses: CourseInput[] = [
 
 const semesters = [1, 2, 3, 4, 5, 6, 7, 8]
 const savedRoadmapKey = 'devorbit_kanban_semester_map'
+const draftStorageKey = 'devorbit_gpa_calculator_draft_v1'
+
+function isCalculationMode(value: unknown): value is CalculationMode {
+  return value === 'semester' || value === 'cumulative' || value === 'goal'
+}
+
+function isCourseInput(value: unknown): value is CourseInput {
+  if (!value || typeof value !== 'object') return false
+  const course = value as Record<string, unknown>
+  return (
+    typeof course.id === 'number'
+    && typeof course.name === 'string'
+    && typeof course.credits === 'string'
+    && typeof course.grade10 === 'string'
+  )
+}
+
+function readSavedDraft(): GpaDraft | null {
+  try {
+    const saved = localStorage.getItem(draftStorageKey)
+    if (!saved) return null
+    const draft = JSON.parse(saved) as Record<string, unknown>
+    if (!Array.isArray(draft.courses) || draft.courses.length === 0 || !draft.courses.every(isCourseInput)) return null
+    if (!isCalculationMode(draft.calculationMode)) return null
+    if (
+      typeof draft.currentGpa !== 'string'
+      || typeof draft.completedCredits !== 'string'
+      || typeof draft.targetGpa !== 'string'
+      || typeof draft.selectedSemester !== 'string'
+      || typeof draft.updatedAt !== 'string'
+    ) return null
+
+    return {
+      courses: draft.courses,
+      calculationMode: draft.calculationMode,
+      currentGpa: draft.currentGpa,
+      completedCredits: draft.completedCredits,
+      targetGpa: draft.targetGpa,
+      selectedSemester: draft.selectedSemester,
+      updatedAt: draft.updatedAt,
+    }
+  } catch {
+    return null
+  }
+}
 
 function validateCourse(course: CourseInput): CourseValidation {
   const creditsText = course.credits.trim()
@@ -136,14 +190,16 @@ function getSemesterCourses(catalogue: CourseSummary[], semester: number, semest
 }
 
 export function GpaCalculatorPage() {
-  const [courses, setCourses] = useState<CourseInput[]>(initialCourses)
+  const [savedDraft] = useState<GpaDraft | null>(() => readSavedDraft())
+  const [courses, setCourses] = useState<CourseInput[]>(() => savedDraft?.courses ?? initialCourses)
   const [catalogue, setCatalogue] = useState<CourseSummary[]>([])
   const [savedSemesterMap, setSavedSemesterMap] = useState<SemesterMap | null>(() => readSavedSemesterMap())
-  const [selectedSemester, setSelectedSemester] = useState('1')
-  const [calculationMode, setCalculationMode] = useState<CalculationMode>('semester')
-  const [currentGpa, setCurrentGpa] = useState('')
-  const [completedCredits, setCompletedCredits] = useState('')
-  const [targetGpa, setTargetGpa] = useState('')
+  const [selectedSemester, setSelectedSemester] = useState(() => savedDraft?.selectedSemester ?? '1')
+  const [calculationMode, setCalculationMode] = useState<CalculationMode>(() => savedDraft?.calculationMode ?? 'semester')
+  const [currentGpa, setCurrentGpa] = useState(() => savedDraft?.currentGpa ?? '')
+  const [completedCredits, setCompletedCredits] = useState(() => savedDraft?.completedCredits ?? '')
+  const [targetGpa, setTargetGpa] = useState(() => savedDraft?.targetGpa ?? '')
+  const [draftSavedAt, setDraftSavedAt] = useState(() => savedDraft?.updatedAt ?? '')
   const [presetStatus, setPresetStatus] = useState('Đang tải danh sách môn học...')
 
   useEffect(() => {
@@ -164,6 +220,21 @@ export function GpaCalculatorPage() {
       active = false
     }
   }, [])
+
+  useEffect(() => {
+    const updatedAt = new Date().toISOString()
+    const draft: GpaDraft = {
+      courses,
+      calculationMode,
+      currentGpa,
+      completedCredits,
+      targetGpa,
+      selectedSemester,
+      updatedAt,
+    }
+    localStorage.setItem(draftStorageKey, JSON.stringify(draft))
+    setDraftSavedAt(updatedAt)
+  }, [calculationMode, completedCredits, courses, currentGpa, selectedSemester, targetGpa])
 
   const semesterCourses = useMemo(() => {
     return getSemesterCourses(catalogue, Number(selectedSemester), savedSemesterMap)
@@ -710,6 +781,10 @@ export function GpaCalculatorPage() {
               )}
             </div>
           )}
+
+          <div className="mt-4 rounded-[8px] border border-orbit-border bg-orbit-bg p-3 text-[13px] leading-6 text-orbit-text-secondary">
+            Đã lưu tạm trên trình duyệt{draftSavedAt ? ` lúc ${new Date(draftSavedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}` : ''}.
+          </div>
 
           <div className="mt-6 rounded-[8px] border border-orbit-border bg-orbit-bg p-4 text-[13px] leading-6 text-orbit-text-secondary">
             Công thức: tổng của <span className="font-semibold text-orbit-text">điểm x tín chỉ</span> chia cho tổng tín chỉ hợp lệ. Với mục tiêu GPA, app tính ngược điểm trung bình kỳ này cần đạt. Kết quả chỉ mang tính tham khảo.

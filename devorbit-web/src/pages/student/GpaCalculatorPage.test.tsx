@@ -58,6 +58,13 @@ beforeEach(() => {
 })
 
 describe('GpaCalculatorPage', () => {
+  test('renders the shared student background atmosphere', () => {
+    render(<GpaCalculatorPage />)
+
+    expect(document.querySelector('[data-testid="gpa-atmosphere"]')).toBeInTheDocument()
+    expect(document.querySelector('section')).toHaveClass('relative', 'overflow-hidden')
+  })
+
   test('calculates weighted GPA on the 10-point scale only', () => {
     render(<GpaCalculatorPage />)
 

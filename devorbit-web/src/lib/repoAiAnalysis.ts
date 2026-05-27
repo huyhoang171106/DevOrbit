@@ -3,7 +3,7 @@ import type { RepoSummary } from '../types/api'
 export type RepoAiAnalysisTone = 'accent' | 'indigo' | 'amber' | 'rose'
 
 export type RepoAiAnalysisSection = {
-  key: 'overview' | 'technology' | 'fit' | 'reviewFirst' | 'strategy' | 'nextSteps' | 'warnings'
+  key: 'overview' | 'technology' | 'fit' | 'readmeInsights' | 'reviewFirst' | 'strategy' | 'nextSteps' | 'warnings'
   title: string
   content: string
   tone: RepoAiAnalysisTone
@@ -17,6 +17,9 @@ type OptionalRepoMetadata = {
   updatedAt?: string | null
   lastPushedAt?: string | null
   readmeExcerpt?: string | null
+  readmeContent?: string | null
+  readmeMarkdown?: string | null
+  readmeText?: string | null
   readme?: string | null
   deadline?: string | null
 }
@@ -145,6 +148,13 @@ export function buildRepoAiAnalysisSections(repo: RepoSummary): RepoAiAnalysisSe
       ],
     },
     {
+      key: 'readmeInsights',
+      title: 'README insights',
+      tone: signals.readmeExcerpt ? 'accent' : 'amber',
+      content: buildReadmeInsightsContent(signals),
+      items: getReadmeInsightItems(signals),
+    },
+    {
       key: 'reviewFirst',
       title: 'Điểm nên xem trước',
       tone: 'amber',
@@ -190,7 +200,7 @@ function getRepoSignals(repo: RepoSummary): RepoSignals {
     language: cleanText(repo.primaryLanguage),
     techStacks: Array.from(new Set((repo.techStacks ?? []).map(cleanText).filter(Boolean) as string[])),
     topics: normalizeList(metadata.topics ?? metadata.tags),
-    readmeExcerpt: cleanText(metadata.readmeExcerpt ?? metadata.readme),
+    readmeExcerpt: cleanText(metadata.readmeExcerpt ?? metadata.readmeContent ?? metadata.readmeMarkdown ?? metadata.readmeText ?? metadata.readme),
     courseLabel: formatCourseLabel(repo),
     stars: typeof repo.stars === 'number' ? repo.stars : null,
     forks: typeof metadata.forks === 'number' ? metadata.forks : null,
@@ -367,6 +377,164 @@ function buildReviewFirstContent(signals: RepoSignals, assessment: RepoAssessmen
   }
 
   return 'Trước khi đọc sâu, hãy kiểm tra README, source chính và file cấu hình để biến metadata thành kế hoạch đọc cụ thể.'
+}
+
+function buildReadmeInsightsContent(signals: RepoSignals): string {
+  if (!signals.readmeExcerpt) {
+    return 'Chưa có README để phân tích sâu. DevOrbit chưa thể nhận diện mục tiêu, lệnh setup/run hoặc cấu trúc đọc từ README, nên bạn cần kiểm tra source chính, description và topics trước.'
+  }
+
+  const goal = summarizeReadmeGoal(signals)
+  const commands = detectSetupCommands(signals.readmeExcerpt)
+  const keywords = detectReadmeKeywords(signals)
+  const details: string[] = []
+
+  if (goal) details.push(`README gợi ý mục tiêu: ${goal}`)
+  if (commands.length > 0) details.push(`Có tín hiệu setup/run như ${commands.slice(0, 3).join(', ')}.`)
+  if (keywords.length > 0) details.push(`Keyword nổi bật: ${keywords.slice(0, 5).join(', ')}.`)
+
+  return details.length > 0
+    ? details.join(' ')
+    : 'README có dữ liệu nhưng chưa đủ rõ để rút ra mục tiêu, setup hoặc cấu trúc cụ thể. Hãy đọc README đầy đủ trên GitHub trước khi dùng repo cho deadline.'
+}
+
+function getReadmeInsightItems(signals: RepoSignals): string[] {
+  if (!signals.readmeExcerpt) {
+    return [
+      'Chưa có README để phân tích sâu.',
+      signals.description
+        ? `Dùng description làm tín hiệu tạm thời: ${signals.description}`
+        : 'Nếu description cũng thiếu, hãy mở GitHub và kiểm tra thư mục src hoặc file cấu hình chính.',
+      signals.topics.length > 0
+        ? `Có thể đối chiếu thêm topics/tags: ${signals.topics.join(', ')}.`
+        : 'Chưa có topics/tags, nên chưa nhận diện chắc domain từ metadata.',
+    ]
+  }
+
+  const commands = detectSetupCommands(signals.readmeExcerpt)
+  const keywords = detectReadmeKeywords(signals)
+  const readFirst = detectReadmeReadingTargets(signals.readmeExcerpt)
+  const items = [
+    `Mục tiêu đọc được từ README: ${summarizeReadmeGoal(signals) ?? 'README có nội dung nhưng mục tiêu chưa được viết rõ trong excerpt.'}`,
+  ]
+
+  items.push(commands.length > 0
+    ? `Lệnh setup/run phát hiện: ${commands.join(', ')}.`
+    : 'Chưa phát hiện lệnh setup/run rõ như npm install, docker compose, mvn, gradle, dotnet, pip hoặc python.')
+  items.push(keywords.length > 0
+    ? `Keyword quan trọng: ${keywords.join(', ')}.`
+    : 'Chưa phát hiện keyword kỹ thuật nổi bật ngoài metadata hiện có.')
+  items.push(readFirst.length > 0
+    ? `README nhắc tới phần nên đọc/kiểm tra: ${readFirst.join(', ')}.`
+    : 'README excerpt chưa nhắc rõ cấu trúc như src, docs, tests hoặc file cấu hình.')
+
+  return items
+}
+
+function summarizeReadmeGoal(signals: RepoSignals): string | null {
+  if (!signals.readmeExcerpt) return null
+
+  const withoutCodeFence = signals.readmeExcerpt.replace(/```[\s\S]*?```/g, ' ')
+  const heading = withoutCodeFence.match(/(?:^|\s)#{1,3}\s+([^#.!?]{4,120})/)
+  if (heading?.[1]) return truncate(cleanText(heading[1]) ?? heading[1], 140)
+
+  const sentences = withoutCodeFence
+    .split(/(?<=[.!?])\s+/)
+    .map(cleanText)
+    .filter(Boolean) as string[]
+  const usefulSentence = sentences.find((sentence) => {
+    const lower = sentence.toLowerCase()
+    return sentence.length >= 24 && !/(npm|yarn|pnpm|docker|mvn|gradle|pip install|clone|cd\s)/.test(lower)
+  })
+
+  return usefulSentence ? truncate(usefulSentence, 180) : null
+}
+
+function detectSetupCommands(readme: string): string[] {
+  const commandPatterns = [
+    /npm\s+install/g,
+    /npm\s+run\s+[a-z0-9:_-]+/gi,
+    /yarn\s+(?:install|dev|start|build|test)/gi,
+    /pnpm\s+(?:install|dev|start|build|test)/gi,
+    /bun\s+(?:install|dev|start|run|test)/gi,
+    /docker\s+compose\s+up(?:\s+--build)?/gi,
+    /docker-compose\s+up(?:\s+--build)?/gi,
+    /docker\s+build\s+[^.;,)]+/gi,
+    /dotnet\s+(?:restore|build|run|test)/gi,
+    /mvnw?(?:\.cmd)?\s+[a-z0-9:_-]+/gi,
+    /gradlew?(?:\.bat)?\s+[a-z0-9:_-]+/gi,
+    /pip\s+install\s+[^.;,)]+/gi,
+    /python(?:3)?\s+[a-z0-9_./-]+\.py/gi,
+  ]
+
+  return uniqueMatches(readme, commandPatterns).slice(0, 6)
+}
+
+function detectReadmeKeywords(signals: RepoSignals): string[] {
+  const haystack = [signals.readmeExcerpt, signals.description, signals.language, ...signals.techStacks, ...signals.topics]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
+  const candidates = [
+    'react',
+    'vite',
+    'typescript',
+    'spring boot',
+    'postgresql',
+    'mysql',
+    'docker',
+    'api',
+    'rest',
+    'jwt',
+    'authentication',
+    'machine learning',
+    'jupyter',
+    'android',
+    'kotlin',
+    'compose',
+    'flutter',
+    'clean architecture',
+    'microservice',
+  ]
+
+  return candidates.filter((keyword) => haystack.includes(keyword)).slice(0, 8)
+}
+
+function detectReadmeReadingTargets(readme: string): string[] {
+  const targets: Array<[RegExp, string]> = [
+    [/\bsrc\b/i, 'thư mục src'],
+    [/\bdocs?\b/i, 'docs'],
+    [/\btests?\b|\b__tests__\b/i, 'test/example'],
+    [/\bpackage\.json\b/i, 'package.json'],
+    [/\bpom\.xml\b/i, 'pom.xml'],
+    [/\bbuild\.gradle\b|\bgradle\b/i, 'Gradle config'],
+    [/\bDockerfile\b|\bdocker-compose\b|\bdocker compose\b/i, 'Docker config'],
+    [/\bcontrollers?\b/i, 'controller/API layer'],
+    [/\bservices?\b/i, 'service layer'],
+    [/\bcomponents?\b/i, 'components'],
+    [/\bnotebooks?\b|\b\.ipynb\b/i, 'notebook'],
+  ]
+
+  return targets
+    .filter(([pattern]) => pattern.test(readme))
+    .map(([, label]) => label)
+    .slice(0, 6)
+}
+
+function uniqueMatches(value: string, patterns: RegExp[]): string[] {
+  const seen = new Set<string>()
+  const matches: string[] = []
+  for (const pattern of patterns) {
+    for (const match of value.matchAll(pattern)) {
+      const normalized = cleanText(match[0])
+      if (!normalized) continue
+      const key = normalized.toLowerCase()
+      if (seen.has(key)) continue
+      seen.add(key)
+      matches.push(normalized)
+    }
+  }
+  return matches
 }
 
 function getReviewFirstItems(signals: RepoSignals, techProfile: ReturnType<typeof getTechnologyProfile>): string[] {

@@ -1,54 +1,81 @@
-import { GraduationCap, MagicWand } from '@phosphor-icons/react'
-import type { AiResponse } from '../../types/api'
-import { buildRepoAiAnalysisCards } from '../../lib/repoAiAnalysis'
+import { BookOpen, CheckCircle, GraduationCap, MagicWand, RocketLaunch, Stack, WarningCircle } from '@phosphor-icons/react'
+import type { Icon } from '@phosphor-icons/react'
+import type { RepoSummary } from '../../types/api'
+import { buildRepoAiAnalysisSections, type RepoAiAnalysisTone } from '../../lib/repoAiAnalysis'
 
 type RepoAiAnalysisSectionProps = {
-  summary: AiResponse | null
-  advice: AiResponse | null
+  repo: RepoSummary
 }
 
-export function RepoAiAnalysisSection({ summary, advice }: RepoAiAnalysisSectionProps) {
-  const cards = buildRepoAiAnalysisCards(summary, advice)
+const toneClasses: Record<RepoAiAnalysisTone, { border: string; icon: string; iconBox: string }> = {
+  accent: {
+    border: 'border-orbit-accent/10 hover:border-orbit-accent/30',
+    icon: 'text-orbit-accent',
+    iconBox: 'bg-orbit-accent/5 border-orbit-accent/10',
+  },
+  indigo: {
+    border: 'border-indigo-500/10 hover:border-indigo-500/30',
+    icon: 'text-indigo-400',
+    iconBox: 'bg-indigo-500/5 border-indigo-500/10',
+  },
+  amber: {
+    border: 'border-amber-500/10 hover:border-amber-500/30',
+    icon: 'text-amber-400',
+    iconBox: 'bg-amber-500/5 border-amber-500/10',
+  },
+  rose: {
+    border: 'border-rose-500/10 hover:border-rose-500/30',
+    icon: 'text-rose-400',
+    iconBox: 'bg-rose-500/5 border-rose-500/10',
+  },
+}
 
-  if (cards.length === 0) return null
+const sectionIcons: Record<string, Icon> = {
+  overview: MagicWand,
+  technology: Stack,
+  fit: CheckCircle,
+  reviewFirst: BookOpen,
+  strategy: GraduationCap,
+  nextSteps: RocketLaunch,
+  warnings: WarningCircle,
+}
+
+export function RepoAiAnalysisSection({ repo }: RepoAiAnalysisSectionProps) {
+  const sections = buildRepoAiAnalysisSections(repo)
 
   return (
-    <div className="grid md:grid-cols-2 gap-6">
-      {cards.map((card) => {
-        const isAccent = card.tone === 'accent'
-        const Icon = isAccent ? MagicWand : GraduationCap
+    <section className="grid md:grid-cols-2 gap-6">
+      {sections.map((section) => {
+        const IconComponent = sectionIcons[section.key] ?? MagicWand
+        const tone = toneClasses[section.tone]
 
         return (
-          <div
-            key={card.key}
-            className={`orbit-card-glow p-8 md:p-10 transition-all duration-500 ${
-              isAccent
-                ? 'border-orbit-accent/10 hover:border-orbit-accent/30'
-                : 'border-indigo-500/10 hover:border-indigo-500/30'
-            }`}
+          <article
+            key={section.key}
+            className={`orbit-card-glow p-7 md:p-8 transition-all duration-500 ${tone.border}`}
           >
-            <div
-              className={`h-12 w-12 rounded-2xl border flex items-center justify-center mb-8 ${
-                isAccent
-                  ? 'bg-orbit-accent/5 border-orbit-accent/10'
-                  : 'bg-indigo-500/5 border-indigo-500/10'
-              }`}
-            >
-              <Icon className={`h-6 w-6 ${isAccent ? 'text-orbit-accent' : 'text-indigo-400'}`} weight="duotone" />
+            <div className={`h-11 w-11 rounded-2xl border flex items-center justify-center mb-6 ${tone.iconBox}`}>
+              <IconComponent className={`h-5 w-5 ${tone.icon}`} weight="duotone" />
             </div>
-            <h3 className="heading-4 mb-6 text-orbit-text flex items-center gap-3">
-              {card.title}
+            <h3 className="text-[18px] font-black mb-4 text-orbit-text">
+              {section.title}
             </h3>
-            <p
-              className={`body-md text-[14px] leading-[1.8] text-orbit-text-secondary whitespace-pre-line ${
-                card.italic ? 'italic' : ''
-              }`}
-            >
-              {card.content}
+            <p className="body-md text-[14px] leading-[1.8] text-orbit-text-secondary">
+              {section.content}
             </p>
-          </div>
+            {section.items && section.items.length > 0 && (
+              <ul className="mt-5 space-y-3">
+                {section.items.map((item) => (
+                  <li key={item} className="flex gap-3 text-[13px] leading-relaxed text-orbit-text-secondary">
+                    <span className={`mt-2 h-1.5 w-1.5 rounded-full shrink-0 ${section.tone === 'rose' ? 'bg-rose-400' : 'bg-orbit-accent'}`} />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </article>
         )
       })}
-    </div>
+    </section>
   )
 }

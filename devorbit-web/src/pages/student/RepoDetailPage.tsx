@@ -3,9 +3,9 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { apiGet, apiStudentPost } from '../../lib/api'
 import { isStudentAuthenticated } from '../../lib/auth'
+import { RepoAiAnalysisSection } from '../../components/student/RepoAiAnalysisSection'
 import type { RepoSummary, AiResponse } from '../../types/api'
-import { ArrowLeft, Code, Star, MagicWand, GraduationCap, ArrowSquareOut, WarningCircle, GithubLogo, Bookmark, BookmarkSimple } from '@phosphor-icons/react'
-import { cleanAiContent } from '../../lib/contentCleaner'
+import { ArrowLeft, Code, Star, ArrowSquareOut, WarningCircle, GithubLogo, Bookmark, BookmarkSimple } from '@phosphor-icons/react'
 
 export function RepoDetailPage() {
   const { repoId } = useParams<{ repoId: string }>()
@@ -208,36 +208,7 @@ export function RepoDetailPage() {
             </div>
           </div>
 
-          {/* AI Cards */}
-          <div className="grid md:grid-cols-2 gap-6">
-            {summary && (
-              <div className="orbit-card-glow p-8 md:p-10 border-orbit-accent/10 hover:border-orbit-accent/30 transition-all duration-500">
-                <div className="h-12 w-12 rounded-2xl bg-orbit-accent/5 border border-orbit-accent/10 flex items-center justify-center mb-8">
-                  <MagicWand className="h-6 w-6 text-orbit-accent" weight="duotone" />
-                </div>
-                <h3 className="heading-4 mb-6 text-orbit-text flex items-center gap-3">
-                  Phân tích nội dung
-                </h3>
-                <p className="body-md text-[14px] leading-[1.8] text-orbit-text-secondary whitespace-pre-line">
-                  {cleanAiContent(summary.content)}
-                </p>
-              </div>
-            )}
-
-            {advice && (
-              <div className="orbit-card-glow p-8 md:p-10 border-indigo-500/10 hover:border-indigo-500/30 transition-all duration-500">
-                <div className="h-12 w-12 rounded-2xl bg-indigo-500/5 border border-indigo-500/10 flex items-center justify-center mb-8">
-                  <GraduationCap className="h-6 w-6 text-indigo-400" weight="duotone" />
-                </div>
-                <h3 className="heading-4 mb-6 text-orbit-text flex items-center gap-3">
-                  Chiến lược học tập
-                </h3>
-                <p className="body-md text-[14px] leading-[1.8] text-orbit-text-secondary italic whitespace-pre-line">
-                  {cleanAiContent(advice.content)}
-                </p>
-              </div>
-            )}
-          </div>
+          <RepoAiAnalysisSection summary={summary} advice={advice} />
         </motion.div>
       </div>
     </div>

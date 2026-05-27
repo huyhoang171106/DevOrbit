@@ -426,8 +426,16 @@ export function GpaCalculatorPage() {
   }
 
   return (
-    <section className="min-h-[calc(100vh-72px)] bg-orbit-bg text-orbit-text">
-      <div className="mx-auto grid w-full max-w-[1440px] gap-8 px-6 py-10 md:grid-cols-[minmax(0,1fr)_360px] md:px-10 lg:px-14">
+    <section className="relative min-h-[calc(100vh-72px)] overflow-hidden bg-orbit-bg text-orbit-text">
+      <div className="absolute inset-0 pointer-events-none" data-testid="gpa-atmosphere">
+        <div className="absolute top-[-12%] right-[-8%] h-[560px] w-[48%] rounded-full bg-orbit-accent/5 blur-[150px]" />
+        <div className="absolute bottom-[8%] left-[-10%] h-[460px] w-[36%] rounded-full bg-indigo-500/4 blur-[130px]" />
+        <div
+          className="absolute inset-0 opacity-[0.025]"
+          style={{ backgroundImage: 'radial-gradient(rgba(52, 211, 153, 0.55) 1px, transparent 1px)', backgroundSize: '44px 44px' }}
+        />
+      </div>
+      <div className="relative z-10 mx-auto grid w-full max-w-[1440px] gap-8 px-6 py-10 md:grid-cols-[minmax(0,1fr)_360px] md:px-10 lg:px-14">
         <div>
           <div className="mb-8 flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-[8px] border border-orbit-accent/25 bg-orbit-accent/10 text-orbit-accent">

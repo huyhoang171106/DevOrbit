@@ -13,11 +13,14 @@ DevOrbit includes a student-facing GPA calculator so students can quickly estima
 - Students can enter multiple course rows.
 - Each row accepts course name, credits, and grade on the 10-point scale.
 - Students can add or remove course rows.
+- Students can duplicate a course row, clear all rows, add five blank rows at once, and reset to the default two-row template.
 - Students can switch between semester GPA mode and cumulative GPA estimate mode.
 - Students can load a semester preset from the DevOrbit course catalogue.
 - Semester presets use `/api/courses`, include only matching semester courses with credits greater than 0, and leave grade cells empty for student input.
 - If the student has saved a learning roadmap, semester presets use `devorbit_kanban_semester_map` before falling back to the catalogue semester.
 - The calculator ignores invalid rows and shows guidance when no valid credits exist.
+- Invalid rows show row-level reasons for missing credits, invalid credits, missing grades, or grades outside the 0-10 scale.
+- When invalid rows are ignored, the summary panel shows how many rows are excluded from the current calculation.
 - Semester GPA mode calculates only the rows currently entered in the calculator.
 - Cumulative GPA estimate mode accepts current GPA and completed credits, then estimates the new cumulative GPA from current transcript data plus this term's rows.
 - Cumulative GPA formula: `(current GPA * completed credits + semester GPA * semester credits) / (completed credits + semester credits)`.

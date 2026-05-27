@@ -34,6 +34,7 @@ describe('buildRepoAiAnalysisSections', () => {
       'overview',
       'technology',
       'fit',
+      'readmeInsights',
       'reviewFirst',
       'strategy',
       'nextSteps',
@@ -42,6 +43,7 @@ describe('buildRepoAiAnalysisSections', () => {
     expect(sections.find((section) => section.key === 'overview')?.content).toContain('REST API for course management')
     expect(sections.find((section) => section.key === 'technology')?.items).toContain('Tech stack đang có: Spring Boot, PostgreSQL.')
     expect(sections.find((section) => section.key === 'fit')?.items).toContain('Mức độ phù hợp học tập: vừa.')
+    expect(sections.find((section) => section.key === 'readmeInsights')?.content).toContain('Chưa có README để phân tích sâu')
   })
 
   test('uses optional readme and topics when they are available', () => {
@@ -49,14 +51,17 @@ describe('buildRepoAiAnalysisSections', () => {
       topics: ['course-management', 'spring-security'],
       forks: 4,
       updatedAt: '2026-05-20T10:00:00Z',
-      readmeExcerpt: 'Run with Maven, configure PostgreSQL, then start the Spring Boot API.',
+      readmeExcerpt: 'Course API helps students manage courses and enrollments. Setup: mvn spring-boot:run. See src/controllers and pom.xml for the main flow.',
     }))
 
     expect(sections.find((section) => section.key === 'overview')?.items).toContain(
       'Topics/tags gợi ý phạm vi: course-management, spring-security.',
     )
     expect(sections.find((section) => section.key === 'fit')?.items).toContain('Mức độ phù hợp học tập: cao.')
-    expect(sections.find((section) => section.key === 'reviewFirst')?.items?.[0]).toContain('README: Run with Maven')
+    expect(sections.find((section) => section.key === 'reviewFirst')?.items?.[0]).toContain('README: Course API helps students')
+    expect(sections.find((section) => section.key === 'readmeInsights')?.content).toContain('Course API helps students manage courses')
+    expect(sections.find((section) => section.key === 'readmeInsights')?.items).toContain('Lệnh setup/run phát hiện: mvn spring-boot:run.')
+    expect(sections.find((section) => section.key === 'readmeInsights')?.items).toContain('README nhắc tới phần nên đọc/kiểm tra: thư mục src, pom.xml, controller/API layer.')
     expect(sections.find((section) => section.key === 'nextSteps')?.items).toContain('Forks hiện có: 4; có thể tham khảo mức độ được tái sử dụng.')
   })
 

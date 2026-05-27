@@ -9,6 +9,18 @@ type RepoAiAnalysisSectionProps = {
   error: string | null
 }
 
+type AiSummary = {
+  summary: string
+  firstAction: string
+  actions: string[]
+  badges: Array<{
+    label: string
+    value: string
+    tone: RepoAiAnalysisTone
+  }>
+  warning?: string
+}
+
 const toneClasses: Record<RepoAiAnalysisTone, { border: string; icon: string; iconBox: string }> = {
   accent: {
     border: 'border-orbit-accent/10 hover:border-orbit-accent/30',
@@ -64,6 +76,13 @@ const groupKeys: Record<string, RepoAiAnalysisSectionModel['key'][]> = {
   warnings: ['warnings'],
 }
 
+const badgeToneClasses: Record<RepoAiAnalysisTone, string> = {
+  accent: 'border-orbit-accent/20 bg-orbit-accent/10 text-orbit-accent',
+  indigo: 'border-indigo-500/20 bg-indigo-500/10 text-indigo-300',
+  amber: 'border-amber-500/20 bg-amber-500/10 text-amber-300',
+  rose: 'border-rose-500/20 bg-rose-500/10 text-rose-300',
+}
+
 export function RepoAiAnalysisSection({ analysis, loading, error }: RepoAiAnalysisSectionProps) {
   if (loading) {
     return (
@@ -102,6 +121,7 @@ export function RepoAiAnalysisSection({ analysis, loading, error }: RepoAiAnalys
   }
 
   const sectionsByKey = new Map(analysis.sections.map((section) => [section.key, section]))
+  const summary = buildAiSummary(sectionsByKey)
 
   return (
     <section className="space-y-8">
@@ -123,6 +143,8 @@ export function RepoAiAnalysisSection({ analysis, loading, error }: RepoAiAnalys
           </span>
         </div>
       </div>
+
+      <AiSummaryCard summary={summary} />
 
       {(error || analysis.errorMessage || analysis.fallbackUsed) && (
         <div className="orbit-card p-5 border-amber-500/20 bg-amber-500/5">
@@ -167,10 +189,72 @@ export function RepoAiAnalysisSection({ analysis, loading, error }: RepoAiAnalys
   )
 }
 
+function AiSummaryCard({ summary }: { summary: AiSummary }) {
+  return (
+    <article className="orbit-card-glow p-6 md:p-8 border-orbit-accent/20 bg-orbit-accent/5">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 flex-1">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="h-11 w-11 rounded-2xl border border-orbit-accent/20 bg-orbit-accent/10 flex items-center justify-center shrink-0">
+              <MagicWand className="h-5 w-5 text-orbit-accent" weight="duotone" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-orbit-accent">AI Summary</p>
+              <h3 className="mt-1 text-[20px] font-black text-orbit-text leading-tight">Nên hiểu repo này thế nào?</h3>
+            </div>
+          </div>
+
+          <p className="max-w-3xl text-[15px] leading-[1.75] text-orbit-text-secondary">
+            {summary.summary}
+          </p>
+
+          <div className="mt-5 flex flex-wrap gap-2">
+            {summary.badges.map((badge) => (
+              <span
+                key={`${badge.label}-${badge.value}`}
+                className={`inline-flex items-center gap-2 rounded-2xl border px-3.5 py-2 text-[10px] font-black uppercase tracking-[0.12em] ${badgeToneClasses[badge.tone]}`}
+              >
+                <span className="text-orbit-text-muted">{badge.label}</span>
+                <span>{badge.value}</span>
+              </span>
+            ))}
+          </div>
+
+          {summary.warning && (
+            <div className="mt-5 flex items-start gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4">
+              <WarningCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" weight="duotone" />
+              <p className="text-[13px] leading-relaxed text-orbit-text-secondary">{summary.warning}</p>
+            </div>
+          )}
+        </div>
+
+        <div className="w-full lg:max-w-sm rounded-2xl border border-orbit-border bg-orbit-surface/70 p-5">
+          <div className="mb-4 flex items-center gap-2">
+            <RocketLaunch className="h-4 w-4 text-orbit-accent" weight="duotone" />
+            <h4 className="text-[13px] font-black uppercase tracking-[0.12em] text-orbit-text">Việc nên làm ngay</h4>
+          </div>
+          <p className="mb-4 text-[13px] leading-relaxed text-orbit-text-secondary">
+            {summary.firstAction}
+          </p>
+          <ul className="space-y-3">
+            {summary.actions.slice(1).map((action) => (
+              <li key={action} className="flex gap-3 text-[13px] leading-relaxed text-orbit-text-secondary">
+                <span className="mt-2 h-1.5 w-1.5 rounded-full bg-orbit-accent shrink-0" />
+                <span>{action}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </article>
+  )
+}
+
 function AnalysisCard({ section }: { section: RepoAiAnalysisSectionModel }) {
   const IconComponent = sectionIcons[section.key] ?? MagicWand
   const tone = toneClasses[section.tone]
   const isWarning = section.tone === 'rose'
+  const items = section.key === 'nextSteps' ? section.items?.slice(0, 3) : section.items
 
   return (
     <article
@@ -194,9 +278,9 @@ function AnalysisCard({ section }: { section: RepoAiAnalysisSectionModel }) {
         {section.content}
       </p>
 
-      {section.items && section.items.length > 0 && (
+      {items && items.length > 0 && (
         <ul className="mt-5 divide-y divide-orbit-border/40">
-          {section.items.map((item) => (
+          {items.map((item) => (
             <li key={item} className="flex gap-3 py-3 first:pt-0 last:pb-0 text-[13px] leading-relaxed text-orbit-text-secondary">
               <span className={`mt-2 h-1.5 w-1.5 rounded-full shrink-0 ${isWarning ? 'bg-rose-400' : 'bg-orbit-accent'}`} />
               <span>{item}</span>
@@ -206,4 +290,77 @@ function AnalysisCard({ section }: { section: RepoAiAnalysisSectionModel }) {
       )}
     </article>
   )
+}
+
+function buildAiSummary(sectionsByKey: Map<RepoAiAnalysisSectionModel['key'], RepoAiAnalysisSectionModel>): AiSummary {
+  const overview = sectionsByKey.get('overview')
+  const fit = sectionsByKey.get('fit')
+  const nextSteps = sectionsByKey.get('nextSteps')
+  const warnings = sectionsByKey.get('warnings')
+  const summary = summarizeText(overview?.content ?? 'Chưa đủ dữ liệu để phân tích sâu.')
+  const actions = prioritizeActions(nextSteps?.items ?? [])
+  const firstAction = actions[0] ?? 'Đọc README hoặc mở GitHub để kiểm tra source chính trước.'
+  const fitLevel = extractValue(fit?.items, /Mức độ phù hợp học tập:\s*([^.(]+)/i)
+  const completeness = extractValue(overview?.items, /Mức độ đầy đủ thông tin:\s*([^(]+)/i)
+  const warning = warnings?.items?.[0]
+  const badges: AiSummary['badges'] = [
+    {
+      label: 'Phù hợp',
+      value: fitLevel ?? 'chưa rõ',
+      tone: fitLevel === 'cao' ? 'accent' : fitLevel === 'thấp' ? 'rose' : 'amber',
+    },
+    {
+      label: 'Dữ liệu',
+      value: completeness ?? 'ít',
+      tone: completeness === 'đầy đủ' ? 'accent' : completeness === 'ít' ? 'rose' : 'amber',
+    },
+  ]
+
+  if (warning) {
+    badges.push({
+      label: 'Cảnh báo',
+      value: 'cần kiểm tra',
+      tone: 'amber',
+    })
+  }
+
+  return {
+    summary,
+    firstAction,
+    actions,
+    badges: badges.slice(0, 3),
+    warning,
+  }
+}
+
+function prioritizeActions(items: string[]): string[] {
+  const priority = [
+    /readme/i,
+    /source|src/i,
+    /setup|build|run|config|dependency|package|pom|gradle|docker/i,
+    /clone|fork/i,
+    /docs?/i,
+  ]
+  const sorted = [...items].sort((a, b) => scoreAction(b, priority) - scoreAction(a, priority))
+  return sorted.slice(0, 3)
+}
+
+function scoreAction(action: string, priority: RegExp[]): number {
+  const index = priority.findIndex((pattern) => pattern.test(action))
+  return index === -1 ? 0 : priority.length - index
+}
+
+function extractValue(items: string[] | undefined, pattern: RegExp): string | null {
+  if (!items) return null
+  for (const item of items) {
+    const match = item.match(pattern)
+    if (match?.[1]) return match[1].trim().toLowerCase()
+  }
+  return null
+}
+
+function summarizeText(value: string): string {
+  if (value.includes('Chưa đủ dữ liệu')) return 'Chưa đủ dữ liệu để phân tích sâu. Hãy kiểm tra README, source chính và metadata còn thiếu trước khi dùng repo cho deadline.'
+  if (value.length <= 280) return value
+  return `${value.slice(0, 279).trim()}…`
 }

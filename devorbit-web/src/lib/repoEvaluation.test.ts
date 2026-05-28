@@ -204,7 +204,7 @@ describe('evaluateRepository', () => {
     }))
 
     expect(rich.courseGroup).toBe('foundation_algorithms')
-    expect(rich.coreTopics).toEqual(expect.arrayContaining(['Linked List', 'Tree', 'Graph', 'Sorting']))
+    expect(rich.coreTopics).toEqual(expect.arrayContaining(['Danh sách liên kết', 'Cây', 'Đồ thị', 'Sắp xếp']))
     expect(rich.usefulnessScore).toBeGreaterThan(loose.usefulnessScore)
     expect(loose.readyToUseLevel).not.toBe('very_ready')
   })
@@ -221,7 +221,7 @@ describe('evaluateRepository', () => {
 
     expect(result.courseGroup).toBe('foundation_algorithms')
     expect(result.usefulnessRating).not.toBe('low_priority')
-    expect(result.recommendation).toContain('tham khao')
+    expect(result.recommendation).toContain('Tham khảo')
   })
 
   test('classifies IT003 C++ repo without file tree as programming exercise, not project setup', () => {
@@ -239,7 +239,7 @@ describe('evaluateRepository', () => {
 
     expect(result.courseGroup).toBe('foundation_algorithms')
     expect(result.repoType).toBe('programming_exercise')
-    expect(result.repoIdentity).not.toBe('Project thuc hanh')
+    expect(result.repoIdentity).not.toBe('Project thực hành')
     expect(result.weapons).toContain('C++')
     expect(checks).toContain('source code')
     expect(checks).toContain('test case')
@@ -260,7 +260,7 @@ describe('evaluateRepository', () => {
 
     expect(result.courseGroup).toBe('general_skills')
     expect(result.weapons).not.toContain('Python')
-    expect(result.coreTopics).toEqual(expect.arrayContaining(['Presentation', 'Report', 'Rubric']))
+    expect(result.coreTopics).toEqual(expect.arrayContaining(['Thuyết trình', 'Báo cáo', 'Tiêu chí chấm']))
     expect(result.groupHighlights.join(' ')).toContain('rubric')
   })
 
@@ -287,7 +287,7 @@ describe('evaluateRepository', () => {
 
     expect(ready.courseGroup).toBe('software_project')
     expect(ready.readyToUseStars).toBeGreaterThan(rough.readyToUseStars)
-    expect(ready.coreTopics).toEqual(expect.arrayContaining(['Auth', 'REST API', 'Database', 'Deployment']))
+    expect(ready.coreTopics).toEqual(expect.arrayContaining(['Xác thực', 'REST API', 'Cơ sở dữ liệu', 'Triển khai']))
   })
 
   test('recognizes design process repos with SRS UML ERD and Figma', () => {
@@ -316,8 +316,8 @@ describe('evaluateRepository', () => {
     }))
 
     expect(result.repoType).toBe('exam_review')
-    expect(result.repoIdentity).toBe('Tai lieu on thi')
-    expect(result.coreTopics).toEqual(expect.arrayContaining(['Final exam', 'Answer key']))
+    expect(result.repoIdentity).toBe('Tài liệu ôn thi')
+    expect(result.coreTopics).toEqual(expect.arrayContaining(['Đề thi cuối kỳ', 'Đáp án']))
   })
 
   test('unknown sparse repo falls back without fake X-ray insights', () => {
@@ -334,8 +334,8 @@ describe('evaluateRepository', () => {
       readmeExcerpt: null,
     }))
 
-    expect(result.repoIdentity).toBe('Chua du du lieu de xac dinh')
+    expect(result.repoIdentity).toBe('Chưa đủ dữ liệu để xác định')
     expect(result.readyToUseLevel).toBe('insufficient_data')
-    expect(result.quickBullets.join(' ')).toContain('Chua du du lieu')
+    expect(result.quickBullets.join(' ')).toContain('Chưa đủ dữ liệu')
   })
 })

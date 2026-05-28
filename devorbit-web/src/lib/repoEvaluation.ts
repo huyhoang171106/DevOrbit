@@ -110,6 +110,12 @@ const usefulnessLabels: Record<UsefulnessRating, string> = {
   insufficient_data: 'Chưa đủ dữ liệu để kết luận',
 }
 
+const sourceFilePattern = /\.(c|cc|cpp|cs|dart|go|h|hpp|ipynb|java|js|jsx|kt|m|php|py|rb|rs|sql|swift|ts|tsx)$/i
+const projectConfigPattern = /(^|\/)(package(-lock)?\.json|pnpm-lock\.yaml|yarn\.lock|bun\.lock|requirements\.txt|pyproject\.toml|poetry\.lock|pom\.xml|build\.gradle|settings\.gradle|gradle\.properties|pubspec\.yaml|composer\.json|go\.mod|cargo\.toml|\.csproj|\.sln)$/i
+const buildFilePattern = /(^|\/)(makefile|cmakelists\.txt|mvnw|gradlew|dockerfile)$/i
+const sourceFolderPattern = /(^|\/)(src|source|app|lib|components|controllers|services|models)(\/|$)/i
+const testPathPattern = /(^|\/)(__tests__|tests?|spec|input|output|sample)(\/|$)|(\.|-)(test|spec)\.[a-z0-9]+$/i
+
 export function evaluateRepository(repo: RepoSummary): RepoEvaluationResult {
   const signals = extractRepoSignals(repo)
   const { repoType, reason } = classifyRepoType(signals)
@@ -171,17 +177,17 @@ export function extractRepoSignals(repo: RepoSummary): RepoSignals {
   const haystack = normalizeSearchText([name, description, primaryLanguage, ...techStacks, ...topics, readmeText, ...filePaths])
   const hasFileList = filePaths.length > 0
   const hasReadme = Boolean(readmeText) || hasPath(filePaths, /(^|\/)readme(\.md|\.txt)?$/i)
-  const hasPackageFile = hasPath(filePaths, /(^|\/)(package\.json|pnpm-lock\.yaml|yarn\.lock|bun\.lock|requirements\.txt|pyproject\.toml|pom\.xml|build\.gradle|settings\.gradle|pubspec\.yaml|composer\.json|go\.mod)$/i)
-  const hasBuildFile = hasPackageFile || hasPath(filePaths, /(^|\/)(makefile|cmakelists\.txt|mvnw|gradlew|dockerfile)$/i)
+  const hasPackageFile = hasPath(filePaths, projectConfigPattern)
+  const hasBuildFile = hasPackageFile || hasPath(filePaths, buildFilePattern)
   const hasEnvExample = hasPath(filePaths, /(^|\/)\.env\.(example|sample|template)$/i)
   const hasDockerConfig = hasPath(filePaths, /(^|\/)(docker-compose\.ya?ml|dockerfile)$/i)
-  const hasSourceCode = Boolean(primaryLanguage || techStacks.length > 0 || hasPath(filePaths, /(^|\/)(src|app|lib|components|controllers|services|models)(\/|$)/i))
-  const hasTests = hasPath(filePaths, /(^|\/)(__tests__|tests?|spec|input|output|sample)(\/|$)/i) || contains(haystack, /\b(test|tests|unit test|input|output|sample)\b/)
-  const hasAssignments = contains(haystack, /\b(lab|labs|assignment|assignments|exercise|exercises|practice|bai tap|bài tập|thuc hanh|thực hành|dsa|algorithm|oop)\b/)
+  const hasSourceCode = Boolean(primaryLanguage || techStacks.length > 0 || hasPath(filePaths, sourceFolderPattern) || hasPath(filePaths, sourceFilePattern))
+  const hasTests = hasPath(filePaths, testPathPattern) || contains(haystack, /\b(test|tests|unit test|input|output|sample)\b/)
+  const hasAssignments = contains(haystack, /\b(lab|labs|assignment|assignments|exercise|exercises|homework|practice|practical|bai tap|bài tập|thuc hanh|thực hành|dsa|algorithm|oop)\b/)
   const hasSolutions = contains(haystack, /\b(solution|solutions|answer|answers|loi giai|lời giải)\b/) || hasPath(filePaths, /(^|\/)(solution|solutions|answer|answers)(\/|$)/i)
-  const hasSlides = contains(haystack, /\b(slide|slides|ppt|pptx|lecture|lectures)\b/) || hasPath(filePaths, /\.(pptx?|pdf)$/i)
+  const hasSlides = contains(haystack, /\b(slide|slides|ppt|pptx|lecture|lectures)\b/) || hasPath(filePaths, /(^|\/)(slides?|lectures?)(\/|$)|\.(pptx?)$/i)
   const hasNotes = contains(haystack, /\b(note|notes|document|docs|theory|ly thuyet|lý thuyết|summary|cheatsheet|giao trinh|giáo trình)\b/)
-  const hasDocs = hasNotes || hasPath(filePaths, /(^|\/)(docs?|documents?)(\/|$)/i)
+  const hasDocs = hasNotes || hasPath(filePaths, /(^|\/)(docs?|documents?|notes?)(\/|$)/i)
   const hasExam = contains(haystack, /\b(exam|exams|midterm|final|quiz|past exam|de thi|đề thi|on tap|ôn tập)\b/)
   const hasAnswerOrSolution = hasSolutions || contains(haystack, /\b(answer key|dap an|đáp án)\b/)
   const hasLicense = hasPath(filePaths, /(^|\/)licen[cs]e(\.md|\.txt)?$/i)
@@ -554,8 +560,8 @@ function normalizeFilePaths(value: OptionalRepoMetadata['files'] | OptionalRepoM
   if (!value) return []
   const rawValues = Array.isArray(value) ? value : []
   return Array.from(new Set(rawValues.map((item) => {
-    if (typeof item === 'string') return cleanText(item)
-    return cleanText(item.path ?? item.name)
+    const rawPath = typeof item === 'string' ? item : item.path ?? item.name
+    return cleanText(rawPath)?.replace(/\\/g, '/')
   }).filter(Boolean) as string[]))
 }
 
@@ -566,7 +572,14 @@ function normalizeList(value: string[] | string | null | undefined): string[] {
 }
 
 function normalizeSearchText(values: Array<string | null | undefined>): string {
-  return values.filter(Boolean).join(' ').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+  return values
+    .filter(Boolean)
+    .join(' ')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'd')
+    .toLowerCase()
 }
 
 function cleanText(value: unknown): string | null {

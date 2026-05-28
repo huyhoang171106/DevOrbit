@@ -90,7 +90,6 @@ export type RepoEvaluationResult = {
   evidence: string[]
   confidence: ConfidenceLabel
   confidenceLabel: string
-  confidenceScore: number
   typeReason: string
   sections: EvaluationSection[]
   signals: RepoSignals
@@ -133,19 +132,80 @@ const usefulnessLabels: Record<UsefulnessRating, string> = {
 
 const sourceFilePattern = /\.(c|cc|cpp|cs|dart|go|h|hpp|ipynb|java|js|jsx|kt|m|php|py|rb|rs|sql|swift|ts|tsx)$/i
 const readyToUseLabels: Record<ReadyToUseLevel, string> = {
-  very_ready: 'Rat an lien',
-  ready: 'Kha an lien',
-  needs_check: 'Can kiem tra them',
-  quick_reference: 'Chi tham khao nhanh',
-  insufficient_data: 'Chua du du lieu',
+  very_ready: 'Rất sẵn sàng',
+  ready: 'Khá sẵn sàng',
+  needs_check: 'Cần kiểm tra thêm',
+  quick_reference: 'Chỉ tham khảo nhanh',
+  insufficient_data: 'Chưa đủ dữ liệu',
 }
 
 const courseGroupLabels: Record<CourseGroup, string> = {
-  foundation_algorithms: 'Nhom 1 - Nen tang & Thuat toan',
-  software_project: 'Nhom 2 - Do an Phan mem & Trien khai',
-  design_process: 'Nhom 3 - Phan tich, Thiet ke & Quy trinh',
-  general_skills: 'Nhom 4 - Dai cuong, Ly thuyet & Ky nang',
-  unknown: 'Chua ro nhom mon',
+  foundation_algorithms: 'Nền tảng lập trình & thuật toán',
+  software_project: 'Phát triển phần mềm / Project',
+  design_process: 'Phân tích thiết kế & quy trình phần mềm',
+  general_skills: 'Đại cương, ngoại ngữ & kỹ năng',
+  unknown: 'Chưa rõ nhóm môn',
+}
+
+const topicViMap: Record<string, string> = {
+  // Học tập / đề thi
+  'Answer key': 'Đáp án',
+  'Answer': 'Đáp án',
+  'Answers': 'Đáp án',
+  'Solution': 'Lời giải',
+  'Solutions': 'Lời giải',
+  'Exam': 'Đề thi',
+  'Final exam': 'Đề thi cuối kỳ',
+  'Final': 'Cuối kỳ',
+  'Midterm': 'Giữa kỳ',
+  'Quiz': 'Quiz',
+  'Assignment': 'Bài tập',
+  'Assignments': 'Bài tập',
+  'Homework': 'Bài tập về nhà',
+  'Practice': 'Thực hành',
+  'Lab': 'Lab',
+  'Labs': 'Lab',
+  // Tài liệu / kỹ năng
+  'Report': 'Báo cáo',
+  'Reports': 'Báo cáo',
+  'Presentation': 'Thuyết trình',
+  'Presentations': 'Thuyết trình',
+  'Slide': 'Slide',
+  'Slides': 'Slide',
+  'Rubric': 'Tiêu chí chấm',
+  'Guideline': 'Hướng dẫn',
+  'Guidelines': 'Hướng dẫn',
+  'Teamwork': 'Làm việc nhóm',
+  'CV': 'CV',
+  'Reflection': 'Nhật ký phản hồi',
+  // Kỹ thuật / project
+  'Database': 'Cơ sở dữ liệu',
+  'DB': 'Cơ sở dữ liệu',
+  'Authentication': 'Xác thực',
+  'Authorization': 'Phân quyền',
+  'Deployment': 'Triển khai',
+  'Routing': 'Điều hướng',
+  'Auth': 'Xác thực',
+  'CRUD': 'CRUD',
+  'Realtime': 'Thời gian thực',
+  // DSA / thuật toán
+  'Sorting': 'Sắp xếp',
+  'Search': 'Tìm kiếm',
+  'Searching': 'Tìm kiếm',
+  'Linked List': 'Danh sách liên kết',
+  'Stack': 'Ngăn xếp',
+  'Queue': 'Hàng đợi',
+  'Tree': 'Cây',
+  'Binary Tree': 'Cây nhị phân',
+  'Binary Search Tree': 'Cây nhị phân tìm kiếm',
+  'Graph': 'Đồ thị',
+  'Dynamic Programming': 'Quy hoạch động',
+  'Hash Table': 'Bảng băm',
+  'Recursion': 'Đệ quy',
+}
+
+function translateTopics(items: string[]): string[] {
+  return items.map((t) => topicViMap[t] ?? t)
 }
 
 const projectConfigPattern = /(^|\/)(package(-lock)?\.json|pnpm-lock\.yaml|yarn\.lock|bun\.lock|requirements\.txt|pyproject\.toml|poetry\.lock|pom\.xml|build\.gradle|settings\.gradle|gradle\.properties|pubspec\.yaml|composer\.json|go\.mod|cargo\.toml|\.csproj|\.sln)$/i
@@ -161,10 +221,9 @@ export function evaluateRepository(repo: RepoSummary): RepoEvaluationResult {
   const usefulnessScore = buildUsefulnessScore(repoType, courseGroup, ready.stars, signals)
   const usefulnessRating = ratingFromScore(usefulnessScore, repoType)
   const confidence = getConfidence(signals, repoType)
-  const confidenceScore = buildConfidenceScore(signals, repoType)
   const repoIdentity = buildRepoIdentity(repoType, courseGroup, signals)
   const techTools = detectTechTools(repoType, courseGroup, signals)
-  const coreTopics = detectCoreTopics(courseGroup, repoType, signals)
+  const coreTopics = translateTopics(detectCoreTopics(courseGroup, repoType, signals))
   const groupHighlights = buildGroupHighlights(courseGroup, repoType, signals, coreTopics)
   const recommendation = buildRecommendation(repoType, usefulnessRating, ready.level, signals)
   const quickBullets = buildQuickBullets(repoIdentity, techTools, coreTopics, recommendation, signals)
@@ -192,7 +251,7 @@ export function evaluateRepository(repo: RepoSummary): RepoEvaluationResult {
     quickSummary,
     quickBullets,
     repoIdentity,
-    weapons: techTools.length > 0 ? techTools.join(', ') : 'Chua ro',
+    weapons: techTools.length > 0 ? techTools.join(', ') : 'Chưa rõ',
     techTools,
     coreTopics,
     readyToUseLevel: ready.level,
@@ -212,14 +271,10 @@ export function evaluateRepository(repo: RepoSummary): RepoEvaluationResult {
     evidence,
     confidence,
     confidenceLabel: confidence === 'high' ? 'Cao' : confidence === 'medium' ? 'Trung bình' : 'Thấp',
-    confidenceScore,
     typeReason: reason,
     sections: [
-      { title: 'Repo nói về gì?', items: buildAboutRepo(repoType, signals) },
-      { title: 'Có áp dụng được không?', items: applicability },
-      { title: 'Cần kiểm tra trước khi tin/dùng', items: checksBeforeUsing },
-      { title: 'Tín hiệu đã dùng để đánh giá', items: evidence.slice(0, 6) },
-      { title: 'Vì sao xếp loại này?', items: [reason, mainReason] },
+      { title: 'Cần kiểm tra', items: checksBeforeUsing },
+      { title: 'Thông tin tham khảo', items: evidence.slice(0, 6) },
     ],
     signals,
   }
@@ -354,16 +409,16 @@ function detectCourseGroup(signals: RepoSignals): CourseGroup {
 
 function buildRepoIdentity(repoType: RepoType, courseGroup: CourseGroup, signals: RepoSignals): string {
   const text = normalizeSearchText([signals.name, signals.description, signals.readmeText, ...signals.filePaths])
-  if (repoType === 'unknown') return 'Chua du du lieu de xac dinh'
-  if (repoType === 'exam_review') return 'Tai lieu on thi'
-  if (contains(text, /\b(khoa luan|thesis|graduation)\b/)) return 'Khoa luan tot nghiep'
-  if (contains(text, /\b(final project|cuoi ky|do an cuoi ky)\b/)) return 'Do an cuoi ky'
-  if (contains(text, /\b(report|bao cao|rubric|assignment|bai nop)\b/) && (courseGroup === 'general_skills' || courseGroup === 'design_process')) return 'Repo bai nop/bao cao'
-  if (repoType === 'programming_exercise') return contains(text, /\b(lab|labs)\b/) ? 'Bai tap Lab' : 'Bai tap lap trinh'
-  if (repoType === 'project_practice') return contains(text, /\b(do an|project)\b/) ? 'Do an mon' : 'Project thuc hanh'
-  if (repoType === 'study_material') return courseGroup === 'general_skills' ? 'Kho tai lieu mon hoc' : 'Tai lieu hoc'
-  if (repoType === 'mixed_resource') return 'Kho tai nguyen mon hoc'
-  return 'Repo tham khao'
+  if (repoType === 'unknown') return 'Chưa đủ dữ liệu để xác định'
+  if (repoType === 'exam_review') return 'Tài liệu ôn thi'
+  if (contains(text, /\b(khoa luan|thesis|graduation)\b/)) return 'Khóa luận tốt nghiệp'
+  if (contains(text, /\b(final project|cuoi ky|do an cuoi ky)\b/)) return 'Đồ án cuối kỳ'
+  if (contains(text, /\b(report|bao cao|rubric|assignment|bai nop)\b/) && (courseGroup === 'general_skills' || courseGroup === 'design_process')) return 'Repo bài nộp/báo cáo'
+  if (repoType === 'programming_exercise') return contains(text, /\b(lab|labs)\b/) ? 'Bài tập Lab' : 'Bài tập lập trình'
+  if (repoType === 'project_practice') return contains(text, /\b(do an|project)\b/) ? 'Đồ án môn' : 'Project thực hành'
+  if (repoType === 'study_material') return courseGroup === 'general_skills' ? 'Kho tài liệu môn học' : 'Tài liệu học'
+  if (repoType === 'mixed_resource') return 'Kho tài nguyên môn học'
+  return 'Repo tham khảo'
 }
 
 function detectTechTools(repoType: RepoType, courseGroup: CourseGroup, signals: RepoSignals): string[] {
@@ -435,19 +490,19 @@ function detectCoreTopics(courseGroup: CourseGroup, repoType: RepoType, signals:
     ['Answer key', /\banswer|solution|dap an|loi giai\b/],
   ])
   if (common.length > 0) return unique(common).slice(0, 7)
-  if (repoType === 'study_material' && courseGroup !== 'unknown') return [courseGroupLabels[courseGroup].replace(/^Nhom \d - /, '')]
+  if (repoType === 'study_material' && courseGroup !== 'unknown') return [courseGroupLabels[courseGroup]]
   return signals.topics.slice(0, 5)
 }
 
 function buildReadyToUse(repoType: RepoType, courseGroup: CourseGroup, signals: RepoSignals): { level: ReadyToUseLevel; label: string; stars: number; note: string } {
   if (repoType === 'unknown' && signals.evidence.length <= 2) {
-    return { level: 'insufficient_data', label: readyToUseLabels.insufficient_data, stars: 1, note: 'Thieu README/file tree/description nen can mo GitHub de xem truoc.' }
+    return { level: 'insufficient_data', label: readyToUseLabels.insufficient_data, stars: 1, note: 'Thiếu README, cây thư mục và mô tả nên cần mở GitHub để xem trước.' }
   }
   let score = 0
   if (repoType === 'programming_exercise') {
-    score = scoreSignals([[signals.hasReadme, 1], [signals.hasAssignments, 1], [signals.hasSourceCode, 1], [signals.hasTests, 1], [signals.hasSolutions || signals.organizedFolders, 1]])
+    score = scoreSignals([[signals.hasReadme, 1], [signals.hasAssignments, 1], [signals.hasSourceCode, 1], [signals.hasTests, 1], [signals.hasSolutions || signals.organizedFolders, 1], [courseGroup === 'foundation_algorithms' && signals.hasFileList, 1]])
   } else if (repoType === 'project_practice') {
-    score = scoreSignals([[signals.hasReadme, 1], [signals.hasPackageFile, 1], [signals.hasEnvExample || signals.hasDockerConfig, 1], [signals.hasBuildFile, 1], [signals.hasDocs || contains(normalizeSearchText([signals.readmeText]), /\b(run|setup|install|database|migration)\b/), 1]])
+    score = scoreSignals([[signals.hasReadme, 1], [signals.hasPackageFile, 1], [signals.hasEnvExample || signals.hasDockerConfig, 1], [signals.hasBuildFile, 1], [signals.hasDocs || contains(normalizeSearchText([signals.readmeText]), /\b(run|setup|install|database|migration|npm|mvn|gradle|docker)\b/), 1], [signals.hasSourceCode, 1]])
   } else if (repoType === 'study_material') {
     score = scoreSignals([[signals.hasReadme, 1], [signals.hasSlides, 1], [signals.hasNotes || signals.hasDocs, 1], [signals.organizedFolders, 1], [signals.hasFileList, 1]])
   } else if (repoType === 'exam_review') {
@@ -464,40 +519,59 @@ function buildReadyToUse(repoType: RepoType, courseGroup: CourseGroup, signals: 
 }
 
 function buildReadyNote(repoType: RepoType, level: ReadyToUseLevel, signals: RepoSignals): string {
-  if (level === 'very_ready') return 'Mo ra la co kha nhieu thu de dung ngay.'
-  if (level === 'ready') return 'Dung duoc kha nhanh, van nen check huong dan chay/pham vi.'
-  if (repoType === 'project_practice') return 'Can check README setup, env/database va lenh run truoc khi clone.'
-  if (repoType === 'programming_exercise') return 'Can check de bai va test/input-output truoc khi hoc theo.'
-  if (repoType === 'exam_review') return 'Can check nam/ky va dap an truoc khi xem la nguon on thi chinh.'
-  if (!signals.hasFileList) return 'Thieu file tree nen chua nhin duoc cau truc that cua repo.'
-  return 'Co the tham khao, nhung can loc dung folder/noi dung.'
+  if (repoType === 'programming_exercise') {
+    if (level === 'very_ready' || level === 'ready') return signals.hasTests ? 'Có README/source theo bài và test/input-output để đối chiếu.' : 'Có README/source rõ, vẫn nên kiểm tra đề bài và test case.'
+    if (level === 'needs_check') return 'Có source code nhưng chưa xác nhận đủ đề bài và test case.'
+    return 'Mới thấy code rời hoặc metadata ít, cần mở repo để biết bài nào.'
+  }
+  if (repoType === 'project_practice') {
+    if (level === 'very_ready' || level === 'ready') return 'Có README/setup và file dependency/config để clone thử nhanh.'
+    if (level === 'needs_check') return 'Có source/stack nhưng setup, env hoặc database script chưa rõ.'
+    return 'Chưa rõ cách chạy local, chỉ nên xem cấu trúc trước.'
+  }
+  if (repoType === 'study_material') {
+    if (level === 'very_ready' || level === 'ready') return 'Có slide/note/docs và cấu trúc đủ để đọc theo chủ đề.'
+    if (level === 'needs_check') return 'Có tài liệu nhưng cần xem thứ tự chương/buổi và phạm vi.'
+    return 'Tài liệu còn rời rạc hoặc thiếu cấu trúc.'
+  }
+  if (repoType === 'exam_review') {
+    if (level === 'very_ready' || level === 'ready') return 'Có đề, đáp án/lời giải và dấu hiệu năm/kỳ để ôn tập.'
+    if (level === 'needs_check') return 'Có đề ôn tập nhưng cần xác nhận đáp án và năm/kỳ.'
+    return 'File đề thi còn rời rạc, chưa rõ kỳ/năm.'
+  }
+  if (level === 'very_ready' || level === 'ready') return 'Đủ tín hiệu để bắt đầu xem nhanh theo đúng phần cần dùng.'
+  if (!signals.hasFileList) return 'Thiếu cây thư mục nên chưa nhìn được cấu trúc thật của repo.'
+  return 'Có thể tham khảo, nhưng cần lọc đúng folder/nội dung.'
 }
 
 function buildUsefulnessScore(repoType: RepoType, courseGroup: CourseGroup, readyStars: number, signals: RepoSignals): number {
-  if (repoType === 'unknown' && signals.evidence.length <= 2) return 12
-  let value = readyStars * 14
+  const hasCourseContext = courseGroup !== 'unknown'
+  if (repoType === 'unknown' && !signals.description && !signals.hasReadme && !signals.hasFileList && !hasCourseContext) return 10
+  let value = readyStars * 13
   value += scoreSignals([
-    [signals.description !== null, 8],
-    [signals.hasFileList, 10],
-    [signals.hasReadme, 8],
+    [signals.description !== null, 10],
+    [signals.hasFileList, 12],
+    [signals.hasReadme, 12],
+    [hasCourseContext, 10],
     [signals.stars !== null && signals.stars > 0, 4],
   ])
-  if (repoType === 'programming_exercise') value += scoreSignals([[signals.hasTests, 10], [signals.hasSolutions, 8], [signals.hasAssignments, 8]])
-  if (repoType === 'project_practice') value += scoreSignals([[signals.hasPackageFile, 10], [signals.hasEnvExample || signals.hasDockerConfig, 10], [signals.techStacks.length >= 2, 8]])
-  if (repoType === 'project_practice' && signals.hasSourceCode) value += 8
+  if (repoType === 'programming_exercise') value += scoreSignals([[signals.hasSourceCode, 8], [signals.hasTests, 10], [signals.hasSolutions, 8], [signals.hasAssignments, 10], [courseGroup === 'foundation_algorithms', 8]])
+  if (repoType === 'project_practice') value += scoreSignals([[signals.hasSourceCode, 8], [signals.hasPackageFile, 10], [signals.hasEnvExample || signals.hasDockerConfig, 10], [signals.techStacks.length >= 2, 8]])
   if (repoType === 'study_material') value += scoreSignals([[signals.hasSlides, 10], [signals.hasNotes || signals.hasDocs, 10], [signals.organizedFolders, 6]])
   if (repoType === 'exam_review') value += scoreSignals([[signals.hasExam, 12], [signals.hasAnswerOrSolution, 12]])
   if (repoType === 'exam_review' && signals.hasExam && signals.hasAnswerOrSolution) value += 8
   if ((courseGroup === 'general_skills' || courseGroup === 'design_process') && repoType !== 'project_practice') value += scoreSignals([[signals.hasDocs, 8], [signals.hasSlides, 8]])
+  if (repoType === 'programming_exercise') value -= scoreSignals([[!signals.hasReadme, 8], [!signals.hasTests, 10]])
+  if (repoType === 'project_practice') value -= scoreSignals([[!signals.hasReadme, 8], [!signals.hasPackageFile, 8], [!signals.hasEnvExample && !signals.hasDockerConfig, 6]])
   return clampScore(value)
 }
 
 function ratingFromScore(value: number, repoType: RepoType): UsefulnessRating {
-  if (repoType === 'unknown' && value < 25) return 'insufficient_data'
-  if (value >= 82) return 'highly_recommended'
-  if (value >= 62) return 'recommended'
-  if (value >= 42) return 'selective'
-  if (value >= 25) return 'quick_reference'
+  if (repoType === 'unknown' && value < 30) return 'insufficient_data'
+  if (value >= 84) return 'highly_recommended'
+  if (value >= 56) return 'recommended'
+  if (value >= 34) return 'selective'
+  if (value >= 20) return 'quick_reference'
   return 'low_priority'
 }
 
@@ -518,43 +592,43 @@ function buildConfidenceScore(signals: RepoSignals, repoType: RepoType): number 
 
 function buildGroupHighlights(courseGroup: CourseGroup, repoType: RepoType, signals: RepoSignals, coreTopics: string[]): string[] {
   if (courseGroup === 'foundation_algorithms') return compact([
-    coreTopics.length > 0 ? `Trong tam: ${coreTopics.slice(0, 5).join(', ')}.` : null,
-    signals.hasTests ? 'Co test/input-output de doi chieu.' : 'Diem yeu can check: de bai va test/input-output.',
+    coreTopics.length > 0 ? `Trọng tâm: ${coreTopics.slice(0, 5).join(', ')}.` : null,
+    signals.hasTests ? 'Có test/input-output để đối chiếu.' : 'Điểm cần kiểm tra: đề bài và test/input-output.',
   ], 2)
   if (courseGroup === 'software_project') return compact([
     detectTechTools(repoType, courseGroup, signals).length > 0 ? `Stack/tools: ${detectTechTools(repoType, courseGroup, signals).slice(0, 5).join(', ')}.` : null,
-    signals.hasEnvExample || signals.hasDockerConfig ? 'Co tin hieu env/Docker cho setup.' : 'Can check env, DB script va lenh run.',
+    signals.hasEnvExample || signals.hasDockerConfig ? 'Có tín hiệu env/Docker cho setup.' : 'Cần kiểm tra env, DB script và lệnh run.',
   ], 2)
   if (courseGroup === 'design_process') return compact([
-    coreTopics.length > 0 ? `Artifact chinh: ${coreTopics.slice(0, 5).join(', ')}.` : null,
-    signals.hasSourceCode ? 'Co the co demo/prototype kem tai lieu.' : 'Co ve nghieng ve tai lieu/diagram hon source code.',
+    coreTopics.length > 0 ? `Artifact chính: ${coreTopics.slice(0, 5).join(', ')}.` : null,
+    signals.hasSourceCode ? 'Có thể có demo/prototype kèm tài liệu.' : 'Có vẻ nghiêng về tài liệu/diagram hơn source code.',
   ], 2)
   if (courseGroup === 'general_skills') return compact([
-    coreTopics.length > 0 ? `Noi dung chinh: ${coreTopics.slice(0, 5).join(', ')}.` : null,
-    'Danh gia theo rubric/guideline/report/slide, khong dua primary language thanh diem manh neu khong co code context.',
+    coreTopics.length > 0 ? `Nội dung chính: ${coreTopics.slice(0, 5).join(', ')}.` : null,
+    'Đánh giá theo rubric/guideline/report/slide, không đưa primary language thành điểm mạnh nếu không có code context.',
   ], 2)
-  return ['Chua ro nhom mon, can mo GitHub de xac nhan ngu canh.']
+  return ['Chưa rõ nhóm môn, cần mở GitHub để xác nhận ngữ cảnh.']
 }
 
 function buildRecommendation(repoType: RepoType, rating: UsefulnessRating, readyLevel: ReadyToUseLevel, signals: RepoSignals): string {
-  if (rating === 'insufficient_data') return 'Chua nen clone; mo GitHub kiem tra README va file tree truoc.'
+  if (rating === 'insufficient_data') return 'Chưa nên clone; mở GitHub kiểm tra README và cây thư mục trước.'
   if (rating === 'highly_recommended' || rating === 'recommended') {
-    if (repoType === 'project_practice') return readyLevel === 'very_ready' || readyLevel === 'ready' ? 'Nen clone thu de xem cach to chuc va chay local.' : 'Nen xem source, nhung khoan clone cho deadline neu setup chua ro.'
-    if (repoType === 'programming_exercise') return 'Nen tham khao de luyen bai/doi chieu cach giai, nhung tu lam truoc khi copy.'
-    if (repoType === 'exam_review') return 'Nen xem de on thi; diem can check la dap an va nam/ky.'
-    return 'Nen xem nhu nguon hoc phu, uu tien dung dung phan lien quan.'
+    if (repoType === 'project_practice') return readyLevel === 'very_ready' || readyLevel === 'ready' ? 'Clone thử để học setup và cách tổ chức project.' : 'Xem source và cấu trúc project trước khi clone chạy.'
+    if (repoType === 'programming_exercise') return 'Tham khảo code bài lab và đối chiếu cách giải sau khi tự làm.'
+    if (repoType === 'exam_review') return 'Ôn đề thi; cần kiểm tra đáp án và năm/kỳ.'
+    return 'Dùng như nguồn học phụ, ưu tiên đúng phần liên quan.'
   }
-  if (!signals.hasFileList) return 'Chi nen tham khao nhanh vi DevOrbit chua co file tree.'
-  return 'Xem co chon loc; diem yeu lon nhat la can tu xac minh README/pham vi.'
+  if (!signals.hasFileList) return 'Chỉ nên tham khảo nhanh vì DevOrbit chưa đọc được cây thư mục của repo này.'
+  return 'Xem có chọn lọc; cần tự xác minh README/phạm vi.'
 }
 
 function buildQuickBullets(repoIdentity: string, techTools: string[], coreTopics: string[], recommendation: string, signals: RepoSignals): string[] {
   return compact([
-    `Repo nay la ${repoIdentity.toLowerCase()}.`,
-    techTools.length > 0 ? `Vu khi: ${techTools.slice(0, 5).join(', ')}.` : null,
-    coreTopics.length > 0 ? `Chu de cot loi: ${coreTopics.slice(0, 6).join(', ')}.` : 'Chua du du lieu de tach chu de cot loi.',
+    `Repo này là ${repoIdentity.toLowerCase()}.`,
+    techTools.length > 0 ? `Công nghệ / công cụ: ${techTools.slice(0, 5).join(', ')}.` : null,
+    coreTopics.length > 0 ? `Chủ đề chính: ${coreTopics.slice(0, 6).join(', ')}.` : 'Chưa đủ dữ liệu để tách chủ đề chính.',
     recommendation,
-  ], 3, [signals.hasFileList ? 'Co file tree de soi nhanh cau truc repo.' : 'Chua du du lieu de X-quang repo.'])
+  ], 3, [signals.hasFileList ? 'Có cây thư mục để nhìn nhanh cấu trúc repo.' : 'Chưa đủ dữ liệu để phân tích repo.'])
 }
 
 function classifyRepoType(signals: RepoSignals): { repoType: RepoType; reason: string } {
@@ -618,7 +692,7 @@ function classifyRepoType(signals: RepoSignals): { repoType: RepoType; reason: s
   if (hasFoundationAlgorithmContext && signals.hasSourceCode) {
     return {
       repoType: 'programming_exercise',
-      reason: 'Ngu canh mon nen tang/thuat toan co ngon ngu/source signal, nen uu tien xem nhu bai tap/lab thay vi project app.',
+      reason: 'Ngữ cảnh môn nền tảng/thuật toán có ngôn ngữ/source signal, nên ưu tiên xem như bài tập/lab thay vì project app.',
     }
   }
   if (signals.hasSourceCode && (signals.description || signals.techStacks.length > 0)) {
@@ -655,7 +729,7 @@ function buildBestFor(repoType: RepoType, rating: UsefulnessRating, signals: Rep
 }
 
 function buildMainReason(repoType: RepoType, rating: UsefulnessRating, signals: RepoSignals): string {
-  if (rating === 'insufficient_data') return 'Thiếu description, topics, README và danh sách file/folder nên chưa đủ cơ sở kết luận sâu.'
+  if (rating === 'insufficient_data') return 'Thiếu description, topics, README và danh sách file, thư mục nên chưa đủ cơ sở kết luận sâu.'
   if (repoType === 'programming_exercise') {
     if (signals.hasTests) return 'Có tín hiệu bài/lab/source code kèm test hoặc input/output nên hữu ích cho luyện thực hành.'
     if (signals.hasAssignments) return 'Có dấu hiệu là repo bài tập/lab phục vụ thực hành, nhưng cần kiểm tra đề bài và test case.'
@@ -678,27 +752,31 @@ function buildQuickSummary(repoType: RepoType, rating: UsefulnessRating, signals
   const caution = confidence === 'low'
     ? ' Đánh giá này dựa trên dữ liệu giới hạn, nên kiểm tra trực tiếp repo trước khi dùng.'
     : ''
+  const coursePrefix = signals.courseCode
+    ? `Repo môn ${signals.courseCode}${signals.courseName ? ` - ${signals.courseName}` : ''}: `
+    : ''
+
   if (repoType === 'programming_exercise') {
-    return `${signals.name} phù hợp để tham khảo bài giải lập trình hơn là học lý thuyết từ đầu. Nên ưu tiên xem đề bài, source code, test case hoặc input/output trước khi dùng làm mẫu.${caution}`
+    return `${coursePrefix}${signals.name} phù hợp để tham khảo bài giải lập trình hơn là học lý thuyết từ đầu. Nên ưu tiên xem đề bài, source code, test case hoặc input/output trước khi dùng làm mẫu.${caution}`
   }
   if (repoType === 'project_practice') {
-    return `${signals.name} phù hợp để xem cách tổ chức một project thực hành. Giá trị chính nằm ở cấu trúc source code, stack và file cấu hình; cần kiểm tra README/setup trước khi clone.${caution}`
+    return `${coursePrefix}${signals.name} phù hợp để xem cách tổ chức một project thực hành. Giá trị chính nằm ở cấu trúc source code, stack và file cấu hình; cần kiểm tra README/setup trước khi clone.${caution}`
   }
   if (repoType === 'study_material') {
-    return `${signals.name} phù hợp để ôn hoặc hệ thống kiến thức môn học. Nên xem nội dung có chia theo chương/buổi/chủ đề không trước khi dùng làm tài liệu chính.${caution}`
+    return `${coursePrefix}${signals.name} phù hợp để ôn hoặc hệ thống kiến thức môn học. Nên xem nội dung có chia theo chương/buổi/chủ đề không trước khi dùng làm tài liệu chính.${caution}`
   }
   if (repoType === 'exam_review') {
-    return `${signals.name} phù hợp để luyện đề và kiểm tra kiến thức trước kỳ thi. Cần xác nhận đề có đáp án, lời giải, năm/kỳ hoặc phạm vi rõ không.${caution}`
+    return `${coursePrefix}${signals.name} phù hợp để luyện đề và kiểm tra kiến thức trước kỳ thi. Cần xác nhận đề có đáp án, lời giải, năm/kỳ hoặc phạm vi rõ không.${caution}`
   }
   if (repoType === 'mixed_resource') {
-    return `${signals.name} có vẻ là repo tổng hợp nhiều loại tài nguyên. Nên mở đúng phần mình cần, rồi kiểm tra từng folder thay vì đọc tuần tự từ đầu.${caution}`
+    return `${coursePrefix}${signals.name} có vẻ là repo tổng hợp nhiều loại tài nguyên. Nên mở đúng phần mình cần, rồi kiểm tra từng folder thay vì đọc tuần tự từ đầu.${caution}`
   }
   return `Repo này chỉ nên tham khảo nhanh cho đến khi bạn xác nhận được mục tiêu, cấu trúc và nội dung chính trên GitHub.${caution}`
 }
 
 function buildStrengths(repoType: RepoType, signals: RepoSignals, rating: UsefulnessRating): string[] {
   const items: string[] = []
-  if (signals.description) items.push(`Description cho biết trọng tâm: ${truncate(signals.description, 110)}.`)
+  if (signals.description) items.push(`Mô tả cho biết trọng tâm: ${truncate(signals.description, 110)}.`)
   if (signals.primaryLanguage || signals.techStacks.length > 0) items.push(`Có tín hiệu kỹ thuật: ${[signals.primaryLanguage, ...signals.techStacks].filter(Boolean).slice(0, 4).join(', ')}.`)
   if (repoType === 'programming_exercise' && signals.hasTests) items.push('Có tín hiệu test/input/output, hữu ích khi đối chiếu lời giải.')
   if (repoType === 'project_practice' && signals.hasPackageFile) items.push('Có file dependency/build, dễ kiểm tra cách chạy hơn repo chỉ có code rời.')
@@ -711,8 +789,8 @@ function buildStrengths(repoType: RepoType, signals: RepoSignals, rating: Useful
 
 function buildWeaknesses(repoType: RepoType, signals: RepoSignals, rating: UsefulnessRating): string[] {
   const items: string[] = []
-  if (!signals.hasFileList) items.push('DevOrbit chưa có danh sách file/folder, nên chưa kiểm chứng được cấu trúc repo.')
-  if (!signals.description) items.push('Thiếu description nên mục tiêu repo chưa rõ từ màn hình này.')
+  if (!signals.hasFileList) items.push('DevOrbit chưa có danh sách file, thư mục, nên chưa kiểm chứng được cấu trúc repo.')
+  if (!signals.description) items.push('Thiếu mô tả nên mục tiêu repo chưa rõ từ màn hình này.')
   if (!signals.hasReadme && repoType === 'project_practice') items.push('Chưa thấy README, đây là điểm yếu lớn nếu cần setup project.')
   else if (!signals.hasReadme && repoType !== 'unknown') items.push('Chưa thấy README; vẫn có thể hữu ích nhưng cần mở repo để hiểu phạm vi.')
   if (repoType === 'programming_exercise' && !signals.hasTests) items.push('Chưa thấy test/input/output, nên khó biết lời giải có đúng đủ không.')
@@ -741,7 +819,7 @@ function buildNextActions(repoType: RepoType, signals: RepoSignals): string[] {
     return ['Xem mục lục hoặc folder theo chương/buổi.', 'Ưu tiên slide/note có thứ tự học rõ.', 'Đối chiếu nội dung với đề cương môn trước khi dùng làm tài liệu chính.']
   }
   if (repoType === 'exam_review') {
-    return ['Xác định năm/kỳ/midterm/final của đề.', 'Kiểm tra có đáp án hoặc lời giải không.', 'Làm thử đề trước khi xem lời giải để tự đánh giá.']
+    return ['Xác định năm/kỳ/giữa kỳ/cuối kỳ của đề.', 'Kiểm tra có đáp án hoặc lời giải không.', 'Làm thử đề trước khi xem lời giải để tự đánh giá.']
   }
   return ['Mở GitHub để kiểm tra README và cấu trúc repo.', 'Xác định repo chứa code, tài liệu, hay đề ôn tập.', 'Chỉ dùng làm tham khảo nhanh nếu vẫn thiếu dữ liệu.']
 }
@@ -760,7 +838,7 @@ function buildApplicability(repoType: RepoType, rating: UsefulnessRating, signal
   if (repoType === 'project_practice') return [signals.hasReadme ? 'Có thể clone thử nếu README hướng dẫn rõ.' : 'Chưa nên clone làm mẫu nếu thiếu hướng dẫn setup.', 'Có thể học cách chia module/source nếu code rõ.', 'Không nên dùng cho deadline khi chưa chạy local được.']
   if (repoType === 'programming_exercise') return ['Có thể dùng để so sánh hướng giải sau khi tự làm.', 'Áp dụng tốt nhất khi có đề bài và test case.', 'Không nên xem như lời giải chuẩn nếu thiếu input/output.']
   if (repoType === 'study_material') return ['Dùng tốt cho ôn tập nếu nội dung có thứ tự rõ.', 'Nên đối chiếu với đề cương hoặc slide chính thức.', 'Không thay thế tài liệu môn nếu file rời rạc.']
-  if (repoType === 'exam_review') return ['Phù hợp luyện tốc độ và dạng đề.', 'Độ tin cậy cao hơn nếu có năm/kỳ và đáp án.', 'Không nên học tủ nếu thiếu nguồn hoặc phạm vi.']
+  if (repoType === 'exam_review') return ['Phù hợp luyện tốc độ và dạng đề.', 'Mức an tâm cao hơn nếu có năm/kỳ và đáp án.', 'Không nên học tủ nếu thiếu nguồn hoặc phạm vi.']
   return ['Có thể dùng làm nguồn phụ.', 'Cần tự lọc phần đúng nhu cầu.', 'Không nên dựa hoàn toàn vào repo khi tín hiệu còn lẫn lộn.']
 }
 
@@ -775,21 +853,11 @@ function buildChecksBeforeUsing(repoType: RepoType, signals: RepoSignals): strin
           ? ['năm/kỳ', 'midterm/final/quiz', 'đáp án hoặc lời giải']
           : ['README', 'cấu trúc thư mục', 'source/tài liệu chính']
   const dynamic = [
-    !signals.hasReadme ? 'README có tồn tại trên GitHub không' : null,
     !signals.hasFileList ? 'danh sách file/folder thực tế' : null,
     signals.updatedAt ? null : 'repo còn được cập nhật gần đây không',
     signals.hasLicense ? null : 'license nếu muốn dùng lại code',
   ].filter(Boolean) as string[]
   return compact([...base, ...dynamic], 4)
-}
-
-function buildAboutRepo(repoType: RepoType, signals: RepoSignals): string[] {
-  return compact([
-    signals.description ? `Mô tả hiện có: ${truncate(signals.description, 130)}.` : 'Chưa có description rõ trong dữ liệu DevOrbit.',
-    `Loại repo suy ra: ${repoTypeLabels[repoType]}.`,
-    signals.topics.length > 0 ? `Topics/tags: ${signals.topics.slice(0, 6).join(', ')}.` : null,
-    signals.primaryLanguage ? `Ngôn ngữ chính: ${signals.primaryLanguage}.` : null,
-  ], 4)
 }
 
 function typeEvidence(repoType: RepoType, signals: RepoSignals): string {
@@ -802,19 +870,19 @@ function typeEvidence(repoType: RepoType, signals: RepoSignals): string {
 
 function buildEvidence(signals: RepoSignals): string[] {
   return compact([
-    signals.description ? 'Có description từ dữ liệu repo.' : null,
-    signals.topics.length > 0 ? `Có topics/tags: ${signals.topics.slice(0, 5).join(', ')}.` : null,
-    signals.primaryLanguage ? `Primary language: ${signals.primaryLanguage}.` : null,
-    signals.techStacks.length > 0 ? `Tech stack: ${signals.techStacks.slice(0, 5).join(', ')}.` : null,
-    signals.stars !== null ? `Stars: ${signals.stars}.` : null,
-    signals.forks !== null ? `Forks: ${signals.forks}.` : null,
-    signals.updatedAt ? `Last updated: ${signals.updatedAt}.` : null,
-    signals.hasReadme ? 'Có README hoặc README excerpt.' : null,
-    signals.hasFileList ? `Có ${signals.filePaths.length} file/folder path để phân tích.` : null,
-    signals.hasPackageFile ? 'Có package/build/dependency file.' : null,
-    signals.hasTests ? 'Có tín hiệu test/input/output/sample.' : null,
-    signals.hasExam ? 'Có tín hiệu exam/midterm/final/quiz.' : null,
-    signals.hasSlides || signals.hasNotes ? 'Có tín hiệu slide/note/tài liệu học.' : null,
+    signals.description ? 'Có mô tả từ dữ liệu repo.' : null,
+    signals.topics.length > 0 ? `Có chủ đề/tags: ${signals.topics.slice(0, 5).join(', ')}.` : null,
+    signals.primaryLanguage ? `Ngôn ngữ chính: ${signals.primaryLanguage}.` : null,
+    signals.techStacks.length > 0 ? `Công nghệ: ${signals.techStacks.slice(0, 5).join(', ')}.` : null,
+    signals.stars !== null ? `Sao: ${signals.stars}.` : null,
+    signals.forks !== null ? `Fork: ${signals.forks}.` : null,
+    signals.updatedAt ? `Cập nhật lần cuối: ${signals.updatedAt}.` : null,
+    signals.hasReadme ? 'Có README hoặc nội dung từ README.' : null,
+    signals.hasFileList ? `Có ${signals.filePaths.length} file, thư mục để phân tích.` : null,
+    signals.hasPackageFile ? 'Có file cấu hình/dependency/build.' : null,
+    signals.hasTests ? 'Có tín hiệu test/input/output mẫu.' : null,
+    signals.hasExam ? 'Có tín hiệu đề thi/giữa kỳ/cuối kỳ.' : null,
+    signals.hasSlides || signals.hasNotes ? 'Có tín hiệu slide/tài liệu học.' : null,
   ], 12)
 }
 

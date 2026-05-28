@@ -124,7 +124,10 @@ public class GithubRepoService {
                         .toList(),
                 courseId,
                 courseCode,
-                courseName
+                courseName,
+                repo.getReadmeExcerpt(),
+                repo.getFileTree(),
+                repo.getHasReadme()
         );
     }
 

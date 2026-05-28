@@ -25,6 +25,7 @@ public class RepoCandidateService {
     private final RepoCandidateRepository repoCandidateRepository;
     private final GithubRepoRepository githubRepoRepository;
     private final GithubRepoService githubRepoService;
+    private final GithubScanService githubScanService;
 
     @Transactional(readOnly = true)
     public List<RepoCandidateResponse> getPendingCandidates(String reviewer) {
@@ -60,6 +61,7 @@ public class RepoCandidateService {
         repo.setDescription(request.description() != null ? request.description() : candidate.getDescription());
         repo.setPrimaryLanguage(candidate.getPrimaryLanguage());
         repo.setStars(candidate.getStars());
+        applyRepositoryContext(candidate, repo);
         if (candidate.getCourse() != null) {
             repo.setCourse(candidate.getCourse());
             repo.setSubjectId(candidate.getCourse().getMaMH());
@@ -83,6 +85,35 @@ public class RepoCandidateService {
         distributeCandidates();
 
         return RepoCandidateResponse.from(candidate);
+    }
+
+    private void applyRepositoryContext(RepoCandidate candidate, GithubRepo repo) {
+        String readmeExcerpt = candidate.getReadmeExcerpt();
+        String fileTree = candidate.getFileTree();
+        Boolean hasReadme = candidate.getHasReadme();
+
+        if ((readmeExcerpt == null || fileTree == null) && candidate.getGithubOwner() != null && candidate.getGithubName() != null) {
+            GithubScanService.RepositoryContext context = githubScanService.fetchRepositoryContext(
+                candidate.getGithubOwner(),
+                candidate.getGithubName()
+            );
+            if (readmeExcerpt == null) {
+                readmeExcerpt = context.readmeExcerpt();
+                candidate.setReadmeExcerpt(readmeExcerpt);
+            }
+            if (fileTree == null) {
+                fileTree = context.fileTree();
+                candidate.setFileTree(fileTree);
+            }
+            if (hasReadme == null) {
+                hasReadme = context.hasReadme();
+                candidate.setHasReadme(hasReadme);
+            }
+        }
+
+        repo.setReadmeExcerpt(readmeExcerpt);
+        repo.setFileTree(fileTree);
+        repo.setHasReadme(hasReadme != null ? hasReadme : readmeExcerpt != null);
     }
 
     @Transactional

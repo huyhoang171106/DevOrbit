@@ -218,7 +218,7 @@ export function RepoDetailPage() {
             </div>
           </div>
 
-          <RepoAiAnalysisSection analysis={analysis} loading={analysisLoading} error={analysisError} />
+          <RepoAiAnalysisSection repo={repo} analysis={analysis} loading={analysisLoading} error={analysisError} />
         </motion.div>
       </div>
     </div>

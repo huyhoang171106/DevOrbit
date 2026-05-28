@@ -34,6 +34,7 @@ This file maps product behavior to proof.
 | US-030 | Contextual Repo Evaluation | pass | no | no | Vite build | implemented | `devorbit-web`: `npm run test -- repoEvaluation repoAiAnalysis repoAnalysisService`; `npm run build` |
 | US-031 | Repo GitHub Context Fetch | pass | no | no | Maven + Vite build | implemented | `devorbit-api`: Maven `test`, Maven `package -DskipTests`; `devorbit-web`: `npm run test -- repoEvaluation`, `npm run build` |
 | US-032 | X-Ray Repo Evaluation | pass | no | no | Vite build | implemented | `devorbit-web`: `npm run test -- repoEvaluation repoAiAnalysis repoAnalysisService`; `npm run build` |
+| US-033 | Vietnamese Repository Overview UI | pass | no | no | Vite build | implemented | `devorbit-web`: `npm run test -- repoEvaluation repoAiAnalysis repoAnalysisService`; `npm run build` |
 
 ## Evidence Rules
 

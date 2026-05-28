@@ -18,6 +18,8 @@ DevOrbit includes a student-facing GPA calculator so students can quickly estima
 - The calculator uses the same shared DevOrbit student-page background atmosphere pattern as the course list screen.
 - Students can switch between semester GPA mode and cumulative GPA estimate mode.
 - Students can load a semester preset from the DevOrbit course catalogue.
+- Semester preset controls show the selected semester's course count and total credits before applying.
+- Students can either replace the current course rows with a semester preset or merge the preset into the existing rows.
 - Semester presets use `/api/courses`, include only matching semester courses with credits greater than 0, and leave grade cells empty for student input.
 - If the student has saved a learning roadmap, semester presets use `devorbit_kanban_semester_map` before falling back to the catalogue semester.
 - The calculator ignores invalid rows and shows guidance when no valid credits exist.

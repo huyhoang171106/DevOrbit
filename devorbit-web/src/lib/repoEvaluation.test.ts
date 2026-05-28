@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { evaluateRepository } from './repoEvaluation'
+import { evaluateRepository, extractRepoSignals } from './repoEvaluation'
 import type { RepoSummary } from '../types/api'
 
 type RepoFixture = RepoSummary & {
@@ -115,6 +115,48 @@ describe('evaluateRepository', () => {
     expect(result.repoType).toBe('exam_review')
     expect(result.usefulnessRating).toBe('highly_recommended')
     expect(result.bestFor).toContain('Luyện đề')
+  })
+
+  test('detects Vietnamese accented exam and answer wording after normalization', () => {
+    const result = evaluateRepository(repo({
+      displayName: 'Đề thi cuối kỳ CSDL',
+      description: 'Tổng hợp đề thi, đáp án và lời giải ôn tập cuối kỳ',
+      primaryLanguage: '',
+      topics: ['ôn tập', 'đáp án'],
+    }))
+
+    expect(result.repoType).toBe('exam_review')
+    expect(result.usefulnessRating).toBe('highly_recommended')
+    expect(result.quickSummary).toContain('luyện đề')
+  })
+
+  test('detects source and config signals from file paths without language metadata', () => {
+    const result = evaluateRepository(repo({
+      displayName: 'bai-tap-tuan-01',
+      description: 'Bài tập thực hành nhập môn lập trình',
+      primaryLanguage: '',
+      techStacks: [],
+      files: ['README.md', 'lab01\\Main.java', 'lab01\\MainTest.java', 'lab01\\input\\sample.txt', 'pom.xml'],
+    }))
+
+    expect(result.repoType).toBe('programming_exercise')
+    expect(result.signals.hasSourceCode).toBe(true)
+    expect(result.signals.hasTests).toBe(true)
+    expect(result.signals.hasPackageFile).toBe(true)
+    expect(result.signals.filePaths).toContain('lab01/Main.java')
+  })
+
+  test('does not treat any standalone exam pdf as study material slides', () => {
+    const signals = extractRepoSignals(repo({
+      displayName: 'final-exam-2024',
+      description: 'Final exam review',
+      primaryLanguage: '',
+      topics: ['final', 'exam'],
+      files: ['final/2024.pdf'],
+    }))
+
+    expect(signals.hasExam).toBe(true)
+    expect(signals.hasSlides).toBe(false)
   })
 
   test('returns insufficient data when metadata is too sparse', () => {

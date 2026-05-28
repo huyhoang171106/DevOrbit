@@ -111,12 +111,12 @@ export function CourseListPage() {
 
             <BlurReveal blur={6} delay={0.1} y={0}>
               <h1 className="display-lg mt-6 mb-6 leading-[1.05]">
-                Lộ trình{' '}
+                Thư viện{' '}
                 <span className="text-orbit-accent relative inline-block">
-                  Học tập
+                  Repo
                   <span className="absolute -bottom-2 left-0 w-full h-1 bg-orbit-accent/20 rounded-full blur-[2px]" />
                 </span>{' '}
-                của Bạn
+                học tập
               </h1>
             </BlurReveal>
 

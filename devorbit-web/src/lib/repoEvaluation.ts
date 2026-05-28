@@ -17,6 +17,8 @@ export type UsefulnessRating =
   | 'insufficient_data'
 
 export type ConfidenceLabel = 'high' | 'medium' | 'low'
+export type ReadyToUseLevel = 'very_ready' | 'ready' | 'needs_check' | 'quick_reference' | 'insufficient_data'
+export type CourseGroup = 'foundation_algorithms' | 'software_project' | 'design_process' | 'general_skills' | 'unknown'
 
 export type EvaluationSection = {
   title: string
@@ -32,6 +34,9 @@ export type RepoSignals = {
   stars: number | null
   forks: number | null
   updatedAt: string | null
+  readmeText: string | null
+  courseCode: string | null
+  courseName: string | null
   hasReadme: boolean
   hasFileList: boolean
   filePaths: string[]
@@ -59,9 +64,23 @@ export type RepoEvaluationResult = {
   repoTypeLabel: string
   usefulnessRating: UsefulnessRating
   usefulnessLabel: string
+  usefulnessScore: number
   bestFor: string
   mainReason: string
   quickSummary: string
+  quickBullets: string[]
+  repoIdentity: string
+  weapons: string
+  techTools: string[]
+  coreTopics: string[]
+  readyToUseLevel: ReadyToUseLevel
+  readyToUseLabel: string
+  readyToUseStars: number
+  readyToUseNote: string
+  courseGroup: CourseGroup
+  courseGroupLabel: string
+  groupHighlights: string[]
+  recommendation: string
   strengths: string[]
   weaknesses: string[]
   nextActions: string[]
@@ -71,6 +90,7 @@ export type RepoEvaluationResult = {
   evidence: string[]
   confidence: ConfidenceLabel
   confidenceLabel: string
+  confidenceScore: number
   typeReason: string
   sections: EvaluationSection[]
   signals: RepoSignals
@@ -112,6 +132,22 @@ const usefulnessLabels: Record<UsefulnessRating, string> = {
 }
 
 const sourceFilePattern = /\.(c|cc|cpp|cs|dart|go|h|hpp|ipynb|java|js|jsx|kt|m|php|py|rb|rs|sql|swift|ts|tsx)$/i
+const readyToUseLabels: Record<ReadyToUseLevel, string> = {
+  very_ready: 'Rat an lien',
+  ready: 'Kha an lien',
+  needs_check: 'Can kiem tra them',
+  quick_reference: 'Chi tham khao nhanh',
+  insufficient_data: 'Chua du du lieu',
+}
+
+const courseGroupLabels: Record<CourseGroup, string> = {
+  foundation_algorithms: 'Nhom 1 - Nen tang & Thuat toan',
+  software_project: 'Nhom 2 - Do an Phan mem & Trien khai',
+  design_process: 'Nhom 3 - Phan tich, Thiet ke & Quy trinh',
+  general_skills: 'Nhom 4 - Dai cuong, Ly thuyet & Ky nang',
+  unknown: 'Chua ro nhom mon',
+}
+
 const projectConfigPattern = /(^|\/)(package(-lock)?\.json|pnpm-lock\.yaml|yarn\.lock|bun\.lock|requirements\.txt|pyproject\.toml|poetry\.lock|pom\.xml|build\.gradle|settings\.gradle|gradle\.properties|pubspec\.yaml|composer\.json|go\.mod|cargo\.toml|\.csproj|\.sln)$/i
 const buildFilePattern = /(^|\/)(makefile|cmakelists\.txt|mvnw|gradlew|dockerfile)$/i
 const sourceFolderPattern = /(^|\/)(src|source|app|lib|components|controllers|services|models)(\/|$)/i
@@ -120,8 +156,18 @@ const testPathPattern = /(^|\/)(__tests__|tests?|spec|input|output|sample)(\/|$)
 export function evaluateRepository(repo: RepoSummary): RepoEvaluationResult {
   const signals = extractRepoSignals(repo)
   const { repoType, reason } = classifyRepoType(signals)
-  const usefulnessRating = rateUsefulness(repoType, signals)
+  const courseGroup = detectCourseGroup(signals)
+  const ready = buildReadyToUse(repoType, courseGroup, signals)
+  const usefulnessScore = buildUsefulnessScore(repoType, courseGroup, ready.stars, signals)
+  const usefulnessRating = ratingFromScore(usefulnessScore, repoType)
   const confidence = getConfidence(signals, repoType)
+  const confidenceScore = buildConfidenceScore(signals, repoType)
+  const repoIdentity = buildRepoIdentity(repoType, courseGroup, signals)
+  const techTools = detectTechTools(repoType, courseGroup, signals)
+  const coreTopics = detectCoreTopics(courseGroup, repoType, signals)
+  const groupHighlights = buildGroupHighlights(courseGroup, repoType, signals, coreTopics)
+  const recommendation = buildRecommendation(repoType, usefulnessRating, ready.level, signals)
+  const quickBullets = buildQuickBullets(repoIdentity, techTools, coreTopics, recommendation, signals)
   const bestFor = buildBestFor(repoType, usefulnessRating, signals)
   const mainReason = buildMainReason(repoType, usefulnessRating, signals)
   const quickSummary = buildQuickSummary(repoType, usefulnessRating, signals, confidence)
@@ -140,9 +186,23 @@ export function evaluateRepository(repo: RepoSummary): RepoEvaluationResult {
     repoTypeLabel: repoTypeLabels[repoType],
     usefulnessRating,
     usefulnessLabel: usefulnessLabels[usefulnessRating],
+    usefulnessScore,
     bestFor,
     mainReason,
     quickSummary,
+    quickBullets,
+    repoIdentity,
+    weapons: techTools.length > 0 ? techTools.join(', ') : 'Chua ro',
+    techTools,
+    coreTopics,
+    readyToUseLevel: ready.level,
+    readyToUseLabel: ready.label,
+    readyToUseStars: ready.stars,
+    readyToUseNote: ready.note,
+    courseGroup,
+    courseGroupLabel: courseGroupLabels[courseGroup],
+    groupHighlights,
+    recommendation,
     strengths,
     weaknesses,
     nextActions,
@@ -152,6 +212,7 @@ export function evaluateRepository(repo: RepoSummary): RepoEvaluationResult {
     evidence,
     confidence,
     confidenceLabel: confidence === 'high' ? 'Cao' : confidence === 'medium' ? 'Trung bình' : 'Thấp',
+    confidenceScore,
     typeReason: reason,
     sections: [
       { title: 'Repo nói về gì?', items: buildAboutRepo(repoType, signals) },
@@ -196,6 +257,8 @@ export function extractRepoSignals(repo: RepoSummary): RepoSignals {
   const stars = typeof repo.stars === 'number' ? repo.stars : null
   const forks = typeof metadata.forks === 'number' ? metadata.forks : null
   const updatedAt = cleanText(metadata.updatedAt ?? metadata.lastPushedAt)
+  const courseCode = cleanText(repo.courseCode)
+  const courseName = cleanText(repo.courseName)
   const evidence = buildEvidence({
     name,
     description,
@@ -205,6 +268,9 @@ export function extractRepoSignals(repo: RepoSummary): RepoSignals {
     stars,
     forks,
     updatedAt,
+    readmeText,
+    courseCode,
+    courseName,
     hasReadme,
     hasFileList,
     filePaths,
@@ -245,6 +311,9 @@ export function extractRepoSignals(repo: RepoSummary): RepoSignals {
     stars,
     forks,
     updatedAt,
+    readmeText,
+    courseCode,
+    courseName,
     hasReadme,
     hasFileList,
     filePaths,
@@ -268,19 +337,244 @@ export function extractRepoSignals(repo: RepoSummary): RepoSignals {
   }
 }
 
-function classifyRepoType(signals: RepoSignals): { repoType: RepoType; reason: string } {
+function detectCourseGroup(signals: RepoSignals): CourseGroup {
+  const text = normalizeSearchText([
+    signals.courseCode,
+    signals.courseName,
+    signals.name,
+    signals.description,
+    ...signals.topics,
+  ])
+  if (contains(text, /\b(ss004|ky nang|soft skill|english|anh van|xac suat|thong ke|phuong phap|seminar|chuyen de|cv|presentation)\b/)) return 'general_skills'
+  if (contains(text, /\b(ooad|hci|srs|sad|uml|use case|erd|figma|prototype|software engineering|cong nghe phan mem|kien truc phan mem|thiet ke|dac ta)\b/)) return 'design_process'
+  if (contains(text, /\b(web|mobile|android|flutter|react|spring|\.net|dotnet|game|cloud|do an|khoa luan|fullstack|backend|frontend|deployment)\b/)) return 'software_project'
+  if (contains(text, /\b(dsa|ctdl|giai thuat|algorithms?|data structures?|lap trinh|co so du lieu|database|csdl|he dieu hanh|operating system|cau truc roi rac|to chuc may tinh)\b/)) return 'foundation_algorithms'
+  return 'unknown'
+}
+
+function buildRepoIdentity(repoType: RepoType, courseGroup: CourseGroup, signals: RepoSignals): string {
+  const text = normalizeSearchText([signals.name, signals.description, signals.readmeText, ...signals.filePaths])
+  if (repoType === 'unknown') return 'Chua du du lieu de xac dinh'
+  if (repoType === 'exam_review') return 'Tai lieu on thi'
+  if (contains(text, /\b(khoa luan|thesis|graduation)\b/)) return 'Khoa luan tot nghiep'
+  if (contains(text, /\b(final project|cuoi ky|do an cuoi ky)\b/)) return 'Do an cuoi ky'
+  if (contains(text, /\b(report|bao cao|rubric|assignment|bai nop)\b/) && (courseGroup === 'general_skills' || courseGroup === 'design_process')) return 'Repo bai nop/bao cao'
+  if (repoType === 'programming_exercise') return contains(text, /\b(lab|labs)\b/) ? 'Bai tap Lab' : 'Bai tap lap trinh'
+  if (repoType === 'project_practice') return contains(text, /\b(do an|project)\b/) ? 'Do an mon' : 'Project thuc hanh'
+  if (repoType === 'study_material') return courseGroup === 'general_skills' ? 'Kho tai lieu mon hoc' : 'Tai lieu hoc'
+  if (repoType === 'mixed_resource') return 'Kho tai nguyen mon hoc'
+  return 'Repo tham khao'
+}
+
+function detectTechTools(repoType: RepoType, courseGroup: CourseGroup, signals: RepoSignals): string[] {
+  const text = normalizeSearchText([signals.readmeText, signals.description, ...signals.filePaths, ...signals.techStacks])
+  const tools = collectMatches(text, [
+    ['React', /\breact|vite|nextjs|next\.js\b/],
+    ['Spring Boot', /\bspring boot|spring\b/],
+    ['.NET', /\b\.net|dotnet|aspnet|asp\.net\b/],
+    ['Flutter', /\bflutter|pubspec\.yaml\b/],
+    ['Android', /\bandroid|kotlin|gradle\b/],
+    ['MySQL', /\bmysql\b/],
+    ['PostgreSQL', /\bpostgres|postgresql\b/],
+    ['MongoDB', /\bmongodb|mongo\b/],
+    ['Docker', /\bdocker|dockerfile|docker-compose\b/],
+    ['Figma', /\bfigma\b/],
+    ['Draw.io', /\bdraw\.io|drawio\b/],
+    ['PlantUML', /\bplantuml|\.puml\b/],
+    ['StarUML', /\bstaruml\b/],
+  ])
+  for (const stack of signals.techStacks) tools.push(stack)
+  if (shouldTreatLanguageAsTool(repoType, courseGroup, signals)) {
+    const language = cleanText(signals.primaryLanguage)
+    if (language) tools.unshift(language)
+  }
+  return unique(tools).slice(0, 6)
+}
+
+function shouldTreatLanguageAsTool(repoType: RepoType, courseGroup: CourseGroup, signals: RepoSignals): boolean {
+  if (!signals.primaryLanguage) return false
+  if ((courseGroup === 'general_skills' || courseGroup === 'design_process') && !signals.filePaths.some((path) => sourceFilePattern.test(path))) return false
+  if (repoType === 'project_practice' || repoType === 'programming_exercise') return true
+  if (courseGroup === 'foundation_algorithms' && signals.hasSourceCode) return true
+  return signals.filePaths.some((path) => sourceFilePattern.test(path))
+}
+
+function detectCoreTopics(courseGroup: CourseGroup, repoType: RepoType, signals: RepoSignals): string[] {
   const text = normalizeSearchText([
     signals.name,
     signals.description,
+    signals.readmeText,
+    signals.courseCode,
+    signals.courseName,
+    ...signals.topics,
+    ...signals.filePaths,
+  ])
+  const common = collectMatches(text, [
+    ['Linked List', /\blinked[-_ ]?list|danh sach lien ket\b/],
+    ['Stack', /\bstack|ngan xep\b/],
+    ['Queue', /\bqueue|hang doi\b/],
+    ['Tree', /\btree|binary tree|bst|cay\b/],
+    ['Graph', /\bgraph|dijkstra|dfs|bfs|do thi\b/],
+    ['Sorting', /\bsort|sorting|quick sort|merge sort|sap xep\b/],
+    ['Auth', /\bauth|login|jwt|oauth\b/],
+    ['CRUD', /\bcrud|create read update delete\b/],
+    ['REST API', /\brest|api|controller|endpoint\b/],
+    ['Realtime', /\brealtime|socket|websocket\b/],
+    ['Database', /\bdatabase|sql|mysql|postgres|mongodb|csdl\b/],
+    ['Deployment', /\bdeploy|docker|ci\/cd|cicd|cloud\b/],
+    ['SRS', /\bsrs|software requirement|dac ta yeu cau\b/],
+    ['Use Case', /\buse[-_ ]?case|usecase\b/],
+    ['UML', /\buml|class diagram|sequence diagram|activity diagram\b/],
+    ['ERD', /\berd|entity relationship\b/],
+    ['Prototype', /\bprototype|wireframe|figma\b/],
+    ['Report', /\breport|bao cao|tieu luan\b/],
+    ['Presentation', /\bpresentation|slide|pptx|thuyet trinh\b/],
+    ['Rubric', /\brubric|grading|criteria\b/],
+    ['CV', /\bcv|resume\b/],
+    ['Final exam', /\bfinal|cuoi ky\b/],
+    ['Answer key', /\banswer|solution|dap an|loi giai\b/],
+  ])
+  if (common.length > 0) return unique(common).slice(0, 7)
+  if (repoType === 'study_material' && courseGroup !== 'unknown') return [courseGroupLabels[courseGroup].replace(/^Nhom \d - /, '')]
+  return signals.topics.slice(0, 5)
+}
+
+function buildReadyToUse(repoType: RepoType, courseGroup: CourseGroup, signals: RepoSignals): { level: ReadyToUseLevel; label: string; stars: number; note: string } {
+  if (repoType === 'unknown' && signals.evidence.length <= 2) {
+    return { level: 'insufficient_data', label: readyToUseLabels.insufficient_data, stars: 1, note: 'Thieu README/file tree/description nen can mo GitHub de xem truoc.' }
+  }
+  let score = 0
+  if (repoType === 'programming_exercise') {
+    score = scoreSignals([[signals.hasReadme, 1], [signals.hasAssignments, 1], [signals.hasSourceCode, 1], [signals.hasTests, 1], [signals.hasSolutions || signals.organizedFolders, 1]])
+  } else if (repoType === 'project_practice') {
+    score = scoreSignals([[signals.hasReadme, 1], [signals.hasPackageFile, 1], [signals.hasEnvExample || signals.hasDockerConfig, 1], [signals.hasBuildFile, 1], [signals.hasDocs || contains(normalizeSearchText([signals.readmeText]), /\b(run|setup|install|database|migration)\b/), 1]])
+  } else if (repoType === 'study_material') {
+    score = scoreSignals([[signals.hasReadme, 1], [signals.hasSlides, 1], [signals.hasNotes || signals.hasDocs, 1], [signals.organizedFolders, 1], [signals.hasFileList, 1]])
+  } else if (repoType === 'exam_review') {
+    score = scoreSignals([[signals.hasExam, 1], [signals.hasAnswerOrSolution, 1], [signals.hasFileList, 1], [contains(normalizeSearchText([signals.name, signals.description, signals.readmeText, ...signals.filePaths]), /\b(20\d{2}|midterm|final|cuoi ky|giua ky)\b/), 1], [signals.hasReadme, 1]])
+  } else if (courseGroup === 'general_skills' || courseGroup === 'design_process') {
+    const text = normalizeSearchText([signals.name, signals.description, signals.readmeText, ...signals.filePaths])
+    score = scoreSignals([[signals.hasReadme, 1], [contains(text, /\brubric|guideline|assignment\b/), 1], [contains(text, /\breport|bao cao|docx|pdf\b/), 1], [contains(text, /\bslide|presentation|pptx\b/), 1], [signals.organizedFolders || signals.hasFileList, 1]])
+  } else {
+    score = scoreSignals([[signals.hasReadme, 1], [signals.hasFileList, 1], [signals.description !== null, 1], [signals.topics.length > 0, 1], [signals.primaryLanguage !== null, 1]])
+  }
+  const stars = Math.max(1, Math.min(5, score))
+  const level: ReadyToUseLevel = stars >= 5 ? 'very_ready' : stars >= 4 ? 'ready' : stars >= 3 ? 'needs_check' : stars >= 2 ? 'quick_reference' : 'insufficient_data'
+  return { level, label: readyToUseLabels[level], stars, note: buildReadyNote(repoType, level, signals) }
+}
+
+function buildReadyNote(repoType: RepoType, level: ReadyToUseLevel, signals: RepoSignals): string {
+  if (level === 'very_ready') return 'Mo ra la co kha nhieu thu de dung ngay.'
+  if (level === 'ready') return 'Dung duoc kha nhanh, van nen check huong dan chay/pham vi.'
+  if (repoType === 'project_practice') return 'Can check README setup, env/database va lenh run truoc khi clone.'
+  if (repoType === 'programming_exercise') return 'Can check de bai va test/input-output truoc khi hoc theo.'
+  if (repoType === 'exam_review') return 'Can check nam/ky va dap an truoc khi xem la nguon on thi chinh.'
+  if (!signals.hasFileList) return 'Thieu file tree nen chua nhin duoc cau truc that cua repo.'
+  return 'Co the tham khao, nhung can loc dung folder/noi dung.'
+}
+
+function buildUsefulnessScore(repoType: RepoType, courseGroup: CourseGroup, readyStars: number, signals: RepoSignals): number {
+  if (repoType === 'unknown' && signals.evidence.length <= 2) return 12
+  let value = readyStars * 14
+  value += scoreSignals([
+    [signals.description !== null, 8],
+    [signals.hasFileList, 10],
+    [signals.hasReadme, 8],
+    [signals.stars !== null && signals.stars > 0, 4],
+  ])
+  if (repoType === 'programming_exercise') value += scoreSignals([[signals.hasTests, 10], [signals.hasSolutions, 8], [signals.hasAssignments, 8]])
+  if (repoType === 'project_practice') value += scoreSignals([[signals.hasPackageFile, 10], [signals.hasEnvExample || signals.hasDockerConfig, 10], [signals.techStacks.length >= 2, 8]])
+  if (repoType === 'project_practice' && signals.hasSourceCode) value += 8
+  if (repoType === 'study_material') value += scoreSignals([[signals.hasSlides, 10], [signals.hasNotes || signals.hasDocs, 10], [signals.organizedFolders, 6]])
+  if (repoType === 'exam_review') value += scoreSignals([[signals.hasExam, 12], [signals.hasAnswerOrSolution, 12]])
+  if (repoType === 'exam_review' && signals.hasExam && signals.hasAnswerOrSolution) value += 8
+  if ((courseGroup === 'general_skills' || courseGroup === 'design_process') && repoType !== 'project_practice') value += scoreSignals([[signals.hasDocs, 8], [signals.hasSlides, 8]])
+  return clampScore(value)
+}
+
+function ratingFromScore(value: number, repoType: RepoType): UsefulnessRating {
+  if (repoType === 'unknown' && value < 25) return 'insufficient_data'
+  if (value >= 82) return 'highly_recommended'
+  if (value >= 62) return 'recommended'
+  if (value >= 42) return 'selective'
+  if (value >= 25) return 'quick_reference'
+  return 'low_priority'
+}
+
+function buildConfidenceScore(signals: RepoSignals, repoType: RepoType): number {
+  const value = scoreSignals([
+    [signals.description !== null, 14],
+    [signals.primaryLanguage !== null, 8],
+    [signals.techStacks.length > 0, 8],
+    [signals.topics.length > 0, 10],
+    [signals.hasReadme, 14],
+    [signals.hasFileList, 24],
+    [signals.forks !== null, 5],
+    [signals.updatedAt !== null, 5],
+    [repoType !== 'unknown', 12],
+  ])
+  return clampScore(value)
+}
+
+function buildGroupHighlights(courseGroup: CourseGroup, repoType: RepoType, signals: RepoSignals, coreTopics: string[]): string[] {
+  if (courseGroup === 'foundation_algorithms') return compact([
+    coreTopics.length > 0 ? `Trong tam: ${coreTopics.slice(0, 5).join(', ')}.` : null,
+    signals.hasTests ? 'Co test/input-output de doi chieu.' : 'Diem yeu can check: de bai va test/input-output.',
+  ], 2)
+  if (courseGroup === 'software_project') return compact([
+    detectTechTools(repoType, courseGroup, signals).length > 0 ? `Stack/tools: ${detectTechTools(repoType, courseGroup, signals).slice(0, 5).join(', ')}.` : null,
+    signals.hasEnvExample || signals.hasDockerConfig ? 'Co tin hieu env/Docker cho setup.' : 'Can check env, DB script va lenh run.',
+  ], 2)
+  if (courseGroup === 'design_process') return compact([
+    coreTopics.length > 0 ? `Artifact chinh: ${coreTopics.slice(0, 5).join(', ')}.` : null,
+    signals.hasSourceCode ? 'Co the co demo/prototype kem tai lieu.' : 'Co ve nghieng ve tai lieu/diagram hon source code.',
+  ], 2)
+  if (courseGroup === 'general_skills') return compact([
+    coreTopics.length > 0 ? `Noi dung chinh: ${coreTopics.slice(0, 5).join(', ')}.` : null,
+    'Danh gia theo rubric/guideline/report/slide, khong dua primary language thanh diem manh neu khong co code context.',
+  ], 2)
+  return ['Chua ro nhom mon, can mo GitHub de xac nhan ngu canh.']
+}
+
+function buildRecommendation(repoType: RepoType, rating: UsefulnessRating, readyLevel: ReadyToUseLevel, signals: RepoSignals): string {
+  if (rating === 'insufficient_data') return 'Chua nen clone; mo GitHub kiem tra README va file tree truoc.'
+  if (rating === 'highly_recommended' || rating === 'recommended') {
+    if (repoType === 'project_practice') return readyLevel === 'very_ready' || readyLevel === 'ready' ? 'Nen clone thu de xem cach to chuc va chay local.' : 'Nen xem source, nhung khoan clone cho deadline neu setup chua ro.'
+    if (repoType === 'programming_exercise') return 'Nen tham khao de luyen bai/doi chieu cach giai, nhung tu lam truoc khi copy.'
+    if (repoType === 'exam_review') return 'Nen xem de on thi; diem can check la dap an va nam/ky.'
+    return 'Nen xem nhu nguon hoc phu, uu tien dung dung phan lien quan.'
+  }
+  if (!signals.hasFileList) return 'Chi nen tham khao nhanh vi DevOrbit chua co file tree.'
+  return 'Xem co chon loc; diem yeu lon nhat la can tu xac minh README/pham vi.'
+}
+
+function buildQuickBullets(repoIdentity: string, techTools: string[], coreTopics: string[], recommendation: string, signals: RepoSignals): string[] {
+  return compact([
+    `Repo nay la ${repoIdentity.toLowerCase()}.`,
+    techTools.length > 0 ? `Vu khi: ${techTools.slice(0, 5).join(', ')}.` : null,
+    coreTopics.length > 0 ? `Chu de cot loi: ${coreTopics.slice(0, 6).join(', ')}.` : 'Chua du du lieu de tach chu de cot loi.',
+    recommendation,
+  ], 3, [signals.hasFileList ? 'Co file tree de soi nhanh cau truc repo.' : 'Chua du du lieu de X-quang repo.'])
+}
+
+function classifyRepoType(signals: RepoSignals): { repoType: RepoType; reason: string } {
+  const text = normalizeSearchText([
+    signals.courseCode,
+    signals.courseName,
+    signals.name,
+    signals.description,
+    signals.readmeText,
     signals.primaryLanguage,
     ...signals.techStacks,
     ...signals.topics,
     ...signals.filePaths,
   ])
+  const hasFoundationAlgorithmContext = isFoundationAlgorithmContext(text)
   const scores: Record<RepoType, number> = {
     programming_exercise: score([
       signals.hasAssignments,
-      signals.hasSourceCode && contains(text, /\b(code|programming|algorithm|dsa|oop|java|python|c\+\+|cpp|c#)\b/),
+      signals.hasSourceCode && contains(text, /\b(code|programming|algorithms?|dsa|data structures?|ctdl|giai thuat|oop|java|python|c\+\+|cpp|c#)\b/),
+      signals.hasSourceCode && hasFoundationAlgorithmContext,
       signals.hasTests,
       signals.hasSolutions,
     ]),
@@ -309,7 +603,7 @@ function classifyRepoType(signals: RepoSignals): { repoType: RepoType; reason: s
     .sort((a, b) => b[1] - a[1])
   const strongTypes = ranked.filter(([, value]) => value >= 2)
 
-  if (strongTypes.length >= 2 && strongTypes[0][1] - strongTypes[1][1] <= 1) {
+  if (strongTypes.length >= 2 && strongTypes[0][1] <= 3 && strongTypes[0][1] - strongTypes[1][1] <= 1) {
     return {
       repoType: 'mixed_resource',
       reason: `Repo có tín hiệu chồng lấn giữa ${repoTypeLabels[strongTypes[0][0]].toLowerCase()} và ${repoTypeLabels[strongTypes[1][0]].toLowerCase()}.`,
@@ -319,6 +613,12 @@ function classifyRepoType(signals: RepoSignals): { repoType: RepoType; reason: s
     return {
       repoType: ranked[0][0],
       reason: `Tín hiệu mạnh nhất đến từ ${repoTypeLabels[ranked[0][0]].toLowerCase()}: ${typeEvidence(ranked[0][0], signals)}.`,
+    }
+  }
+  if (hasFoundationAlgorithmContext && signals.hasSourceCode) {
+    return {
+      repoType: 'programming_exercise',
+      reason: 'Ngu canh mon nen tang/thuat toan co ngon ngu/source signal, nen uu tien xem nhu bai tap/lab thay vi project app.',
     }
   }
   if (signals.hasSourceCode && (signals.description || signals.techStacks.length > 0)) {
@@ -333,53 +633,14 @@ function classifyRepoType(signals: RepoSignals): { repoType: RepoType; reason: s
   }
 }
 
-function rateUsefulness(repoType: RepoType, signals: RepoSignals): UsefulnessRating {
-  if (repoType === 'unknown') {
-    return signals.evidence.length <= 2 ? 'insufficient_data' : 'quick_reference'
-  }
-  if (repoType === 'mixed_resource') {
-    if (signals.organizedFolders && (signals.hasReadme || signals.hasDocs)) return 'recommended'
-    return 'selective'
-  }
-  if (repoType === 'programming_exercise') {
-    if (signals.hasSourceCode && signals.hasAssignments && signals.hasTests && (signals.hasSolutions || signals.organizedFolders)) return 'highly_recommended'
-    if (signals.hasSourceCode && (signals.hasTests || signals.hasSolutions || (signals.hasAssignments && signals.organizedFolders))) return 'recommended'
-    if (signals.hasSourceCode && (signals.description || signals.topics.length > 0)) return 'selective'
-    return 'quick_reference'
-  }
-  if (repoType === 'project_practice') {
-    if (signals.hasReadme && signals.hasSourceCode && signals.hasPackageFile && (signals.hasEnvExample || signals.hasDockerConfig || signals.hasBuildFile)) return 'highly_recommended'
-    if (signals.hasSourceCode && (signals.hasPackageFile || signals.techStacks.length >= 2) && (signals.description || signals.hasReadme)) return 'recommended'
-    if (signals.hasSourceCode) return 'selective'
-    return 'low_priority'
-  }
-  if (repoType === 'study_material') {
-    if ((signals.hasSlides || signals.hasNotes) && (signals.organizedFolders || signals.hasDocs || signals.hasReadme)) return 'highly_recommended'
-    if (signals.hasSlides || signals.hasNotes || signals.hasDocs) return 'recommended'
-    return 'quick_reference'
-  }
-  if (repoType === 'exam_review') {
-    if (signals.hasExam && signals.hasAnswerOrSolution && (signals.organizedFolders || signals.hasFileList || signals.description)) return 'highly_recommended'
-    if (signals.hasExam) return signals.hasAnswerOrSolution ? 'recommended' : 'selective'
-    return 'quick_reference'
-  }
-  return 'selective'
+function isFoundationAlgorithmContext(text: string): boolean {
+  return contains(text, /\b(it003|dsa|ctdl|data structures?|cau truc du lieu|giai thuat|algorithms?|lap trinh|co so lap trinh|programming fundamentals|stack|queue|tree|graph|sorting)\b/)
 }
 
 function getConfidence(signals: RepoSignals, repoType: RepoType): ConfidenceLabel {
-  const signalCount = [
-    signals.description,
-    signals.primaryLanguage,
-    signals.topics.length > 0,
-    signals.hasReadme,
-    signals.hasFileList,
-    signals.techStacks.length > 0,
-    signals.stars !== null,
-    signals.forks !== null,
-    signals.updatedAt,
-  ].filter(Boolean).length
-  if (repoType === 'unknown' || signalCount <= 3) return 'low'
-  if (signalCount >= 6 || signals.hasFileList) return 'high'
+  const confidenceScore = buildConfidenceScore(signals, repoType)
+  if (repoType === 'unknown' || confidenceScore < 42) return 'low'
+  if (confidenceScore >= 70) return 'high'
   return 'medium'
 }
 
@@ -599,6 +860,22 @@ function contains(value: string, pattern: RegExp): boolean {
 
 function score(values: boolean[]): number {
   return values.filter(Boolean).length
+}
+
+function scoreSignals(values: Array<[boolean, number]>): number {
+  return values.reduce((total, [enabled, weight]) => total + (enabled ? weight : 0), 0)
+}
+
+function clampScore(value: number): number {
+  return Math.max(0, Math.min(100, Math.round(value)))
+}
+
+function collectMatches(text: string, matchers: Array<[string, RegExp]>): string[] {
+  return matchers.filter(([, pattern]) => pattern.test(text)).map(([label]) => label)
+}
+
+function unique(values: string[]): string[] {
+  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)))
 }
 
 function countTopLevelFolders(paths: string[]): number {

@@ -23,8 +23,9 @@ DevOrbit provides a public student-facing GPA calculator that estimates 10-point
 - Students can enter course name, credits, and grade on the 10-point scale.
 - Students can add and remove course rows.
 - Students can duplicate a row, clear all rows, add five blank rows quickly, and reset to the default two-row template.
-- Calculator draft rows, mode, semester, GPA inputs, and goal what-if grades are saved in browser storage and restored after reload.
-- Students can clear the saved browser draft and return the calculator to its default rows, semester mode, empty GPA inputs, semester 1 preset, and empty goal what-if grades.
+- Calculator draft rows, mode, semester, GPA inputs, and goal what-if grades are saved in browser storage only when students explicitly choose `Lưu bản nháp`.
+- Saved browser drafts are not loaded automatically; students can restore with `Khôi phục` or dismiss the prompt with `Bỏ qua`.
+- Students can clear the saved browser draft without resetting the current calculator state or writing an empty replacement draft.
 - Students can choose between semester GPA calculation and cumulative GPA estimation.
 - Students can choose a GPA goal planning mode.
 - Semester GPA mode only uses the entered course rows for the current term.
@@ -58,7 +59,7 @@ DevOrbit provides a public student-facing GPA calculator that estimates 10-point
 
 | Layer | Expected proof |
 | --- | --- |
-| Unit | Vitest render tests for weighted 10-point GPA calculation, row add/remove, validation guidance, row-level validation reasons, ignored-row count, quick row actions, localStorage draft restore/autosave/corrupt handling including goal what-if grades, visible draft clearing and default reset, visible student-page background atmosphere, no 4-point output, semester preset stats, replacement and merge loading, saved learning roadmap assignment precedence, cumulative GPA estimate, goal GPA reverse calculation, infeasible goals, already-above-target goals, per-course target rows, goal what-if projections, and route rendering |
+| Unit | Vitest render tests for weighted 10-point GPA calculation, row add/remove, validation guidance, row-level validation reasons, ignored-row count, quick row actions, explicit localStorage draft save/restore/dismiss/corrupt handling including goal what-if grades, visible draft clearing without default rewrite, visible student-page background atmosphere, no 4-point output, semester preset stats, replacement and merge loading, saved learning roadmap assignment precedence, cumulative GPA estimate, goal GPA reverse calculation, infeasible goals, already-above-target goals, per-course target rows, goal what-if projections, and route rendering |
 | Integration | Not required; preset uses existing public course catalogue endpoint without changing backend contract |
 | E2E | Not required for this static route slice |
 | Platform | Vite production build |
@@ -80,5 +81,5 @@ No harness changes required.
 - Added separate semester GPA and cumulative GPA estimate modes.
 - Added GPA goal planner mode with reverse GPA calculation, feasibility states, and per-course target estimates.
 - Added row-level validation reasons, ignored-row summary notice, duplicate row, clear all, add five rows, and reset default quick actions.
-- Added browser-local draft autosave, reload restore, corrupt draft fallback, and visible saved-draft clearing.
+- Replaced browser-local draft autosave with explicit save, restore, dismiss, corrupt draft fallback, and visible saved-draft clearing.
 - Aligned the GPA calculator background with the shared course-list atmosphere using `SectionTransition` and `ParallaxLayer`.

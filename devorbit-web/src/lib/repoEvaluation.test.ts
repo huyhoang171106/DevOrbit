@@ -8,6 +8,7 @@ type RepoFixture = RepoSummary & {
   updatedAt?: string | null
   readmeExcerpt?: string | null
   files?: string[]
+  fileTree?: string | null
 }
 
 function repo(overrides: Partial<RepoFixture> = {}): RepoFixture {
@@ -175,5 +176,166 @@ describe('evaluateRepository', () => {
     expect(result.usefulnessRating).toBe('insufficient_data')
     expect(result.confidence).toBe('low')
     expect(result.quickSummary).toContain('Chưa đủ dữ liệu')
+  })
+  test('distinguishes a DSA repo with graph tree sorting topics from loose code', () => {
+    const rich = evaluateRepository(repo({
+      displayName: 'ctdl-gt-labs',
+      description: 'CTDL GT lab solutions',
+      primaryLanguage: 'C++',
+      courseCode: 'IT003',
+      courseName: 'Cau truc du lieu va giai thuat',
+      fileTree: [
+        'README.md',
+        'linked-list/main.cpp',
+        'stack-queue/stack.cpp',
+        'tree/binary_tree.cpp',
+        'graph/dijkstra.cpp',
+        'sorting/quick_sort.cpp',
+        'tests/graph_test.cpp',
+      ].join('\n'),
+    }))
+    const loose = evaluateRepository(repo({
+      displayName: 'ctdl-code',
+      description: 'CTDL snippets',
+      primaryLanguage: 'C++',
+      courseCode: 'IT003',
+      courseName: 'Cau truc du lieu va giai thuat',
+      fileTree: 'main.cpp\nhelper.cpp',
+    }))
+
+    expect(rich.courseGroup).toBe('foundation_algorithms')
+    expect(rich.coreTopics).toEqual(expect.arrayContaining(['Linked List', 'Tree', 'Graph', 'Sorting']))
+    expect(rich.usefulnessScore).toBeGreaterThan(loose.usefulnessScore)
+    expect(loose.readyToUseLevel).not.toBe('very_ready')
+  })
+
+  test('keeps DSA repo with course and language but missing file tree above low priority', () => {
+    const result = evaluateRepository(repo({
+      displayName: 'dsa-practice',
+      description: 'C++ DSA practice for stack and queue',
+      primaryLanguage: 'C++',
+      courseCode: 'IT003',
+      courseName: 'Cau truc du lieu va giai thuat',
+      readmeExcerpt: 'Practice stack queue tree graph exercises.',
+    }))
+
+    expect(result.courseGroup).toBe('foundation_algorithms')
+    expect(result.usefulnessRating).not.toBe('low_priority')
+    expect(result.recommendation).toContain('tham khao')
+  })
+
+  test('classifies IT003 C++ repo without file tree as programming exercise, not project setup', () => {
+    const result = evaluateRepository(repo({
+      displayName: 'IT003 - Data Structures and Algorithms',
+      description: 'Data Structures and Algorithms practice',
+      primaryLanguage: 'C++',
+      techStacks: [],
+      courseCode: 'IT003',
+      courseName: 'Data Structures and Algorithms',
+      fileTree: null,
+      readmeExcerpt: null,
+    }))
+    const checks = result.checksBeforeUsing.join(' ')
+
+    expect(result.courseGroup).toBe('foundation_algorithms')
+    expect(result.repoType).toBe('programming_exercise')
+    expect(result.repoIdentity).not.toBe('Project thuc hanh')
+    expect(result.weapons).toContain('C++')
+    expect(checks).toContain('source code')
+    expect(checks).toContain('test case')
+    expect(checks).not.toContain('env')
+    expect(checks).not.toContain('database/API')
+  })
+
+  test('does not treat SS004 Python metadata as the main weapon without code context', () => {
+    const result = evaluateRepository(repo({
+      displayName: 'ss004-career-skills',
+      description: 'Ky nang nghe nghiep assignments and presentation',
+      primaryLanguage: 'Python',
+      techStacks: [],
+      courseCode: 'SS004',
+      courseName: 'Ky nang nghe nghiep',
+      fileTree: 'README.md\nrubric.pdf\npresentation.pptx\nreport.docx',
+    }))
+
+    expect(result.courseGroup).toBe('general_skills')
+    expect(result.weapons).not.toContain('Python')
+    expect(result.coreTopics).toEqual(expect.arrayContaining(['Presentation', 'Report', 'Rubric']))
+    expect(result.groupHighlights.join(' ')).toContain('rubric')
+  })
+
+  test('rates project with env package and setup readme more ready than project without setup', () => {
+    const ready = evaluateRepository(repo({
+      displayName: 'course-management-api',
+      description: 'Course management REST API with auth and database',
+      primaryLanguage: 'TypeScript',
+      techStacks: ['React', 'Spring Boot', 'PostgreSQL'],
+      courseCode: 'SE104',
+      courseName: 'Do an phan mem',
+      readmeExcerpt: 'Setup: npm install, configure .env.example, run database migration, docker compose up.',
+      fileTree: 'README.md\npackage.json\n.env.example\ndocker-compose.yml\nsrc/server.ts\nmigrations/init.sql',
+    }))
+    const rough = evaluateRepository(repo({
+      displayName: 'course-management-demo',
+      description: 'Course app demo',
+      primaryLanguage: 'TypeScript',
+      techStacks: ['React'],
+      courseCode: 'SE104',
+      courseName: 'Do an phan mem',
+      fileTree: 'src/App.tsx\nsrc/main.tsx',
+    }))
+
+    expect(ready.courseGroup).toBe('software_project')
+    expect(ready.readyToUseStars).toBeGreaterThan(rough.readyToUseStars)
+    expect(ready.coreTopics).toEqual(expect.arrayContaining(['Auth', 'REST API', 'Database', 'Deployment']))
+  })
+
+  test('recognizes design process repos with SRS UML ERD and Figma', () => {
+    const result = evaluateRepository(repo({
+      displayName: 'ooad-srs-uml-figma',
+      description: 'OOAD software design documents with SRS UML ERD and Figma prototype',
+      primaryLanguage: '',
+      courseCode: 'SE101',
+      courseName: 'Nhap mon cong nghe phan mem',
+      fileTree: 'README.md\ndocs/SRS.pdf\ndiagrams/use-case.drawio\ndiagrams/erd.drawio\ndiagrams/sequence.puml\nprototype/figma-link.md',
+    }))
+
+    expect(result.courseGroup).toBe('design_process')
+    expect(result.coreTopics).toEqual(expect.arrayContaining(['SRS', 'Use Case', 'UML', 'ERD', 'Prototype']))
+    expect(result.techTools).toEqual(expect.arrayContaining(['Figma', 'Draw.io', 'PlantUML']))
+  })
+
+  test('recognizes final exam repo with answer solution as exam review', () => {
+    const result = evaluateRepository(repo({
+      displayName: 'csdl-final-2024-answer',
+      description: 'Final exam 2024 with answer solution',
+      primaryLanguage: '',
+      courseCode: 'IT004',
+      courseName: 'Co so du lieu',
+      fileTree: 'final/2024.pdf\nanswer/final-2024-solution.md',
+    }))
+
+    expect(result.repoType).toBe('exam_review')
+    expect(result.repoIdentity).toBe('Tai lieu on thi')
+    expect(result.coreTopics).toEqual(expect.arrayContaining(['Final exam', 'Answer key']))
+  })
+
+  test('unknown sparse repo falls back without fake X-ray insights', () => {
+    const result = evaluateRepository(repo({
+      displayName: 'abc',
+      description: '',
+      primaryLanguage: '',
+      stars: null,
+      techStacks: [],
+      courseId: null,
+      courseCode: null,
+      courseName: null,
+      fileTree: null,
+      readmeExcerpt: null,
+    }))
+
+    expect(result.repoIdentity).toBe('Chua du du lieu de xac dinh')
+    expect(result.readyToUseLevel).toBe('insufficient_data')
+    expect(result.quickBullets.join(' ')).toContain('Chua du du lieu')
   })
 })

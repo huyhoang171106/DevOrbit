@@ -88,4 +88,16 @@ public class GithubRepo {
 
     /** Number of GitHub stars (popularity metric) */
     private Integer stars;
+
+    /** Short excerpt from the README, fetched during scan/review when available */
+    @Column(name = "readme_excerpt", columnDefinition = "TEXT")
+    private String readmeExcerpt;
+
+    /** Whether GitHub reported a README or the file tree contains one */
+    @Column(name = "has_readme")
+    private Boolean hasReadme;
+
+    /** Short, newline-separated repository tree used by frontend evaluation */
+    @Column(name = "file_tree", columnDefinition = "TEXT")
+    private String fileTree;
 }

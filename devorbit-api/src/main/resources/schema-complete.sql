@@ -109,7 +109,10 @@ create table if not exists github_repos (
     primary_language varchar(100),
     is_active        boolean       not null default true,
     course_id        bigint        references courses(stt),
-    stars            integer
+    stars            integer,
+    readme_excerpt   text,
+    has_readme       boolean,
+    file_tree        text
 );
 
 create table if not exists repo_tech_stacks (
@@ -140,6 +143,8 @@ create table if not exists repo_candidates (
     forks            integer,
     last_pushed_at   varchar(255),
     readme_excerpt   text,
+    has_readme       boolean,
+    file_tree        text,
     status           varchar(20) not null default 'NEW',
     review_note      text,
     assigned_reviewer varchar(50)

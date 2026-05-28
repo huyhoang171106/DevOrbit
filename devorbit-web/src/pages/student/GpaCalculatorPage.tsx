@@ -180,9 +180,9 @@ function goalGuidance(status: GoalStatus): string {
   return 'Nhập GPA hiện tại, tín chỉ đã tích lũy và GPA mục tiêu trong khoảng 0 đến 10.'
 }
 
-function courseToInput(course: CourseSummary, index: number): CourseInput {
+function courseToInput(course: CourseSummary, index: number, id = course.id || index + 1): CourseInput {
   return {
-    id: course.id || index + 1,
+    id,
     name: `${course.code} - ${course.name}`,
     credits: String(course.credits ?? 3),
     grade10: '',
@@ -261,6 +261,9 @@ export function GpaCalculatorPage() {
   const semesterCourses = useMemo(() => {
     return getSemesterCourses(catalogue, Number(selectedSemester), savedSemesterMap)
   }, [catalogue, savedSemesterMap, selectedSemester])
+  const semesterPresetCredits = useMemo(() => {
+    return semesterCourses.reduce((sum, course) => sum + Number(course.credits ?? 0), 0)
+  }, [semesterCourses])
 
   const summary = useMemo(() => {
     const parsedCourses = courses.map((course) => ({
@@ -464,13 +467,30 @@ export function GpaCalculatorPage() {
     })
   }
 
-  const applySemesterPreset = () => {
+  const readLatestSemesterPreset = () => {
     const latestSemesterMap = readSavedSemesterMap()
     const latestSemesterCourses = getSemesterCourses(catalogue, Number(selectedSemester), latestSemesterMap)
     setSavedSemesterMap(latestSemesterMap)
+    return latestSemesterCourses
+  }
+
+  const replaceWithSemesterPreset = () => {
+    const latestSemesterCourses = readLatestSemesterPreset()
     if (latestSemesterCourses.length === 0) return
-    setCourses(latestSemesterCourses.map(courseToInput))
+    setCourses(latestSemesterCourses.map((course, index) => courseToInput(course, index)))
     setProjectedGrades({})
+  }
+
+  const mergeSemesterPreset = () => {
+    const latestSemesterCourses = readLatestSemesterPreset()
+    if (latestSemesterCourses.length === 0) return
+    setCourses((current) => {
+      const startId = Math.max(...current.map((course) => course.id), 0) + 1
+      return [
+        ...current,
+        ...latestSemesterCourses.map((course, index) => courseToInput(course, index, startId + index)),
+      ]
+    })
   }
 
   const removeCourse = (id: number) => {
@@ -610,10 +630,15 @@ export function GpaCalculatorPage() {
           )}
 
           <div className="mb-6 rounded-[8px] border border-orbit-border bg-orbit-surface p-4 shadow-diffusion">
-            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_180px] md:items-end">
+            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_220px] md:items-end">
               <div>
                 <p className="text-[12px] font-black uppercase tracking-[0.14em] text-orbit-accent">Preset theo học kỳ</p>
                 <p className="mt-2 text-[13px] leading-6 text-orbit-text-secondary">{presetStatus}</p>
+                {semesterCourses.length > 0 && (
+                  <p className="mt-2 text-[13px] font-semibold leading-6 text-orbit-text">
+                    Học kỳ {selectedSemester} có {semesterCourses.length} môn, {semesterPresetCredits} tín chỉ. Thay thế sẽ ghi đè danh sách hiện tại; gộp sẽ thêm vào cuối.
+                  </p>
+                )}
               </div>
               <div>
                 <label className="mb-2 block text-[12px] font-bold uppercase tracking-[0.12em] text-orbit-text-muted" htmlFor="semester-preset">
@@ -630,14 +655,24 @@ export function GpaCalculatorPage() {
                   ))}
                 </select>
               </div>
-              <button
-                type="button"
-                onClick={applySemesterPreset}
-                disabled={semesterCourses.length === 0}
-                className="inline-flex h-11 items-center justify-center rounded-[8px] bg-orbit-accent px-5 text-[13px] font-bold uppercase tracking-[0.12em] text-zinc-950 transition-colors hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Áp dụng học kỳ
-              </button>
+              <div className="grid gap-2">
+                <button
+                  type="button"
+                  onClick={replaceWithSemesterPreset}
+                  disabled={semesterCourses.length === 0}
+                  className="inline-flex h-11 items-center justify-center rounded-[8px] bg-orbit-accent px-5 text-[13px] font-bold uppercase tracking-[0.12em] text-zinc-950 transition-colors hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Thay thế danh sách
+                </button>
+                <button
+                  type="button"
+                  onClick={mergeSemesterPreset}
+                  disabled={semesterCourses.length === 0}
+                  className="inline-flex h-11 items-center justify-center rounded-[8px] border border-orbit-border px-5 text-[13px] font-bold uppercase tracking-[0.12em] text-orbit-text-secondary transition-colors hover:border-orbit-accent/60 hover:text-orbit-text disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Gộp vào danh sách
+                </button>
+              </div>
             </div>
           </div>
 

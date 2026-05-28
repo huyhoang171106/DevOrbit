@@ -34,6 +34,8 @@ DevOrbit provides a public student-facing GPA calculator that estimates 10-point
 - GPA goal mode shows approximate per-course target grades from the current valid course rows.
 - GPA goal mode lets students enter projected grades per current-term course and recalculates projected term GPA, projected cumulative GPA, target delta, or the remaining average needed for unfilled courses.
 - Students can select a semester preset that fills rows from the DevOrbit course catalogue.
+- The selected semester preset shows course count and total credits before the student applies it.
+- Students can choose whether a semester preset replaces the current rows or merges into the existing rows.
 - Semester presets skip zero-credit courses and keep grade fields blank.
 - Semester presets respect saved learning roadmap assignments from `devorbit_kanban_semester_map` before falling back to catalogue semesters.
 - The calculator shows current-term credits, weighted semester GPA on the 10-point scale, academic classification, and projected cumulative GPA when cumulative mode is active.
@@ -55,7 +57,7 @@ DevOrbit provides a public student-facing GPA calculator that estimates 10-point
 
 | Layer | Expected proof |
 | --- | --- |
-| Unit | Vitest render tests for weighted 10-point GPA calculation, row add/remove, validation guidance, row-level validation reasons, ignored-row count, quick row actions, localStorage draft restore/autosave/corrupt handling including goal what-if grades, hidden draft clearing action, visible student-page background atmosphere, no 4-point output, semester preset loading, saved learning roadmap assignment precedence, cumulative GPA estimate, goal GPA reverse calculation, infeasible goals, already-above-target goals, per-course target rows, goal what-if projections, and route rendering |
+| Unit | Vitest render tests for weighted 10-point GPA calculation, row add/remove, validation guidance, row-level validation reasons, ignored-row count, quick row actions, localStorage draft restore/autosave/corrupt handling including goal what-if grades, hidden draft clearing action, visible student-page background atmosphere, no 4-point output, semester preset stats, replacement and merge loading, saved learning roadmap assignment precedence, cumulative GPA estimate, goal GPA reverse calculation, infeasible goals, already-above-target goals, per-course target rows, goal what-if projections, and route rendering |
 | Integration | Not required; preset uses existing public course catalogue endpoint without changing backend contract |
 | E2E | Not required for this static route slice |
 | Platform | Vite production build |

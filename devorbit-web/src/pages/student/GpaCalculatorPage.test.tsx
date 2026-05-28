@@ -221,6 +221,7 @@ describe('GpaCalculatorPage', () => {
     fireEvent.change(input('completed-credits'), { target: { value: '100' } })
     fireEvent.change(input('target-gpa'), { target: { value: '8' } })
 
+    expect(screen.getByText('58.00')).toBeInTheDocument()
     expect(screen.getByText(/không khả thi|khong kha thi/i)).toBeInTheDocument()
     expect(screen.getByText(/cần cao hơn 10|can cao hon 10/i)).toBeInTheDocument()
   })

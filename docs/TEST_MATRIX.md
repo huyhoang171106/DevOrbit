@@ -31,6 +31,7 @@ This file maps product behavior to proof.
 | US-027 | Repo Analysis Summary Priority | pass | no | no | Vite build | implemented | `devorbit-web`: `npm run test -- repoAiAnalysis repoAnalysisService`; `npm run build` |
 | US-028 | Repo Analysis Collapsible Details | pass | no | no | Vite build | implemented | `devorbit-web`: `npm run test -- repoAiAnalysis repoAnalysisService`; `npm run build` |
 | US-029 | Repo Analysis Decision Focus | pass | no | no | Vite build | implemented | `devorbit-web`: `npm run test -- repoAiAnalysis repoAnalysisService`; `npm run build` |
+| US-030 | Contextual Repo Evaluation | pass | no | no | Vite build | implemented | `devorbit-web`: `npm run test -- repoEvaluation repoAiAnalysis repoAnalysisService`; `npm run build` |
 
 ## Evidence Rules
 

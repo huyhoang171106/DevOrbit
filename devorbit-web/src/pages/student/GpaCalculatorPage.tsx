@@ -453,6 +453,18 @@ export function GpaCalculatorPage() {
     setProjectedGrades({})
   }
 
+  const clearSavedDraft = () => {
+    localStorage.removeItem(draftStorageKey)
+    setCourses(initialCourses)
+    setCalculationMode('semester')
+    setCurrentGpa('')
+    setCompletedCredits('')
+    setTargetGpa('')
+    setSelectedSemester('1')
+    setProjectedGrades({})
+    setDraftSavedAt('')
+  }
+
   const duplicateCourse = (id: number) => {
     setProjectedGrades({})
     setCourses((current) => {
@@ -924,6 +936,14 @@ export function GpaCalculatorPage() {
 
           <div className="mt-4 rounded-[8px] border border-orbit-border bg-orbit-bg p-3 text-[13px] leading-6 text-orbit-text-secondary">
             Đã lưu tạm trên trình duyệt{draftSavedAt ? ` lúc ${new Date(draftSavedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}` : ''}.
+            <button
+              type="button"
+              onClick={clearSavedDraft}
+              className="mt-3 inline-flex h-9 w-full items-center justify-center gap-2 rounded-[8px] border border-orbit-border px-3 text-[12px] font-bold uppercase tracking-[0.12em] text-orbit-text-secondary transition-colors hover:border-rose-300/60 hover:text-rose-300"
+            >
+              <Trash2 className="h-4 w-4" aria-hidden="true" />
+              Xóa bản nháp
+            </button>
           </div>
 
           <div className="mt-6 rounded-[8px] border border-orbit-border bg-orbit-bg p-4 text-[13px] leading-6 text-orbit-text-secondary">

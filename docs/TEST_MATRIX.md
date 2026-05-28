@@ -21,7 +21,7 @@ This file maps product behavior to proof.
 | US-017 | AI Roadmap Generator | - | pass | pass | no | implemented | [US-017-PLAN-1.1](file:///d:/temp/devorbit/.gsd/plans/US-017-PLAN-1.1.md) |
 | US-018 | Mobile Repo Tech Stack Filter | pass | no | no | Gradle unit test | implemented | `devorbit-mobile`: `.\gradlew.bat :app:testDebugUnitTest` |
 | US-019 | Mobile Course Hub Detail Navigation | pass | no | no | Gradle unit test | implemented | `devorbit-mobile`: `.\gradlew.bat :app:testDebugUnitTest` |
-| US-020 | GPA Calculator + Semester Presets + Cumulative Estimate + Goal Planner + Goal What-If + Row UX + Browser Draft + Background Atmosphere | pass | no | no | Vite build | implemented | `devorbit-web`: `npm test -- GpaCalculatorPage router`; `npm run build` |
+| US-020 | GPA Calculator + Semester Presets + Preset Stats/Merge + Cumulative Estimate + Goal Planner + Goal What-If + Row UX + Browser Draft + Background Atmosphere | pass | no | no | Vite build | implemented | `devorbit-web`: `npm test -- GpaCalculatorPage router`; `npm run build` |
 
 ## Evidence Rules
 

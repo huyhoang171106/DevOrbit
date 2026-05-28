@@ -746,7 +746,7 @@ export function GpaCalculatorPage() {
                 <div className="flex items-center justify-between border-t border-orbit-border pt-4">
                   <dt className="text-[14px] text-orbit-text-secondary">Kỳ này cần trung bình</dt>
                   <dd className="text-[15px] font-bold text-orbit-text">
-                    {goalSummary.valid ? formatNumber(clampGrade10(goalSummary.requiredTermGpa)) : '--'}
+                    {goalSummary.valid ? formatNumber(goalSummary.requiredTermGpa) : '--'}
                   </dd>
                 </div>
                 <div className="flex items-center justify-between">

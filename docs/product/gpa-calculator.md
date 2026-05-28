@@ -29,7 +29,7 @@ DevOrbit includes a student-facing GPA calculator so students can quickly estima
 - Goal planning mode accepts current GPA, completed credits, target GPA, and current-term course rows.
 - Goal planning formula: `(target GPA * (completed credits + semester credits) - current GPA * completed credits) / semester credits`.
 - Goal planning results include the required current-term GPA, feasibility status, total credits after the term, and approximate per-course target grades.
-- If the required current-term GPA is above 10, the target is marked not feasible for the current term.
+- If the required current-term GPA is above 10, the target is marked not feasible for the current term and the result displays the raw required GPA above 10 instead of capping it to 10.
 - If the required current-term GPA is below 0, the student is already safely above the target.
 - Results include semester credits, weighted 10-point semester GPA, a simple academic classification, cumulative GPA projection when that mode is active, and GPA goal planning when that mode is active.
 - The calculator does not display or convert to a 4-point scale.

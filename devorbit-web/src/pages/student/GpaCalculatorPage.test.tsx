@@ -139,12 +139,33 @@ describe('GpaCalculatorPage', () => {
 
     await screen.findByText(/DevOrbit|preset/i)
     fireEvent.change(select('semester-preset'), { target: { value: '1' } })
-    fireEvent.click(buttonByText(/Áp dụng học kỳ|Ap dung hoc ky/i))
+    expect(screen.getByText(/Học kỳ 1 có 2 môn, 8 tín chỉ|Hoc ky 1 co 2 mon, 8 tin chi/i)).toBeInTheDocument()
+    fireEvent.click(buttonByText(/Thay thế danh sách|Thay the danh sach/i))
 
     expect(screen.getByDisplayValue('MA006 - Giai tich')).toBeInTheDocument()
     expect(screen.getByDisplayValue('IT001 - Nhap mon lap trinh')).toBeInTheDocument()
     expect(screen.queryByDisplayValue('PE0231 - Giao duc the chat 1')).not.toBeInTheDocument()
     expect(screen.getAllByDisplayValue('4')).toHaveLength(2)
+  })
+
+  test('can merge a semester preset into the current course rows', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      json: async () => [
+        { id: 11, code: 'IT001', name: 'Nhap mon lap trinh', repoCount: 0, semester: 1, credits: 4 },
+        { id: 12, code: 'MA006', name: 'Giai tich', repoCount: 0, semester: 1, credits: 4 },
+      ],
+    } as Response)
+
+    render(<GpaCalculatorPage />)
+
+    fireEvent.change(input('course-name-1'), { target: { value: 'Mon dang nhap' } })
+    await screen.findByText(/Học kỳ 1 có 2 môn, 8 tín chỉ|Hoc ky 1 co 2 mon, 8 tin chi/i)
+    fireEvent.click(buttonByText(/Gộp vào danh sách|Gop vao danh sach/i))
+
+    expect(screen.getByDisplayValue('Mon dang nhap')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('IT001 - Nhap mon lap trinh')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('MA006 - Giai tich')).toBeInTheDocument()
   })
 
   test('uses saved learning roadmap semester assignments before catalogue semesters', async () => {
@@ -162,7 +183,7 @@ describe('GpaCalculatorPage', () => {
 
     await screen.findByText(/DevOrbit|preset/i)
     fireEvent.change(select('semester-preset'), { target: { value: '1' } })
-    fireEvent.click(buttonByText(/Áp dụng học kỳ|Ap dung hoc ky/i))
+    fireEvent.click(buttonByText(/Thay thế danh sách|Thay the danh sach/i))
 
     expect(screen.getByDisplayValue('MA006 - Giai tich')).toBeInTheDocument()
     expect(screen.getByDisplayValue('IT002 - Lap trinh huong doi tuong')).toBeInTheDocument()

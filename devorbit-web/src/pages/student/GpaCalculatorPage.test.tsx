@@ -204,8 +204,34 @@ describe('GpaCalculatorPage', () => {
     expect(screen.getByText(/Kỳ này cần trung bình|Ky nay can trung binh/i)).toBeInTheDocument()
     expect(screen.getAllByText('8.93').length).toBeGreaterThan(0)
     expect(screen.getByText(/Mục tiêu khó nhưng còn khả thi|Muc tieu kho nhung con kha thi/i)).toBeInTheDocument()
-    expect(screen.getByText(/Nhap mon lap trinh/i)).toBeInTheDocument()
-    expect(screen.getByText(/Cau truc du lieu/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/Nhap mon lap trinh/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/Cau truc du lieu/i).length).toBeGreaterThan(0)
+  })
+
+  test('updates goal what-if results from projected per-course grades', () => {
+    render(<GpaCalculatorPage />)
+
+    fireEvent.change(input('course-name-1'), { target: { value: 'Nhap mon lap trinh' } })
+    fireEvent.change(input('course-credits-1'), { target: { value: '4' } })
+    fireEvent.change(input('course-grade-1'), { target: { value: '8' } })
+    fireEvent.change(input('course-name-2'), { target: { value: 'Cau truc du lieu' } })
+    fireEvent.change(input('course-credits-2'), { target: { value: '3' } })
+    fireEvent.change(input('course-grade-2'), { target: { value: '8' } })
+
+    switchToGoalMode()
+    fireEvent.change(input('current-gpa'), { target: { value: '7' } })
+    fireEvent.change(input('completed-credits'), { target: { value: '20' } })
+    fireEvent.change(input('target-gpa'), { target: { value: '7.5' } })
+    fireEvent.change(input('goal-projected-grade-1'), { target: { value: '9' } })
+
+    expect(screen.getByText(/GPA học kỳ dự kiến|GPA hoc ky du kien/i)).toBeInTheDocument()
+    expect(screen.getByText('9.00')).toBeInTheDocument()
+    expect(screen.getByText(/Còn cần trung bình 8.83|Con can trung binh 8.83/i)).toBeInTheDocument()
+
+    fireEvent.change(input('goal-projected-grade-2'), { target: { value: '9' } })
+
+    expect(screen.getByText(/GPA tích lũy dự kiến 7.52|GPA tich luy du kien 7.52/i)).toBeInTheDocument()
+    expect(screen.getByText(/Đã vượt mục tiêu 0.02|Da vuot muc tieu 0.02/i)).toBeInTheDocument()
   })
 
   test('marks the target as not feasible when required term GPA is above 10', () => {
@@ -320,6 +346,7 @@ describe('GpaCalculatorPage', () => {
       completedCredits: '20',
       targetGpa: '7.8',
       selectedSemester: '3',
+      projectedGrades: { 1: '8.8', 2: '9' },
       updatedAt: '2026-05-27T03:00:00.000Z',
     }))
 
@@ -331,6 +358,8 @@ describe('GpaCalculatorPage', () => {
     expect(input('current-gpa').value).toBe('7')
     expect(input('completed-credits').value).toBe('20')
     expect(input('target-gpa').value).toBe('7.8')
+    expect(input('goal-projected-grade-1').value).toBe('8.8')
+    expect(input('goal-projected-grade-2').value).toBe('9')
     expect(select('semester-preset').value).toBe('3')
     expect(screen.getByText(/Đã lưu tạm trên trình duyệt|Da luu tam tren trinh duyet/i)).toBeInTheDocument()
   })
@@ -340,13 +369,18 @@ describe('GpaCalculatorPage', () => {
 
     fireEvent.change(input('course-name-1'), { target: { value: 'Nhap mon lap trinh' } })
     fireEvent.change(input('course-credits-1'), { target: { value: '4' } })
+    fireEvent.change(input('course-grade-1'), { target: { value: '8' } })
     fireEvent.click(buttonByText(/Mục tiêu GPA|Muc tieu GPA/i))
+    fireEvent.change(input('current-gpa'), { target: { value: '7' } })
+    fireEvent.change(input('completed-credits'), { target: { value: '20' } })
     fireEvent.change(input('target-gpa'), { target: { value: '8' } })
+    fireEvent.change(input('goal-projected-grade-1'), { target: { value: '9' } })
 
     const saved = JSON.parse(localStorage.getItem(draftKey) ?? '{}')
     expect(saved.courses[0]).toMatchObject({ name: 'Nhap mon lap trinh', credits: '4' })
     expect(saved.calculationMode).toBe('goal')
     expect(saved.targetGpa).toBe('8')
+    expect(saved.projectedGrades).toMatchObject({ 1: '9' })
     expect(typeof saved.updatedAt).toBe('string')
   })
 

@@ -45,7 +45,10 @@ public class PublicDiscoveryController {
                                 .toList(),
                         repo.getCourse() != null ? repo.getCourse().getId() : null,
                         repo.getCourse() != null ? repo.getCourse().getMaMH() : null,
-                        repo.getCourse() != null ? repo.getCourse().getTenMH() : null))
+                        repo.getCourse() != null ? repo.getCourse().getTenMH() : null,
+                        repo.getReadmeExcerpt(),
+                        repo.getFileTree(),
+                        repo.getHasReadme()))
                 .toList();
     }
 

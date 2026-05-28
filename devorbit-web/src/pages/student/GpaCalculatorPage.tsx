@@ -13,6 +13,7 @@ type CourseInput = {
 }
 
 type CourseResult = {
+  id: number
   credits: number
   grade10: number
   name: string
@@ -33,6 +34,7 @@ type GpaDraft = {
   completedCredits: string
   targetGpa: string
   selectedSemester: string
+  projectedGrades: Record<number, string>
   updatedAt: string
 }
 
@@ -74,6 +76,12 @@ function readSavedDraft(): GpaDraft | null {
       || typeof draft.selectedSemester !== 'string'
       || typeof draft.updatedAt !== 'string'
     ) return null
+    const projectedGrades = draft.projectedGrades && typeof draft.projectedGrades === 'object'
+      ? Object.fromEntries(
+        Object.entries(draft.projectedGrades as Record<string, unknown>)
+          .filter(([, value]) => typeof value === 'string'),
+      ) as Record<number, string>
+      : {}
 
     return {
       courses: draft.courses,
@@ -82,6 +90,7 @@ function readSavedDraft(): GpaDraft | null {
       completedCredits: draft.completedCredits,
       targetGpa: draft.targetGpa,
       selectedSemester: draft.selectedSemester,
+      projectedGrades,
       updatedAt: draft.updatedAt,
     }
   } catch {
@@ -122,10 +131,19 @@ function parseCourse(course: CourseInput): CourseResult | null {
   if (credits <= 0 || grade10 < 0 || grade10 > 10) return null
 
   return {
+    id: course.id,
     credits,
     grade10,
     name: course.name.trim() || 'Môn chưa đặt tên',
   }
+}
+
+function parseProjectedGrade(value: string | undefined): number | null {
+  const text = value?.trim() ?? ''
+  if (text === '') return null
+  const grade = Number(text)
+  if (!Number.isFinite(grade) || grade < 0 || grade > 10) return null
+  return grade
 }
 
 function classifyGrade10(average10: number): string {
@@ -201,6 +219,7 @@ export function GpaCalculatorPage() {
   const [currentGpa, setCurrentGpa] = useState(() => savedDraft?.currentGpa ?? '')
   const [completedCredits, setCompletedCredits] = useState(() => savedDraft?.completedCredits ?? '')
   const [targetGpa, setTargetGpa] = useState(() => savedDraft?.targetGpa ?? '')
+  const [projectedGrades, setProjectedGrades] = useState<Record<number, string>>(() => savedDraft?.projectedGrades ?? {})
   const [draftSavedAt, setDraftSavedAt] = useState(() => savedDraft?.updatedAt ?? '')
   const [presetStatus, setPresetStatus] = useState('Đang tải danh sách môn học...')
 
@@ -232,11 +251,12 @@ export function GpaCalculatorPage() {
       completedCredits,
       targetGpa,
       selectedSemester,
+      projectedGrades,
       updatedAt,
     }
     localStorage.setItem(draftStorageKey, JSON.stringify(draft))
     setDraftSavedAt(updatedAt)
-  }, [calculationMode, completedCredits, courses, currentGpa, selectedSemester, targetGpa])
+  }, [calculationMode, completedCredits, courses, currentGpa, projectedGrades, selectedSemester, targetGpa])
 
   const semesterCourses = useMemo(() => {
     return getSemesterCourses(catalogue, Number(selectedSemester), savedSemesterMap)
@@ -318,6 +338,7 @@ export function GpaCalculatorPage() {
         requiredTermGpa: 0,
         totalCreditsAfterTerm,
         courseTargets: [],
+        whatIf: null,
         valid: false,
       }
     }
@@ -338,6 +359,7 @@ export function GpaCalculatorPage() {
         requiredTermGpa: 0,
         totalCreditsAfterTerm,
         courseTargets: [],
+        whatIf: null,
         valid: false,
       }
     }
@@ -350,19 +372,43 @@ export function GpaCalculatorPage() {
         : requiredTermGpa >= 8.5
           ? 'difficult'
           : 'feasible'
+    const projectedCourses = validCourses
+      .map((course) => ({
+        ...course,
+        projectedGrade: parseProjectedGrade(projectedGrades[course.id]),
+      }))
+      .filter((course): course is CourseResult & { projectedGrade: number } => course.projectedGrade !== null)
+    const projectedCredits = projectedCourses.reduce((sum, course) => sum + course.credits, 0)
+    const projectedWeighted = projectedCourses.reduce((sum, course) => sum + course.projectedGrade * course.credits, 0)
+    const remainingCredits = termCredits - projectedCredits
+    const projectedTermGpa = projectedCredits > 0 ? projectedWeighted / projectedCredits : null
+    const remainingAverage = remainingCredits > 0
+      ? (requiredTermGpa * termCredits - projectedWeighted) / remainingCredits
+      : null
+    const projectedCumulativeGpa = projectedCredits === termCredits
+      ? ((existingGpa * existingCredits) + projectedWeighted) / totalCreditsAfterTerm
+      : null
 
     return {
       status,
       requiredTermGpa,
       totalCreditsAfterTerm,
       courseTargets: validCourses.map((course) => ({
+        id: course.id,
         name: course.name,
         credits: course.credits,
         targetGrade: clampGrade10(requiredTermGpa),
       })),
+      whatIf: {
+        projectedTermGpa,
+        remainingAverage,
+        remainingCredits,
+        projectedCumulativeGpa,
+        targetDelta: projectedCumulativeGpa === null ? null : projectedCumulativeGpa - desiredGpa,
+      },
       valid: true,
     }
-  }, [completedCredits, courses, currentGpa, targetGpa])
+  }, [completedCredits, courses, currentGpa, projectedGrades, targetGpa])
 
   const updateCourse = (id: number, field: keyof Omit<CourseInput, 'id'>, value: string) => {
     setCourses((current) =>
@@ -396,13 +442,16 @@ export function GpaCalculatorPage() {
 
   const clearCourses = () => {
     setCourses([{ id: 1, name: '', credits: '', grade10: '' }])
+    setProjectedGrades({})
   }
 
   const resetCourses = () => {
     setCourses(initialCourses)
+    setProjectedGrades({})
   }
 
   const duplicateCourse = (id: number) => {
+    setProjectedGrades({})
     setCourses((current) => {
       const index = current.findIndex((course) => course.id === id)
       if (index === -1) return current
@@ -421,10 +470,23 @@ export function GpaCalculatorPage() {
     setSavedSemesterMap(latestSemesterMap)
     if (latestSemesterCourses.length === 0) return
     setCourses(latestSemesterCourses.map(courseToInput))
+    setProjectedGrades({})
   }
 
   const removeCourse = (id: number) => {
+    setProjectedGrades((current) => {
+      const next = { ...current }
+      delete next[id]
+      return next
+    })
     setCourses((current) => current.length === 1 ? current : current.filter((course) => course.id !== id))
+  }
+
+  const updateProjectedGrade = (id: number, value: string) => {
+    setProjectedGrades((current) => ({
+      ...current,
+      [id]: value,
+    }))
   }
 
   return (
@@ -776,13 +838,48 @@ export function GpaCalculatorPage() {
           {calculationMode === 'goal' && (
             <div className="mt-4 rounded-[8px] border border-orbit-border bg-orbit-bg p-3 text-[13px] leading-6 text-orbit-text-secondary">
               <p>{goalGuidance(goalSummary.status)}</p>
+              {goalSummary.whatIf?.projectedTermGpa !== null && goalSummary.whatIf?.projectedTermGpa !== undefined && (
+                <div className="mt-4 rounded-[8px] border border-orbit-border bg-orbit-surface/60 p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-orbit-text-secondary">GPA học kỳ dự kiến</span>
+                    <span className="font-bold text-orbit-text">{formatNumber(goalSummary.whatIf.projectedTermGpa)}</span>
+                  </div>
+                  {goalSummary.whatIf.projectedCumulativeGpa !== null && goalSummary.whatIf.targetDelta !== null ? (
+                    <p className="mt-2 text-orbit-text-secondary">
+                      GPA tích lũy dự kiến {formatNumber(goalSummary.whatIf.projectedCumulativeGpa)}. {goalSummary.whatIf.targetDelta >= 0
+                        ? `Đã vượt mục tiêu ${formatNumber(goalSummary.whatIf.targetDelta)}.`
+                        : `Còn thiếu ${formatNumber(Math.abs(goalSummary.whatIf.targetDelta))} GPA.`}
+                    </p>
+                  ) : goalSummary.whatIf.remainingAverage !== null ? (
+                    <p className="mt-2 text-orbit-text-secondary">
+                      Còn cần trung bình {formatNumber(goalSummary.whatIf.remainingAverage)} cho {goalSummary.whatIf.remainingCredits} tín chỉ chưa nhập.
+                    </p>
+                  ) : null}
+                </div>
+              )}
               {goalSummary.courseTargets.length > 0 && (
-                <div className="mt-4 space-y-2">
-                  <p className="text-[12px] font-black uppercase tracking-[0.12em] text-orbit-accent">Gợi ý từng môn</p>
+                <div className="mt-4 space-y-3">
+                  <p className="text-[12px] font-black uppercase tracking-[0.12em] text-orbit-accent">What-if từng môn</p>
                   {goalSummary.courseTargets.map((course, index) => (
-                    <div key={`${course.name}-${index}`} className="flex items-center justify-between gap-3 border-t border-orbit-border pt-2">
-                      <span className="min-w-0 text-orbit-text-secondary">{course.name} ({course.credits} tín chỉ)</span>
-                      <span className="shrink-0 font-bold text-orbit-text">{formatNumber(course.targetGrade)}</span>
+                    <div key={`${course.name}-${index}`} className="grid gap-2 border-t border-orbit-border pt-3 sm:grid-cols-[minmax(0,1fr)_96px] sm:items-center">
+                      <div className="min-w-0">
+                        <p className="truncate text-orbit-text-secondary">{course.name} ({course.credits} tín chỉ)</p>
+                        <p className="text-[12px] text-orbit-text-muted">Gợi ý {formatNumber(course.targetGrade)}</p>
+                      </div>
+                      <div>
+                        <label className="sr-only" htmlFor={`goal-projected-grade-${course.id}`}>Điểm dự kiến {course.name}</label>
+                        <input
+                          id={`goal-projected-grade-${course.id}`}
+                          type="number"
+                          min="0"
+                          max="10"
+                          step="0.1"
+                          value={projectedGrades[course.id] ?? ''}
+                          onChange={(event) => updateProjectedGrade(course.id, event.target.value)}
+                          placeholder="0-10"
+                          className="h-10 w-full rounded-[8px] border border-orbit-border bg-orbit-bg px-3 text-[14px] font-bold text-orbit-text outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>

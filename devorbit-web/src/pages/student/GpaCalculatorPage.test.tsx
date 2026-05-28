@@ -356,7 +356,7 @@ describe('GpaCalculatorPage', () => {
     expect(document.querySelector('#course-name-3')).not.toBeInTheDocument()
   })
 
-  test('restores a saved browser draft on reload', () => {
+  test('shows a saved browser draft without loading it automatically', () => {
     localStorage.setItem(draftKey, JSON.stringify({
       courses: [
         { id: 1, name: 'Nhap mon lap trinh', credits: '4', grade10: '8.5' },
@@ -373,6 +373,12 @@ describe('GpaCalculatorPage', () => {
 
     render(<GpaCalculatorPage />)
 
+    expect(input('course-name-1').value).toBe('')
+    expect(input('course-credits-1').value).toBe('3')
+    expect(screen.getByText(/Có bản nháp đã lưu|Co ban nhap da luu/i)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /Khôi phục|Khoi phuc/i }))
+
     expect(input('course-name-1').value).toBe('Nhap mon lap trinh')
     expect(input('course-credits-1').value).toBe('4')
     expect(input('course-grade-2').value).toBe('7.5')
@@ -382,10 +388,34 @@ describe('GpaCalculatorPage', () => {
     expect(input('goal-projected-grade-1').value).toBe('8.8')
     expect(input('goal-projected-grade-2').value).toBe('9')
     expect(select('semester-preset').value).toBe('3')
-    expect(screen.getByText(/Đã lưu tạm trên trình duyệt|Da luu tam tren trinh duyet/i)).toBeInTheDocument()
+    expect(screen.queryByText(/Có bản nháp đã lưu|Co ban nhap da luu/i)).not.toBeInTheDocument()
   })
 
-  test('autosaves calculator changes to localStorage', () => {
+  test('dismisses a saved browser draft without removing it', () => {
+    const draft = {
+      courses: [
+        { id: 1, name: 'Nhap mon lap trinh', credits: '4', grade10: '8.5' },
+      ],
+      calculationMode: 'semester',
+      currentGpa: '',
+      completedCredits: '',
+      targetGpa: '',
+      selectedSemester: '2',
+      projectedGrades: {},
+      updatedAt: '2026-05-27T03:00:00.000Z',
+    }
+    localStorage.setItem(draftKey, JSON.stringify(draft))
+
+    render(<GpaCalculatorPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Bỏ qua|Bo qua/i }))
+
+    expect(screen.queryByText(/Có bản nháp đã lưu|Co ban nhap da luu/i)).not.toBeInTheDocument()
+    expect(input('course-name-1').value).toBe('')
+    expect(JSON.parse(localStorage.getItem(draftKey) ?? '{}')).toMatchObject(draft)
+  })
+
+  test('saves calculator changes to localStorage only when requested', () => {
     render(<GpaCalculatorPage />)
 
     fireEvent.change(input('course-name-1'), { target: { value: 'Nhap mon lap trinh' } })
@@ -397,12 +427,19 @@ describe('GpaCalculatorPage', () => {
     fireEvent.change(input('target-gpa'), { target: { value: '8' } })
     fireEvent.change(input('goal-projected-grade-1'), { target: { value: '9' } })
 
+    expect(localStorage.getItem(draftKey)).toBeNull()
+    expect(screen.getByText(/Có thay đổi chưa lưu|Co thay doi chua luu/i)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /Lưu bản nháp|Luu ban nhap/i }))
+
     const saved = JSON.parse(localStorage.getItem(draftKey) ?? '{}')
     expect(saved.courses[0]).toMatchObject({ name: 'Nhap mon lap trinh', credits: '4' })
     expect(saved.calculationMode).toBe('goal')
     expect(saved.targetGpa).toBe('8')
     expect(saved.projectedGrades).toMatchObject({ 1: '9' })
     expect(typeof saved.updatedAt).toBe('string')
+    expect(screen.queryByText(/Có thay đổi chưa lưu|Co thay doi chua luu/i)).not.toBeInTheDocument()
+    expect(screen.getByText(/Đã lưu bản nháp|Da luu ban nhap/i)).toBeInTheDocument()
   })
 
   test('ignores a corrupt browser draft without crashing', () => {
@@ -415,7 +452,7 @@ describe('GpaCalculatorPage', () => {
     expect(screen.getByRole('heading', { name: /Tính GPA|Tinh GPA/i })).toBeInTheDocument()
   })
 
-  test('clears the saved browser draft and resets the calculator state', () => {
+  test('clears the saved browser draft without writing a default draft', () => {
     localStorage.setItem(draftKey, JSON.stringify({
       courses: [
         { id: 1, name: 'Nhap mon lap trinh', credits: '4', grade10: '8.5' },
@@ -431,25 +468,12 @@ describe('GpaCalculatorPage', () => {
 
     render(<GpaCalculatorPage />)
 
-    expect(input('course-name-1').value).toBe('Nhap mon lap trinh')
+    expect(input('course-name-1').value).toBe('')
     fireEvent.click(screen.getByRole('button', { name: /Xóa bản nháp|Xoa ban nhap/i }))
 
     expect(input('course-name-1').value).toBe('')
     expect(input('course-credits-1').value).toBe('3')
-    expect(document.querySelector('#course-name-3')).not.toBeInTheDocument()
-    expect(screen.queryByLabelText(/GPA hiện tại|GPA hien tai/i)).not.toBeInTheDocument()
-    expect(select('semester-preset').value).toBe('1')
-
-    const saved = JSON.parse(localStorage.getItem(draftKey) ?? '{}')
-    expect(saved.courses).toEqual([
-      { id: 1, name: '', credits: '3', grade10: '' },
-      { id: 2, name: '', credits: '3', grade10: '' },
-    ])
-    expect(saved.calculationMode).toBe('semester')
-    expect(saved.currentGpa).toBe('')
-    expect(saved.completedCredits).toBe('')
-    expect(saved.targetGpa).toBe('')
-    expect(saved.selectedSemester).toBe('1')
-    expect(saved.projectedGrades).toEqual({})
+    expect(localStorage.getItem(draftKey)).toBeNull()
+    expect(screen.getByText(/Chưa có bản nháp đã lưu|Chua co ban nhap da luu/i)).toBeInTheDocument()
   })
 })

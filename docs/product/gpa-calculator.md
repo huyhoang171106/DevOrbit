@@ -14,8 +14,9 @@ DevOrbit includes a student-facing GPA calculator so students can quickly estima
 - Each row accepts course name, credits, and grade on the 10-point scale.
 - Students can add or remove course rows.
 - Students can duplicate a course row, clear all rows, add five blank rows at once, and reset to the default two-row template.
-- The calculator autosaves draft rows, mode, semester, GPA inputs, and goal what-if grades to browser `localStorage` and restores them after reload.
-- Students can clear the saved browser draft from the summary panel; clearing the draft resets rows, mode, GPA inputs, semester, and goal what-if grades to the default state.
+- The calculator can save draft rows, mode, semester, GPA inputs, and goal what-if grades to browser `localStorage` when the student explicitly chooses `Lưu bản nháp`.
+- A saved browser draft is not loaded automatically. The page shows a restore prompt with `Khôi phục` and `Bỏ qua` actions, and marks edited calculator state as `Có thay đổi chưa lưu`.
+- Students can clear the saved browser draft from the summary panel without resetting the current calculator state or writing an empty replacement draft.
 - The calculator uses the same shared DevOrbit student-page background atmosphere pattern as the course list screen.
 - Students can switch between semester GPA mode and cumulative GPA estimate mode.
 - Students can load a semester preset from the DevOrbit course catalogue.

@@ -30,7 +30,7 @@ DevOrbit provides a public student-facing GPA calculator that estimates 10-point
 - Cumulative GPA mode asks for current GPA and completed credits, then projects the new cumulative GPA after adding the current term.
 - GPA goal mode asks for current GPA, completed credits, and target GPA.
 - GPA goal mode calculates the current-term average needed to reach the target cumulative GPA.
-- GPA goal mode marks targets above the 10-point scale as not feasible for the current term.
+- GPA goal mode marks targets above the 10-point scale as not feasible for the current term and shows the raw required term GPA above 10.
 - GPA goal mode shows approximate per-course target grades from the current valid course rows.
 - Students can select a semester preset that fills rows from the DevOrbit course catalogue.
 - Semester presets skip zero-credit courses and keep grade fields blank.

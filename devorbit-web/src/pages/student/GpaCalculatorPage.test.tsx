@@ -415,10 +415,41 @@ describe('GpaCalculatorPage', () => {
     expect(screen.getByRole('heading', { name: /Tính GPA|Tinh GPA/i })).toBeInTheDocument()
   })
 
-  test('does not show the saved draft clearing action yet', () => {
+  test('clears the saved browser draft and resets the calculator state', () => {
+    localStorage.setItem(draftKey, JSON.stringify({
+      courses: [
+        { id: 1, name: 'Nhap mon lap trinh', credits: '4', grade10: '8.5' },
+      ],
+      calculationMode: 'goal',
+      currentGpa: '7',
+      completedCredits: '20',
+      targetGpa: '7.8',
+      selectedSemester: '3',
+      projectedGrades: { 1: '9' },
+      updatedAt: '2026-05-27T03:00:00.000Z',
+    }))
+
     render(<GpaCalculatorPage />)
 
-    expect(screen.getByText(/Đã lưu tạm trên trình duyệt|Da luu tam tren trinh duyet/i)).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /Xóa bản lưu|Xoa ban luu/i })).not.toBeInTheDocument()
+    expect(input('course-name-1').value).toBe('Nhap mon lap trinh')
+    fireEvent.click(screen.getByRole('button', { name: /Xóa bản nháp|Xoa ban nhap/i }))
+
+    expect(input('course-name-1').value).toBe('')
+    expect(input('course-credits-1').value).toBe('3')
+    expect(document.querySelector('#course-name-3')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/GPA hiện tại|GPA hien tai/i)).not.toBeInTheDocument()
+    expect(select('semester-preset').value).toBe('1')
+
+    const saved = JSON.parse(localStorage.getItem(draftKey) ?? '{}')
+    expect(saved.courses).toEqual([
+      { id: 1, name: '', credits: '3', grade10: '' },
+      { id: 2, name: '', credits: '3', grade10: '' },
+    ])
+    expect(saved.calculationMode).toBe('semester')
+    expect(saved.currentGpa).toBe('')
+    expect(saved.completedCredits).toBe('')
+    expect(saved.targetGpa).toBe('')
+    expect(saved.selectedSemester).toBe('1')
+    expect(saved.projectedGrades).toEqual({})
   })
 })

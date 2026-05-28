@@ -90,6 +90,7 @@ type OptionalRepoMetadata = {
   files?: string[] | Array<{ path?: string | null; name?: string | null }> | null
   fileList?: string[] | Array<{ path?: string | null; name?: string | null }> | null
   paths?: string[] | null
+  fileTree?: string[] | string | null
 }
 
 const repoTypeLabels: Record<RepoType, string> = {
@@ -173,7 +174,7 @@ export function extractRepoSignals(repo: RepoSummary): RepoSignals {
   const readmeText = cleanText(
     metadata.readmeExcerpt ?? metadata.readmeContent ?? metadata.readmeMarkdown ?? metadata.readmeText ?? metadata.readme,
   )
-  const filePaths = normalizeFilePaths(metadata.files ?? metadata.fileList ?? metadata.paths)
+  const filePaths = normalizeFilePaths(metadata.files ?? metadata.fileList ?? metadata.paths ?? metadata.fileTree)
   const haystack = normalizeSearchText([name, description, primaryLanguage, ...techStacks, ...topics, readmeText, ...filePaths])
   const hasFileList = filePaths.length > 0
   const hasReadme = Boolean(readmeText) || hasPath(filePaths, /(^|\/)readme(\.md|\.txt)?$/i)
@@ -556,9 +557,9 @@ function buildEvidence(signals: RepoSignals): string[] {
   ], 12)
 }
 
-function normalizeFilePaths(value: OptionalRepoMetadata['files'] | OptionalRepoMetadata['paths']): string[] {
+function normalizeFilePaths(value: OptionalRepoMetadata['files'] | OptionalRepoMetadata['paths'] | OptionalRepoMetadata['fileTree']): string[] {
   if (!value) return []
-  const rawValues = Array.isArray(value) ? value : []
+  const rawValues = Array.isArray(value) ? value : value.split(/\r?\n/)
   return Array.from(new Set(rawValues.map((item) => {
     const rawPath = typeof item === 'string' ? item : item.path ?? item.name
     return cleanText(rawPath)?.replace(/\\/g, '/')

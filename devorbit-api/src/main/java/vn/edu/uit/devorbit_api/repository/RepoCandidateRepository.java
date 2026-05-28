@@ -36,6 +36,17 @@ public interface RepoCandidateRepository extends JpaRepository<RepoCandidate, Lo
 
     @org.springframework.data.jpa.repository.Modifying
     @org.springframework.transaction.annotation.Transactional
-    @Query("UPDATE RepoCandidate r SET r.readmeExcerpt = :excerpt WHERE r.id = :id")
-    void updateReadmeExcerpt(@org.springframework.data.repository.query.Param("id") Long id, @org.springframework.data.repository.query.Param("excerpt") String excerpt);
+    @Query("""
+            UPDATE RepoCandidate r
+            SET r.readmeExcerpt = :excerpt,
+                r.fileTree = :fileTree,
+                r.hasReadme = :hasReadme
+            WHERE r.id = :id
+            """)
+    void updateRepositoryContext(
+        @org.springframework.data.repository.query.Param("id") Long id,
+        @org.springframework.data.repository.query.Param("excerpt") String excerpt,
+        @org.springframework.data.repository.query.Param("fileTree") String fileTree,
+        @org.springframework.data.repository.query.Param("hasReadme") Boolean hasReadme
+    );
 }

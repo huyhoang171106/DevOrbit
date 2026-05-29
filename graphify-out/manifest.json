@@ -1,4 +1,9 @@
 {
+  "D:\\temp\\devorbit\\.mcp.json": {
+    "mtime": 1779731472.4341972,
+    "ast_hash": "f99d3636940c5c5943660b46e32da027",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\data_updated.sql": {
     "mtime": 1778847953.069848,
     "ast_hash": "127183599b759b4b3d02ce0ef7e9a1e1",
@@ -15,13 +20,13 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\package.json": {
-    "mtime": 1779294540.0212104,
-    "ast_hash": "e6ac6a1509ca56f546e80eafa1bf2da3",
+    "mtime": 1780041966.7836752,
+    "ast_hash": "ee3aebe06c6f6ce98a036d432e57f7fc",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\skills-lock.json": {
-    "mtime": 1779047724.4416983,
-    "ast_hash": "8029318b91d04fedab28cdb67df7a3d5",
+    "mtime": 1779728267.203842,
+    "ast_hash": "3a32d6da332da6d96334556aa18c1862",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\.agents\\skills\\motion-framer\\assets\\starter_motion\\package.json": {
@@ -120,8 +125,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\.claude\\settings.json": {
-    "mtime": 1778503742.1533923,
-    "ast_hash": "6d6a701e21e627d07199ba322333d9fd",
+    "mtime": 1779731472.436504,
+    "ast_hash": "8b10fb0820439f0a7651c2c2319f1c74",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\.claude\\settings.local.json": {
@@ -160,8 +165,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\.codegraph\\config.json": {
-    "mtime": 1779290836.546862,
-    "ast_hash": "6732e08b441217b2d9f92d9a5d38f187",
+    "mtime": 1780041966.600819,
+    "ast_hash": "f5905a8f048637174b1e466fbe965444",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\.codex\\hooks.json": {
@@ -264,6 +269,11 @@
     "ast_hash": "1f39662ecfc34821853a94e92a6462dc",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\.cursor\\mcp.json": {
+    "mtime": 1779731472.438501,
+    "ast_hash": "da278f64e7990289a2c062c047ba5fb0",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\.gemini\\settings.json": {
     "mtime": 1778846828.5185366,
     "ast_hash": "70aee1630468a41f710b2fb957a2fc40",
@@ -317,6 +327,11 @@
   "D:\\temp\\devorbit\\.gitnexus\\meta.json": {
     "mtime": 1778502307.5818522,
     "ast_hash": "3a8ae89bc33bdcb82168f82f33406113",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\extensions\\codegraph.ts": {
+    "mtime": 1779731526.9943607,
+    "ast_hash": "c6c166d1ca6ab71940f3dfda99bd7f52",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\.pi\\gsd\\hooks\\gsd-check-update.js": {
@@ -410,18 +425,18 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\.understand-anything\\fingerprints.json": {
-    "mtime": 1779435590.6595976,
-    "ast_hash": "0e76815e388495cc2ddb5c02e7987bd6",
+    "mtime": 1780041966.6038184,
+    "ast_hash": "8423b02102a05527e4ed0a3a1091f50c",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\.understand-anything\\knowledge-graph.json": {
-    "mtime": 1779435589.3686562,
-    "ast_hash": "443e6908a54fe6ee7fac336bfc881e40",
+    "mtime": 1780041966.6048212,
+    "ast_hash": "deae777c4041a31b3c60f1e786beee61",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\.understand-anything\\meta.json": {
-    "mtime": 1779435590.6750655,
-    "ast_hash": "280c93b8561b2d251f5d4b141185ff28",
+    "mtime": 1780041966.6048212,
+    "ast_hash": "72e0f66aff4be23998288881d6d94953",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\scripts\\backup_supabase.py": {
@@ -440,13 +455,13 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\config\\GithubClientConfig.java": {
-    "mtime": 1779365055.8635654,
+    "mtime": 1780041966.6058178,
     "ast_hash": "ac57b43e90b05600055266ca9fe37f9b",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\config\\GithubProperties.java": {
-    "mtime": 1779365051.3500926,
-    "ast_hash": "2451c11a149b0b274f1f55fc042a4be7",
+    "mtime": 1780041966.6058178,
+    "ast_hash": "cb06c6e97ab6f6af9b0dcef262bc8734",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\config\\JacksonConfig.java": {
@@ -465,8 +480,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\config\\OpenApiConfig.java": {
-    "mtime": 1779365061.7569914,
-    "ast_hash": "9bbef2f1d762dee432d9dcfbfc7921ec",
+    "mtime": 1780041966.6073227,
+    "ast_hash": "2a04d58f90ed10264aa8ac03e8304b7c",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\config\\RepoCandidateDataInitializer.java": {
@@ -475,8 +490,13 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\config\\SecurityConfig.java": {
-    "mtime": 1779365204.4352827,
-    "ast_hash": "c301d609dea983fed7c132e8dba21bd8",
+    "mtime": 1780041991.3807125,
+    "ast_hash": "d5bc24ef124cf3d55f3012ac33ce1c33",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\config\\TechStackDataInitializer.java": {
+    "mtime": 1780041991.3807125,
+    "ast_hash": "ac06ac1a04bfcb33751b1a8d2e2841c0",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\constant\\CurriculumConstants.java": {
@@ -485,93 +505,98 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\AdminAuthController.java": {
-    "mtime": 1779295554.468598,
-    "ast_hash": "4f1828e0fdf27c06142b476b6c37251b",
+    "mtime": 1780041966.6073227,
+    "ast_hash": "e45aa7a8bcd4b9c44370c0f7adbe5166",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\AdminCourseController.java": {
-    "mtime": 1779364810.896323,
+    "mtime": 1780041966.6073227,
     "ast_hash": "8e53bb8edce865b4aee2e4647b44ed1c",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\AdminCourseRelationshipController.java": {
-    "mtime": 1779295680.3033078,
+    "mtime": 1780041966.6083307,
     "ast_hash": "c60f5fa2fffddb8b5c933ef110b20ace",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\AdminCourseResourceController.java": {
-    "mtime": 1779295680.3053029,
+    "mtime": 1780041966.6083307,
     "ast_hash": "4e380e2b60ab93a9eba518ead31b13db",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\AdminGithubController.java": {
-    "mtime": 1779295600.690797,
+    "mtime": 1780041966.6093304,
     "ast_hash": "ec1d9a6db333da03488101ac6525cd43",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\AdminNoteController.java": {
-    "mtime": 1779364815.8038242,
+    "mtime": 1780041966.6093304,
     "ast_hash": "7f5f5f221d54746474753d005f0e348e",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\AdminRepoCandidateController.java": {
-    "mtime": 1779364821.070336,
+    "mtime": 1780041966.6093304,
     "ast_hash": "c6b8ecd3de704f4b681f4d32c4d28f4b",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\AdminRepoController.java": {
-    "mtime": 1779364833.5109048,
+    "mtime": 1780041966.6103325,
     "ast_hash": "ac1b2230c2c352ec38c18fc887ef9f81",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\AdminRoadmapController.java": {
-    "mtime": 1779364824.2129993,
+    "mtime": 1780041966.6103325,
     "ast_hash": "15add250d6278ef0c8110eb6d41b3e23",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\PhotoboothFrameController.java": {
-    "mtime": 1779295572.18447,
-    "ast_hash": "5a6cf999acbfd4f74d0a47fe18b5a770",
+    "mtime": 1780041966.6113324,
+    "ast_hash": "6c682928d68797b73e199cf4edf4cd5f",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\PublicAiController.java": {
-    "mtime": 1779295622.527073,
-    "ast_hash": "62fbfa4872c2e92f8792deda83a679e5",
+    "mtime": 1780041966.6113324,
+    "ast_hash": "31e43aa506fa4013f0c14c8ff55764de",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\PublicCourseController.java": {
-    "mtime": 1779295000.9614432,
-    "ast_hash": "63bde75b496a89d275181d8321fa7453",
+    "mtime": 1780041991.3807125,
+    "ast_hash": "5eab4665a0ff08665cdf6a8d18c054ec",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\PublicCourseRelationshipController.java": {
-    "mtime": 1779295658.9410655,
+    "mtime": 1780041966.6113324,
     "ast_hash": "76fa115da08c663342a79543137f4dc7",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\PublicDiscoveryController.java": {
-    "mtime": 1779295658.9430854,
-    "ast_hash": "e2e34082608d84de803f46ce1d8242f4",
+    "mtime": 1780042156.9564035,
+    "ast_hash": "49c6fb8ada188da54c8323fe1cbdb802",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\PublicRepoController.java": {
-    "mtime": 1779295572.186568,
+    "mtime": 1780041966.6123323,
     "ast_hash": "5c4278f17482afad210cb6db673aa4a2",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\PublicTechStackController.java": {
-    "mtime": 1779364806.4570043,
-    "ast_hash": "dd639c100731ba5ad3a639ac16486ca8",
+    "mtime": 1780041966.6123323,
+    "ast_hash": "b68c7c5899bd43fcbd52b27284c01e05",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\StudentAuthController.java": {
-    "mtime": 1779364802.8712845,
-    "ast_hash": "4b3714941c388c60d5fb2b5577e6f5dc",
+    "mtime": 1780041966.6123323,
+    "ast_hash": "8093de294097dada1eccd6a061968e45",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\StudentBookmarkController.java": {
-    "mtime": 1779295600.6917887,
-    "ast_hash": "36fe0fcb146369d929080fdaffd3e481",
+    "mtime": 1780041966.6133323,
+    "ast_hash": "672aa3031c836438a5ab1037ab273a31",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\SubjectQaController.java": {
+    "mtime": 1780041991.381814,
+    "ast_hash": "467798323446a16d70044f577fd18be4",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\PhotoboothFrameDTO.java": {
@@ -580,8 +605,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\admin\\AdminCourseUpsertRequest.java": {
-    "mtime": 1779295750.9036682,
-    "ast_hash": "42ab2de51dd1b98f3aedeccbeecdbdb9",
+    "mtime": 1780041991.381814,
+    "ast_hash": "205c42d8dbc9d35ff301c5618eec38f0",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\admin\\ApprovedRepoUpdateRequest.java": {
@@ -630,13 +655,13 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\admin\\LoginRequest.java": {
-    "mtime": 1779295750.8966713,
-    "ast_hash": "c3fb6d867cbc97bc198187bc66cd64ab",
+    "mtime": 1780041966.6133323,
+    "ast_hash": "fdf492f2af4dca7929d7751c5b85e2f6",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\admin\\LoginResponse.java": {
-    "mtime": 1779295750.8966713,
-    "ast_hash": "3f96dfe988b5f90d11d8793d913b227c",
+    "mtime": 1780041966.6133323,
+    "ast_hash": "c197da597cbaec40844e1772b189b588",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\admin\\NoteCodeSnippetResponse.java": {
@@ -660,8 +685,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\admin\\RepoCandidateResponse.java": {
-    "mtime": 1778847955.3028758,
-    "ast_hash": "aa8eddefdd7c7fb32ac33c015ebcbc31",
+    "mtime": 1780042156.9579134,
+    "ast_hash": "fe1ccea5d7a52f394de8a7e38a44a85b",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\admin\\ReviewerStatsResponse.java": {
@@ -710,17 +735,17 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\publicapi\\AiResponse.java": {
-    "mtime": 1779295717.410719,
+    "mtime": 1780041966.6143296,
     "ast_hash": "160950790a8f1386147ab8c9971045e2",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\publicapi\\CourseDetailResponse.java": {
-    "mtime": 1779295717.409716,
-    "ast_hash": "06296e4cb40e9abc3e537badcc993cfa",
+    "mtime": 1780041991.381814,
+    "ast_hash": "b43db68bac75eb3368be3705e3275fae",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\publicapi\\CourseSummaryResponse.java": {
-    "mtime": 1779295689.8937318,
+    "mtime": 1780041966.6143296,
     "ast_hash": "e8e79fb41d0e5c8b61aea2a64927fd61",
     "semantic_hash": ""
   },
@@ -730,13 +755,13 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\publicapi\\KnowledgeGraphResponse.java": {
-    "mtime": 1779295717.410719,
+    "mtime": 1780041966.6143296,
     "ast_hash": "0bdad6667865e5452b45f7a27e6fdf47",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\publicapi\\RepoSummaryResponse.java": {
-    "mtime": 1779295717.4047139,
-    "ast_hash": "f70aa8610e9953f689b7869467340728",
+    "mtime": 1780042156.9579134,
+    "ast_hash": "c838730192aa2dcf96d086221ecd33d1",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\publicapi\\RoadmapGenerationRequest.java": {
@@ -749,9 +774,24 @@
     "ast_hash": "730e102fe25850c153d498f87c8d65d2",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\publicapi\\SubjectQaRequest.java": {
+    "mtime": 1780041991.381814,
+    "ast_hash": "1977786ff6cb9060078973e9799901f1",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\publicapi\\SubjectQaResponse.java": {
+    "mtime": 1780041991.381814,
+    "ast_hash": "69ac94852937938e5537ce682e368519",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\publicapi\\TechStackResponse.java": {
-    "mtime": 1779295722.6732957,
-    "ast_hash": "cfb45af3501e56c2984c88fb504382fc",
+    "mtime": 1780041966.615332,
+    "ast_hash": "74e1a7f94036349af89a39b7d9a6473c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\publicapi\\WebSearchResponse.java": {
+    "mtime": 1780041991.3828242,
+    "ast_hash": "f85be4c34ca2a0518cf3516b418a2529",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\student\\StudentAuthResponse.java": {
@@ -785,108 +825,118 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\AdminUser.java": {
-    "mtime": 1779295351.7166147,
-    "ast_hash": "0013cfc0f535da3ca4c3cf644c204560",
+    "mtime": 1780041966.615332,
+    "ast_hash": "3cd2cd18319364a068f45322657c0e3e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\ChatMessage.java": {
+    "mtime": 1780041991.3828242,
+    "ast_hash": "b4fd52e4cd5fcd34398895c9845c2960",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\ChatSession.java": {
+    "mtime": 1780041991.3828242,
+    "ast_hash": "42a2a80d4b60a03d024ec8a7e60398cc",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\Course.java": {
-    "mtime": 1779294937.123229,
-    "ast_hash": "ff8c16b95e971be8318eac6b85335fb2",
+    "mtime": 1780041991.3828242,
+    "ast_hash": "86d8f86691ff0f347356e81404991d10",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\CourseArticle.java": {
-    "mtime": 1779295872.2875535,
+    "mtime": 1780041966.6163328,
     "ast_hash": "3a03e4eeddd40e9215b726a1a53579d3",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\CourseRelationship.java": {
-    "mtime": 1779295390.9527533,
+    "mtime": 1780041966.6163328,
     "ast_hash": "9c0cf7d2ecd3b7880d1d1d47c76307d9",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\CourseRelationType.java": {
-    "mtime": 1779295491.4874232,
+    "mtime": 1780041966.6163328,
     "ast_hash": "7d97a12ea59cab3494602961a5087769",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\CourseTutorial.java": {
-    "mtime": 1779295379.3384087,
+    "mtime": 1780041966.6173356,
     "ast_hash": "20e8d723e035c7304011a51c430f1f7b",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\CourseYoutubePlaylist.java": {
-    "mtime": 1779295418.0708973,
+    "mtime": 1780041966.6173356,
     "ast_hash": "133ae92527fe25862d03d325a6bd5265",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\GithubRepo.java": {
-    "mtime": 1779295456.1070738,
-    "ast_hash": "76fda28f557a7be808a5edef25bb8ee8",
+    "mtime": 1780042156.9579134,
+    "ast_hash": "1b190ee19a9a5e6113f7f8584727f08c",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\LearningRoadmap.java": {
-    "mtime": 1779295438.1628547,
+    "mtime": 1780041966.6173356,
     "ast_hash": "348beef10ead30a67d49c0dc9cbbdb1c",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\Note.java": {
-    "mtime": 1779295418.1685064,
+    "mtime": 1780041966.6173356,
     "ast_hash": "f315d3dac45fd37d8af851981d5f764f",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\NoteCodeSnippet.java": {
-    "mtime": 1779295418.1645112,
+    "mtime": 1780041966.618721,
     "ast_hash": "d48deaee2032d66542e33f52fe87207f",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\NoteTargetType.java": {
-    "mtime": 1779295491.486427,
+    "mtime": 1780041966.618721,
     "ast_hash": "0eac1b000d8d16d45dca447392daa9a5",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\PhotoboothFrame.java": {
-    "mtime": 1779295515.3610487,
+    "mtime": 1780041966.618721,
     "ast_hash": "6a211593874583271fe253c0db8ee2db",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\RepoCandidate.java": {
-    "mtime": 1779295515.360044,
-    "ast_hash": "9a534d234b0dd3712aca59c58a5512cc",
+    "mtime": 1780042156.9579134,
+    "ast_hash": "48e1b87b7f973267a9aae23f754d9275",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\RepoCandidateStatus.java": {
-    "mtime": 1779295491.486427,
-    "ast_hash": "feb8a0d3936eea933a0cf8b963ff7254",
+    "mtime": 1780041966.618721,
+    "ast_hash": "e052cfef7fea40f528488e854e3bacca",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\RoadmapItem.java": {
-    "mtime": 1779295438.1636517,
+    "mtime": 1780041966.618721,
     "ast_hash": "21ca42f3a07ad885e30a9368779ec3f0",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\RoadmapItemTargetType.java": {
-    "mtime": 1779295491.4874232,
+    "mtime": 1780041966.6197238,
     "ast_hash": "d4883f9bca29141a585267544cf97a1b",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\RoadmapPhase.java": {
-    "mtime": 1779295438.1628547,
+    "mtime": 1780041966.6197238,
     "ast_hash": "5da20b968b438ac31dcc71b0b9e6dc33",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\StudentBookmark.java": {
-    "mtime": 1779295479.9104207,
-    "ast_hash": "051b0c14b0c085d9d4594f558d9b6cdc",
+    "mtime": 1780041966.6197238,
+    "ast_hash": "7c455b08a9bbd31958b05dd96720690f",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\StudentUser.java": {
-    "mtime": 1779295456.1140797,
-    "ast_hash": "57f47a6cbf63981be5e7067653a142ec",
+    "mtime": 1780041966.6197238,
+    "ast_hash": "9e9beffbb9cbd66e59756e83f573dd36",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\TechStack.java": {
-    "mtime": 1779295479.909412,
-    "ast_hash": "7d12d46a242123d33ac71d81c3daa568",
+    "mtime": 1780041966.6207204,
+    "ast_hash": "7506a7adaee71d07c249ed7584ad281f",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\event\\RelationshipChangedEvent.java": {
@@ -919,6 +969,16 @@
     "ast_hash": "e2b8a85a414f2e96fd557e860b41c733",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\repository\\ChatMessageRepository.java": {
+    "mtime": 1780041991.3828242,
+    "ast_hash": "7a734618270446b51e802421bda40b5a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\repository\\ChatSessionRepository.java": {
+    "mtime": 1780041991.3838272,
+    "ast_hash": "6efb9f803ad7c94f44134681bfd10db6",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\repository\\CourseArticleRepository.java": {
     "mtime": 1778847956.222127,
     "ast_hash": "443674ba5f7fd79bd3a6691522cc0e36",
@@ -930,7 +990,7 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\repository\\CourseRepository.java": {
-    "mtime": 1779294952.4480317,
+    "mtime": 1780041966.6207204,
     "ast_hash": "6032a90d014a2115a15a1223fe82c640",
     "semantic_hash": ""
   },
@@ -970,8 +1030,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\repository\\RepoCandidateRepository.java": {
-    "mtime": 1778847956.471161,
-    "ast_hash": "4ce90306a0104451df673e8ebe1d9064",
+    "mtime": 1780042156.9579134,
+    "ast_hash": "3362b892c32d4875fe618d13469565cb",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\repository\\RoadmapItemRepository.java": {
@@ -1005,8 +1065,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\AdminNoteService.java": {
-    "mtime": 1779364841.8116808,
-    "ast_hash": "ecc791e1f2c0759d1a70f2b585ec9f14",
+    "mtime": 1780041966.6207204,
+    "ast_hash": "58d1042eb805ab12e7f175b63ba6f853",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\AiService.java": {
@@ -1015,8 +1075,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\CourseArticleService.java": {
-    "mtime": 1779291594.2851672,
-    "ast_hash": "ec4ce96cf5b9ecffbc950efab2cd10fd",
+    "mtime": 1780041966.6207204,
+    "ast_hash": "4c203df09c2071dbb589daef6b5af07b",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\CourseRelationshipService.java": {
@@ -1025,28 +1085,28 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\CourseService.java": {
-    "mtime": 1779364845.0507288,
-    "ast_hash": "771be588e58f46945842323be79f0fb9",
+    "mtime": 1780041991.3838272,
+    "ast_hash": "c75bec9e597188dfdfb5a8a5204cb9ec",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\CourseTutorialService.java": {
-    "mtime": 1779291594.2726326,
-    "ast_hash": "cb1fede5622a51ddf0ff9c4057dd2731",
+    "mtime": 1780041966.6217191,
+    "ast_hash": "e676018acfb246e3fd0a823f938ad033",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\CourseYoutubePlaylistService.java": {
-    "mtime": 1779291594.2851672,
-    "ast_hash": "74faa30b9f7a817e9acc03a211ba26b4",
+    "mtime": 1780041966.6217191,
+    "ast_hash": "1bd4615dec7cb496d12998c8ec458ddd",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\GithubRepoService.java": {
-    "mtime": 1779039117.468216,
-    "ast_hash": "280a1416804ad2cddd242e9314011a96",
+    "mtime": 1780042156.9589202,
+    "ast_hash": "548e6edf5ca00ee95cafd9fad431b32e",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\GithubScanService.java": {
-    "mtime": 1778847956.7189646,
-    "ast_hash": "7efc595870dc200db38fe4fba4cedb34",
+    "mtime": 1780042156.9589202,
+    "ast_hash": "b583800c7326e210444e082c0c2b8bea",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\JwtService.java": {
@@ -1060,8 +1120,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\LearningRoadmapService.java": {
-    "mtime": 1779291623.338555,
-    "ast_hash": "7440b5174c8881a5a50393a436c30179",
+    "mtime": 1780041966.6217191,
+    "ast_hash": "03f85d2c8c4b129309a8bbfdeac08092",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\PhotoboothFrameService.java": {
@@ -1070,8 +1130,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\RepoCandidateService.java": {
-    "mtime": 1779364848.3378966,
-    "ast_hash": "772050b5b8896db471af3ad648f96d7b",
+    "mtime": 1780042156.9589202,
+    "ast_hash": "820e0994434e68be3e1d507226b55e41",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\StudentAuthService.java": {
@@ -1084,19 +1144,29 @@
     "ast_hash": "6a01c4af44e17763b72a3f88e8b2f954",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\SubjectQaService.java": {
+    "mtime": 1780041991.3838272,
+    "ast_hash": "4ed418774d8d00cb759bc9bdee54bcf1",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\SupabaseStorageService.java": {
     "mtime": 1778772462.769116,
     "ast_hash": "5af91894c7979a6e0b6ae84589fedd4e",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\TechStackService.java": {
-    "mtime": 1779364837.3045623,
-    "ast_hash": "71461ea5be979ad5990fd48ea8ae0c8a",
+    "mtime": 1780041966.6227193,
+    "ast_hash": "56c15fe6ddcafea0348a265e7e4a46a2",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\ai\\AdviceGenerator.java": {
     "mtime": 1779039117.470233,
     "ast_hash": "de68d2c1d53c183da53d24e7714f15de",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\ai\\CrawlerService.java": {
+    "mtime": 1780041991.3838272,
+    "ast_hash": "05424cb72762fdfeb97542ddbf578355",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\ai\\CurriculumMatcher.java": {
@@ -1109,6 +1179,11 @@
     "ast_hash": "8c1a400045375e72395ab68b8e9ca759",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\ai\\OpenCodeAiService.java": {
+    "mtime": 1780041991.3848565,
+    "ast_hash": "9627e12744389bdd62fd564cc6f68c3b",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\ai\\RoadmapGenerator.java": {
     "mtime": 1778709617.9306955,
     "ast_hash": "582f2c495acbf450f85b30029f78602f",
@@ -1117,6 +1192,11 @@
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\ai\\SummaryGenerator.java": {
     "mtime": 1779039117.470233,
     "ast_hash": "a4b0851d033c91777c77ed26dbdf42a6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\ai\\WebSearchService.java": {
+    "mtime": 1780041991.3848565,
+    "ast_hash": "a22d921b11863fd60cacc45c03163d8a",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\resources\\cleanup_courses.sql": {
@@ -1130,13 +1210,13 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\resources\\schema-complete.sql": {
-    "mtime": 1778847956.9301412,
-    "ast_hash": "155423ce65c531b6821c31114380a15d",
+    "mtime": 1780042156.9599998,
+    "ast_hash": "588867622e4b16344a6e6ccd7b88fb78",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\resources\\schema.sql": {
-    "mtime": 1778847956.9454138,
-    "ast_hash": "cf236f36d13b37e7aed07cb5f4c61ba0",
+    "mtime": 1780042365.7465436,
+    "ast_hash": "a99654c2d154950d288c3b7e28bfb137",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\resources\\update_electives.sql": {
@@ -1154,6 +1234,31 @@
     "ast_hash": "b6a2a56bc40f2f59c774644fad9f0ede",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\devorbit-api\\src\\main\\resources\\db\\migration\\V003__add_repo_context_fields.sql": {
+    "mtime": 1780042156.9589202,
+    "ast_hash": "78d83420c7fe5e5d26e118d4d68b19cc",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\src\\main\\resources\\db\\migration\\V003__ai_course_qa_schema.sql": {
+    "mtime": 1780041991.3848565,
+    "ast_hash": "fbe511d9617e9c7bafebe9c6784fbaf7",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\src\\main\\resources\\db\\migration\\V004__add_repo_last_pushed_at.sql": {
+    "mtime": 1780042156.9599998,
+    "ast_hash": "f8ab80feaa0f96fc5e825a5db8e7d500",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\src\\main\\resources\\db\\migration\\V004__populate_syllabus_summaries.sql": {
+    "mtime": 1780041991.3858519,
+    "ast_hash": "aeeb6ce4cf8134dc2d5965731cca8b00",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\src\\main\\resources\\db\\migration\\V005__fix_subject_qa_and_tech_stacks.sql": {
+    "mtime": 1780041991.3858519,
+    "ast_hash": "ec6d30eafafadbe202d50357b15b9118",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\devorbit-api\\src\\test\\java\\vn\\edu\\uit\\devorbit_api\\DevorbitApiApplicationTests.java": {
     "mtime": 1778772722.9855132,
     "ast_hash": "3408ce67f8c17a58126e284de6e5fb5c",
@@ -1165,13 +1270,13 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\test\\java\\vn\\edu\\uit\\devorbit_api\\controller\\AdminCourseControllerTest.java": {
-    "mtime": 1778847957.0483694,
-    "ast_hash": "c165290965d77142da37a56c5a15db54",
+    "mtime": 1780041991.3873627,
+    "ast_hash": "e1a060a27f0cc90e8dbd253f818345a2",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\test\\java\\vn\\edu\\uit\\devorbit_api\\controller\\AdminRepoCandidateControllerTest.java": {
-    "mtime": 1778847957.0708067,
-    "ast_hash": "be013fd3a3da495bd85fb3be36213658",
+    "mtime": 1780042156.9610019,
+    "ast_hash": "323eddc3bbe1ec66fc4f32c5aace7f57",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\test\\java\\vn\\edu\\uit\\devorbit_api\\controller\\PublicCourseControllerTest.java": {
@@ -1180,8 +1285,18 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\test\\java\\vn\\edu\\uit\\devorbit_api\\controller\\PublicRepoControllerTest.java": {
-    "mtime": 1779039117.4717522,
-    "ast_hash": "bd80b26ffc11321a61aa4a1834c73e81",
+    "mtime": 1780042156.9610019,
+    "ast_hash": "7eb6e5f8c0c28d679a601535c97622c5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\src\\test\\java\\vn\\edu\\uit\\devorbit_api\\service\\GithubRepoServiceTest.java": {
+    "mtime": 1780042156.9610019,
+    "ast_hash": "ff02a98dba4776a1b1bc701c5adf56e9",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\src\\test\\java\\vn\\edu\\uit\\devorbit_api\\service\\GithubScanServiceTest.java": {
+    "mtime": 1780042156.9610019,
+    "ast_hash": "9a11e969211db9bc96fce9af24f5e503",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\test\\java\\vn\\edu\\uit\\devorbit_api\\service\\RepoCandidateServiceTest.java": {
@@ -1200,7 +1315,7 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\gradlew": {
-    "mtime": 1779039118.3737671,
+    "mtime": 1780041966.6332364,
     "ast_hash": "be8f5fdbc62dfc13819d474713b1b86d",
     "semantic_hash": ""
   },
@@ -1210,8 +1325,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\build.gradle.kts": {
-    "mtime": 1779365228.0760548,
-    "ast_hash": "a707cecc52a1e77be53f7b8b36916738",
+    "mtime": 1780041991.388373,
+    "ast_hash": "23f7993b0d019b53d452fc54629df350",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\DevOrbitApplication.kt": {
@@ -1505,28 +1620,28 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\CourseDetailScreen.kt": {
-    "mtime": 1778859021.1637528,
-    "ast_hash": "bd7fe2cc15dcb95cebaf520421c251e7",
+    "mtime": 1780041991.388373,
+    "ast_hash": "bbbb180e83462eea1ef28ce8bb554aee",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\DevOrbitApp.kt": {
-    "mtime": 1779039118.3717747,
-    "ast_hash": "5d9fdb1c338895d89c3814633028092c",
+    "mtime": 1780041991.388373,
+    "ast_hash": "0667d5d5466c27d96fd3aad9025aebc9",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\MainScreen.kt": {
-    "mtime": 1778873660.6948287,
-    "ast_hash": "a122d5b872b2c0e27e7431642680d734",
+    "mtime": 1780041991.388373,
+    "ast_hash": "06a92b66349fbf0c33b34154f188e57b",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\RepoDetailScreen.kt": {
-    "mtime": 1778859021.1652706,
-    "ast_hash": "d375acbc498343ac19b144b27916445b",
+    "mtime": 1780041991.3893723,
+    "ast_hash": "c2f935b4d7b1b0a347f5d577c2b988eb",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\RepoFilterSheet.kt": {
-    "mtime": 1778859021.1678011,
-    "ast_hash": "0016de4cefb076516a8d00ab04ed584c",
+    "mtime": 1780041991.3893723,
+    "ast_hash": "486324a13b7f2481b42c72ec2e734b31",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\RepoFilterState.kt": {
@@ -1535,23 +1650,23 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\RepoListSection.kt": {
-    "mtime": 1778859021.1727548,
-    "ast_hash": "8e8951f38cb4a00877b59ca1dee133e6",
+    "mtime": 1780041991.3893723,
+    "ast_hash": "6fae1cde3e2c61c050a3abca9d07326e",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\components\\CosmicBackground.kt": {
-    "mtime": 1778859021.1747682,
-    "ast_hash": "8a82ea9b20f7ec4f3d3d085bcde6943a",
+    "mtime": 1780041991.3893723,
+    "ast_hash": "7dbb69d70d78cb1f5cb93ac4d8fa2a8a",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\components\\GalaxyGraphCanvas.kt": {
-    "mtime": 1778873660.6958303,
-    "ast_hash": "174bb8e8e43cb848845d189c84edc913",
+    "mtime": 1780041991.3903713,
+    "ast_hash": "97f8950f99580503a51c678201dd3096",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\components\\GlassCard.kt": {
-    "mtime": 1778859021.1757646,
-    "ast_hash": "d8263f9686e5be448dbd3b5b454dcc22",
+    "mtime": 1780041991.3903713,
+    "ast_hash": "c785cf1bfe3604c2873f04aab33d3dd1",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\navigation\\Screen.kt": {
@@ -1570,38 +1685,38 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\screen\\courses\\CourseHubScreen.kt": {
-    "mtime": 1778859021.1840875,
-    "ast_hash": "ff1c918d61d5b807709ab73f041f3e70",
+    "mtime": 1780041991.3903713,
+    "ast_hash": "ef7ed55252bd55716386feb4f64d5683",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\screen\\courses\\CourseListScreen.kt": {
-    "mtime": 1778859021.1851003,
-    "ast_hash": "b4983815552bf4ba284c9465cab26cc5",
+    "mtime": 1780041991.3903713,
+    "ast_hash": "28f97746cc9cab03563d381f2ad353dc",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\screen\\dashboard\\DashboardScreen.kt": {
-    "mtime": 1778859230.828778,
-    "ast_hash": "cf3b06c5106ea31420b4170ee54b5b14",
+    "mtime": 1780041991.3913715,
+    "ast_hash": "e680bf33c2812ddac80d25582049bb27",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\screen\\dashboard\\FocusModeScreen.kt": {
-    "mtime": 1778859021.1887152,
-    "ast_hash": "f95adace46596a43db80128571f49978",
+    "mtime": 1780041991.3913715,
+    "ast_hash": "820f16cef7b33158f34f309df4717621",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\screen\\explore\\ExploreScreen.kt": {
-    "mtime": 1778858837.0164967,
-    "ast_hash": "d243c9833f1d510cfd45cbe35494bf2e",
+    "mtime": 1780041991.3913715,
+    "ast_hash": "501ea1a2eab55203b82f35375b30b7d2",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\screen\\knowledge\\KnowledgeDetailScreen.kt": {
-    "mtime": 1779039118.3729334,
-    "ast_hash": "46afda9486cd836a74dd0a515970415d",
+    "mtime": 1780041991.3913715,
+    "ast_hash": "d1d83a681415890c813cdb7fc8bf4129",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\screen\\knowledge\\KnowledgeGraphScreen.kt": {
-    "mtime": 1779039118.3737671,
-    "ast_hash": "2f3ee9768429ebc7215077afaa62c93b",
+    "mtime": 1780041991.392371,
+    "ast_hash": "80d6d8e56eebabadac320f990f0100b2",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\screen\\knowledge\\KnowledgeHubScreen.kt": {
@@ -1610,38 +1725,38 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\screen\\plan\\StudyPlannerScreen.kt": {
-    "mtime": 1778859221.6055179,
-    "ast_hash": "03941a0719e4582e3eb599af0731c9f3",
+    "mtime": 1780041991.392371,
+    "ast_hash": "6cfacc127ce6bd4e7de8fa968a934a24",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\screen\\plan\\SyllabusParserScreen.kt": {
-    "mtime": 1778859021.197442,
-    "ast_hash": "40a87e91b76ebb683d5d3b961a083252",
+    "mtime": 1780041991.392371,
+    "ast_hash": "787d412e6c6684bf28aa22ca9a00b75f",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\screen\\plan\\TaskBreakdownScreen.kt": {
-    "mtime": 1778859221.6070466,
-    "ast_hash": "97b434222143e008f782f785bb76025d",
+    "mtime": 1780041991.3933706,
+    "ast_hash": "e51cdd4f51c089dec41881576da0cc4d",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\screen\\profile\\ProfileScreen.kt": {
-    "mtime": 1778858837.0187097,
-    "ast_hash": "5d0921bf0769afe319457d0f98515f64",
+    "mtime": 1780041991.3933706,
+    "ast_hash": "71868ba83850031401737063d460c3eb",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\theme\\Color.kt": {
-    "mtime": 1778859021.2009778,
-    "ast_hash": "9bb9d19729c1e51f2c8cf35f34856353",
+    "mtime": 1780041991.3933706,
+    "ast_hash": "6d30c5f18729317ffc0f2d054cf259cc",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\theme\\DesignSystem.kt": {
-    "mtime": 1778859021.2024837,
-    "ast_hash": "6e2b11fa7a1ce8754a82df5885d8b744",
+    "mtime": 1780041991.3933706,
+    "ast_hash": "6b1586d793a3e0c2d671a6dfba89832d",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\theme\\Theme.kt": {
-    "mtime": 1778859021.2029915,
-    "ast_hash": "5ff8cd5b02dfcce9c90432cab052fca1",
+    "mtime": 1780041991.394371,
+    "ast_hash": "09ee40bba5247863c3821586223aaad7",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\viewmodel\\AcademicViewModel.kt": {
@@ -1650,8 +1765,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\viewmodel\\AuthViewModel.kt": {
-    "mtime": 1778859021.204252,
-    "ast_hash": "71d6de3294eba3882155fd6eba90faf0",
+    "mtime": 1780041991.394371,
+    "ast_hash": "b8a685b99c51232117dd22d009e99e33",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\ui\\viewmodel\\CourseViewModel.kt": {
@@ -1750,12 +1865,12 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-showcase\\next.config.ts": {
-    "mtime": 1779042470.2012415,
+    "mtime": 1780041966.6342375,
     "ast_hash": "b2645531afe945c0b890fc74abdc1115",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-showcase\\package.json": {
-    "mtime": 1779042473.6233833,
+    "mtime": 1780041966.6342375,
     "ast_hash": "03ef74a2925769a9ad999a0fcdf04a47",
     "semantic_hash": ""
   },
@@ -2070,7 +2185,7 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\package.json": {
-    "mtime": 1779047849.5942123,
+    "mtime": 1780041966.636236,
     "ast_hash": "9ada5d509357d4e43415594d7fe7b48e",
     "semantic_hash": ""
   },
@@ -2080,7 +2195,7 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\tailwind.config.js": {
-    "mtime": 1779048152.832937,
+    "mtime": 1780041966.6502817,
     "ast_hash": "62f5bb570481e8e8878aaf2ee4a6f3a6",
     "semantic_hash": ""
   },
@@ -2095,8 +2210,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\vite.config.ts": {
-    "mtime": 1779365084.86552,
-    "ast_hash": "0318325c48b0ea9a3d783970a8adb19e",
+    "mtime": 1780041966.6502817,
+    "ast_hash": "f8bca39fb589099c8b676de983e985be",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\hooks\\gsd-check-update.js": {
@@ -2135,8 +2250,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\App.tsx": {
-    "mtime": 1779047385.909454,
-    "ast_hash": "8c4447d3f3f280163a90635bca2d7bf7",
+    "mtime": 1780041966.636236,
+    "ast_hash": "f2e007c1c90edd002aa29c48af1ea08f",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\main.tsx": {
@@ -2144,9 +2259,14 @@
     "ast_hash": "70bfbb097d7dd149a075af907a7ee19a",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\router.test.tsx": {
+    "mtime": 1780042156.9649284,
+    "ast_hash": "629850056f9ac96b2f4f8783a9d83824",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\devorbit-web\\src\\router.tsx": {
-    "mtime": 1779049655.7412128,
-    "ast_hash": "7e468e8251c67b145dac033b93901d44",
+    "mtime": 1780042156.9660037,
+    "ast_hash": "8658422a8fc8a914350e6e45f5193bff",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\vite-env.d.ts": {
@@ -2160,18 +2280,28 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\Layout.tsx": {
-    "mtime": 1779050807.4356942,
-    "ast_hash": "725af207209abb39c6d4e45c6fe65e40",
+    "mtime": 1780042309.6016889,
+    "ast_hash": "ba64831ebb5a07cc8ed5a24e460c9ee7",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\components\\navigation.test.ts": {
+    "mtime": 1780042156.9620073,
+    "ast_hash": "e4f8d3ad56336a9fbe29d5cde8c6db4c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\components\\navigation.ts": {
+    "mtime": 1780042156.9620073,
+    "ast_hash": "bca7d4c205519b4b1ae1780b483248cb",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\ParticleNetwork.tsx": {
-    "mtime": 1779049397.551047,
-    "ast_hash": "b2d99a269e28f0d6d97c955164644576",
+    "mtime": 1780041966.6372359,
+    "ast_hash": "113b8c9ca4773e084802b7d953290022",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\SmoothScrollProvider.tsx": {
-    "mtime": 1779049088.1136398,
-    "ast_hash": "384efb3b27862eb4c7710f3c0b435e16",
+    "mtime": 1780041966.6372359,
+    "ast_hash": "239a073db3fc4cff8e9e957e5acc5bea",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\ThemeToggle.tsx": {
@@ -2260,18 +2390,23 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\photobooth\\FrameSelector.tsx": {
-    "mtime": 1779044185.3001852,
+    "mtime": 1780041966.6377444,
     "ast_hash": "3864abee28575f681f10e07783bebafe",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\photobooth\\PhotoUploadSection.tsx": {
-    "mtime": 1778847959.7140489,
-    "ast_hash": "2a455a75219b595bd053a03c29e708a6",
+    "mtime": 1780041991.3953717,
+    "ast_hash": "34f01ee2b06b22a69974764dd4e58a82",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\photobooth\\PreviewCanvas.tsx": {
     "mtime": 1778847959.7367127,
     "ast_hash": "a0469c4afb99abdbead2d4cff6accc60",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\components\\student\\AiChatWidget.tsx": {
+    "mtime": 1780041991.3953717,
+    "ast_hash": "d75d006c2097056f6467e618aa14979c",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\student\\CareerOrientationData.ts": {
@@ -2280,53 +2415,63 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\student\\CourseCard.tsx": {
-    "mtime": 1779044179.2179546,
-    "ast_hash": "139b739dc6c6f77acec3836673122ae0",
+    "mtime": 1780041966.6387496,
+    "ast_hash": "b5ea00cb5ed6cbf0ffa27187a13d63a0",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\student\\CourseKnowledgeGraph.tsx": {
-    "mtime": 1779044159.9610846,
+    "mtime": 1780041966.6387496,
     "ast_hash": "5e140d801cbf3547c3d7ce46d0092d4c",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\student\\curriculumData.ts": {
-    "mtime": 1779048887.7226782,
-    "ast_hash": "af65d65956dba02f4181150972fe05aa",
+    "mtime": 1780041966.6407583,
+    "ast_hash": "1ce47d2779cac223b466dff33458357f",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\student\\DiscoveryFeed.tsx": {
-    "mtime": 1779049303.3728733,
+    "mtime": 1780041966.6387496,
     "ast_hash": "6a354c650449aa7e0688a2d1cc93b7ef",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\student\\FileTreeExplorer.tsx": {
-    "mtime": 1779051045.7774947,
-    "ast_hash": "82183e090828d1ca08edfde847370fdc",
+    "mtime": 1780041966.6387496,
+    "ast_hash": "7ea24f9f597c460815b31611d73eb56a",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\student\\HeroStoryCarousel.tsx": {
-    "mtime": 1779051045.7774947,
-    "ast_hash": "14900ab13f59a3f50ed96685c7385656",
+    "mtime": 1780041991.3953717,
+    "ast_hash": "9589c558d4af106a9898587105962fe3",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\student\\KanbanBoard.tsx": {
-    "mtime": 1779050229.9056096,
-    "ast_hash": "926660a7c0c17fb7b6c1e8e0eac8acea",
+    "mtime": 1780041991.396372,
+    "ast_hash": "899747c69574310c7944562bbd1c9630",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\student\\KanbanCard.tsx": {
-    "mtime": 1779050031.44306,
+    "mtime": 1780041966.639762,
     "ast_hash": "61ba4ad1209e2b16c2d1a45a534c9bf0",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\student\\KanbanColumn.tsx": {
-    "mtime": 1779050019.1889195,
+    "mtime": 1780041966.6407583,
     "ast_hash": "10c090413f7d1d3ed08c9db9c7032b9e",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\components\\student\\RepoAiAnalysisSection.test.tsx": {
+    "mtime": 1780042156.9620073,
+    "ast_hash": "e672fa8878596e4d7f27eb759b1880b6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\components\\student\\RepoAiAnalysisSection.tsx": {
+    "mtime": 1780042156.9620073,
+    "ast_hash": "995339407f847bc953d28412bfe5bf10",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\student\\RepoCard.tsx": {
-    "mtime": 1779047012.6239426,
-    "ast_hash": "389310bc173fce897308ee09dc40eee9",
+    "mtime": 1780041966.6407583,
+    "ast_hash": "173ffa11c1019c7b8cf1bfb50eb68068",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\student\\RepoFilterBar.tsx": {
@@ -2335,13 +2480,13 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\ui\\EnhancedCard.tsx": {
-    "mtime": 1779048071.6922474,
-    "ast_hash": "1770dd56bbddd478a127f22891df1a68",
+    "mtime": 1780041966.6407583,
+    "ast_hash": "17387f01badf2465ba4e705c3576fa90",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\ui\\MagneticButton.tsx": {
-    "mtime": 1779048071.691239,
-    "ast_hash": "e5c3bb5c1906aa3026d45db52e3a84ab",
+    "mtime": 1780041966.6417563,
+    "ast_hash": "1d47061336b4e99e7934afd2dbf4e384",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\hooks\\useAiGraphQuery.ts": {
@@ -2369,9 +2514,19 @@
     "ast_hash": "d1d49c9ff3ff44c08771072e8c47e608",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\hooks\\useSubjectQa.ts": {
+    "mtime": 1780041991.396372,
+    "ast_hash": "e5fa65a4482c4c50072f4e4bab5c82b3",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\lib\\api.test.ts": {
+    "mtime": 1780042156.9620073,
+    "ast_hash": "1bdc09bc8f9bb16c53dd8370b66c268c",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\devorbit-web\\src\\lib\\api.ts": {
-    "mtime": 1779042196.4624937,
-    "ast_hash": "92ae50414466205f53b04c98f9935233",
+    "mtime": 1780042156.9620073,
+    "ast_hash": "ba72acfaec4db7c50a419ba845a39a98",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\lib\\auth.ts": {
@@ -2385,13 +2540,13 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\lib\\config.ts": {
-    "mtime": 1779365166.486807,
-    "ast_hash": "e3996a03f821282cf35d41661576cf49",
+    "mtime": 1780041966.6417563,
+    "ast_hash": "752a6dbd28365758e3fb629e1d89b7f8",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\lib\\contentCleaner.ts": {
-    "mtime": 1779046995.2378776,
-    "ast_hash": "f6a000cbfab3770d47b97842899b95b1",
+    "mtime": 1780041966.6427577,
+    "ast_hash": "4d884263a4f7c15ea98f6d17c300cb63",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\lib\\hooks.ts": {
@@ -2409,6 +2564,41 @@
     "ast_hash": "f8268108133e566fcc9e29a96493e0e4",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\lib\\repoAiAnalysis.test.ts": {
+    "mtime": 1780042156.9629216,
+    "ast_hash": "454ab039b85b727c3864682c2d580918",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\lib\\repoAiAnalysis.ts": {
+    "mtime": 1780042156.9629216,
+    "ast_hash": "f4ea15f29626044164b14b5048d7e957",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\lib\\repoAnalysisService.test.ts": {
+    "mtime": 1780042156.9629216,
+    "ast_hash": "bead202bb94476c56cdf05f24811ec4f",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\lib\\repoAnalysisService.ts": {
+    "mtime": 1780042156.9629216,
+    "ast_hash": "3618f6c07928559f4274fd9e6f3de10f",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\lib\\repoEvaluation.test.ts": {
+    "mtime": 1780042156.9629216,
+    "ast_hash": "c88d79414f1a17d7a86d57911850ae25",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\lib\\repoEvaluation.ts": {
+    "mtime": 1780042156.9639194,
+    "ast_hash": "2cecff0d248daba4ddfc023b627ed1f3",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\lib\\repoSearch.ts": {
+    "mtime": 1780042156.9639194,
+    "ast_hash": "c90d4f1fe15758ec735844830b089af5",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\devorbit-web\\src\\lib\\theme.tsx": {
     "mtime": 1778325657.832525,
     "ast_hash": "fc68c1283870df9c74ea175d46ad304d",
@@ -2420,78 +2610,78 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\lib\\frames\\frameService.ts": {
-    "mtime": 1778847959.942398,
-    "ast_hash": "34a9274ae5c347c28e2948cdd63f51bf",
+    "mtime": 1780042156.9629216,
+    "ast_hash": "a2e471a9f2ce9c2901be255802095402",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\index.ts": {
-    "mtime": 1779047916.464561,
-    "ast_hash": "c6216cb2553650feab32a5c867e0217d",
+    "mtime": 1780041966.643757,
+    "ast_hash": "01076cbc84007312a4ef5a14c318dfc9",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\effects\\useGsapScroll.ts": {
-    "mtime": 1779047916.464561,
-    "ast_hash": "132b223519173d151fcd0ea708dd06c2",
+    "mtime": 1780041966.6427577,
+    "ast_hash": "785879d8d4a006f0866079b12af567e8",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\hooks\\useDeviceTilt.ts": {
-    "mtime": 1779048370.4679413,
-    "ast_hash": "543079e38a6088cd8451aa0273d4f810",
+    "mtime": 1780041966.6427577,
+    "ast_hash": "47fee7b8cc7f7ab6b195288c96e976eb",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\hooks\\useMagneticHover.ts": {
-    "mtime": 1779047882.8594952,
-    "ast_hash": "cc772370beedf5bf5ae7eb0529bbf723",
+    "mtime": 1780041966.6427577,
+    "ast_hash": "48b45b598442a0f7d71a0f23d443b357",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\hooks\\useParallaxScroll.ts": {
-    "mtime": 1779049183.101631,
-    "ast_hash": "644d086331f89a736f5e526d3546b040",
+    "mtime": 1780041966.6427577,
+    "ast_hash": "fc16efaf41a97a9c7fd319880f9392be",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\hooks\\useReducedMotion.ts": {
-    "mtime": 1779048361.0962484,
-    "ast_hash": "dced0325642571386edacd166cfe00c6",
+    "mtime": 1780041966.643757,
+    "ast_hash": "21fe379238d03903a07f6b3e47ee5e28",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\hooks\\useScrollProgress.ts": {
-    "mtime": 1779049177.9093535,
-    "ast_hash": "3fef8b88d95231c7e15c90a13c965d54",
+    "mtime": 1780041966.643757,
+    "ast_hash": "9d300ae37bc2603188baf106acf1f3c8",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\primitives\\BlurReveal.tsx": {
-    "mtime": 1779047901.9027662,
-    "ast_hash": "72267c471bf478174d3b922552624454",
+    "mtime": 1780041966.643757,
+    "ast_hash": "7c58ecbae2fe322129bcc7ffb1f19da4",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\primitives\\CinematicTextReveal.tsx": {
-    "mtime": 1779047901.9027662,
-    "ast_hash": "a84af82d322659cca6b23e8dfe4650f6",
+    "mtime": 1780041966.643757,
+    "ast_hash": "7cacbcb4e37c18c5cd765f504b28f190",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\primitives\\FadeReveal.tsx": {
-    "mtime": 1779047901.9027662,
-    "ast_hash": "c1bea1f90c85fa285b23be6cab05bf9b",
+    "mtime": 1780041966.643757,
+    "ast_hash": "58a2682ecb3b44b37acc69fa7b5f4159",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\primitives\\ParallaxLayer.tsx": {
-    "mtime": 1779047901.9065888,
-    "ast_hash": "d4a1fe007b29e78ce554b7dd0e32db6c",
+    "mtime": 1780041966.6447613,
+    "ast_hash": "213fed0dde49c562b3826fd5e2675703",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\primitives\\ScrollProgressIndicator.tsx": {
-    "mtime": 1779047916.464561,
-    "ast_hash": "fea5fbbd2df9d4dbc901283efdc0294c",
+    "mtime": 1780041966.6447613,
+    "ast_hash": "f82d95a20dd405f2324cb30c0f53dd69",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\primitives\\SectionTransition.tsx": {
-    "mtime": 1779047901.9027662,
-    "ast_hash": "d2b80197517b58ec05d820f691b73d56",
+    "mtime": 1780041966.6447613,
+    "ast_hash": "e7e1c9d7da6276f2e9a3ccef42826ef7",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\primitives\\StaggerReveal.tsx": {
-    "mtime": 1779047901.9027662,
-    "ast_hash": "5faf3304ece73c4ae1faf9b3ad20e66f",
+    "mtime": 1780041966.645758,
+    "ast_hash": "c43a3f71e74c1552ee8e4f3686317a1f",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\pages\\admin\\AdminCandidatesPage.tsx": {
@@ -2550,18 +2740,28 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\pages\\student\\CourseDetailPage.tsx": {
-    "mtime": 1779048387.912392,
-    "ast_hash": "61f6c38443260847c72b363ca2f2ba65",
+    "mtime": 1780041991.3973763,
+    "ast_hash": "1b58ba66b5ce42f83fe11cd1ddc8d677",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\pages\\student\\CourseListPage.tsx": {
-    "mtime": 1779048468.8503382,
-    "ast_hash": "01a1b3f8a409a1e0225efd1115f212a0",
+    "mtime": 1780042156.9639194,
+    "ast_hash": "33f1467cc030f909cea8df0e4d075672",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\pages\\student\\GpaCalculatorPage.test.tsx": {
+    "mtime": 1780042156.9649284,
+    "ast_hash": "ae87bf87da0670babbd869e72f92476c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\pages\\student\\GpaCalculatorPage.tsx": {
+    "mtime": 1780042156.9649284,
+    "ast_hash": "fb6685b01811e37f990a4e228702bd89",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\pages\\student\\HomePage.tsx": {
-    "mtime": 1779050671.0969746,
-    "ast_hash": "89c9b3580a8a52114d6c07a6dd9ac6dd",
+    "mtime": 1780041991.3973763,
+    "ast_hash": "a6c132227708b6e96b047368f68b6267",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\pages\\student\\KnowledgeGraphPage.tsx": {
@@ -2570,8 +2770,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\pages\\student\\PhotoboothPage.tsx": {
-    "mtime": 1779049509.1908662,
-    "ast_hash": "f8da713e6936594f9c7f7fa045db21de",
+    "mtime": 1780041966.6472712,
+    "ast_hash": "315351e720173302d9cc9f05ca9c9c3b",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\pages\\student\\PhotographPage.tsx": {
@@ -2579,14 +2779,19 @@
     "ast_hash": "97a8c5efaa5ee7f390cbc0f23cae0f3a",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\pages\\student\\RepoDetailPage.test.ts": {
+    "mtime": 1780042156.9649284,
+    "ast_hash": "9f35b11a3dc217802ce9eeead14004ca",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\devorbit-web\\src\\pages\\student\\RepoDetailPage.tsx": {
-    "mtime": 1779047008.914147,
-    "ast_hash": "0496a83de627152e07210215e9d78455",
+    "mtime": 1780042156.9649284,
+    "ast_hash": "fcd65e1d4d1ae7493a15a2e42b7afcfa",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\pages\\student\\StudentBookmarksPage.tsx": {
-    "mtime": 1778779209.4350872,
-    "ast_hash": "b1ee579a119261b1dda5c423e4ebb3e4",
+    "mtime": 1780041991.39845,
+    "ast_hash": "ac297a67c8697e0cb674d81707118715",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\pages\\student\\StudentLoginPage.tsx": {
@@ -2600,8 +2805,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\pages\\student\\knowledge-graph\\GalaxyPage.tsx": {
-    "mtime": 1779049237.193655,
-    "ast_hash": "0cdceb5329c501699b174088dcaf91d1",
+    "mtime": 1780041991.39845,
+    "ast_hash": "266adc3d33742a84ae821703c982cc76",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\pages\\student\\knowledge-graph\\camera\\GalaxyCamera.tsx": {
@@ -2680,58 +2885,58 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\performance\\index.ts": {
-    "mtime": 1779049090.9033327,
-    "ast_hash": "403dc252dc8eb5b5ac65c00d034f0fb0",
+    "mtime": 1780041966.6482823,
+    "ast_hash": "0894837646f915b5a16b863dc4404588",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\performance\\usePerformanceProfile.ts": {
-    "mtime": 1779051058.905375,
-    "ast_hash": "878700c801dac15670fa8666b203821c",
+    "mtime": 1780041966.6482823,
+    "ast_hash": "040c9da14ec64d9c6aa0b90d9e71fd2a",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\scenes\\AIPathways.tsx": {
-    "mtime": 1779048059.3596475,
-    "ast_hash": "9e13ddc7d7e76e572e3cc98e3b7c5d6b",
+    "mtime": 1780041966.6482823,
+    "ast_hash": "74a16b73d610063c6743943ef760a902",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\scenes\\AmbientBloom.tsx": {
-    "mtime": 1779051045.7774947,
-    "ast_hash": "ee4f4b6aed2c99e85cf233c88e16981c",
+    "mtime": 1780041966.6492822,
+    "ast_hash": "3d533794741851ee78e1e94c411a7157",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\scenes\\CameraController.tsx": {
-    "mtime": 1779051045.7774947,
-    "ast_hash": "09b0aba31cb118259d4e413697eb5ce1",
+    "mtime": 1780041966.6492822,
+    "ast_hash": "46a0436c4b25b98bc05e9a6d6c4a526a",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\scenes\\FloatingParticles.tsx": {
-    "mtime": 1779049402.3030286,
-    "ast_hash": "ed1ad707b33c25a697a958d7c223f87c",
+    "mtime": 1780041966.6492822,
+    "ast_hash": "a46624ce6c67555d39d185bf055614ec",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\scenes\\index.ts": {
-    "mtime": 1779048032.9934702,
-    "ast_hash": "153290875fcf5f248edd3925960abfe7",
+    "mtime": 1780041966.6502817,
+    "ast_hash": "87e94edb1aa6806cfa0d8a877f85ea93",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\scenes\\KnowledgeGalaxy.tsx": {
-    "mtime": 1779049149.599496,
-    "ast_hash": "4e2391400033db0d8967abf5232be359",
+    "mtime": 1780041966.6492822,
+    "ast_hash": "f0c48bc96664772cc8b38da7f5e7180a",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\scenes\\OrbitalNodes.tsx": {
-    "mtime": 1779049158.7736027,
-    "ast_hash": "eba0fedc8e76cb5fb670ad57f0a89998",
+    "mtime": 1780041966.6492822,
+    "ast_hash": "e8951d692a09e8127d0ea390d334f3e8",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\scenes\\SceneComposer.tsx": {
-    "mtime": 1779049399.8328536,
-    "ast_hash": "5851f7b6a64207d531930ff34e82b437",
+    "mtime": 1780041966.6492822,
+    "ast_hash": "4795aa2769790a0174d2ed9b370f6c9e",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\types\\api.ts": {
-    "mtime": 1778873660.7079484,
-    "ast_hash": "a5aea02349a61710b062dcff37668196",
+    "mtime": 1780042156.9660037,
+    "ast_hash": "5b4b1d5748e0c8888233b9e68bd0eb39",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\types\\frames.ts": {
@@ -15955,8 +16160,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\scripts\\generate-curriculum.mjs": {
-    "mtime": 1779048884.912053,
-    "ast_hash": "2870c2df93b9048a7716bbc053e98618",
+    "mtime": 1780041966.7836752,
+    "ast_hash": "8b7995b60749acb5a919872a8f2c54b1",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\scripts\\review\\api.py": {
@@ -16030,8 +16235,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\AGENTS.md": {
-    "mtime": 1779293775.3125868,
-    "ast_hash": "8737e729adda3df3112e87a9e4b7c390",
+    "mtime": 1780041991.3797073,
+    "ast_hash": "a6517558c498a3f9340de876b63b310b",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\daa.uit.edu.vn_content_cu-nhan-nganh-ky-thuat-phan-mem-ap-dung-tu-khoa-20-2025.2026-05-11T12_20_52.521Z.md": {
@@ -16045,8 +16250,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\docker-compose.yml": {
-    "mtime": 1779365201.071201,
-    "ast_hash": "6530dd908e53a852ef201394c603a27b",
+    "mtime": 1780041966.6502817,
+    "ast_hash": "de64dceff39472a04541a316830581d5",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\README.md": {
@@ -16227,6 +16432,46 @@
   "D:\\temp\\devorbit\\.agents\\skills\\codebase-mapper\\SKILL.md": {
     "mtime": 1778323384.8014362,
     "ast_hash": "56e9bbd5e679312b0e9f08d571d596be",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\codegraph-cli\\SKILL.md": {
+    "mtime": 1779732615.162817,
+    "ast_hash": "ecd00be3436aba3859f2c38d13577030",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\codegraph-debugging\\SKILL.md": {
+    "mtime": 1779732596.0766945,
+    "ast_hash": "a1eefe928402fd02ccd5950586465b0a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\codegraph-exploring\\SKILL.md": {
+    "mtime": 1779732583.6015031,
+    "ast_hash": "5abe92c1704a2c6cf7830acaab7a0e75",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\codegraph-guide\\SKILL.md": {
+    "mtime": 1779732608.9656186,
+    "ast_hash": "8360631d201eaec632ed344d68f8b5ae",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\codegraph-impact-analysis\\SKILL.md": {
+    "mtime": 1779732589.4850323,
+    "ast_hash": "caeb42950ee4b4d709bbec7e1640f3ec",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\codegraph-refactoring\\SKILL.md": {
+    "mtime": 1779732602.215415,
+    "ast_hash": "5589c71da905f9588f85f641eba09812",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\content-writer\\SKILL.md": {
+    "mtime": 1779728231.3057606,
+    "ast_hash": "d8a187b1b6cb7576faf8e9498b60004e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\content-writer\\references\\style-guide.md": {
+    "mtime": 1779728231.3057606,
+    "ast_hash": "71ef4e84a0553bc284e3d1a44bacddc3",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\.agents\\skills\\context-compressor\\SKILL.md": {
@@ -16414,6 +16659,11 @@
     "ast_hash": "94af66706fa589f4e662ae5d95c8403b",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\.claude\\CLAUDE.md": {
+    "mtime": 1779731472.4375024,
+    "ast_hash": "50511661eded27027e6f698ed9fa3e76",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\.claude\\commands\\ce.md": {
     "mtime": 1778503742.2132697,
     "ast_hash": "750ffefa39050e2fac81bb74ee6b0a95",
@@ -16524,6 +16774,16 @@
     "ast_hash": "07c8fb33e0e1ab000a2a3f8713401f5a",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\.commandcode\\design\\review-report.html": {
+    "mtime": 1779969246.0399272,
+    "ast_hash": "7cb75ed48d656cd561ca1813f79ded28",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\design\\review-report.md": {
+    "mtime": 1779969141.7289028,
+    "ast_hash": "7eeb7d7691bfa6e35ff35d27ea3415e1",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\.commandcode\\skills\\agent-performance-analyzer\\SKILL.md": {
     "mtime": 1778863984.5157437,
     "ast_hash": "95c6c9b5ad125ff0819b457ca88f72a3",
@@ -16547,6 +16807,16 @@
   "D:\\temp\\devorbit\\.commandcode\\skills\\brandkit\\SKILL.md": {
     "mtime": 1778752223.7817626,
     "ast_hash": "7491f8fb77b0ebf517b758d096ac4ab4",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\content-writer\\SKILL.md": {
+    "mtime": 1779728231.3057606,
+    "ast_hash": "d8a187b1b6cb7576faf8e9498b60004e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\content-writer\\references\\style-guide.md": {
+    "mtime": 1779728231.3057606,
+    "ast_hash": "71ef4e84a0553bc284e3d1a44bacddc3",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\.commandcode\\skills\\context-engineering\\SKILL.md": {
@@ -17899,6 +18169,16 @@
     "ast_hash": "80dffa27834a8884f8758701fec53e74",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\.pi\\skills\\content-writer\\SKILL.md": {
+    "mtime": 1779728231.3057606,
+    "ast_hash": "d8a187b1b6cb7576faf8e9498b60004e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\skills\\content-writer\\references\\style-guide.md": {
+    "mtime": 1779728231.3057606,
+    "ast_hash": "71ef4e84a0553bc284e3d1a44bacddc3",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\.roo\\rules\\claude-mem-context.md": {
     "mtime": 1778492615.1405077,
     "ast_hash": "05fdb49e5ef90a3e8b36d968027c0ebe",
@@ -17920,13 +18200,13 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\AGENTS.md": {
-    "mtime": 1779295133.5225937,
-    "ast_hash": "997e3d19165324ea6978ed95b72b9b4c",
+    "mtime": 1780041966.6048212,
+    "ast_hash": "d02f773fcbc80669b6a8f91a7a6b7203",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\ARCHITECTURE.md": {
-    "mtime": 1779295126.1543117,
-    "ast_hash": "051fc4eb1c2571e0b8b48ceee51f773e",
+    "mtime": 1780041966.6048212,
+    "ast_hash": "7970e8a10b369c2c3fd51db993fa2f3c",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\.pi\\agents\\supervisor.md": {
@@ -18905,13 +19185,13 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\docs\\ONBOARDING.md": {
-    "mtime": 1779436753.3728807,
-    "ast_hash": "a8045b7603043aff57937cb99efb92e2",
+    "mtime": 1780041966.6058178,
+    "ast_hash": "b0bdea2109fbc8c5c0a239967e59c685",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\docs\\security-audit.md": {
-    "mtime": 1779437530.259791,
-    "ast_hash": "755da08b738d9a8bdacdf81a944c1cab",
+    "mtime": 1780041966.6058178,
+    "ast_hash": "bea4cd429ecc93abac07a49c30227f10",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\config\\AGENTS.md": {
@@ -18935,13 +19215,13 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\resources\\application-local.yaml": {
-    "mtime": 1779365071.1056128,
-    "ast_hash": "0e2e1716202a4041d3f01bdfd2c6b3ce",
+    "mtime": 1780041966.6237187,
+    "ast_hash": "d9af4527ce1d7dfda6d5c671d90354f4",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\resources\\application.yaml": {
-    "mtime": 1779365068.5453165,
-    "ast_hash": "7d2f9fb7aa4a8843d7d180c73ad725a5",
+    "mtime": 1780041991.3848565,
+    "ast_hash": "defa665be9001d8dd74291f90856dee3",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\test\\resources\\application-test.yaml": {
@@ -19030,8 +19310,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\README.md": {
-    "mtime": 1779363423.8081963,
-    "ast_hash": "33fb0729ee2d112115e390a691553993",
+    "mtime": 1780041966.635237,
+    "ast_hash": "021c835864e2af08d89432df7de579c2",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\agents\\gsd-advisor-researcher.md": {
@@ -20025,8 +20305,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\docs\\ARCHITECTURE.md": {
-    "mtime": 1778875135.1568415,
-    "ast_hash": "bc66957c325a737c08b402f83076b3b3",
+    "mtime": 1780042156.9660037,
+    "ast_hash": "821d9e5827ecfae6d6ff1eb870615762",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\docs\\FEATURE_INTAKE.md": {
@@ -20054,19 +20334,34 @@
     "ast_hash": "0c212a57ec75e039a6e18a9384fc9d4f",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\docs\\mobile-plan-4screens.md": {
+    "mtime": 1780041991.39945,
+    "ast_hash": "44734e8d4957ef6234fb03e1296a248e",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\docs\\README.md": {
     "mtime": 1778873987.7103808,
     "ast_hash": "6a7cc02251a702a62cb7c105878c1416",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\docs\\research-4screens-value.md": {
+    "mtime": 1780041991.39945,
+    "ast_hash": "9c68b89407f655b1c3426ed2ffc4f955",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\docs\\showcase-web-content.md": {
+    "mtime": 1780041991.39945,
+    "ast_hash": "82571a62d9b41bea25ba5fd5be2d2f28",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\docs\\TEST_MATRIX.md": {
-    "mtime": 1778874042.8631065,
-    "ast_hash": "97cf8879eadc6a4a90dad991e2027815",
+    "mtime": 1780042309.6016889,
+    "ast_hash": "a6f3a435f8aa13be1183c1dcb868efd4",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\docs\\backend\\README.md": {
-    "mtime": 1779043780.9215305,
-    "ast_hash": "6a048ecd0b34e6b5271cf973e485dc3c",
+    "mtime": 1780041966.6512816,
+    "ast_hash": "6680e0e06cb12e875ed31e1364cbe288",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\docs\\decisions\\0001-harness-first-development.md": {
@@ -20099,14 +20394,19 @@
     "ast_hash": "9cbeca32480830c698ec5a6dd67dc436",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\docs\\product\\gpa-calculator.md": {
+    "mtime": 1780042156.9660037,
+    "ast_hash": "3e6f0f8a5611ac67266e497be5fe44c6",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\docs\\product\\README.md": {
     "mtime": 1778441135.3629208,
     "ast_hash": "bb6f7d09bbd6a17bb06de547a9272355",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\docs\\stories\\backlog.md": {
-    "mtime": 1778875158.1172287,
-    "ast_hash": "30e121b02d26cc4d4c32a12f1e6bfb51",
+    "mtime": 1780041991.4004498,
+    "ast_hash": "89576fb02c7d23b90058855cf2c4c153",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\docs\\stories\\explore-screen-enhancement.md": {
@@ -20154,9 +20454,109 @@
     "ast_hash": "9440173835aa1307ad8c6007db82a361",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\docs\\stories\\US-020-gpa-calculator.md": {
+    "mtime": 1780042156.9660037,
+    "ast_hash": "45101713da28d8221b2dc87630c654bf",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\docs\\stories\\US-020-responsive-mobile-tablet.md": {
+    "mtime": 1780041991.4004498,
+    "ast_hash": "362654fa796720bbe28dec84ca4e1c3c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\docs\\stories\\US-021-ai-course-qa-assistant.md": {
+    "mtime": 1780041991.4004498,
+    "ast_hash": "b4834725e7eb8dd2b1df89fc3bc04d37",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\docs\\stories\\US-021-repo-ai-analysis-structure.md": {
+    "mtime": 1780042156.9660037,
+    "ast_hash": "c0b2397953ff5b5cff048df5027c458c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\docs\\stories\\US-022-repo-rule-based-analysis.md": {
+    "mtime": 1780042156.9660037,
+    "ast_hash": "4bccb8ae2a9fcdc09360e86819da6377",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\docs\\stories\\US-023-repo-analysis-provider-interface.md": {
+    "mtime": 1780042156.967517,
+    "ast_hash": "240529daba5d07ec6d83a522bafd1ceb",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\docs\\stories\\US-024-repo-analysis-ui-groups.md": {
+    "mtime": 1780042156.967517,
+    "ast_hash": "269dbdba2917ef4d79fba47923e480a9",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\docs\\stories\\US-025-repo-analysis-data-driven.md": {
+    "mtime": 1780042156.967517,
+    "ast_hash": "00afa9eddff76623c68637bf410df2af",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\docs\\stories\\US-026-repo-readme-insights.md": {
+    "mtime": 1780042156.967517,
+    "ast_hash": "9683830166080e8019a8f5de571d0ded",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\docs\\stories\\US-027-repo-analysis-summary-priority.md": {
+    "mtime": 1780042156.967517,
+    "ast_hash": "6ab188f05a8298ab8efb02e5e65b9a76",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\docs\\stories\\US-028-repo-analysis-collapsible-details.md": {
+    "mtime": 1780042156.967517,
+    "ast_hash": "b7beca2b3062657e1c713f375902d81f",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\docs\\stories\\US-029-repo-analysis-decision-focused.md": {
+    "mtime": 1780042156.967517,
+    "ast_hash": "4862adb0978249ddf227b30ef74b9c7d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\docs\\stories\\US-030-contextual-repo-evaluation.md": {
+    "mtime": 1780042156.967517,
+    "ast_hash": "95f60d13e0395dd36fe2b20613236beb",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\docs\\stories\\US-031-repo-github-context-fetch.md": {
+    "mtime": 1780042156.967517,
+    "ast_hash": "90d5d1badc6ab739ae644ea295aecad8",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\docs\\stories\\US-032-xray-repo-evaluation.md": {
+    "mtime": 1780042156.967517,
+    "ast_hash": "fe9ac967738057857274e78e59021f58",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\docs\\stories\\US-033-xray-repo-quick-scan-ui.md": {
+    "mtime": 1780042156.967517,
+    "ast_hash": "66a910d6d94c575adb72a51162d7b1f6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\docs\\stories\\US-034-repo-last-activity.md": {
+    "mtime": 1780042156.968567,
+    "ast_hash": "154091091d4ff7f5fad8d754ea11ffbb",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\docs\\stories\\redesign\\claymorphism-vibrant.md": {
     "mtime": 1778327483.317873,
     "ast_hash": "24e62ead969664cd1ad066a693737ea9",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\docs\\superpowers\\plans\\2026-05-26-gpa-goal-planner.md": {
+    "mtime": 1780042156.968567,
+    "ast_hash": "6a4123b791891a037a14ee68142321da",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\docs\\superpowers\\plans\\2026-05-27-gpa-browser-draft.md": {
+    "mtime": 1780042156.968567,
+    "ast_hash": "e2f2aaa2ba2b3e6aee2f17329b35ff57",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\docs\\superpowers\\plans\\2026-05-27-gpa-calculator-ux-improvements.md": {
+    "mtime": 1780042156.968567,
+    "ast_hash": "65002687efe143d93186ac33fe5f25ab",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\docs\\templates\\decision.md": {
@@ -20577,6 +20977,16 @@
   "D:\\temp\\devorbit\\GitNexus\\docs\\superpowers\\specs\\2026-04-02-pr626-high-fixes-design.md": {
     "mtime": 1778874372.3044877,
     "ast_hash": "26aaf88bf77be11d5faa5fbc7b4ffed7",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\GitNexus\\docs\\superpowers\\specs\\2026-05-26-gpa-goal\\DESIGN.md": {
+    "mtime": 1780042156.9564035,
+    "ast_hash": "53731ee6f885f1e102e3f328ebdaaf44",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\GitNexus\\docs\\superpowers\\specs\\2026-05-26-gpa-goal\\MILESTONES.md": {
+    "mtime": 1780042156.9564035,
+    "ast_hash": "8db10224c812b236c1a05299cf4097f3",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\GitNexus\\eval\\README.md": {

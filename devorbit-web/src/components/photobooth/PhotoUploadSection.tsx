@@ -441,6 +441,47 @@ function ImageAdjuster({
     dragRef.current = null;
   }, []);
 
+  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    dragRef.current = { startX: touch.clientX, startY: touch.clientY, origDx: dx, origDy: dy };
+  }, [dx, dy]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
+    const drag = dragRef.current;
+    if (!drag) return;
+    if (e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const img = imgRef.current;
+    if (!img) return;
+
+    const cw = canvas.width, ch = canvas.height;
+    const imgAspect = img.width / img.height;
+    let baseW = img.width, baseH = img.height;
+    if (imgAspect > slotAspect) {
+      baseW = img.height * slotAspect;
+    } else {
+      baseH = img.width / slotAspect;
+    }
+    const viewW = baseW / zoom;
+    const viewH = baseH / zoom;
+    const targetSize = Math.min(cw, ch) * 0.7;
+    const displayScale = targetSize / Math.max(viewW, viewH);
+
+    const maxDx = (img.width - viewW) / 2;
+    const maxDy = (img.height - viewH) / 2;
+    const deltaX = (touch.clientX - drag.startX) / displayScale;
+    const deltaY = (touch.clientY - drag.startY) / displayScale;
+    setDx(Math.max(-maxDx, Math.min(maxDx, drag.origDx + deltaX)));
+    setDy(Math.max(-maxDy, Math.min(maxDy, drag.origDy + deltaY)));
+  }, [zoom, slotAspect]);
+
+  const handleTouchEnd = useCallback(() => {
+    dragRef.current = null;
+  }, []);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="bg-clay-bg border border-glass-border rounded-2xl w-full max-w-lg p-6">
@@ -458,6 +499,9 @@ function ImageAdjuster({
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         />
 
         <div className="mt-4 space-y-3">

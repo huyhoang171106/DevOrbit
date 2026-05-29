@@ -1,4 +1,4 @@
-import { apiGet, apiAdminPost, apiAdminDelete, apiBaseUrl } from "../../lib/api";
+import { apiGet, apiAdminPost, apiAdminDelete, apiBaseUrl, buildApiUrl } from "../../lib/api";
 import { getAdminToken } from "../auth";
 import type { StoredFrame } from "../../types/frames";
 
@@ -67,7 +67,7 @@ async function uploadFrameImage(frameId: string, file: File): Promise<string | n
     const token = getToken();
     const formData = new FormData();
     formData.append("file", file);
-    const result = await fetch(`${apiBaseUrl}${BASE}/${frameId}/overlay`, {
+    const result = await fetch(buildApiUrl(apiBaseUrl, `${BASE}/${frameId}/overlay`), {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
       body: formData,

@@ -338,6 +338,164 @@ describe('evaluateRepository', () => {
     expect(result.readyToUseLevel).toBe('insufficient_data')
     expect(result.quickBullets.join(' ')).toContain('Chưa đủ dữ liệu')
   })
+
+  describe('learningStrategy', () => {
+    function lowerJoined(items: string[]): string {
+      return items.join(' ').toLowerCase()
+    }
+
+    test('programming exercise strategy says tự làm bài trước', () => {
+      const result = evaluateRepository(repo({
+        displayName: 'oop-labs',
+        description: 'Java OOP lab assignments',
+        primaryLanguage: 'Java',
+        topics: ['oop', 'lab'],
+        files: ['README.md', 'lab01/Main.java', 'lab01/MainTest.java', 'lab01/input/sample.txt'],
+      }))
+      expect(lowerJoined(result.learningStrategy)).toContain('tự làm bài trước')
+      expect(lowerJoined(result.learningStrategy)).toContain('chạy thử')
+    })
+
+    test('project practice strategy says README and cấu trúc thư mục', () => {
+      const result = evaluateRepository(repo({
+        displayName: 'student-portal',
+        description: 'Fullstack student portal',
+        primaryLanguage: 'TypeScript',
+        techStacks: ['React', 'Express'],
+        files: ['README.md', 'package.json', '.env.example', 'src/server.ts'],
+      }))
+      expect(lowerJoined(result.learningStrategy)).toContain('readme')
+      expect(lowerJoined(result.learningStrategy)).toContain('cấu trúc thư mục')
+    })
+
+    test('study material strategy says đọc theo chương/buổi', () => {
+      const result = evaluateRepository(repo({
+        displayName: 'database-notes',
+        description: 'Database lecture slides and notes',
+        primaryLanguage: '',
+        topics: ['lecture', 'slides'],
+        files: ['README.md', 'slides/chapter-01.pdf', 'notes/normalization.md'],
+      }))
+      expect(lowerJoined(result.learningStrategy)).toContain('chương/buổi')
+      expect(lowerJoined(result.learningStrategy)).toContain('tóm tắt')
+    })
+
+    test('exam review strategy says làm đề trước', () => {
+      const result = evaluateRepository(repo({
+        displayName: 'se-midterm-review',
+        description: 'Past midterm with answer key',
+        primaryLanguage: '',
+        topics: ['exam', 'midterm', 'answer'],
+        files: ['README.md', 'midterm/2024.pdf', 'answers/midterm-2024.md'],
+      }))
+      expect(lowerJoined(result.learningStrategy)).toContain('làm đề trước')
+      expect(lowerJoined(result.learningStrategy)).toContain('đáp án')
+    })
+
+    test('SS004 skills strategy says rubric/trình bày/không copy', () => {
+      const result = evaluateRepository(repo({
+        displayName: 'ss004-skills',
+        description: 'Ky nang nghe nghiep assignments',
+        primaryLanguage: '',
+        courseCode: 'SS004',
+        courseName: 'Ky nang nghe nghiep',
+        fileTree: 'README.md\nrubric.pdf\npresentation.pptx\nreport.docx',
+      }))
+      expect(lowerJoined(result.learningStrategy)).toContain('rubric')
+      expect(lowerJoined(result.learningStrategy)).toContain('trình bày')
+    })
+
+    test('unknown repo strategy says xác định repo', () => {
+      const result = evaluateRepository(repo({
+        displayName: 'abc',
+        description: '',
+        primaryLanguage: '',
+        stars: null,
+        courseId: null,
+        courseCode: null,
+        courseName: null,
+      }))
+      expect(lowerJoined(result.learningStrategy)).toContain('xác định repo')
+      expect(lowerJoined(result.learningStrategy)).toContain('không clone')
+    })
+  })
+
+  describe('cautionNotes', () => {
+    function lowerJoined(items: string[]): string {
+      return items.join(' ').toLowerCase()
+    }
+
+    test('programming exercise warns about copying code blindly', () => {
+      const result = evaluateRepository(repo({
+        displayName: 'dsa-solutions',
+        description: 'DSA solution code',
+        primaryLanguage: 'C++',
+        topics: ['dsa', 'sorting'],
+        files: ['sort/quick.cpp', 'tree/bst.cpp'],
+      }))
+      expect(lowerJoined(result.cautionNotes)).toContain('copy')
+      expect(lowerJoined(result.cautionNotes)).toContain('test case')
+    })
+
+    test('project practice warns about env and credentials', () => {
+      const result = evaluateRepository(repo({
+        displayName: 'web-app',
+        description: 'React app demo',
+        primaryLanguage: 'TypeScript',
+        techStacks: ['React'],
+        files: ['src/App.jsx'],
+      }))
+      expect(lowerJoined(result.cautionNotes)).toContain('dependency')
+      expect(lowerJoined(result.cautionNotes)).toContain('credentials')
+    })
+
+    test('exam review warns about wrong answers', () => {
+      const result = evaluateRepository(repo({
+        displayName: 'csdl-final-2024',
+        description: 'Final exam with answers',
+        primaryLanguage: '',
+        topics: ['exam', 'final', 'answer'],
+        files: ['final/2024.pdf', 'answer/solution.md'],
+      }))
+      expect(lowerJoined(result.cautionNotes)).toContain('đáp án có thể sai')
+    })
+
+    test('study material warns about outdated content', () => {
+      const result = evaluateRepository(repo({
+        displayName: 'os-notes',
+        description: 'Operating system lecture notes',
+        primaryLanguage: '',
+        topics: ['notes', 'lecture'],
+        files: ['README.md', 'notes/chapter-01.md', 'notes/chapter-02.md'],
+      }))
+      expect(lowerJoined(result.cautionNotes)).toContain('tài liệu có thể cũ')
+    })
+
+    test('SS004 warns about copying rubric and report', () => {
+      const result = evaluateRepository(repo({
+        displayName: 'ss004-report-sample',
+        description: 'Ky nang nghe nghiep report and rubric',
+        primaryLanguage: '',
+        courseCode: 'SS004',
+        fileTree: 'README.md\nrubric.pdf\nreport.docx',
+      }))
+      expect(lowerJoined(result.cautionNotes)).toContain('copy')
+      expect(lowerJoined(result.cautionNotes)).toContain('rubric')
+    })
+
+    test('unknown repo warns against cloning immediately', () => {
+      const result = evaluateRepository(repo({
+        displayName: 'xyz',
+        description: '',
+        primaryLanguage: '',
+        stars: null,
+        courseId: null,
+        courseCode: null,
+        courseName: null,
+      }))
+      expect(lowerJoined(result.cautionNotes)).toContain('không nên clone')
+    })
+  })
 })
 
 describe('formatVietnameseRelativeDate', () => {

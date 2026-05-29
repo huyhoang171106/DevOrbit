@@ -56,17 +56,28 @@ public class CourseService {
 
     /**
      * Get course summaries for the PUBLIC API (anyone can access).
-     *
-     * Currently calls the SAME query as getAllCourseSummaries().
-     * In the future, this would filter to only "active" courses,
-     * while getAllCourseSummaries() would show ALL courses to admins.
-     *
-     * For now, both methods return the same data because the filtering
-     * logic hasn't been implemented yet. This is intentional — the
-     * method names describe the INTENT, not the current implementation.
      */
     public List<CourseSummaryResponse> getActiveCourseSummaries() {
         return courseRepository.findAllWithRepoCountSortedByRepoCount();
+    }
+
+    /**
+     * Search/filter course summaries with optional parameters.
+     * All filters are case-insensitive and applied client-side on the full list.
+     * For large datasets, consider adding native SQL query with WHERE clauses.
+     */
+    public List<CourseSummaryResponse> searchCourses(
+            String q, String subjectType, Integer semester, String managementUnit) {
+        return courseRepository.findAllWithRepoCountSortedByRepoCount().stream()
+            .filter(c -> q == null || q.isBlank() ||
+                c.name().toLowerCase().contains(q.toLowerCase()) ||
+                c.code().toLowerCase().contains(q.toLowerCase()))
+            .filter(c -> subjectType == null || subjectType.isBlank() ||
+                subjectType.equalsIgnoreCase(c.loaiMonHoc()))
+            .filter(c -> semester == null || semester.equals(c.semester()))
+            .filter(c -> managementUnit == null || managementUnit.isBlank() ||
+                managementUnit.equalsIgnoreCase(c.managementUnit()))
+            .toList();
     }
 
     /**
@@ -128,6 +139,9 @@ public class CourseService {
                 .equivalentMH(request.equivalentMH())
                 .prerequisiteMH(request.prerequisiteMH())
                 .previousMH(request.previousMH())
+                .learningObjectives(request.learningObjectives())
+                .gradingCriteria(request.gradingCriteria())
+                .topics(request.topics())
                 .build();
         return mapToDetail(courseRepository.save(course));
     }
@@ -201,6 +215,9 @@ public class CourseService {
         course.setEquivalentMH(r.equivalentMH());
         course.setPrerequisiteMH(r.prerequisiteMH());
         course.setPreviousMH(r.previousMH());
+        course.setLearningObjectives(r.learningObjectives());
+        course.setGradingCriteria(r.gradingCriteria());
+        course.setTopics(r.topics());
     }
 
     /**
@@ -225,6 +242,9 @@ public class CourseService {
                 course.getManagementUnit(), course.getMaMH_Old(),
                 course.getEquivalentMH(), course.getPrerequisiteMH(),
                 course.getPreviousMH(),
+                course.getLearningObjectives(),
+                course.getGradingCriteria(),
+                course.getTopics(),
                 githubRepoService.getApprovedReposByCourse(course.getId())
         );
     }

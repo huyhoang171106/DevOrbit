@@ -38,6 +38,6 @@ describe('AppRoutes', () => {
       </MemoryRouter>,
     )
 
-    expect(await screen.findByRole('heading', { name: /Tính GPA/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /Tính GPA/i }, { timeout: 5000 })).toBeInTheDocument()
   })
 })

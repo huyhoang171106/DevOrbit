@@ -21,6 +21,7 @@ function repo(overrides: Partial<RepoSummary> = {}): RepoSummary {
 describe('RepoDetailPage GitHub activity fallback', () => {
   afterEach(() => {
     vi.restoreAllMocks()
+    window.localStorage.clear()
   })
 
   test('parses GitHub owner and repo from URL', () => {
@@ -58,6 +59,25 @@ describe('RepoDetailPage GitHub activity fallback', () => {
     const hydrated = await hydrateLastPushedAt(repo())
 
     expect(hydrated.lastPushedAt).toBe('2026-03-01T00:00:00Z')
+  })
+
+  test('uses cached GitHub activity date after reload when API still has no lastPushedAt', async () => {
+    vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(response({ default_branch: 'main', pushed_at: '2026-03-01T00:00:00Z' }))
+      .mockResolvedValueOnce(response([
+        { commit: { committer: { date: '2026-04-20T10:00:00Z' }, author: { date: '2026-04-19T10:00:00Z' } } },
+      ]))
+
+    const firstLoad = await hydrateLastPushedAt(repo())
+    expect(firstLoad.lastPushedAt).toBe('2026-04-20T10:00:00Z')
+
+    vi.restoreAllMocks()
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+
+    const reloaded = await hydrateLastPushedAt(repo())
+
+    expect(reloaded.lastPushedAt).toBe('2026-04-20T10:00:00Z')
+    expect(fetchSpy).not.toHaveBeenCalled()
   })
 })
 

@@ -6,6 +6,7 @@ type RepoFixture = RepoSummary & {
   topics?: string[] | string | null
   forks?: number | null
   updatedAt?: string | null
+  lastPushedAt?: string | null
   readmeExcerpt?: string | null
   files?: string[]
   fileTree?: string | null
@@ -158,6 +159,15 @@ describe('evaluateRepository', () => {
 
     expect(signals.hasExam).toBe(true)
     expect(signals.hasSlides).toBe(false)
+  })
+
+  test('prefers lastPushedAt when updatedAt is invalid', () => {
+    const signals = extractRepoSignals(repo({
+      updatedAt: 'not-a-date',
+      lastPushedAt: '2026-04-20T10:00:00Z',
+    }))
+
+    expect(signals.updatedAt).toBe('1 tháng trước')
   })
 
   test('returns insufficient data when metadata is too sparse', () => {

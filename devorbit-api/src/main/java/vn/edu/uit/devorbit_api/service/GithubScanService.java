@@ -295,15 +295,16 @@ public class GithubScanService {
     private String fetchLatestCommitDate(String owner, String repo, String defaultBranch) {
         try {
             JsonNode commits = webClient.get()
-                .uri(uriBuilder -> {
-                    var builder = uriBuilder
+                .uri(uriBuilder -> defaultBranch != null && !defaultBranch.isBlank()
+                    ? uriBuilder
                         .path("/repos/{owner}/{repo}/commits")
-                        .queryParam("per_page", 1);
-                    if (defaultBranch != null && !defaultBranch.isBlank()) {
-                        builder.queryParam("sha", defaultBranch);
-                    }
-                    return builder.build(owner, repo);
-                })
+                        .queryParam("sha", defaultBranch)
+                        .queryParam("per_page", 1)
+                        .build(owner, repo)
+                    : uriBuilder
+                        .path("/repos/{owner}/{repo}/commits")
+                        .queryParam("per_page", 1)
+                        .build(owner, repo))
                 .retrieve()
                 .bodyToMono(JsonNode.class)
                 .block(Duration.ofSeconds(8));

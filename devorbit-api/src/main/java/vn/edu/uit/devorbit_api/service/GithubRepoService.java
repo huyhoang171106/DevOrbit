@@ -52,7 +52,7 @@ public class GithubRepoService {
 
     public List<RepoSummaryResponse> getApprovedReposByCourse(Long courseId) {
         return githubRepoRepository.findByCourseIdAndActiveTrue(courseId).stream()
-                .map(this::mapToRepoSummary)
+                .map(this::refreshAndMap)
                 .toList();
     }
 
@@ -60,7 +60,7 @@ public class GithubRepoService {
         List<GithubRepo> repos = githubRepoRepository.findByActiveTrue();
         log.info("getAllApprovedRepos: found {} active repos", repos.size());
         return repos.stream()
-                .map(this::mapToRepoSummary)
+                .map(this::refreshAndMap)
                 .toList();
     }
 
@@ -133,6 +133,11 @@ public class GithubRepoService {
                 repo.getHasReadme(),
                 repo.getLastPushedAt()
         );
+    }
+
+    private RepoSummaryResponse refreshAndMap(GithubRepo repo) {
+        refreshLastPushedAtIfMissing(repo);
+        return mapToRepoSummary(repo);
     }
 
     private void refreshLastPushedAtIfMissing(GithubRepo repo) {

@@ -56,8 +56,8 @@ export function CourseListPage() {
 
   const matchedCourses = useMemo(() => {
     if (!debouncedQuery.trim()) return courses
-    return searchCourses(courses, debouncedQuery)
-  }, [courses, debouncedQuery])
+    return searchCourses(courses, debouncedQuery, allRepos)
+  }, [courses, debouncedQuery, allRepos])
 
   const matchedRepos = useMemo(() => {
     if (!debouncedQuery.trim() || allRepos.length === 0) return []

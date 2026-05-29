@@ -6,6 +6,7 @@ type RepoSummaryWithOptionalMetadata = RepoSummary & {
   topics?: string[] | string | null
   forks?: number | null
   updatedAt?: string | null
+  lastPushedAt?: string | null
   readmeExcerpt?: string | null
   deadline?: string | null
 }
@@ -63,6 +64,20 @@ describe('buildRepoAiAnalysisSections', () => {
     expect(sections.find((section) => section.key === 'readmeInsights')?.items).toContain('Lệnh setup/run phát hiện: mvn spring-boot:run.')
     expect(sections.find((section) => section.key === 'readmeInsights')?.items).toContain('README nhắc tới phần nên đọc/kiểm tra: thư mục src, pom.xml, controller/API layer.')
     expect(sections.find((section) => section.key === 'nextSteps')?.items).toContain('Forks hiện có: 4; có thể tham khảo mức độ được tái sử dụng.')
+  })
+
+  test('prefers lastPushedAt over invalid updatedAt for activity signals', () => {
+    const sections = buildRepoAiAnalysisSections(repo({
+      updatedAt: 'not-a-date',
+      lastPushedAt: '2026-04-20T10:00:00Z',
+    }))
+
+    expect(sections.find((section) => section.key === 'reviewFirst')?.items).toContain(
+      'Lịch sử cập nhật gần nhất: 1 tháng trước.',
+    )
+    expect(sections.find((section) => section.key === 'warnings')?.items ?? []).not.toContain(
+      'Chưa có updatedAt/lastPushedAt nên chưa biết repo còn được duy trì gần đây hay không.',
+    )
   })
 
   test('warns clearly when repository data is sparse', () => {

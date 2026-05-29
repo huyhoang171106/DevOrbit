@@ -71,11 +71,13 @@ describe('RepoAiAnalysisSection last activity metadata', () => {
     expect(screen.queryByText('Chưa có dữ liệu cập nhật')).not.toBeInTheDocument()
   })
 
-  test('shows fallback copy when activity date is missing', () => {
+  test('always shows a time label when activity date is missing', () => {
     const targetRepo = repo({ lastPushedAt: null })
 
     render(<RepoAiAnalysisSection repo={targetRepo} analysis={analysisFor(targetRepo)} loading={false} error={null} />)
 
-    expect(screen.getByText('Chưa có dữ liệu cập nhật')).toBeInTheDocument()
+    expect(screen.getByText('Hôm nay')).toBeInTheDocument()
+    expect(screen.queryByText('Chưa có dữ liệu cập nhật')).not.toBeInTheDocument()
+    expect(screen.queryByText('Chưa rõ')).not.toBeInTheDocument()
   })
 })

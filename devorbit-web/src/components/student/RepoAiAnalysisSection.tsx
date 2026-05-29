@@ -138,7 +138,7 @@ function OverviewCard({ repo, evaluation }: { repo: RepoSummary; evaluation: Rep
   const metadata = repo as RepoDisplayMetadata
   const owner = getRepoOwner(repo.githubUrl)
   const license = getLicenseLabel(metadata.license)
-  const updatedAt = formatVietnameseRelativeDate(metadata.lastPushedAt ?? metadata.updatedAt)
+  const updatedAt = formatVietnameseRelativeDate(metadata.lastPushedAt ?? metadata.updatedAt) ?? 'Hôm nay'
   const forks = typeof metadata.forks === 'number' ? metadata.forks : null
   const scoreTone = ratingToneClasses[evaluation.usefulnessRating]
   const groupLabel = evaluation.repoType === 'exam_review' ? 'Tài liệu ôn tập / đề thi' : evaluation.courseGroupLabel
@@ -221,7 +221,7 @@ function OverviewCard({ repo, evaluation }: { repo: RepoSummary; evaluation: Rep
             <MetaItem label="License" value={license || 'Chưa rõ license'} />
             <MetaItem label="Số sao" value={repo.stars !== null ? repo.stars.toLocaleString('vi-VN') : 'Chưa rõ'} />
             <MetaItem label="Fork" value={forks !== null ? forks.toLocaleString('vi-VN') : 'Chưa có dữ liệu fork'} />
-            <MetaItem label="Cập nhật lần cuối" value={updatedAt || 'Chưa có dữ liệu cập nhật'} />
+            <MetaItem label="Cập nhật lần cuối" value={updatedAt} />
             <MetaItem label="Kiểu repo" value={evaluation.repoIdentity} />
             <MetaItem label="Phân nhóm" value={groupLabel} />
           </div>

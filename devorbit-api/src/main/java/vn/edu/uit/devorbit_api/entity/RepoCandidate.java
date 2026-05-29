@@ -68,6 +68,14 @@ public class RepoCandidate {
     @Column(columnDefinition = "TEXT")
     private String readmeExcerpt;
 
+    /** Whether GitHub reported a README or the file tree contains one */
+    @Column(name = "has_readme")
+    private Boolean hasReadme;
+
+    /** Short, newline-separated repository tree used by frontend evaluation */
+    @Column(name = "file_tree", columnDefinition = "TEXT")
+    private String fileTree;
+
     /** Current review status: NEW, APPROVED, or REJECTED */
     @Enumerated(EnumType.STRING)
     private RepoCandidateStatus status;

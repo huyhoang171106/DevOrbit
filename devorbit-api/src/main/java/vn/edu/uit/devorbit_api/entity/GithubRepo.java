@@ -89,6 +89,10 @@ public class GithubRepo {
     /** Number of GitHub stars (popularity metric) */
     private Integer stars;
 
+    /** ISO date of latest commit/push activity from GitHub */
+    @Column(name = "last_pushed_at")
+    private String lastPushedAt;
+
     /** Short excerpt from the README, fetched during scan/review when available */
     @Column(name = "readme_excerpt", columnDefinition = "TEXT")
     private String readmeExcerpt;

@@ -317,7 +317,7 @@ export function extractRepoSignals(repo: RepoSummary): RepoSignals {
   const organizedFolders = hasFileList && countTopLevelFolders(filePaths) >= 3
   const stars = typeof repo.stars === 'number' ? repo.stars : null
   const forks = typeof metadata.forks === 'number' ? metadata.forks : null
-  const updatedAt = formatVietnameseRelativeDate(metadata.updatedAt ?? metadata.lastPushedAt)
+  const updatedAt = formatVietnameseRelativeDate(metadata.lastPushedAt ?? metadata.updatedAt)
   const courseCode = cleanText(repo.courseCode)
   const courseName = cleanText(repo.courseName)
   const evidence = buildEvidence({

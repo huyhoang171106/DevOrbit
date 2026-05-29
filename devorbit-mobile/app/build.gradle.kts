@@ -1,3 +1,6 @@
+import java.io.FileReader
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -14,8 +17,8 @@ kotlin {
 fun loadDotEnv(file: String): Map<String, String> {
     val envFile = rootProject.file(file)
     if (!envFile.exists()) return emptyMap()
-    val props = java.util.Properties()
-    java.io.FileReader(envFile).use { reader -> props.load(reader) }
+    val props = Properties()
+    FileReader(envFile).use { reader -> props.load(reader) }
     return props.entries.associate { (k, v) ->
         val raw = v.toString()
         // Strip surrounding quotes if present

@@ -49,16 +49,16 @@ export function StudentBookmarksPage() {
   }
 
   return (
-    <div className="w-full max-w-[1280px] mx-auto px-[32px] py-[64px]">
-      <div className="mb-[32px] flex items-start justify-between">
+    <div className="w-full max-w-[1280px] mx-auto px-4 sm:px-[32px] py-8 sm:py-[64px]">
+      <div className="mb-8 sm:mb-[32px] flex flex-col sm:flex-row gap-4 sm:gap-0 items-start sm:items-center justify-between">
         <div>
           <p className="body-sm text-emerald-400 mb-[8px] font-medium tracking-wide uppercase">Lộ trình học tập</p>
           <h1 className="display-sm text-clay-text">Đã đánh dấu</h1>
-          <p className="mt-[8px] max-w-2xl body-sm text-ink-secondary">
+          <p className="mt-2 max-w-2xl body-sm text-ink-secondary">
             Các mục học tập bạn đã lưu.
           </p>
         </div>
-        <button onClick={handleLogout} className="btn-secondary text-[13px]">
+        <button onClick={handleLogout} className="btn-secondary text-[13px] self-start sm:self-auto">
           Đăng xuất
         </button>
       </div>

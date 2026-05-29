@@ -3,16 +3,33 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { apiGet, apiStudentPost } from '../../lib/api'
 import { isStudentAuthenticated } from '../../lib/auth'
-import type { RepoSummary, AiResponse } from '../../types/api'
-import { ArrowLeft, Code, Star, MagicWand, GraduationCap, ArrowSquareOut, WarningCircle, GithubLogo, Bookmark, BookmarkSimple } from '@phosphor-icons/react'
-import { cleanAiContent } from '../../lib/contentCleaner'
+import { RepoAiAnalysisSection } from '../../components/student/RepoAiAnalysisSection'
+import type { RepoSummary } from '../../types/api'
+import { analyzeRepository, type RepoAnalysisResult } from '../../lib/repoAnalysisService'
+import { ArrowLeft, Code, Star, ArrowSquareOut, WarningCircle, GithubLogo, Bookmark, BookmarkSimple } from '@phosphor-icons/react'
+
+type GithubRepositoryMetadata = {
+  default_branch?: string | null
+  pushed_at?: string | null
+  updated_at?: string | null
+}
+
+type GithubCommitResponse = Array<{
+  commit?: {
+    committer?: { date?: string | null } | null
+    author?: { date?: string | null } | null
+  } | null
+}>
+
+const LAST_PUSHED_AT_CACHE_PREFIX = 'devorbit:lastPushedAt:'
 
 export function RepoDetailPage() {
   const { repoId } = useParams<{ repoId: string }>()
   const navigate = useNavigate()
   const [repo, setRepo] = useState<RepoSummary | null>(null)
-  const [summary, setSummary] = useState<AiResponse | null>(null)
-  const [advice, setAdvice] = useState<AiResponse | null>(null)
+  const [analysis, setAnalysis] = useState<RepoAnalysisResult | null>(null)
+  const [analysisLoading, setAnalysisLoading] = useState(false)
+  const [analysisError, setAnalysisError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [bookmarked, setBookmarked] = useState(false)
@@ -46,22 +63,31 @@ export function RepoDetailPage() {
   useEffect(() => {
     if (!repoId) return
     setLoading(true)
+    setAnalysis(null)
+    setAnalysisError(null)
 
-    Promise.all([
-      apiGet<RepoSummary>(`/api/repos/${repoId}`),
-      apiGet<AiResponse>(`/api/ai/repo/${repoId}/summary`).catch(() => null),
-      apiGet<AiResponse>(`/api/ai/repo/${repoId}/advice`).catch(() => null),
-    ])
-      .then(([repoData, summaryData, adviceData]) => {
-        setRepo(repoData)
-        setSummary(summaryData)
-        setAdvice(adviceData)
+    apiGet<RepoSummary>(`/api/repos/${repoId}`)
+      .then(async (repoData) => {
+        const hydratedRepo = await hydrateLastPushedAt(repoData)
+        setRepo(hydratedRepo)
+        setLoading(false)
+        setAnalysisLoading(true)
+        analyzeRepository(hydratedRepo)
+          .then((result) => {
+            setAnalysis(result)
+            setAnalysisError(result.errorMessage ?? null)
+          })
+          .catch((analysisErr) => {
+            console.error(analysisErr)
+            setAnalysisError('Không thể tạo phân tích repository từ dữ liệu hiện có.')
+          })
+          .finally(() => setAnalysisLoading(false))
       })
       .catch((err) => {
         console.error(err)
         setError('Không thể tải dữ liệu repository.')
+        setLoading(false)
       })
-      .finally(() => setLoading(false))
   }, [repoId])
 
   if (loading) {
@@ -208,38 +234,89 @@ export function RepoDetailPage() {
             </div>
           </div>
 
-          {/* AI Cards */}
-          <div className="grid md:grid-cols-2 gap-6">
-            {summary && (
-              <div className="orbit-card-glow p-8 md:p-10 border-orbit-accent/10 hover:border-orbit-accent/30 transition-all duration-500">
-                <div className="h-12 w-12 rounded-2xl bg-orbit-accent/5 border border-orbit-accent/10 flex items-center justify-center mb-8">
-                  <MagicWand className="h-6 w-6 text-orbit-accent" weight="duotone" />
-                </div>
-                <h3 className="heading-4 mb-6 text-orbit-text flex items-center gap-3">
-                  Phân tích nội dung
-                </h3>
-                <p className="body-md text-[14px] leading-[1.8] text-orbit-text-secondary whitespace-pre-line">
-                  {cleanAiContent(summary.content)}
-                </p>
-              </div>
-            )}
-
-            {advice && (
-              <div className="orbit-card-glow p-8 md:p-10 border-indigo-500/10 hover:border-indigo-500/30 transition-all duration-500">
-                <div className="h-12 w-12 rounded-2xl bg-indigo-500/5 border border-indigo-500/10 flex items-center justify-center mb-8">
-                  <GraduationCap className="h-6 w-6 text-indigo-400" weight="duotone" />
-                </div>
-                <h3 className="heading-4 mb-6 text-orbit-text flex items-center gap-3">
-                  Chiến lược học tập
-                </h3>
-                <p className="body-md text-[14px] leading-[1.8] text-orbit-text-secondary italic whitespace-pre-line">
-                  {cleanAiContent(advice.content)}
-                </p>
-              </div>
-            )}
-          </div>
+          <RepoAiAnalysisSection repo={repo} analysis={analysis} loading={analysisLoading} error={analysisError} />
         </motion.div>
       </div>
     </div>
   )
+}
+
+export async function hydrateLastPushedAt(repo: RepoSummary): Promise<RepoSummary> {
+  if (repo.lastPushedAt) {
+    writeCachedLastPushedAt(repo, repo.lastPushedAt)
+    return repo
+  }
+
+  const cachedLastPushedAt = readCachedLastPushedAt(repo)
+  if (cachedLastPushedAt) return { ...repo, lastPushedAt: cachedLastPushedAt }
+
+  const slug = parseGithubSlug(repo.githubUrl)
+  if (!slug) return repo
+
+  try {
+    const metadata = await fetchGithubJson<GithubRepositoryMetadata>(
+      `https://api.github.com/repos/${slug.owner}/${slug.name}`,
+    )
+    const latestCommitDate = await fetchLatestGithubCommitDate(slug.owner, slug.name, metadata.default_branch).catch(() => null)
+    const lastPushedAt = latestCommitDate || metadata.pushed_at || metadata.updated_at || null
+    if (!lastPushedAt) return repo
+    writeCachedLastPushedAt(repo, lastPushedAt)
+    return { ...repo, lastPushedAt }
+  } catch {
+    return repo
+  }
+}
+
+async function fetchLatestGithubCommitDate(owner: string, name: string, defaultBranch?: string | null): Promise<string | null> {
+  const branchQuery = defaultBranch ? `?sha=${encodeURIComponent(defaultBranch)}&per_page=1` : '?per_page=1'
+  const commits = await fetchGithubJson<GithubCommitResponse>(
+    `https://api.github.com/repos/${owner}/${name}/commits${branchQuery}`,
+  )
+  const commit = commits[0]?.commit
+  return commit?.committer?.date || commit?.author?.date || null
+}
+
+async function fetchGithubJson<T>(url: string): Promise<T> {
+  const response = await fetch(url, {
+    headers: {
+      Accept: 'application/vnd.github+json',
+    },
+  })
+  if (!response.ok) throw new Error(`GitHub request failed: ${response.status}`)
+  return response.json() as Promise<T>
+}
+
+export function parseGithubSlug(url: string): { owner: string; name: string } | null {
+  const match = url.match(/github\.com\/([^/]+)\/([^/?#]+)/i)
+  if (!match) return null
+  return {
+    owner: match[1],
+    name: match[2].replace(/\.git$/i, ''),
+  }
+}
+
+function readCachedLastPushedAt(repo: RepoSummary): string | null {
+  try {
+    const value = window.localStorage.getItem(lastPushedAtCacheKey(repo))
+    return isValidDateString(value) ? value : null
+  } catch {
+    return null
+  }
+}
+
+function writeCachedLastPushedAt(repo: RepoSummary, value: string): void {
+  if (!isValidDateString(value)) return
+  try {
+    window.localStorage.setItem(lastPushedAtCacheKey(repo), value)
+  } catch {
+    // Browser storage can be disabled; API/DB data remains the source of truth.
+  }
+}
+
+function lastPushedAtCacheKey(repo: RepoSummary): string {
+  return `${LAST_PUSHED_AT_CACHE_PREFIX}${repo.id}:${repo.githubUrl}`
+}
+
+function isValidDateString(value: string | null | undefined): value is string {
+  return Boolean(value && !Number.isNaN(new Date(value).getTime()))
 }

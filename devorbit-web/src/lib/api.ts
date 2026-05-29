@@ -1,5 +1,19 @@
 export const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? ''
 
+export function buildApiUrl(baseUrl: string, path: string): string {
+  if (!baseUrl) return path
+
+  const normalizedBase = baseUrl.replace(/\/+$/, '')
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`
+  const firstPathSegment = normalizedPath.split('/')[1]
+
+  if (firstPathSegment && normalizedBase.endsWith(`/${firstPathSegment}`)) {
+    return `${normalizedBase}${normalizedPath.slice(firstPathSegment.length + 1)}`
+  }
+
+  return `${normalizedBase}${normalizedPath}`
+}
+
 type RequestOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
   token?: string
@@ -15,7 +29,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   if (options.body) headers['Content-Type'] = 'application/json'
   if (options.token) headers['Authorization'] = `Bearer ${options.token}`
 
-  const response = await fetch(`${apiBaseUrl}${path}`, {
+  const response = await fetch(buildApiUrl(apiBaseUrl, path), {
     method: options.method ?? 'GET',
     headers,
     body: options.body ? JSON.stringify(options.body) : undefined,
@@ -54,7 +68,7 @@ export const apiPut = <T>(path: string, body: unknown) => request<T>(path, { met
 export const apiDelete = (path: string) => request<void>(path, { method: 'DELETE' })
 
 export const apiUpload = <T>(path: string, formData: FormData): Promise<T> => {
-  return fetch(`${apiBaseUrl}${path}`, {
+  return fetch(buildApiUrl(apiBaseUrl, path), {
     method: 'POST',
     body: formData,
   }).then(async (res) => {

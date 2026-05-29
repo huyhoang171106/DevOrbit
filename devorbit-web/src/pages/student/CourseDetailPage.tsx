@@ -199,7 +199,7 @@ export function CourseDetailPage() {
 
             <motion.div
               variants={fadeUp}
-              className="flex flex-row lg:flex-col flex-wrap gap-4 min-w-[180px]"
+              className="flex flex-row lg:flex-col flex-wrap gap-4 w-full lg:w-auto lg:min-w-[180px]"
             >
               <div className="orbit-card-glow flex-1 lg:flex-none px-8 py-6 flex flex-col items-center justify-center min-w-[130px]">
                 <div className="text-[10px] font-black uppercase tracking-[0.2em] text-orbit-accent mb-2">Số tín chỉ</div>
@@ -274,7 +274,7 @@ export function CourseDetailPage() {
         {/* ─── Main Content + Sidebar ─── */}
         <div className="grid lg:grid-cols-12 gap-12">
           {/* Main: Repositories */}
-          <div className="lg:col-span-8 space-y-10">
+          <div className="lg:col-span-8 space-y-10 order-2 lg:order-1">
             <motion.section
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -324,7 +324,7 @@ export function CourseDetailPage() {
           </div>
 
           {/* Sidebar */}
-          <aside className="lg:col-span-4 space-y-8">
+          <aside className="lg:col-span-4 space-y-8 order-1 lg:order-2">
             <motion.div
               className="sticky top-24 space-y-8"
               initial={{ opacity: 0, x: 20 }}

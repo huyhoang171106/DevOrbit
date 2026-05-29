@@ -17,10 +17,13 @@ import vn.edu.uit.devorbit_api.repository.GithubRepoRepository;
 import vn.edu.uit.devorbit_api.repository.RepoCandidateRepository;
 
 import java.time.Duration;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.StreamSupport;
 
@@ -28,6 +31,16 @@ import java.util.stream.StreamSupport;
 public class GithubScanService {
 
     private static final int MAX_LOG_ENTRIES = 2000;
+    private static final int MAX_README_EXCERPT_LENGTH = 1200;
+    private static final int MAX_FILE_TREE_ENTRIES = 100;
+    private static final int MAX_FILE_TREE_DEPTH = 3;
+    private static final Set<String> IGNORED_TREE_SEGMENTS = Set.of(
+        ".git", "node_modules", "target", "build", "dist", "bin", "obj", "venv", ".venv",
+        "__pycache__", ".idea", ".vscode", "coverage"
+    );
+    private static final Set<String> IGNORED_TREE_FILES = Set.of(
+        "package-lock.json", "yarn.lock", "pnpm-lock.yaml"
+    );
 
     private final RepoCandidateRepository repoCandidateRepository;
     private final GithubRepoRepository githubRepoRepository;
@@ -36,6 +49,8 @@ public class GithubScanService {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final List<String> scanLogs = java.util.Collections.synchronizedList(new ArrayList<>());
     private final AtomicBoolean scanRunning = new AtomicBoolean(false);
+
+    public record RepositoryContext(String readmeExcerpt, String fileTree, Boolean hasReadme) {}
 
     public GithubScanService(RepoCandidateRepository repoCandidateRepository,
                                GithubRepoRepository githubRepoRepository,
@@ -133,16 +148,18 @@ public class GithubScanService {
                 .topics(readTopics(item.path("topics")))
                 .stars(item.path("stargazers_count").isMissingNode() ? null : item.path("stargazers_count").asInt(0))
                 .forks(item.path("forks_count").isMissingNode() ? null : item.path("forks_count").asInt(0))
-                .lastPushedAt(item.path("pushed_at").asText(null))
+                .lastPushedAt(resolveLatestActivityAt(owner, name, item))
                 .status(RepoCandidateStatus.NEW)
                 .build();
 
-            RepoCandidate saved = repoCandidateRepository.save(candidate);
-            
-            // Async fetch readme in background to avoid blocking the scan loop
             if (fetchReadme) {
-                asyncEnrichReadme(saved.getId(), owner, name);
+                RepositoryContext context = fetchRepositoryContext(owner, name);
+                candidate.setReadmeExcerpt(context.readmeExcerpt());
+                candidate.setFileTree(context.fileTree());
+                candidate.setHasReadme(context.hasReadme());
             }
+
+            RepoCandidate saved = repoCandidateRepository.save(candidate);
             
             results.add(RepoCandidateResponse.from(saved));
         }
@@ -153,10 +170,13 @@ public class GithubScanService {
     private void asyncEnrichReadme(Long candidateId, String owner, String name) {
         Thread.ofVirtual().start(() -> {
             try {
-                String excerpt = fetchReadmeExcerpt(owner, name);
-                if (excerpt != null) {
-                    repoCandidateRepository.updateReadmeExcerpt(candidateId, excerpt);
-                }
+                RepositoryContext context = fetchRepositoryContext(owner, name);
+                repoCandidateRepository.updateRepositoryContext(
+                    candidateId,
+                    context.readmeExcerpt(),
+                    context.fileTree(),
+                    context.hasReadme()
+                );
             } catch (Exception e) {
                 // Ignore background errors
             }
@@ -239,6 +259,69 @@ public class GithubScanService {
         return values.isEmpty() ? null : String.join(",", values);
     }
 
+    public RepositoryContext fetchRepositoryContext(String owner, String repo) {
+        String readmeExcerpt = fetchReadmeExcerpt(owner, repo);
+        String fileTree = fetchFileTree(owner, repo);
+        boolean hasReadme = readmeExcerpt != null || containsReadmePath(fileTree);
+        return new RepositoryContext(readmeExcerpt, fileTree, hasReadme);
+    }
+
+    public String fetchLatestActivityAt(String owner, String repo) {
+        JsonNode metadata = fetchRepoMetadata(owner, repo);
+        return resolveLatestActivityAt(owner, repo, metadata);
+    }
+
+    public String resolveLatestActivityAt(String owner, String repo, JsonNode repoMetadata) {
+        String defaultBranch = readText(repoMetadata, "default_branch");
+        String latestCommitDate = fetchLatestCommitDate(owner, repo, defaultBranch);
+        if (latestCommitDate != null) return latestCommitDate;
+
+        String pushedAt = readText(repoMetadata, "pushed_at");
+        if (pushedAt != null) return pushedAt;
+
+        return readText(repoMetadata, "updated_at");
+    }
+
+    private JsonNode fetchRepoMetadata(String owner, String repo) {
+        try {
+            return webClient.get()
+                .uri("/repos/{owner}/{repo}", owner, repo)
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block(Duration.ofSeconds(8));
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private String fetchLatestCommitDate(String owner, String repo, String defaultBranch) {
+        try {
+            String commitsPath = "/repos/" + owner + "/" + repo + "/commits"
+                + (defaultBranch != null && !defaultBranch.isBlank()
+                    ? "?sha=" + URLEncoder.encode(defaultBranch, StandardCharsets.UTF_8) + "&per_page=1"
+                    : "?per_page=1");
+            JsonNode commits = webClient.get()
+                .uri(commitsPath)
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block(Duration.ofSeconds(8));
+
+            if (commits == null || !commits.isArray() || commits.size() == 0) return null;
+            JsonNode commit = commits.get(0).path("commit");
+            String committerDate = readText(commit.path("committer"), "date");
+            if (committerDate != null) return committerDate;
+            return readText(commit.path("author"), "date");
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private String readText(JsonNode node, String fieldName) {
+        if (node == null || node.isMissingNode() || node.isNull()) return null;
+        String value = node.path(fieldName).asText(null);
+        return value == null || value.isBlank() ? null : value;
+    }
+
     private String fetchReadmeExcerpt(String owner, String repo) {
         try {
             String readme = webClient.get()
@@ -248,10 +331,65 @@ public class GithubScanService {
                     .map(node -> node.path("content").asText(null))
                     .block(Duration.ofSeconds(5));
             if (readme == null || readme.isBlank()) return null;
-            String decoded = new String(java.util.Base64.getMimeDecoder().decode(readme)).replaceAll("\\s+", " ").trim();
-            return decoded.length() > 500 ? decoded.substring(0, 500) : decoded;
+            String decoded = new String(java.util.Base64.getMimeDecoder().decode(readme))
+                .replaceAll("\\s+", " ")
+                .trim();
+            return truncate(decoded, MAX_README_EXCERPT_LENGTH);
         } catch (Exception ignored) {
             return null;
         }
+    }
+
+    private String fetchFileTree(String owner, String repo) {
+        try {
+            JsonNode root = webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                    .path("/repos/{owner}/{repo}/git/trees/HEAD")
+                    .queryParam("recursive", 1)
+                    .build(owner, repo))
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block(Duration.ofSeconds(8));
+
+            JsonNode tree = root == null ? null : root.path("tree");
+            if (tree == null || !tree.isArray()) return null;
+
+            List<String> paths = StreamSupport.stream(tree.spliterator(), false)
+                .map(node -> node.path("path").asText(null))
+                .filter(path -> path != null && !path.isBlank())
+                .map(path -> path.replace('\\', '/'))
+                .filter(this::isUsefulTreePath)
+                .limit(MAX_FILE_TREE_ENTRIES)
+                .toList();
+
+            return paths.isEmpty() ? null : String.join("\n", paths);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private boolean isUsefulTreePath(String path) {
+        String[] segments = path.split("/");
+        if (segments.length > MAX_FILE_TREE_DEPTH) return false;
+        for (String segment : segments) {
+            String normalized = segment.toLowerCase(Locale.ROOT);
+            if (IGNORED_TREE_SEGMENTS.contains(normalized)) return false;
+        }
+        String filename = segments[segments.length - 1].toLowerCase(Locale.ROOT);
+        if (IGNORED_TREE_FILES.contains(filename)) return false;
+        if (filename.equals("vendor") && segments.length == 1) return false;
+        return true;
+    }
+
+    private boolean containsReadmePath(String fileTree) {
+        if (fileTree == null || fileTree.isBlank()) return false;
+        return fileTree.lines()
+            .map(path -> path.substring(path.lastIndexOf('/') + 1).toLowerCase(Locale.ROOT))
+            .anyMatch(name -> name.equals("readme.md") || name.equals("readme.txt") || name.equals("readme"));
+    }
+
+    private String truncate(String value, int maxLength) {
+        if (value == null || value.length() <= maxLength) return value;
+        return value.substring(0, maxLength).trim();
     }
 }

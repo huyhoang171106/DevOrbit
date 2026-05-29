@@ -13,6 +13,7 @@ type CourseInput = {
 }
 
 type CourseResult = {
+  id: number
   credits: number
   grade10: number
   name: string
@@ -33,6 +34,7 @@ type GpaDraft = {
   completedCredits: string
   targetGpa: string
   selectedSemester: string
+  projectedGrades: Record<number, string>
   updatedAt: string
 }
 
@@ -74,6 +76,12 @@ function readSavedDraft(): GpaDraft | null {
       || typeof draft.selectedSemester !== 'string'
       || typeof draft.updatedAt !== 'string'
     ) return null
+    const projectedGrades = draft.projectedGrades && typeof draft.projectedGrades === 'object'
+      ? Object.fromEntries(
+        Object.entries(draft.projectedGrades as Record<string, unknown>)
+          .filter(([, value]) => typeof value === 'string'),
+      ) as Record<number, string>
+      : {}
 
     return {
       courses: draft.courses,
@@ -82,6 +90,7 @@ function readSavedDraft(): GpaDraft | null {
       completedCredits: draft.completedCredits,
       targetGpa: draft.targetGpa,
       selectedSemester: draft.selectedSemester,
+      projectedGrades,
       updatedAt: draft.updatedAt,
     }
   } catch {
@@ -122,10 +131,19 @@ function parseCourse(course: CourseInput): CourseResult | null {
   if (credits <= 0 || grade10 < 0 || grade10 > 10) return null
 
   return {
+    id: course.id,
     credits,
     grade10,
     name: course.name.trim() || 'Môn chưa đặt tên',
   }
+}
+
+function parseProjectedGrade(value: string | undefined): number | null {
+  const text = value?.trim() ?? ''
+  if (text === '') return null
+  const grade = Number(text)
+  if (!Number.isFinite(grade) || grade < 0 || grade > 10) return null
+  return grade
 }
 
 function classifyGrade10(average10: number): string {
@@ -162,9 +180,9 @@ function goalGuidance(status: GoalStatus): string {
   return 'Nhập GPA hiện tại, tín chỉ đã tích lũy và GPA mục tiêu trong khoảng 0 đến 10.'
 }
 
-function courseToInput(course: CourseSummary, index: number): CourseInput {
+function courseToInput(course: CourseSummary, index: number, id = course.id || index + 1): CourseInput {
   return {
-    id: course.id || index + 1,
+    id,
     name: `${course.code} - ${course.name}`,
     credits: String(course.credits ?? 3),
     grade10: '',
@@ -192,16 +210,19 @@ function getSemesterCourses(catalogue: CourseSummary[], semester: number, semest
 }
 
 export function GpaCalculatorPage() {
-  const [savedDraft] = useState<GpaDraft | null>(() => readSavedDraft())
-  const [courses, setCourses] = useState<CourseInput[]>(() => savedDraft?.courses ?? initialCourses)
+  const [availableDraft, setAvailableDraft] = useState<GpaDraft | null>(() => readSavedDraft())
+  const [courses, setCourses] = useState<CourseInput[]>(initialCourses)
   const [catalogue, setCatalogue] = useState<CourseSummary[]>([])
   const [savedSemesterMap, setSavedSemesterMap] = useState<SemesterMap | null>(() => readSavedSemesterMap())
-  const [selectedSemester, setSelectedSemester] = useState(() => savedDraft?.selectedSemester ?? '1')
-  const [calculationMode, setCalculationMode] = useState<CalculationMode>(() => savedDraft?.calculationMode ?? 'semester')
-  const [currentGpa, setCurrentGpa] = useState(() => savedDraft?.currentGpa ?? '')
-  const [completedCredits, setCompletedCredits] = useState(() => savedDraft?.completedCredits ?? '')
-  const [targetGpa, setTargetGpa] = useState(() => savedDraft?.targetGpa ?? '')
-  const [draftSavedAt, setDraftSavedAt] = useState(() => savedDraft?.updatedAt ?? '')
+  const [selectedSemester, setSelectedSemester] = useState('1')
+  const [calculationMode, setCalculationMode] = useState<CalculationMode>('semester')
+  const [currentGpa, setCurrentGpa] = useState('')
+  const [completedCredits, setCompletedCredits] = useState('')
+  const [targetGpa, setTargetGpa] = useState('')
+  const [projectedGrades, setProjectedGrades] = useState<Record<number, string>>({})
+  const [draftSavedAt, setDraftSavedAt] = useState(() => availableDraft?.updatedAt ?? '')
+  const [draftNoticeDismissed, setDraftNoticeDismissed] = useState(false)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [presetStatus, setPresetStatus] = useState('Đang tải danh sách môn học...')
 
   useEffect(() => {
@@ -223,24 +244,12 @@ export function GpaCalculatorPage() {
     }
   }, [])
 
-  useEffect(() => {
-    const updatedAt = new Date().toISOString()
-    const draft: GpaDraft = {
-      courses,
-      calculationMode,
-      currentGpa,
-      completedCredits,
-      targetGpa,
-      selectedSemester,
-      updatedAt,
-    }
-    localStorage.setItem(draftStorageKey, JSON.stringify(draft))
-    setDraftSavedAt(updatedAt)
-  }, [calculationMode, completedCredits, courses, currentGpa, selectedSemester, targetGpa])
-
   const semesterCourses = useMemo(() => {
     return getSemesterCourses(catalogue, Number(selectedSemester), savedSemesterMap)
   }, [catalogue, savedSemesterMap, selectedSemester])
+  const semesterPresetCredits = useMemo(() => {
+    return semesterCourses.reduce((sum, course) => sum + Number(course.credits ?? 0), 0)
+  }, [semesterCourses])
 
   const summary = useMemo(() => {
     const parsedCourses = courses.map((course) => ({
@@ -318,6 +327,7 @@ export function GpaCalculatorPage() {
         requiredTermGpa: 0,
         totalCreditsAfterTerm,
         courseTargets: [],
+        whatIf: null,
         valid: false,
       }
     }
@@ -338,6 +348,7 @@ export function GpaCalculatorPage() {
         requiredTermGpa: 0,
         totalCreditsAfterTerm,
         courseTargets: [],
+        whatIf: null,
         valid: false,
       }
     }
@@ -350,21 +361,96 @@ export function GpaCalculatorPage() {
         : requiredTermGpa >= 8.5
           ? 'difficult'
           : 'feasible'
+    const projectedCourses = validCourses
+      .map((course) => ({
+        ...course,
+        projectedGrade: parseProjectedGrade(projectedGrades[course.id]),
+      }))
+      .filter((course): course is CourseResult & { projectedGrade: number } => course.projectedGrade !== null)
+    const projectedCredits = projectedCourses.reduce((sum, course) => sum + course.credits, 0)
+    const projectedWeighted = projectedCourses.reduce((sum, course) => sum + course.projectedGrade * course.credits, 0)
+    const remainingCredits = termCredits - projectedCredits
+    const projectedTermGpa = projectedCredits > 0 ? projectedWeighted / projectedCredits : null
+    const remainingAverage = remainingCredits > 0
+      ? (requiredTermGpa * termCredits - projectedWeighted) / remainingCredits
+      : null
+    const projectedCumulativeGpa = projectedCredits === termCredits
+      ? ((existingGpa * existingCredits) + projectedWeighted) / totalCreditsAfterTerm
+      : null
 
     return {
       status,
       requiredTermGpa,
       totalCreditsAfterTerm,
       courseTargets: validCourses.map((course) => ({
+        id: course.id,
         name: course.name,
         credits: course.credits,
         targetGrade: clampGrade10(requiredTermGpa),
       })),
+      whatIf: {
+        projectedTermGpa,
+        remainingAverage,
+        remainingCredits,
+        projectedCumulativeGpa,
+        targetDelta: projectedCumulativeGpa === null ? null : projectedCumulativeGpa - desiredGpa,
+      },
       valid: true,
     }
-  }, [completedCredits, courses, currentGpa, targetGpa])
+  }, [completedCredits, courses, currentGpa, projectedGrades, targetGpa])
+
+  const markUnsaved = () => {
+    setHasUnsavedChanges(true)
+  }
+
+  const buildDraft = (updatedAt: string): GpaDraft => ({
+    courses,
+    calculationMode,
+    currentGpa,
+    completedCredits,
+    targetGpa,
+    selectedSemester,
+    projectedGrades,
+    updatedAt,
+  })
+
+  const saveDraft = () => {
+    const updatedAt = new Date().toISOString()
+    const draft = buildDraft(updatedAt)
+    localStorage.setItem(draftStorageKey, JSON.stringify(draft))
+    setAvailableDraft(draft)
+    setDraftSavedAt(updatedAt)
+    setDraftNoticeDismissed(true)
+    setHasUnsavedChanges(false)
+  }
+
+  const restoreDraft = () => {
+    if (!availableDraft) return
+    setCourses(availableDraft.courses)
+    setCalculationMode(availableDraft.calculationMode)
+    setCurrentGpa(availableDraft.currentGpa)
+    setCompletedCredits(availableDraft.completedCredits)
+    setTargetGpa(availableDraft.targetGpa)
+    setSelectedSemester(availableDraft.selectedSemester)
+    setProjectedGrades(availableDraft.projectedGrades)
+    setDraftSavedAt(availableDraft.updatedAt)
+    setDraftNoticeDismissed(true)
+    setHasUnsavedChanges(false)
+  }
+
+  const dismissDraftNotice = () => {
+    setDraftNoticeDismissed(true)
+  }
+
+  const clearSavedDraft = () => {
+    localStorage.removeItem(draftStorageKey)
+    setAvailableDraft(null)
+    setDraftSavedAt('')
+    setDraftNoticeDismissed(true)
+  }
 
   const updateCourse = (id: number, field: keyof Omit<CourseInput, 'id'>, value: string) => {
+    markUnsaved()
     setCourses((current) =>
       current.map((course) =>
         course.id === id ? { ...course, [field]: value } : course,
@@ -373,6 +459,7 @@ export function GpaCalculatorPage() {
   }
 
   const addCourse = () => {
+    markUnsaved()
     setCourses((current) => [
       ...current,
       { id: Math.max(...current.map((course) => course.id)) + 1, name: '', credits: '3', grade10: '' },
@@ -380,6 +467,7 @@ export function GpaCalculatorPage() {
   }
 
   const addFiveCourses = () => {
+    markUnsaved()
     setCourses((current) => {
       const startId = Math.max(...current.map((course) => course.id)) + 1
       return [
@@ -395,14 +483,20 @@ export function GpaCalculatorPage() {
   }
 
   const clearCourses = () => {
+    markUnsaved()
     setCourses([{ id: 1, name: '', credits: '', grade10: '' }])
+    setProjectedGrades({})
   }
 
   const resetCourses = () => {
+    markUnsaved()
     setCourses(initialCourses)
+    setProjectedGrades({})
   }
 
   const duplicateCourse = (id: number) => {
+    markUnsaved()
+    setProjectedGrades({})
     setCourses((current) => {
       const index = current.findIndex((course) => course.id === id)
       if (index === -1) return current
@@ -415,17 +509,56 @@ export function GpaCalculatorPage() {
     })
   }
 
-  const applySemesterPreset = () => {
+  const readLatestSemesterPreset = () => {
     const latestSemesterMap = readSavedSemesterMap()
     const latestSemesterCourses = getSemesterCourses(catalogue, Number(selectedSemester), latestSemesterMap)
     setSavedSemesterMap(latestSemesterMap)
+    return latestSemesterCourses
+  }
+
+  const replaceWithSemesterPreset = () => {
+    const latestSemesterCourses = readLatestSemesterPreset()
     if (latestSemesterCourses.length === 0) return
-    setCourses(latestSemesterCourses.map(courseToInput))
+    markUnsaved()
+    setCourses(latestSemesterCourses.map((course, index) => courseToInput(course, index)))
+    setProjectedGrades({})
+  }
+
+  const mergeSemesterPreset = () => {
+    const latestSemesterCourses = readLatestSemesterPreset()
+    if (latestSemesterCourses.length === 0) return
+    markUnsaved()
+    setCourses((current) => {
+      const startId = Math.max(...current.map((course) => course.id), 0) + 1
+      return [
+        ...current,
+        ...latestSemesterCourses.map((course, index) => courseToInput(course, index, startId + index)),
+      ]
+    })
   }
 
   const removeCourse = (id: number) => {
+    markUnsaved()
+    setProjectedGrades((current) => {
+      const next = { ...current }
+      delete next[id]
+      return next
+    })
     setCourses((current) => current.length === 1 ? current : current.filter((course) => course.id !== id))
   }
+
+  const updateProjectedGrade = (id: number, value: string) => {
+    markUnsaved()
+    setProjectedGrades((current) => ({
+      ...current,
+      [id]: value,
+    }))
+  }
+
+  const showDraftRestore = availableDraft !== null && !draftNoticeDismissed
+  const draftSavedTime = draftSavedAt
+    ? new Date(draftSavedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+    : ''
 
   return (
     <SectionTransition atmosphere="light" className="relative w-full min-h-[calc(100vh-72px)] pb-10 text-orbit-text">
@@ -453,11 +586,40 @@ export function GpaCalculatorPage() {
             Nhập tín chỉ và điểm hệ 10 của từng môn. Công cụ chỉ tính GPA hệ 10 theo trọng số tín chỉ, phù hợp để sinh viên ước lượng nhanh kết quả học kỳ.
           </p>
 
+          {showDraftRestore && (
+            <div className="mb-6 rounded-[8px] border border-orbit-accent/30 bg-orbit-accent/10 p-4 shadow-diffusion">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-[14px] font-semibold leading-6 text-orbit-text">
+                  Có bản nháp đã lưu{draftSavedTime ? ` lúc ${draftSavedTime}` : ''}. Khôi phục để tiếp tục, hoặc bỏ qua để nhập mới.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={restoreDraft}
+                    className="inline-flex h-10 items-center justify-center rounded-[8px] bg-orbit-accent px-4 text-[12px] font-bold uppercase tracking-[0.12em] text-zinc-950 transition-colors hover:bg-emerald-300"
+                  >
+                    Khôi phục
+                  </button>
+                  <button
+                    type="button"
+                    onClick={dismissDraftNotice}
+                    className="inline-flex h-10 items-center justify-center rounded-[8px] border border-orbit-border px-4 text-[12px] font-bold uppercase tracking-[0.12em] text-orbit-text-secondary transition-colors hover:border-orbit-accent/60 hover:text-orbit-text"
+                  >
+                    Bỏ qua
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="mb-6 flex flex-wrap gap-3">
             <div className="inline-flex rounded-[8px] border border-orbit-border bg-orbit-surface p-1 shadow-diffusion">
               <button
                 type="button"
-                onClick={() => setCalculationMode('semester')}
+                onClick={() => {
+                  markUnsaved()
+                  setCalculationMode('semester')
+                }}
                 className={`h-10 rounded-[6px] px-4 text-[13px] font-bold transition-colors ${
                   calculationMode === 'semester'
                     ? 'bg-orbit-accent text-zinc-950'
@@ -468,7 +630,10 @@ export function GpaCalculatorPage() {
               </button>
               <button
                 type="button"
-                onClick={() => setCalculationMode('cumulative')}
+                onClick={() => {
+                  markUnsaved()
+                  setCalculationMode('cumulative')
+                }}
                 className={`h-10 rounded-[6px] px-4 text-[13px] font-bold transition-colors ${
                   calculationMode === 'cumulative'
                     ? 'bg-orbit-accent text-zinc-950'
@@ -479,7 +644,10 @@ export function GpaCalculatorPage() {
               </button>
               <button
                 type="button"
-                onClick={() => setCalculationMode('goal')}
+                onClick={() => {
+                  markUnsaved()
+                  setCalculationMode('goal')
+                }}
                 className={`h-10 rounded-[6px] px-4 text-[13px] font-bold transition-colors ${
                   calculationMode === 'goal'
                     ? 'bg-orbit-accent text-zinc-950'
@@ -505,7 +673,10 @@ export function GpaCalculatorPage() {
                     max="10"
                     step="0.01"
                     value={currentGpa}
-                    onChange={(event) => setCurrentGpa(event.target.value)}
+                    onChange={(event) => {
+                      markUnsaved()
+                      setCurrentGpa(event.target.value)
+                    }}
                     placeholder="7.50"
                     className="h-11 w-full rounded-[8px] border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
                   />
@@ -520,7 +691,10 @@ export function GpaCalculatorPage() {
                     min="0"
                     step="1"
                     value={completedCredits}
-                    onChange={(event) => setCompletedCredits(event.target.value)}
+                    onChange={(event) => {
+                      markUnsaved()
+                      setCompletedCredits(event.target.value)
+                    }}
                     placeholder="60"
                     className="h-11 w-full rounded-[8px] border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
                   />
@@ -537,7 +711,10 @@ export function GpaCalculatorPage() {
                       max="10"
                       step="0.01"
                       value={targetGpa}
-                      onChange={(event) => setTargetGpa(event.target.value)}
+                      onChange={(event) => {
+                        markUnsaved()
+                        setTargetGpa(event.target.value)
+                      }}
                       placeholder="8.00"
                       className="h-11 w-full rounded-[8px] border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
                     />
@@ -548,10 +725,15 @@ export function GpaCalculatorPage() {
           )}
 
           <div className="mb-6 rounded-[8px] border border-orbit-border bg-orbit-surface p-4 shadow-diffusion">
-            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_180px] md:items-end">
+            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_220px] md:items-end">
               <div>
                 <p className="text-[12px] font-black uppercase tracking-[0.14em] text-orbit-accent">Preset theo học kỳ</p>
                 <p className="mt-2 text-[13px] leading-6 text-orbit-text-secondary">{presetStatus}</p>
+                {semesterCourses.length > 0 && (
+                  <p className="mt-2 text-[13px] font-semibold leading-6 text-orbit-text">
+                    Học kỳ {selectedSemester} có {semesterCourses.length} môn, {semesterPresetCredits} tín chỉ. Thay thế sẽ ghi đè danh sách hiện tại; gộp sẽ thêm vào cuối.
+                  </p>
+                )}
               </div>
               <div>
                 <label className="mb-2 block text-[12px] font-bold uppercase tracking-[0.12em] text-orbit-text-muted" htmlFor="semester-preset">
@@ -560,7 +742,10 @@ export function GpaCalculatorPage() {
                 <select
                   id="semester-preset"
                   value={selectedSemester}
-                  onChange={(event) => setSelectedSemester(event.target.value)}
+                  onChange={(event) => {
+                    markUnsaved()
+                    setSelectedSemester(event.target.value)
+                  }}
                   className="h-11 w-full rounded-[8px] border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text outline-none transition-colors focus:border-orbit-accent/60"
                 >
                   {semesters.map((semester) => (
@@ -568,14 +753,24 @@ export function GpaCalculatorPage() {
                   ))}
                 </select>
               </div>
-              <button
-                type="button"
-                onClick={applySemesterPreset}
-                disabled={semesterCourses.length === 0}
-                className="inline-flex h-11 items-center justify-center rounded-[8px] bg-orbit-accent px-5 text-[13px] font-bold uppercase tracking-[0.12em] text-zinc-950 transition-colors hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Áp dụng học kỳ
-              </button>
+              <div className="grid gap-2">
+                <button
+                  type="button"
+                  onClick={replaceWithSemesterPreset}
+                  disabled={semesterCourses.length === 0}
+                  className="inline-flex h-11 items-center justify-center rounded-[8px] bg-orbit-accent px-5 text-[13px] font-bold uppercase tracking-[0.12em] text-zinc-950 transition-colors hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Thay thế danh sách
+                </button>
+                <button
+                  type="button"
+                  onClick={mergeSemesterPreset}
+                  disabled={semesterCourses.length === 0}
+                  className="inline-flex h-11 items-center justify-center rounded-[8px] border border-orbit-border px-5 text-[13px] font-bold uppercase tracking-[0.12em] text-orbit-text-secondary transition-colors hover:border-orbit-accent/60 hover:text-orbit-text disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Gộp vào danh sách
+                </button>
+              </div>
             </div>
           </div>
 
@@ -746,7 +941,7 @@ export function GpaCalculatorPage() {
                 <div className="flex items-center justify-between border-t border-orbit-border pt-4">
                   <dt className="text-[14px] text-orbit-text-secondary">Kỳ này cần trung bình</dt>
                   <dd className="text-[15px] font-bold text-orbit-text">
-                    {goalSummary.valid ? formatNumber(clampGrade10(goalSummary.requiredTermGpa)) : '--'}
+                    {goalSummary.valid ? formatNumber(goalSummary.requiredTermGpa) : '--'}
                   </dd>
                 </div>
                 <div className="flex items-center justify-between">
@@ -776,13 +971,48 @@ export function GpaCalculatorPage() {
           {calculationMode === 'goal' && (
             <div className="mt-4 rounded-[8px] border border-orbit-border bg-orbit-bg p-3 text-[13px] leading-6 text-orbit-text-secondary">
               <p>{goalGuidance(goalSummary.status)}</p>
+              {goalSummary.whatIf?.projectedTermGpa !== null && goalSummary.whatIf?.projectedTermGpa !== undefined && (
+                <div className="mt-4 rounded-[8px] border border-orbit-border bg-orbit-surface/60 p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-orbit-text-secondary">GPA học kỳ dự kiến</span>
+                    <span className="font-bold text-orbit-text">{formatNumber(goalSummary.whatIf.projectedTermGpa)}</span>
+                  </div>
+                  {goalSummary.whatIf.projectedCumulativeGpa !== null && goalSummary.whatIf.targetDelta !== null ? (
+                    <p className="mt-2 text-orbit-text-secondary">
+                      GPA tích lũy dự kiến {formatNumber(goalSummary.whatIf.projectedCumulativeGpa)}. {goalSummary.whatIf.targetDelta >= 0
+                        ? `Đã vượt mục tiêu ${formatNumber(goalSummary.whatIf.targetDelta)}.`
+                        : `Còn thiếu ${formatNumber(Math.abs(goalSummary.whatIf.targetDelta))} GPA.`}
+                    </p>
+                  ) : goalSummary.whatIf.remainingAverage !== null ? (
+                    <p className="mt-2 text-orbit-text-secondary">
+                      Còn cần trung bình {formatNumber(goalSummary.whatIf.remainingAverage)} cho {goalSummary.whatIf.remainingCredits} tín chỉ chưa nhập.
+                    </p>
+                  ) : null}
+                </div>
+              )}
               {goalSummary.courseTargets.length > 0 && (
-                <div className="mt-4 space-y-2">
-                  <p className="text-[12px] font-black uppercase tracking-[0.12em] text-orbit-accent">Gợi ý từng môn</p>
+                <div className="mt-4 space-y-3">
+                  <p className="text-[12px] font-black uppercase tracking-[0.12em] text-orbit-accent">What-if từng môn</p>
                   {goalSummary.courseTargets.map((course, index) => (
-                    <div key={`${course.name}-${index}`} className="flex items-center justify-between gap-3 border-t border-orbit-border pt-2">
-                      <span className="min-w-0 text-orbit-text-secondary">{course.name} ({course.credits} tín chỉ)</span>
-                      <span className="shrink-0 font-bold text-orbit-text">{formatNumber(course.targetGrade)}</span>
+                    <div key={`${course.name}-${index}`} className="grid gap-2 border-t border-orbit-border pt-3 sm:grid-cols-[minmax(0,1fr)_96px] sm:items-center">
+                      <div className="min-w-0">
+                        <p className="truncate text-orbit-text-secondary">{course.name} ({course.credits} tín chỉ)</p>
+                        <p className="text-[12px] text-orbit-text-muted">Gợi ý {formatNumber(course.targetGrade)}</p>
+                      </div>
+                      <div>
+                        <label className="sr-only" htmlFor={`goal-projected-grade-${course.id}`}>Điểm dự kiến {course.name}</label>
+                        <input
+                          id={`goal-projected-grade-${course.id}`}
+                          type="number"
+                          min="0"
+                          max="10"
+                          step="0.1"
+                          value={projectedGrades[course.id] ?? ''}
+                          onChange={(event) => updateProjectedGrade(course.id, event.target.value)}
+                          placeholder="0-10"
+                          className="h-10 w-full rounded-[8px] border border-orbit-border bg-orbit-bg px-3 text-[14px] font-bold text-orbit-text outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -791,7 +1021,31 @@ export function GpaCalculatorPage() {
           )}
 
           <div className="mt-4 rounded-[8px] border border-orbit-border bg-orbit-bg p-3 text-[13px] leading-6 text-orbit-text-secondary">
-            Đã lưu tạm trên trình duyệt{draftSavedAt ? ` lúc ${new Date(draftSavedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}` : ''}.
+            <p>
+              {hasUnsavedChanges
+                ? 'Có thay đổi chưa lưu.'
+                : draftSavedAt
+                  ? `Đã lưu bản nháp${draftSavedTime ? ` lúc ${draftSavedTime}` : ''}.`
+                  : 'Chưa có bản nháp đã lưu.'}
+            </p>
+            <div className="mt-3 grid gap-2">
+              <button
+                type="button"
+                onClick={saveDraft}
+                className="inline-flex h-9 w-full items-center justify-center rounded-[8px] bg-orbit-accent px-3 text-[12px] font-bold uppercase tracking-[0.12em] text-zinc-950 transition-colors hover:bg-emerald-300"
+              >
+                Lưu bản nháp
+              </button>
+              <button
+                type="button"
+                onClick={clearSavedDraft}
+                disabled={!availableDraft}
+                className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-[8px] border border-orbit-border px-3 text-[12px] font-bold uppercase tracking-[0.12em] text-orbit-text-secondary transition-colors hover:border-rose-300/60 hover:text-rose-300 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
+                Xóa bản nháp
+              </button>
+            </div>
           </div>
 
           <div className="mt-6 rounded-[8px] border border-orbit-border bg-orbit-bg p-4 text-[13px] leading-6 text-orbit-text-secondary">

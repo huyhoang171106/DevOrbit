@@ -12,7 +12,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
@@ -41,65 +40,73 @@ fun FocusModeScreen(
             ) {
                 Icon(
                     Icons.Default.ArrowBack,
-                    contentDescription = "Thoat focus",
-                    tint = TextSecondary
+                    contentDescription = "Thoát focus",
+                    tint = CosmicTheme.colors.textTertiary
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(36.dp))
 
             // Circular progress
             val progress = if (focusTask.estimatedMinutes > 0) {
                 focusTask.achievedMinutes.toFloat() / focusTask.estimatedMinutes.toFloat()
             } else 0f
 
+            val glassBorderColor = CosmicTheme.colors.glassBorder
+            val plasmaColor = CosmicTheme.colors.plasma
+
             Box(contentAlignment = Alignment.Center, modifier = Modifier.size(200.dp)) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
-                    val strokeWidth = 12.dp.toPx()
-                    val innerWidth = size.width - strokeWidth * 2
-                    val innerHeight = size.height - strokeWidth * 2
+                    val strokeWidth = 10.dp.toPx()
+                    val inset = strokeWidth
+                    val arcWidth = size.width - strokeWidth * 2
+                    val arcHeight = size.height - strokeWidth * 2
+                    // Track
                     drawArc(
-                        color = GlassWhite,
+                        color = glassBorderColor,
                         startAngle = -90f,
                         sweepAngle = 360f,
                         useCenter = false,
-                        topLeft = Offset(strokeWidth, strokeWidth),
-                        size = Size(innerWidth, innerHeight),
+                        topLeft = Offset(inset, inset),
+                        size = Size(arcWidth, arcHeight),
                         style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
                     )
+                    // Progress
                     drawArc(
-                        color = CosmicGlowPurple,
+                        color = plasmaColor,
                         startAngle = -90f,
                         sweepAngle = progress * 360f,
                         useCenter = false,
-                        topLeft = Offset(strokeWidth, strokeWidth),
-                        size = Size(innerWidth, innerHeight),
+                        topLeft = Offset(inset, inset),
+                        size = Size(arcWidth, arcHeight),
                         style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
                     )
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "${focusTask.achievedMinutes}",
-                        color = CosmicGlowPurple,
-                        fontSize = 40.sp,
-                        fontWeight = FontWeight.Bold
+                        color = CosmicTheme.colors.plasma,
+                        style = CosmicTheme.typography.metric.copy(fontSize = 40.sp)
                     )
                     Text(
-                        text = "/ ${focusTask.estimatedMinutes} phut",
-                        color = TextSecondary,
-                        fontSize = 14.sp
+                        text = "/ ${focusTask.estimatedMinutes} phút",
+                        style = CosmicTheme.typography.label,
+                        color = CosmicTheme.colors.textTertiary
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(36.dp))
 
             // Task title
             Text(
                 text = focusTask.title,
-                color = TextPrimary,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
+                color = CosmicTheme.colors.textPrimary,
+                style = CosmicTheme.typography.body.copy(
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    lineHeight = 28.sp
+                ),
                 textAlign = TextAlign.Center,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
@@ -109,35 +116,35 @@ fun FocusModeScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Tap trung vao...",
-                color = TextSecondary,
-                fontSize = 16.sp
+                text = "Tập trung vào nhiệm vụ này",
+                style = CosmicTheme.typography.body,
+                color = CosmicTheme.colors.textSecondary
             )
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(40.dp))
 
             // Complete button
             Button(
                 onClick = onComplete,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(28.dp),
+                    .height(52.dp),
+                shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = CosmicGlowPurple,
-                    contentColor = CosmicDeepSpace
+                    containerColor = CosmicTheme.colors.plasma,
+                    contentColor = CosmicTheme.colors.void
                 )
             ) {
-                Icon(Icons.Default.CheckCircle, contentDescription = null)
+                Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = "Hoan thanh", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                Text("Hoàn thành", fontWeight = FontWeight.SemiBold)
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Exit button
             TextButton(onClick = onBack) {
-                Text("Thoat focus", color = TextSecondary, fontSize = 14.sp)
+                Text("Thoát focus", color = CosmicTheme.colors.textTertiary)
             }
         }
     }

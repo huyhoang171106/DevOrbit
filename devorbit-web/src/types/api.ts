@@ -39,6 +39,10 @@ export type RepoSummary = {
   courseId: number | null
   courseCode: string | null
   courseName: string | null
+  readmeExcerpt?: string | null
+  fileTree?: string | null
+  hasReadme?: boolean | null
+  lastPushedAt?: string | null
 }
 
 export type RepoCandidate = {
@@ -54,6 +58,8 @@ export type RepoCandidate = {
   forks: number
   lastPushedAt: string | null
   readmeExcerpt: string | null
+  hasReadme: boolean | null
+  fileTree: string | null
   assignedReviewer: string | null
   courseId: number | null
   courseCode: string | null

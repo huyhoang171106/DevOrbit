@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { BookOpen, CaretDown, CheckCircle, Code, Compass, Gauge, Hash, Info, MagicWand, RocketLaunch, ShieldCheck, WarningCircle } from '@phosphor-icons/react'
 import type { RepoAnalysisResult } from '../../lib/repoAnalysisService'
-import type { RepoEvaluationResult, UsefulnessRating } from '../../lib/repoEvaluation'
+import { formatVietnameseRelativeDate, type RepoEvaluationResult, type UsefulnessRating } from '../../lib/repoEvaluation'
 import type { RepoSummary } from '../../types/api'
 
 type RepoAiAnalysisSectionProps = {
@@ -135,7 +135,7 @@ function OverviewCard({ repo, evaluation }: { repo: RepoSummary; evaluation: Rep
   const metadata = repo as RepoDisplayMetadata
   const owner = getRepoOwner(repo.githubUrl)
   const license = getLicenseLabel(metadata.license)
-  const updatedAt = metadata.updatedAt ?? metadata.lastPushedAt
+  const updatedAt = formatVietnameseRelativeDate(metadata.updatedAt ?? metadata.lastPushedAt)
   const forks = typeof metadata.forks === 'number' ? metadata.forks : null
   const scoreTone = ratingToneClasses[evaluation.usefulnessRating]
   const groupLabel = evaluation.repoType === 'exam_review' ? 'Tài liệu ôn tập / đề thi' : evaluation.courseGroupLabel

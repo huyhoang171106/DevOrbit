@@ -148,7 +148,7 @@ export function HeroStoryCarousel() {
   const onLeave = useCallback(() => { mx.set(0.5); my.set(0.5) }, [mx, my])
 
   return (
-    <div className="relative aspect-square max-w-[500px] mx-auto">
+    <div className="relative w-full aspect-square max-w-[500px] mx-auto">
       {/* Outer glow */}
       <motion.div
         className="absolute inset-0 blur-[120px] rounded-full pointer-events-none"

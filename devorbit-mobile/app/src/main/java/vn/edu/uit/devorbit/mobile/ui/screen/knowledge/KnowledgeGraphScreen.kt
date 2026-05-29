@@ -1,6 +1,7 @@
 package vn.edu.uit.devorbit.mobile.ui.screen.knowledge
 
 import androidx.compose.animation.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -9,14 +10,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import vn.edu.uit.devorbit.mobile.domain.model.GraphLink
 import vn.edu.uit.devorbit.mobile.domain.model.GraphNode
 import vn.edu.uit.devorbit.mobile.ui.components.GalaxyGraphCanvas
-import vn.edu.uit.devorbit.mobile.ui.components.GlassCard
 import vn.edu.uit.devorbit.mobile.ui.theme.*
 
 @Composable
@@ -40,7 +39,7 @@ fun KnowledgeGraphScreen(
     totalNodeCount: Int = 0,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
-        // The interactive Galaxy - Spatial knowledge rendering
+        // Interactive graph canvas
         GalaxyGraphCanvas(
             nodes = nodes,
             links = links,
@@ -48,32 +47,38 @@ fun KnowledgeGraphScreen(
             onNodeClick = onNodeClick
         )
 
-        // Header Overlay - Cosmic Context
+        // Header overlay
         Column(
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .padding(CosmicTheme.spacing.medium)
+                .padding(16.dp)
         ) {
             Text(
-                text = "VŨ TRỤ TRI THỨC",
-                style = CosmicTheme.typography.command,
-                color = CosmicTheme.colors.plasma
+                text = "Vũ trụ tri thức",
+                style = CosmicTheme.typography.display,
+                color = CosmicTheme.colors.textPrimary
             )
             Text(
-                text = "${nodes.size} THỂ THỰC TRI THỨC . ${nodes.groupBy { it.level }.size} CẤP ĐỘ",
+                text = "${nodes.size} thể thức · ${nodes.groupBy { it.level }.size} cấp độ",
                 style = CosmicTheme.typography.label,
-                color = CosmicTheme.colors.textSecondary
+                color = CosmicTheme.colors.textTertiary
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Chạm vào một nút để xem chi tiết",
+                style = CosmicTheme.typography.label,
+                color = CosmicTheme.colors.textTertiary.copy(alpha = 0.7f)
             )
         }
 
-        // Selected Node Detail Card - The Knowledge Portal
+        // Selected node detail card
         AnimatedVisibility(
             visible = selectedNode != null,
             enter = slideInVertically { it } + fadeIn(),
             exit = slideOutVertically { it } + fadeOut(),
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(CosmicTheme.spacing.medium)
+                .padding(horizontal = 16.dp, vertical = 16.dp)
                 .padding(bottom = 80.dp)
         ) {
             selectedNode?.let { node ->
@@ -85,57 +90,62 @@ fun KnowledgeGraphScreen(
 
 @Composable
 private fun KnowledgePortalCard(node: GraphNode) {
-    GlassCard(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(CosmicTheme.spacing.small)) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        color = CosmicTheme.colors.nebula,
+        border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Identity Orb
+                // Node code badge
                 Surface(
-                    modifier = Modifier.size(52.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    color = CosmicTheme.colors.plasma.copy(alpha = 0.15f),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.plasma.copy(alpha = 0.3f))
+                    modifier = Modifier.size(48.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    color = CosmicTheme.colors.plasma.copy(alpha = 0.12f)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Text(
                             text = node.code.takeLast(3),
                             color = CosmicTheme.colors.plasma,
-                            style = CosmicTheme.typography.command,
-                            fontWeight = FontWeight.Bold
+                            style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.Bold)
                         )
                     }
                 }
-                
-                Spacer(modifier = Modifier.width(CosmicTheme.spacing.medium))
-                
+
+                Spacer(modifier = Modifier.width(14.dp))
+
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = node.name.uppercase(),
-                        style = CosmicTheme.typography.body,
-                        fontWeight = FontWeight.Black,
-                        color = Color.White,
+                        text = node.name,
+                        style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
+                        color = CosmicTheme.colors.textPrimary,
                         maxLines = 1
                     )
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = "Hệ số ảnh hưởng:",
+                            text = "Hệ số ảnh hưởng: ",
                             style = CosmicTheme.typography.label,
-                            color = CosmicTheme.colors.textSecondary
+                            color = CosmicTheme.colors.textTertiary
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = String.format("%.1f", node.impactScore),
-                            style = CosmicTheme.typography.label,
-                            color = CosmicTheme.colors.aurora,
-                            fontWeight = FontWeight.Bold
+                            style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.Bold),
+                            color = CosmicTheme.colors.plasma
                         )
                     }
                 }
-                
+
                 IconButton(
-                    onClick = { /* Action handled via currentScreen in App.kt */ },
-                    colors = IconButtonDefaults.iconButtonColors(containerColor = CosmicTheme.colors.glassBorder)
+                    onClick = {},
+                    modifier = Modifier.size(40.dp)
                 ) {
-                    Icon(Icons.Default.Info, contentDescription = "Detail", tint = Color.White)
+                    Icon(
+                        Icons.Default.Info,
+                        contentDescription = "Chi tiết",
+                        tint = CosmicTheme.colors.textSecondary,
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
         }

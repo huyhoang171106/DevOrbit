@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { evaluateRepository, extractRepoSignals } from './repoEvaluation'
+import { evaluateRepository, extractRepoSignals, formatVietnameseRelativeDate } from './repoEvaluation'
 import type { RepoSummary } from '../types/api'
 
 type RepoFixture = RepoSummary & {
@@ -337,5 +337,26 @@ describe('evaluateRepository', () => {
     expect(result.repoIdentity).toBe('Chưa đủ dữ liệu để xác định')
     expect(result.readyToUseLevel).toBe('insufficient_data')
     expect(result.quickBullets.join(' ')).toContain('Chưa đủ dữ liệu')
+  })
+})
+
+describe('formatVietnameseRelativeDate', () => {
+  const now = new Date('2026-05-29T12:00:00Z')
+
+  test('formats recent dates without raw ISO text', () => {
+    expect(formatVietnameseRelativeDate('2026-05-29T01:00:00Z', now)).toBe('Hôm nay')
+    expect(formatVietnameseRelativeDate('2026-05-28T01:00:00Z', now)).toBe('Hôm qua')
+    expect(formatVietnameseRelativeDate('2026-05-27T01:00:00Z', now)).toBe('2 ngày trước')
+  })
+
+  test('formats month and year distances in Vietnamese', () => {
+    expect(formatVietnameseRelativeDate('2026-04-20T10:00:00Z', now)).toBe('1 tháng trước')
+    expect(formatVietnameseRelativeDate('2026-03-20T10:00:00Z', now)).toBe('2 tháng trước')
+    expect(formatVietnameseRelativeDate('2024-05-20T10:00:00Z', now)).toBe('2 năm trước')
+  })
+
+  test('returns null for missing or invalid dates', () => {
+    expect(formatVietnameseRelativeDate(null, now)).toBeNull()
+    expect(formatVietnameseRelativeDate('not-a-date', now)).toBeNull()
   })
 })

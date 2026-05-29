@@ -61,6 +61,7 @@ public class RepoCandidateService {
         repo.setDescription(request.description() != null ? request.description() : candidate.getDescription());
         repo.setPrimaryLanguage(candidate.getPrimaryLanguage());
         repo.setStars(candidate.getStars());
+        repo.setLastPushedAt(candidate.getLastPushedAt());
         applyRepositoryContext(candidate, repo);
         if (candidate.getCourse() != null) {
             repo.setCourse(candidate.getCourse());

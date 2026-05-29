@@ -110,6 +110,7 @@ create table if not exists github_repos (
     is_active        boolean       not null default true,
     course_id        bigint        references courses(stt),
     stars            integer,
+    last_pushed_at   varchar(255),
     readme_excerpt   text,
     has_readme       boolean,
     file_tree        text

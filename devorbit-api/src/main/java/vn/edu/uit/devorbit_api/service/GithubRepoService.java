@@ -29,6 +29,7 @@ public class GithubRepoService {
     private final GithubRepoRepository githubRepoRepository;
     private final TechStackRepository techStackRepository;
     private final CourseRepository courseRepository;
+    private final GithubScanService githubScanService;
 
     public List<GithubRepo> getAllGithubRepo() {
         return githubRepoRepository.findAll();
@@ -38,12 +39,14 @@ public class GithubRepoService {
         return githubRepoRepository.findBySubjectId(subjectId);
     }
 
+    @Transactional
     public RepoSummaryResponse getApprovedRepoById(Long repoId) {
         GithubRepo repo = githubRepoRepository.findById(repoId)
                 .orElseThrow(() -> new NotFoundException("Repo not found: " + repoId));
         if (!repo.isActive()) {
             throw new NotFoundException("Repo not found: " + repoId);
         }
+        refreshLastPushedAtIfMissing(repo);
         return mapToRepoSummary(repo);
     }
 
@@ -127,9 +130,32 @@ public class GithubRepoService {
                 courseName,
                 repo.getReadmeExcerpt(),
                 repo.getFileTree(),
-                repo.getHasReadme()
+                repo.getHasReadme(),
+                repo.getLastPushedAt()
         );
     }
+
+    private void refreshLastPushedAtIfMissing(GithubRepo repo) {
+        if (repo.getLastPushedAt() != null && !repo.getLastPushedAt().isBlank()) return;
+        RepoSlug slug = parseGithubSlug(repo.getGithubUrl());
+        if (slug == null) return;
+        String lastPushedAt = githubScanService.fetchLatestActivityAt(slug.owner(), slug.name());
+        if (lastPushedAt == null) return;
+        repo.setLastPushedAt(lastPushedAt);
+        githubRepoRepository.save(repo);
+    }
+
+    private RepoSlug parseGithubSlug(String githubUrl) {
+        if (githubUrl == null || githubUrl.isBlank()) return null;
+        java.util.regex.Matcher matcher = java.util.regex.Pattern
+            .compile("github\\.com/([^/]+)/([^/?#]+)", java.util.regex.Pattern.CASE_INSENSITIVE)
+            .matcher(githubUrl);
+        if (!matcher.find()) return null;
+        String name = matcher.group(2).replaceAll("\\.git$", "");
+        return new RepoSlug(matcher.group(1), name);
+    }
+
+    private record RepoSlug(String owner, String name) {}
 
     public Set<TechStack> resolveTechStacks(List<String> stackNames) {
         Set<TechStack> stacks = new LinkedHashSet<>();

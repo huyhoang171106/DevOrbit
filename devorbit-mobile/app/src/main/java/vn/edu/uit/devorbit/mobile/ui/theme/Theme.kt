@@ -9,23 +9,25 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.background
-
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-private val CosmicColorScheme = darkColorScheme(
-    primary = Color(0xFF7B61FF), // Plasma
-    secondary = Color(0xFF00D2FF),
-    tertiary = Color(0xFF00F5A0),
-    background = Color(0xFF05050A), // Void
-    surface = Color(0xFF10101A), // Nebula
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color.White,
-    onSurface = Color.White,
+private val GroundedColorScheme = darkColorScheme(
+    primary = Amber,
+    secondary = Ocean,
+    tertiary = Sage,
+    background = Slate900,
+    surface = Slate850,
+    onPrimary = Slate900,
+    onSecondary = TextHigh,
+    onTertiary = TextHigh,
+    onBackground = TextHigh,
+    onSurface = TextHigh,
+    surfaceVariant = Slate800,
+    outline = BorderSubtle,
+    outlineVariant = BorderMedium,
 )
 
 @Composable
@@ -34,10 +36,13 @@ fun DevOrbitTheme(
     content: @Composable () -> Unit
 ) {
     val colors = if (isBurnedOut) {
-        // Soften colors in burnout state to reduce cognitive load
+        // Warm, muted tones for burnout: reduce amber intensity, soften contrast
         LocalCosmicColors.current.copy(
-            plasma = Color(0xFF9182C4),
-            void = Color(0xFF0A0A10)
+            plasma = Color(0xFFB8906A),       // muted warm brown
+            void = Color(0xFF14161C),          // slightly warmer base
+            nebula = Color(0xFF1A1D24),        // slightly warmer surface
+            textPrimary = Color(0xFFD0D4DA),   // reduced contrast
+            supernova = Color(0xFFB87070)      // softer red
         )
     } else {
         LocalCosmicColors.current
@@ -57,18 +62,19 @@ fun DevOrbitTheme(
         LocalCosmicSpacing provides LocalCosmicSpacing.current
     ) {
         MaterialTheme(
-            colorScheme = CosmicColorScheme,
+            colorScheme = GroundedColorScheme,
             content = content
         )
     }
 }
+
 @Composable
 fun CosmicBackground(content: @Composable () -> Unit) {
-    val voidDepth = CosmicTheme.gradients.voidDepth
+    val gradient = CosmicTheme.gradients.voidDepth
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(voidDepth)
+            .background(gradient)
     ) {
         content()
     }

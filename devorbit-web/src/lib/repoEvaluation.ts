@@ -84,6 +84,8 @@ export type RepoEvaluationResult = {
   strengths: string[]
   weaknesses: string[]
   nextActions: string[]
+  learningStrategy: string[]
+  cautionNotes: string[]
   suitableUse: string[]
   applicability: string[]
   checksBeforeUsing: string[]
@@ -233,6 +235,8 @@ export function evaluateRepository(repo: RepoSummary): RepoEvaluationResult {
   const strengths = buildStrengths(repoType, signals, usefulnessRating)
   const weaknesses = buildWeaknesses(repoType, signals, usefulnessRating)
   const nextActions = buildNextActions(repoType, signals)
+  const learningStrategy = buildLearningStrategy(repoType, courseGroup, signals)
+  const cautionNotes = buildCautionNotes(repoType, courseGroup, signals)
   const suitableUse = buildSuitableUse(repoType, signals)
   const applicability = buildApplicability(repoType, usefulnessRating, signals)
   const checksBeforeUsing = buildChecksBeforeUsing(repoType, signals)
@@ -265,6 +269,8 @@ export function evaluateRepository(repo: RepoSummary): RepoEvaluationResult {
     strengths,
     weaknesses,
     nextActions,
+    learningStrategy,
+    cautionNotes,
     suitableUse,
     applicability,
     checksBeforeUsing,
@@ -845,6 +851,160 @@ function buildNextActions(repoType: RepoType, signals: RepoSignals): string[] {
     return ['Xác định năm/kỳ/giữa kỳ/cuối kỳ của đề.', 'Kiểm tra có đáp án hoặc lời giải không.', 'Làm thử đề trước khi xem lời giải để tự đánh giá.']
   }
   return ['Mở GitHub để kiểm tra README và cấu trúc repo.', 'Xác định repo chứa code, tài liệu, hay đề ôn tập.', 'Chỉ dùng làm tham khảo nhanh nếu vẫn thiếu dữ liệu.']
+}
+
+function buildLearningStrategy(repoType: RepoType, courseGroup: CourseGroup, signals: RepoSignals): string[] {
+  const text = normalizeSearchText([signals.name, signals.description, signals.readmeText, ...signals.filePaths, ...signals.topics])
+  const isSecurityTool = contains(text, /\b(security|penetration|exploit|hack|crack|keygen|scrape|crawl|botnet|malware|ransomware|keylogger|reverse.?shell|backdoor|trojan|virus|payload|exploit|pentest)\b/)
+
+  if (isSecurityTool) {
+    return [
+      'Đọc README và source trước khi chạy bất kỳ lệnh nào.',
+      'Không chạy bằng quyền cao nếu chưa hiểu rõ tác động.',
+      'Ưu tiên chạy trong môi trường test/sandbox.',
+      'Dùng để nghiên cứu kỹ thuật, không dùng sai mục đích.',
+      'Kiểm tra kỹ các phần liên quan network, subprocess, file access.',
+    ]
+  }
+
+  if (repoType === 'programming_exercise') {
+    const items = [
+      'Tự làm bài trước rồi mới đối chiếu lời giải để hiểu cách triển khai.',
+      'Đọc theo thứ tự lab/chapter nếu repo có chia thư mục rõ ràng.',
+      'Tập trung vào ý tưởng và cấu trúc code, không copy nguyên.',
+    ]
+    if (signals.hasTests) items.push('Chạy thử input/output để kiểm tra lời giải có khớp yêu cầu không.')
+    if (signals.organizedFolders) items.push('Ghi chú pattern hay gặp: cách chia file, xử lý dữ liệu, hàm chính.')
+    return items
+  }
+
+  if (repoType === 'project_practice') {
+    const items = [
+      'Bắt đầu từ README và cấu trúc thư mục để hiểu cách tổ chức project.',
+      'Xem flow chính: frontend → backend → database.',
+      'Học cách tổ chức module, không chỉ copy giao diện hay route.',
+    ]
+    if (signals.hasReadme && (signals.hasPackageFile || signals.hasDockerConfig)) items.push('Clone và chạy local để hiểu luồng chức năng thực tế.')
+    items.push('Ghi chú phần có thể áp dụng: authentication, CRUD, API design, database.')
+    return items
+  }
+
+  if (repoType === 'study_material') {
+    return [
+      'Đọc theo chương/buổi, không đọc lướt file rời rạc.',
+      'Tóm tắt lại ý chính sau mỗi phần để ghi nhớ.',
+      'Đối chiếu với đề cương môn học hiện tại.',
+      'Kết hợp với bài tập hoặc đề thi nếu repo có kèm.',
+      'Dùng repo để ôn nhanh, không xem là nguồn duy nhất.',
+    ]
+  }
+
+  if (repoType === 'exam_review') {
+    const items = [
+      'Làm đề trước khi xem đáp án để tự đánh giá năng lực.',
+      'Ghi lại dạng câu hỏi thường lặp lại qua các năm.',
+    ]
+    if (signals.hasAnswerOrSolution) items.push('Sau khi xem đáp án, tự giải lại lần nữa để nhớ sâu hơn.')
+    items.push('Kiểm tra đáp án với tài liệu chính thức nếu có thể.')
+    return items
+  }
+
+  if (courseGroup === 'general_skills' || courseGroup === 'design_process') {
+    const hasReportOrSlide = signals.hasSlides || contains(normalizeSearchText([...signals.filePaths]), /\b(report|docx|pdf)\b/)
+    const items = [
+      'Xem rubric, guideline hoặc yêu cầu bài nộp trước khi tham khảo.',
+      'Dùng repo để học cách trình bày và bố cục, không copy nội dung.',
+      'So sánh với yêu cầu giảng viên hiện tại — rubric có thể thay đổi.',
+    ]
+    if (hasReportOrSlide) items.push('Tự viết lại nội dung theo trường hợp của mình, không copy y nguyên.')
+    return items
+  }
+
+  if (repoType === 'mixed_resource') {
+    return [
+      'Xác định phần repo phù hợp với nhu cầu trước khi đọc.',
+      'Lọc theo folder/file thay vì đọc tuần tự từ đầu.',
+      'Dùng repo như kho tham khảo, không phải giáo trình chính.',
+    ]
+  }
+
+  return [
+    'Xem lướt trước: README → cây thư mục → file chính để hiểu repo chứa gì.',
+    'Xác định repo thuộc loại code, tài liệu, đề thi hay bài nộp.',
+    'Không clone/chạy ngay nếu mục đích repo chưa rõ ràng.',
+    'Chỉ dùng để tham khảo nhanh cho đến khi có đủ dữ liệu.',
+  ]
+}
+
+function buildCautionNotes(repoType: RepoType, courseGroup: CourseGroup, signals: RepoSignals): string[] {
+  const text = normalizeSearchText([signals.name, signals.description, signals.readmeText, ...signals.filePaths, ...signals.topics])
+  const isSecurityTool = contains(text, /\b(security|penetration|exploit|hack|crack|keygen|scrape|crawl|botnet|malware|ransomware|keylogger|reverse.?shell|backdoor|trojan|virus|payload|exploit|pentest)\b/)
+
+  if (isSecurityTool) {
+    return [
+      'Không chạy với quyền admin/root nếu chưa hiểu rõ source code.',
+      'Cẩn thận với lệnh hệ thống, network request, subprocess, os.system.',
+      'Không chạy trên máy chính nếu repo không rõ nguồn gốc.',
+      'Chỉ dùng trong môi trường hợp pháp và an toàn.',
+    ]
+  }
+
+  if (repoType === 'programming_exercise') {
+    const items = [
+      'Không copy nguyên code nếu chưa hiểu cách hoạt động.',
+      'Code có thể không khớp đề bài hiện tại của bạn.',
+    ]
+    if (!signals.hasTests) items.push('Thiếu test case hoặc input/output, lời giải có thể chưa đáng tin cậy.')
+    items.push('Cần tự chạy thử trước khi dùng làm lời giải mẫu.')
+    return items
+  }
+
+  if (repoType === 'project_practice') {
+    const items: string[] = []
+    if (!signals.hasEnvExample && !signals.hasDockerConfig) items.push('Không chạy project nếu thiếu .env, database hoặc config.')
+    items.push('Cẩn thận dependency cũ hoặc package lỗi thời.')
+    items.push('Không dùng trực tiếp credentials hay token nếu repo lỡ public.')
+    if (!signals.hasReadme) items.push('Project có thể không chạy được nếu thiếu hướng dẫn setup rõ ràng.')
+    return items
+  }
+
+  if (repoType === 'study_material') {
+    return [
+      'Tài liệu có thể cũ hoặc không khớp với đề cương hiện tại.',
+      'Note cá nhân có thể thiếu hoặc sai, cần đối chiếu với nguồn chính thức.',
+      'Không nên học duy nhất từ repo này nếu thiếu giáo trình hoặc slide chính thống.',
+    ]
+  }
+
+  if (repoType === 'exam_review') {
+    return [
+      'Đáp án có thể sai hoặc thiếu giải thích chi tiết.',
+      'Format thi có thể đã thay đổi so với đề trong repo.',
+      'Không học thuộc đáp án nếu chưa hiểu bản chất vấn đề.',
+      'Nên làm thử trước khi xem lời giải để tránh ỷ lại.',
+    ]
+  }
+
+  if (courseGroup === 'general_skills' || courseGroup === 'design_process') {
+    return [
+      'Không copy report/slide y nguyên — rubric có thể thay đổi theo giảng viên.',
+      'Bài mẫu có thể chỉ phù hợp với một học kỳ hoặc nhóm cụ thể.',
+      'Cần đối chiếu yêu cầu bài nộp hiện tại trước khi tham khảo bố cục.',
+    ]
+  }
+
+  if (repoType === 'unknown') {
+    return [
+      'Không nên clone hoặc chạy ngay nếu chưa rõ repo làm gì.',
+      'Không dùng làm nguồn chính cho bài tập hay deadline.',
+      'Cần kiểm tra README, cây thư mục và file chính trước khi quyết định.',
+    ]
+  }
+
+  return [
+    'Cần kiểm tra README và cấu trúc trước khi sử dụng.',
+    'Không nên dựa hoàn toàn vào repo khi chưa xác minh nội dung.',
+  ]
 }
 
 function buildSuitableUse(repoType: RepoType, signals: RepoSignals): string[] {

@@ -34,7 +34,7 @@ Repository detail metadata should show the latest GitHub activity date when GitH
 - Fallback metadata endpoint for old repo detail refresh: `GET /repos/{owner}/{repo}`.
 - Table field: `github_repos.last_pushed_at`.
 - API field: `lastPushedAt`.
-- UI field: `repo.lastPushedAt` or optional `updatedAt`.
+- UI field: `repo.lastPushedAt` first, then optional `updatedAt` only as fallback.
 - Runtime compatibility: `V004__add_repo_last_pushed_at.sql` exists because editing an already-applied `V003` migration does not update existing databases.
 
 ## Validation
@@ -52,6 +52,11 @@ No harness rule changes.
 
 ## Evidence
 
+- 2026-05-29 follow-up: `devorbit-web`: `npm run test -- repoEvaluation repoAiAnalysis repoAnalysisService` passed, 4 files / 29 tests, including `RepoAiAnalysisSection` metadata tests for `lastPushedAt`, invalid `updatedAt`, and missing date fallback.
+- 2026-05-29 follow-up: `devorbit-web`: `npm run build` passed.
+- 2026-05-29 follow-up: `devorbit-api`: Maven binary `test` first reached `GithubScanServiceTest` and exposed stale commits fallback behavior; after the URI helper fix, Maven binary `test` is blocked earlier at `testCompile`, where the compiler cannot resolve project packages from existing tests.
+- 2026-05-29 follow-up: `devorbit-api`: Maven binary `package '-Dmaven.test.skip=true'` passed.
+- 2026-05-29 follow-up: manual provider check from this environment hit GitHub unauthenticated rate limit for `115.77.64.10`; the code path keeps the documented fallback behavior for private/rate-limited GitHub responses.
 - `devorbit-web`: `npm run test -- repoEvaluation repoAiAnalysis repoAnalysisService RepoDetailPage` passed, 4 files / 30 tests.
 - `devorbit-web`: `npm run build` passed.
 - `devorbit-api`: `mvnw.cmd test` blocked by existing wrapper error `Cannot index into a null array`.

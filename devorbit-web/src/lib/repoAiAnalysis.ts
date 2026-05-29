@@ -1,4 +1,5 @@
 import type { RepoSummary } from '../types/api'
+import { formatVietnameseRelativeDate } from './repoEvaluation'
 
 export type RepoAiAnalysisTone = 'accent' | 'indigo' | 'amber' | 'rose'
 
@@ -204,7 +205,7 @@ function getRepoSignals(repo: RepoSummary): RepoSignals {
     courseLabel: formatCourseLabel(repo),
     stars: typeof repo.stars === 'number' ? repo.stars : null,
     forks: typeof metadata.forks === 'number' ? metadata.forks : null,
-    updatedAt: cleanText(metadata.updatedAt ?? metadata.lastPushedAt),
+    updatedAt: formatVietnameseRelativeDate(metadata.updatedAt ?? metadata.lastPushedAt),
     deadline: cleanText(metadata.deadline),
   }
 }

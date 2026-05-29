@@ -26,5 +26,6 @@ public record RepoSummaryResponse(
     String courseName,
     String readmeExcerpt,
     String fileTree,
-    Boolean hasReadme
+    Boolean hasReadme,
+    String lastPushedAt
 ) {}

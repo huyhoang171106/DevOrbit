@@ -42,6 +42,7 @@ export type RepoSummary = {
   readmeExcerpt?: string | null
   fileTree?: string | null
   hasReadme?: boolean | null
+  lastPushedAt?: string | null
 }
 
 export type RepoCandidate = {

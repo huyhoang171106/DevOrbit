@@ -73,6 +73,14 @@ const expansionMap: Record<string, string[]> = {
   frontend: ['frontend', 'web', 'react', 'vue', 'angular', 'html', 'css', 'javascript', 'typescript', 'ui'],
   backend: ['backend', 'spring boot', 'node', 'express', 'api', 'rest', 'database', 'server'],
   oop: ['oop', 'object oriented', 'java', 'c++', 'class', 'inheritance', 'hướng đối tượng'],
+  'doi tuong': ['đối tượng', 'object', 'oop', 'object oriented', 'hướng đối tượng', 'java'],
+  'đối tượng': ['đối tượng', 'object', 'oop', 'object oriented', 'hướng đối tượng', 'java'],
+  'huong doi tuong': ['hướng đối tượng', 'oop', 'object oriented', 'java'],
+  'hướng đối tượng': ['hướng đối tượng', 'oop', 'object oriented', 'java'],
+  'co so lap trinh': ['cơ sở lập trình', 'programming fundamentals', 'nhập môn lập trình', 'c', 'c++'],
+  'cơ sở lập trình': ['cơ sở lập trình', 'programming fundamentals', 'nhập môn lập trình', 'c', 'c++'],
+  'nhap mon': ['nhập môn', 'introduction', 'fundamentals', 'cơ bản'],
+  'nhập môn': ['nhập môn', 'introduction', 'fundamentals', 'cơ bản'],
   'phan tich': ['phân tích', 'analysis', 'design', 'srs', 'uml', 'requirement', 'ooad'],
   'phân tích': ['phân tích', 'analysis', 'design', 'srs', 'uml', 'requirement', 'ooad'],
   uml: ['uml', 'class diagram', 'sequence diagram', 'use case', 'design', 'ooad'],
@@ -91,36 +99,6 @@ const expansionMap: Record<string, string[]> = {
   rust: ['rust', 'rustlang'],
 }
 
-function expandKeywords(keyword: string): string[] {
-  const norm = normalizeText(keyword)
-  const seen = new Set<string>()
-  const result: string[] = []
-  const tokens = norm.split(/\s+/).filter(Boolean)
-
-  const add = (w: string) => {
-    const nw = w.toLowerCase().trim()
-    if (nw && !seen.has(nw) && nw !== norm) {
-      seen.add(nw)
-      result.push(nw)
-    }
-  }
-
-  seen.add(norm)
-  result.push(norm)
-
-  for (const token of tokens) {
-    if (expansionMap[token]) {
-      for (const exp of expansionMap[token]) add(exp)
-    }
-  }
-
-  if (expansionMap[norm]) {
-    for (const exp of expansionMap[norm]) add(exp)
-  }
-
-  return result
-}
-
 const SPECIFIC_TERMS = new Set([
   'c++', 'c#', 'csharp', 'java', 'python', 'react', 'spring', 'spring boot',
   'vue', 'angular', 'nodejs', 'flutter', 'dart', 'kotlin', 'swift', 'go', 'rust',
@@ -137,10 +115,68 @@ function isSpecificQuery(query: string): boolean {
   return false
 }
 
+type QueryIntent = 'broad' | 'specific' | 'phrase'
+
+function getQueryIntent(query: string): QueryIntent {
+  if (isSpecificQuery(query)) return 'specific'
+  const tokens = normalizeText(query).split(/\s+/).filter(Boolean)
+  if (tokens.length >= 2) return 'phrase'
+  return 'broad'
+}
+
+function tokensInOrder(text: string, tokens: string[]): boolean {
+  let idx = 0
+  for (const t of tokens) {
+    const found = text.indexOf(t, idx)
+    if (found === -1) return false
+    idx = found + t.length
+  }
+  return true
+}
+
+function expandKeywords(keyword: string, intent: QueryIntent): string[] {
+  const norm = normalizeText(keyword)
+  const seen = new Set<string>()
+  const result: string[] = []
+  const tokens = norm.split(/\s+/).filter(Boolean)
+
+  const add = (w: string) => {
+    const nw = w.toLowerCase().trim()
+    if (nw && !seen.has(nw) && nw !== norm) {
+      seen.add(nw)
+      result.push(nw)
+    }
+  }
+
+  seen.add(norm)
+  result.push(norm)
+
+  if (intent === 'phrase') {
+    if (expansionMap[norm]) {
+      for (const exp of expansionMap[norm]) add(exp)
+    }
+    return result
+  }
+
+  for (const token of tokens) {
+    if (expansionMap[token]) {
+      for (const exp of expansionMap[token]) add(exp)
+    }
+  }
+  for (const [key, expansions] of Object.entries(expansionMap)) {
+    if (key.includes(' ') && norm.includes(key)) {
+      for (const exp of expansions) add(exp)
+    }
+  }
+  if (expansionMap[norm]) {
+    for (const exp of expansionMap[norm]) add(exp)
+  }
+  return result
+}
+
 function fieldMatchScore(text: string, keyword: string): number {
   const lower = text.toLowerCase()
   const kw = keyword.toLowerCase()
-
   if (/^[a-z0-9]+$/i.test(kw)) {
     return new RegExp(`\\b${escapeRegex(kw)}\\b`).test(lower) ? 1 : 0
   }
@@ -162,22 +198,107 @@ function exactFieldMatch(text: string, keyword: string): boolean {
   return text.toLowerCase() === keyword.toLowerCase()
 }
 
+const courseAliases: Record<string, string[]> = {
+  dsa: ['cấu trúc dữ liệu', 'giải thuật', 'data structures'],
+  ctdl: ['cấu trúc dữ liệu', 'giải thuật', 'data structures'],
+  'ctdl&gt': ['cấu trúc dữ liệu', 'giải thuật'],
+  oop: ['lập trình hướng đối tượng', 'hướng đối tượng', 'object oriented'],
+  lthdt: ['lập trình hướng đối tượng', 'hướng đối tượng'],
+  sql: ['cơ sở dữ liệu', 'database'],
+  csdl: ['cơ sở dữ liệu', 'database'],
+  database: ['cơ sở dữ liệu', 'database'],
+  os: ['hệ điều hành', 'operating system'],
+  hdh: ['hệ điều hành'],
+  web: ['công nghệ web', 'web'],
+  frontend: ['công nghệ web', 'frontend'],
+  backend: ['công nghệ web', 'backend'],
+  mobile: ['thiết bị di động', 'di động', 'mobile'],
+  android: ['thiết bị di động', 'android', 'di động'],
+  ios: ['thiết bị di động', 'ios', 'di động'],
+  dotnet: ['công nghệ .net', '.net'],
+  'c#': ['công nghệ .net', '.net', 'c#'],
+  csharp: ['công nghệ .net', '.net', 'c#'],
+  game: ['phát triển game', 'game'],
+  'mạng': ['mạng máy tính', 'network'],
+  network: ['mạng máy tính', 'network'],
+  'máy tính': ['mạng máy tính', 'máy tính'],
+  hci: ['giao tiếp người máy', 'hci'],
+  'xác suất': ['xác suất thống kê', 'xác suất'],
+  statistics: ['xác suất thống kê', 'statistics'],
+  'thống kê': ['xác suất thống kê', 'thống kê'],
+  se: ['công nghệ phần mềm', 'software engineering'],
+  'yêu cầu': ['phân tích yêu cầu', 'yêu cầu'],
+  requirement: ['phân tích yêu cầu', 'requirement'],
+  architecture: ['kiến trúc phần mềm', 'architecture'],
+  'kiến trúc': ['kiến trúc phần mềm', 'kiến trúc'],
+  'rời rạc': ['cấu trúc rời rạc', 'rời rạc'],
+  discrete: ['cấu trúc rời rạc', 'discrete'],
+  cloud: ['điện toán đám mây', 'cloud'],
+  'đám mây': ['điện toán đám mây', 'cloud'],
+  service: ['điện toán đám mây', 'service'],
+  elearning: ['e-learning', 'elearning'],
+  english: ['anh văn', 'english'],
+  'anh văn': ['anh văn', 'english'],
+  'kỹ năng': ['kỹ năng nghề nghiệp', 'kỹ năng'],
+  ss004: ['kỹ năng nghề nghiệp', 'ss004'],
+  'đồ án': ['đồ án', 'project'],
+  'do an': ['đồ án', 'project'],
+  project: ['đồ án', 'project'],
+  'khóa luận': ['khóa luận tốt nghiệp', 'khóa luận', 'thesis'],
+  thesis: ['khóa luận tốt nghiệp', 'thesis'],
+  'đặc tả': ['đặc tả hình thức', 'formal'],
+  formal: ['đặc tả hình thức', 'formal'],
+  'nhập môn': ['nhập môn', 'introduction'],
+  'cấu trúc': ['cấu trúc dữ liệu', 'cấu trúc rời rạc'],
+  'dữ liệu': ['cơ sở dữ liệu', 'cấu trúc dữ liệu'],
+}
+
 export type SearchCourseResult = CourseSummary & { _score: number; _matched: boolean }
 
 export type SearchRepoResult = RepoSummary & { _score: number; _matched: boolean }
 
-export function searchCourses(courses: CourseSummary[], query: string): SearchCourseResult[] {
+export function searchCourses(
+  courses: CourseSummary[],
+  query: string,
+  repos?: RepoSummary[],
+): SearchCourseResult[] {
   if (!query.trim()) return courses.map(c => ({ ...c, _score: 0, _matched: false }))
 
-  const keywords = expandKeywords(query)
-  const specific = isSpecificQuery(query)
-  const threshold = specific ? 30 : 15
+  const intent = getQueryIntent(query)
+  const keywords = expandKeywords(query, intent)
+  const threshold = intent === 'phrase' ? 80 : intent === 'specific' ? 30 : 15
   const results: SearchCourseResult[] = []
+  const normQuery = normalizeText(query)
+  const queryTokens = normQuery.split(/\s+/).filter(Boolean)
+
+  const aliasTargets = new Set<string>()
+  for (const [alias, targets] of Object.entries(courseAliases)) {
+    if (queryTokens.includes(alias) || normQuery.includes(alias)) {
+      for (const t of targets) aliasTargets.add(t)
+    }
+  }
+
+  const reposByCourse = new Map<number, RepoSummary[]>()
+  if (repos) {
+    for (const r of repos) {
+      if (r.courseId == null) continue
+      const list = reposByCourse.get(r.courseId) ?? []
+      list.push(r)
+      reposByCourse.set(r.courseId, list)
+    }
+  }
 
   for (const course of courses) {
     let score = 0
     const code = course.code.toLowerCase()
     const name = course.name.toLowerCase()
+
+    if (intent === 'phrase' && queryTokens.length >= 2) {
+      if (name.includes(normQuery)) score += 120
+      else if (code.includes(normQuery)) score += 120
+      if (tokensInOrder(name, queryTokens)) score += 100
+      if (course.description && tokensInOrder(course.description.toLowerCase(), queryTokens)) score += 60
+    }
 
     for (const kw of keywords) {
       if (exactFieldMatch(code, kw) || exactFieldMatch(name, kw)) score += 100
@@ -187,6 +308,34 @@ export function searchCourses(courses: CourseSummary[], query: string): SearchCo
     score += matchScoreAll(course.code, keywords) * 3
     score += matchScoreAll(course.name, keywords) * 3
     if (course.description) score += matchScoreAll(course.description, keywords)
+
+    if (aliasTargets.size > 0) {
+      for (const target of aliasTargets) {
+        if (name.includes(target)) score += 70
+      }
+    }
+
+    const courseRepos = reposByCourse.get(course.id)
+    if (courseRepos && courseRepos.length > 0 && score < 80) {
+      let repoScore = 0
+      for (const r of courseRepos) {
+        const rn = (r.displayName || '').toLowerCase()
+        const rl = (r.primaryLanguage || '').toLowerCase()
+        const rs = (r.techStacks ?? []).map(s => s.toLowerCase())
+        if (repos) {
+          const repoKeywords = expandKeywords(query, intent)
+          for (const kw of repoKeywords) {
+            if (fieldMatchScore(rn, kw)) repoScore += 3
+            else if (fieldMatchScore(rl, kw)) repoScore += 3
+            else if (rs.some(s => s.includes(kw) || kw.includes(s))) repoScore += 2
+            else if (r.readmeExcerpt && fieldMatchScore(r.readmeExcerpt, kw)) repoScore += 1
+            else if (r.fileTree && r.fileTree.toLowerCase().includes(kw)) repoScore += 1
+          }
+        }
+        if (repoScore >= 3) break
+      }
+      if (repoScore >= 3) score += 50
+    }
 
     if (score >= threshold) {
       results.push({ ...course, _score: score, _matched: true })
@@ -199,22 +348,34 @@ export function searchCourses(courses: CourseSummary[], query: string): SearchCo
 export function searchRepos(repos: RepoSummary[], query: string): SearchRepoResult[] {
   if (!query.trim()) return repos.map(r => ({ ...r, _score: 0, _matched: false }))
 
-  const keywords = expandKeywords(query)
-  const specific = isSpecificQuery(query)
-  const threshold = specific ? 60 : 35
+  const intent = getQueryIntent(query)
+  const keywords = expandKeywords(query, intent)
+  const threshold = intent === 'phrase' ? 80 : intent === 'specific' ? 60 : 40
   const results: SearchRepoResult[] = []
+  const normQuery = normalizeText(query)
+  const queryTokens = normQuery.split(/\s+/).filter(Boolean)
 
   for (const repo of repos) {
     let score = 0
     const name = (repo.displayName || '').toLowerCase()
     const desc = (repo.description || '').toLowerCase()
     const lang = (repo.primaryLanguage || '').toLowerCase()
-    const courseCode = (repo.courseCode || '').toLowerCase()
     const courseName = (repo.courseName || '').toLowerCase()
+    const courseCode = (repo.courseCode || '').toLowerCase()
+
+    if (intent === 'phrase' && queryTokens.length >= 2) {
+      if (name.includes(normQuery)) score += 120
+      if (tokensInOrder(name, queryTokens)) score += 100
+      if (desc.includes(normQuery)) score += 80
+      if (tokensInOrder(desc, queryTokens)) score += 60
+      if (courseName.includes(normQuery)) score += 60
+      if (courseCode.includes(normQuery)) score += 60
+    }
 
     for (const kw of keywords) {
       if (exactFieldMatch(name, kw)) score += 100
-      else if (exactFieldMatch(lang, kw)) score += 90
+      else if (exactFieldMatch(courseCode, kw)) score += 80
+      else if (exactFieldMatch(courseName, kw)) score += 60
       else if (name.includes(kw)) score += 50
       else if (lang.includes(kw)) score += 40
     }
@@ -227,18 +388,19 @@ export function searchRepos(repos: RepoSummary[], query: string): SearchRepoResu
     }
 
     for (const kw of keywords) {
-      if (fieldMatchScore(desc, kw)) score += 50
+      if (fieldMatchScore(desc, kw)) score += 65
     }
 
-    for (const kw of keywords) {
-      if (fieldMatchScore(courseCode, kw) || fieldMatchScore(courseName, kw)) score += 40
+    if (repo.readmeExcerpt) {
+      for (const kw of keywords) {
+        if (fieldMatchScore(repo.readmeExcerpt, kw)) score += 30
+      }
     }
 
-    if (score < threshold && repo.readmeExcerpt) {
-      score += matchScoreAll(repo.readmeExcerpt, keywords) * 15
-    }
-    if (score < threshold && repo.fileTree) {
-      score += matchScoreAll(repo.fileTree, keywords) * 10
+    if (repo.fileTree) {
+      for (const kw of keywords) {
+        if (fieldMatchScore(repo.fileTree, kw)) score += 20
+      }
     }
 
     if (score >= threshold) {

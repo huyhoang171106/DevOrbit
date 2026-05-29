@@ -35,7 +35,7 @@ This file maps product behavior to proof.
 | US-031 | Repo GitHub Context Fetch | pass | no | no | Maven + Vite build | implemented | `devorbit-api`: Maven `test`, Maven `package -DskipTests`; `devorbit-web`: `npm run test -- repoEvaluation`, `npm run build` |
 | US-032 | X-Ray Repo Evaluation | pass | no | no | Vite build | implemented | `devorbit-web`: `npm run test -- repoEvaluation repoAiAnalysis repoAnalysisService`; `npm run build` |
 | US-033 | Vietnamese Repository Overview UI | pass | no | no | Vite build | implemented | `devorbit-web`: `npm run test -- repoEvaluation repoAiAnalysis repoAnalysisService`; `npm run build` |
-| US-034 | Repo Last Activity | partial | no | no | Maven package + Vite build | implemented | `devorbit-api`: Maven `package '-Dmaven.test.skip=true'` passed; Maven `test` blocked at testCompile; `devorbit-web`: `npm run test -- repoEvaluation repoAiAnalysis repoAnalysisService RepoDetailPage`, `npm run build`; GitHub API manual check on `bitcoin-core/HWI` |
+| US-034 | Repo Last Activity | partial | no | no | Maven package + Vite build | implemented | `devorbit-api`: Maven `package '-Dmaven.test.skip=true'` passed; Maven `test` blocked at testCompile after exposing commits fallback issue; `devorbit-web`: `npm run test -- repoEvaluation repoAiAnalysis repoAnalysisService`, `npm run build`; manual GitHub check currently rate-limited |
 
 ## Evidence Rules
 

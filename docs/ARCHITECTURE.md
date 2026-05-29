@@ -270,6 +270,7 @@ erDiagram
     string topics
     string ai_summary
     string ai_advice
+    string last_pushed_at
     boolean active
   }
   RepoCandidate {
@@ -281,6 +282,7 @@ erDiagram
     string topics
     string language
     string status "PENDING | APPROVED | REJECTED"
+    string last_pushed_at
     string assigned_reviewer
   }
   LearningRoadmap {
@@ -351,12 +353,14 @@ flowchart LR
     fetch["Fetch repos via GitHub Search API"]
     topics["Read repo topics"]
     readme["Fetch README excerpt"]
+    tree["Fetch compact file tree"]
+    activity["Fetch latest commit date"]
     save["Save as RepoCandidate (PENDING)"]
     create["Create GithubRepo (active)"]
     ai["Generate AI summary & advice"]
   end
 
-  scan --> fetch --> topics --> readme --> save
+    scan --> fetch --> topics --> readme --> tree --> activity --> save
   review --> approve --> create --> ai
   review --> reject["Mark REJECTED"]
 ```

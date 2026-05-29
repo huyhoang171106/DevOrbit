@@ -5,6 +5,7 @@ import { ParticleNetwork } from './ParticleNetwork'
 import { Cube, Compass } from '@phosphor-icons/react'
 import { ScrollProgressIndicator } from '../motion'
 import { navLinks } from './navigation'
+import { AiChatWidget } from './student/AiChatWidget'
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation()
@@ -188,6 +189,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </footer>
       )}
+
+      {!location.pathname.startsWith('/admin') && <AiChatWidget />}
     </div>
   )
 }

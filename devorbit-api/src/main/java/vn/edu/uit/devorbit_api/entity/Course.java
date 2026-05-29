@@ -150,4 +150,19 @@ public class Course {
 
     @Column(name = "previous_mh")
     private String previousMH;
+
+    // =====================================================================
+    // SYLLABUS FIELDS
+    // =====================================================================
+
+    @Column(name = "learning_objectives", columnDefinition = "TEXT")
+    private String learningObjectives;
+
+    @Column(name = "grading_criteria", columnDefinition = "TEXT")
+    private String gradingCriteria;
+
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    @Column(name = "topics")
+    private com.fasterxml.jackson.databind.JsonNode topics;
 }
+

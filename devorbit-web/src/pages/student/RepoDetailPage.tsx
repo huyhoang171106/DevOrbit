@@ -21,6 +21,8 @@ type GithubCommitResponse = Array<{
   } | null
 }>
 
+const LAST_PUSHED_AT_CACHE_PREFIX = 'devorbit:lastPushedAt:'
+
 export function RepoDetailPage() {
   const { repoId } = useParams<{ repoId: string }>()
   const navigate = useNavigate()
@@ -240,7 +242,14 @@ export function RepoDetailPage() {
 }
 
 export async function hydrateLastPushedAt(repo: RepoSummary): Promise<RepoSummary> {
-  if (repo.lastPushedAt) return repo
+  if (repo.lastPushedAt) {
+    writeCachedLastPushedAt(repo, repo.lastPushedAt)
+    return repo
+  }
+
+  const cachedLastPushedAt = readCachedLastPushedAt(repo)
+  if (cachedLastPushedAt) return { ...repo, lastPushedAt: cachedLastPushedAt }
+
   const slug = parseGithubSlug(repo.githubUrl)
   if (!slug) return repo
 
@@ -250,7 +259,9 @@ export async function hydrateLastPushedAt(repo: RepoSummary): Promise<RepoSummar
     )
     const latestCommitDate = await fetchLatestGithubCommitDate(slug.owner, slug.name, metadata.default_branch).catch(() => null)
     const lastPushedAt = latestCommitDate || metadata.pushed_at || metadata.updated_at || null
-    return lastPushedAt ? { ...repo, lastPushedAt } : repo
+    if (!lastPushedAt) return repo
+    writeCachedLastPushedAt(repo, lastPushedAt)
+    return { ...repo, lastPushedAt }
   } catch {
     return repo
   }
@@ -282,4 +293,30 @@ export function parseGithubSlug(url: string): { owner: string; name: string } | 
     owner: match[1],
     name: match[2].replace(/\.git$/i, ''),
   }
+}
+
+function readCachedLastPushedAt(repo: RepoSummary): string | null {
+  try {
+    const value = window.localStorage.getItem(lastPushedAtCacheKey(repo))
+    return isValidDateString(value) ? value : null
+  } catch {
+    return null
+  }
+}
+
+function writeCachedLastPushedAt(repo: RepoSummary, value: string): void {
+  if (!isValidDateString(value)) return
+  try {
+    window.localStorage.setItem(lastPushedAtCacheKey(repo), value)
+  } catch {
+    // Browser storage can be disabled; API/DB data remains the source of truth.
+  }
+}
+
+function lastPushedAtCacheKey(repo: RepoSummary): string {
+  return `${LAST_PUSHED_AT_CACHE_PREFIX}${repo.id}:${repo.githubUrl}`
+}
+
+function isValidDateString(value: string | null | undefined): value is string {
+  return Boolean(value && !Number.isNaN(new Date(value).getTime()))
 }

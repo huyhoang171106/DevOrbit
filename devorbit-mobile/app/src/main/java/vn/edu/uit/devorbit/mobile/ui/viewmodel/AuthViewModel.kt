@@ -135,4 +135,12 @@ class AuthViewModel @Inject constructor(
     fun switchToLogin() {
         _loginState.value = _loginState.value.copy(error = null)
     }
+
+    fun logout() {
+        viewModelScope.launch {
+            authRepository.logout()
+            _loginState.value = AuthUiState(isLoggedIn = false)
+            _registerState.value = RegisterUiState()
+        }
+    }
 }

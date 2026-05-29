@@ -21,6 +21,7 @@ const AdminRelationshipsPage = lazy(() => import('./pages/admin/AdminRelationshi
 const AdminNotesPage = lazy(() => import('./pages/admin/AdminNotesPage').then(m => ({ default: m.AdminNotesPage })))
 const AdminPhotoboothFramesPage = lazy(() => import('./pages/admin/AdminPhotoboothFramesPage').then(m => ({ default: m.AdminPhotoboothFramesPage })))
 const GalaxyPage = lazy(() => import('./pages/student/knowledge-graph/GalaxyPage'))
+const AiTutorPage = lazy(() => import('./pages/student/AiTutorPage').then(m => ({ default: m.AiTutorPage })))
 
 function PageFallback() {
   return (
@@ -48,6 +49,7 @@ export function AppRoutes() {
       <Route path="/student/bookmarks" element={<Suspense fallback={<PageFallback />}><StudentBookmarksPage /></Suspense>} />
       <Route path="/photobooth" element={<Suspense fallback={<PageFallback />}><PhotoboothPage /></Suspense>} />
       <Route path="/gpa-calculator" element={<Suspense fallback={<PageFallback />}><GpaCalculatorPage /></Suspense>} />
+      <Route path="/ai-tutor" element={<Suspense fallback={<PageFallback />}><AiTutorPage /></Suspense>} />
       <Route path="/admin/login" element={<Suspense fallback={<PageFallback />}><LoginPage /></Suspense>} />
       <Route path="/admin" element={<Suspense fallback={<PageFallback />}><AdminDashboardPage /></Suspense>} />
       <Route path="/admin/courses" element={<Suspense fallback={<PageFallback />}><AdminCoursesPage /></Suspense>} />

@@ -321,8 +321,9 @@ export function HomePage() {
           >
             {/* AI Tutor Card - wide */}
             <motion.div
+              onClick={() => navigate('/ai-tutor')}
               variants={fadeUp}
-              className="md:col-span-2 orbit-card-glow p-10 md:p-12 relative overflow-hidden group"
+              className="md:col-span-2 orbit-card-glow p-10 md:p-12 relative overflow-hidden group cursor-pointer"
             >
               <div className="absolute top-0 right-0 w-64 h-64 bg-orbit-accent/5 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2 group-hover:bg-orbit-accent/10 transition-all duration-1000" />
               <div className="relative">

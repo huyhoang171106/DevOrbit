@@ -20,7 +20,7 @@ DevOrbit provides a public student-facing GPA calculator that estimates 10-point
 
 - A new `/gpa-calculator` route renders independently from existing student pages.
 - The GPA calculator screen uses the shared DevOrbit student-page background atmosphere instead of a flat page background.
-- Students can enter course name, credits, and grade on the 10-point scale.
+- Students can enter course name, positive integer credits, and grade on the 10-point scale.
 - Students can add and remove course rows.
 - Students can duplicate a row, clear all rows, add five blank rows quickly, and reset to the default two-row template.
 - Calculator draft rows, mode, semester, GPA inputs, and goal what-if grades are saved in browser storage only when students explicitly choose `Lưu bản nháp`.
@@ -43,7 +43,7 @@ DevOrbit provides a public student-facing GPA calculator that estimates 10-point
 - The calculator shows current-term credits, weighted semester GPA on the 10-point scale, academic classification, and projected cumulative GPA when cumulative mode is active.
 - The calculator does not show or convert to the 4-point scale.
 - Invalid or zero-credit rows do not break the calculation and show guidance when no valid credits exist.
-- Invalid rows show row-level reasons for missing credits, invalid credits, missing grades, and grades outside the 0-10 scale.
+- Invalid rows show row-level reasons for missing credits, non-integer or otherwise invalid credits, missing grades, and grades outside the 0-10 scale.
 - The summary panel shows how many invalid rows are ignored.
 
 ## Design Notes
@@ -52,14 +52,14 @@ DevOrbit provides a public student-facing GPA calculator that estimates 10-point
 - Queries: public course catalogue query for semester presets.
 - API: `GET /api/courses` for client-side preset loading.
 - Tables: none.
-- Domain rules: client-side calculator using weighted 10-point average by credits; cumulative estimate uses `(current GPA * completed credits + semester GPA * semester credits) / (completed credits + semester credits)`; GPA goal planning uses `(target GPA * (completed credits + semester credits) - current GPA * completed credits) / semester credits`; per-course targets initially use the same required term GPA capped to the 0-10 scale; goal what-if uses projected per-course grades on the 0-10 scale, weighted by course credits, and reports remaining average from `(required term GPA * term credits - projected weighted points) / remaining credits`; semester presets include only courses with the effective semester matching the selected term and `credits > 0`. Effective semester comes from the saved learning roadmap map when present, otherwise from the course catalogue.
+- Domain rules: client-side calculator using weighted 10-point average by positive integer credits; cumulative estimate uses `(current GPA * completed credits + semester GPA * semester credits) / (completed credits + semester credits)`; GPA goal planning uses `(target GPA * (completed credits + semester credits) - current GPA * completed credits) / semester credits`; per-course targets initially use the same required term GPA capped to the 0-10 scale; goal what-if uses projected per-course grades on the 0-10 scale, weighted by course credits, and reports remaining average from `(required term GPA * term credits - projected weighted points) / remaining credits`; semester presets include only courses with the effective semester matching the selected term and `credits > 0`. Effective semester comes from the saved learning roadmap map when present, otherwise from the course catalogue.
 - UI surfaces: `devorbit-web/src/pages/student/GpaCalculatorPage.tsx`, route `/gpa-calculator`.
 
 ## Validation
 
 | Layer | Expected proof |
 | --- | --- |
-| Unit | Vitest render tests for weighted 10-point GPA calculation, row add/remove, validation guidance, row-level validation reasons, ignored-row count, quick row actions, explicit localStorage draft save/restore/dismiss/corrupt handling including goal what-if grades, visible draft clearing without default rewrite, visible student-page background atmosphere, no 4-point output, semester preset stats, replacement and merge loading, saved learning roadmap assignment precedence, cumulative GPA estimate, goal GPA reverse calculation, infeasible goals, already-above-target goals, per-course target rows, goal what-if projections, and route rendering |
+| Unit | Vitest render tests for weighted 10-point GPA calculation, integer-only course credit entry, row add/remove, validation guidance, row-level validation reasons, ignored-row count, quick row actions, explicit localStorage draft save/restore/dismiss/corrupt handling including goal what-if grades, visible draft clearing without default rewrite, visible student-page background atmosphere, no 4-point output, semester preset stats, replacement and merge loading, saved learning roadmap assignment precedence, cumulative GPA estimate, goal GPA reverse calculation, infeasible goals, already-above-target goals, per-course target rows, goal what-if projections, and route rendering |
 | Integration | Not required; preset uses existing public course catalogue endpoint without changing backend contract |
 | E2E | Not required for this static route slice |
 | Platform | Vite production build |
@@ -83,3 +83,4 @@ No harness changes required.
 - Added row-level validation reasons, ignored-row summary notice, duplicate row, clear all, add five rows, and reset default quick actions.
 - Replaced browser-local draft autosave with explicit save, restore, dismiss, corrupt draft fallback, and visible saved-draft clearing.
 - Aligned the GPA calculator background with the shared course-list atmosphere using `SectionTransition` and `ParallaxLayer`.
+- Restricted manual course credit entry to positive integers only; decimal credit values are ignored by the row input handler and rejected by validation for restored draft data.

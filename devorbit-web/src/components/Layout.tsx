@@ -4,6 +4,7 @@ import { motion, AnimatePresence, useScroll, useTransform, LayoutGroup } from 'f
 import { ParticleNetwork } from './ParticleNetwork'
 import { Cube, Graph, Compass, BookOpen, Camera } from '@phosphor-icons/react'
 import { ScrollProgressIndicator } from '../motion'
+import { AiChatWidget } from './student/AiChatWidget'
 
 const navLinks = [
   { to: '/courses', label: 'Môn Học', icon: BookOpen },
@@ -193,6 +194,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </footer>
       )}
+
+      {!location.pathname.startsWith('/admin') && <AiChatWidget />}
     </div>
   )
 }

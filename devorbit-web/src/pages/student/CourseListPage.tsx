@@ -210,15 +210,19 @@ export function CourseListPage() {
                   } else {
                     pageNum = page - 3 + i
                   }
+                  
+                  const isCurrent = pageNum === page
+                  const isNear = Math.abs(pageNum - page) <= 1
+                  
                   return (
                     <button
                       key={pageNum}
                       onClick={() => setPage(pageNum)}
                       className={`px-4 py-3 rounded-xl text-[12px] font-bold transition-all ${
-                        pageNum === page
+                        isCurrent
                           ? 'bg-orbit-accent text-white shadow-glow'
                           : 'bg-orbit-surface border border-orbit-border text-orbit-text-muted hover:text-orbit-text'
-                      }`}
+                      } ${!isCurrent && !isNear ? 'hidden sm:inline-block' : 'inline-block'}`}
                     >
                       {pageNum + 1}
                     </button>

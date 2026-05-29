@@ -14,6 +14,106 @@
     "ast_hash": "a8c5df2e98e5c051701ec7c5c82430cb",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\package.json": {
+    "mtime": 1779294540.0212104,
+    "ast_hash": "e6ac6a1509ca56f546e80eafa1bf2da3",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\skills-lock.json": {
+    "mtime": 1779047724.4416983,
+    "ast_hash": "8029318b91d04fedab28cdb67df7a3d5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\motion-framer\\assets\\starter_motion\\package.json": {
+    "mtime": 1779047696.0167289,
+    "ast_hash": "2c076408aed41feafb7ee942d74b9fd7",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\motion-framer\\assets\\starter_motion\\vite.config.js": {
+    "mtime": 1779047696.020354,
+    "ast_hash": "9ec6d225366923caed367230ea5efdc8",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\motion-framer\\assets\\starter_motion\\src\\App.jsx": {
+    "mtime": 1779047696.0178766,
+    "ast_hash": "1ce98a2a6b82f7fc394b92c9ea2138be",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\motion-framer\\assets\\starter_motion\\src\\main.jsx": {
+    "mtime": 1779047696.0188842,
+    "ast_hash": "312c539f1a6e5d7d85cd5e4f54cc1e5e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\motion-framer\\assets\\starter_motion\\src\\components\\DraggableBox.jsx": {
+    "mtime": 1779047696.0178766,
+    "ast_hash": "03638094380f7c5b14e759ae0723bbc3",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\motion-framer\\assets\\starter_motion\\src\\components\\HoverCard.jsx": {
+    "mtime": 1779047696.0188842,
+    "ast_hash": "371f9b6cbadc27df788db7f7305975ff",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\motion-framer\\assets\\starter_motion\\src\\components\\StaggerList.jsx": {
+    "mtime": 1779047696.0188842,
+    "ast_hash": "dae9c73e6f4273264b6952a114492a68",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\motion-framer\\scripts\\animation_generator.py": {
+    "mtime": 1779047696.020354,
+    "ast_hash": "89202d0e3598a028d70be7b8ec9a3164",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\motion-framer\\scripts\\variant_builder.py": {
+    "mtime": 1779047696.0213573,
+    "ast_hash": "409aa5037aa4dfaff91bec89c043f8b9",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\react-three-fiber\\assets\\starter_r3f\\package.json": {
+    "mtime": 1779047681.8478775,
+    "ast_hash": "e3440e49e94e5387e86a8aebbd9e657a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\react-three-fiber\\assets\\starter_r3f\\vite.config.js": {
+    "mtime": 1779047681.8520558,
+    "ast_hash": "2dcf8dce27786680b1069334768efb5a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\react-three-fiber\\assets\\starter_r3f\\src\\App.jsx": {
+    "mtime": 1779047681.8488767,
+    "ast_hash": "1480a7693a742a90cb6b8f7147de440c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\react-three-fiber\\assets\\starter_r3f\\src\\Experience.jsx": {
+    "mtime": 1779047681.8488767,
+    "ast_hash": "3536dcf39d3576b38d4884a07bbb3c06",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\react-three-fiber\\assets\\starter_r3f\\src\\main.jsx": {
+    "mtime": 1779047681.8510358,
+    "ast_hash": "312c539f1a6e5d7d85cd5e4f54cc1e5e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\react-three-fiber\\assets\\starter_r3f\\src\\components\\Box.jsx": {
+    "mtime": 1779047681.849876,
+    "ast_hash": "fa3277ab8d5b39826d6a1925a4fee9ec",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\react-three-fiber\\assets\\starter_r3f\\src\\components\\Sphere.jsx": {
+    "mtime": 1779047681.8510358,
+    "ast_hash": "860bbe5400f30878af37f563c94f7b40",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\react-three-fiber\\scripts\\component_generator.py": {
+    "mtime": 1779047681.8534446,
+    "ast_hash": "42e880b11623a1db7fffa7fb59b8b102",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\react-three-fiber\\scripts\\scene_setup.py": {
+    "mtime": 1779047681.8534446,
+    "ast_hash": "80b5b7e2a0d0e4abb96163573c927f76",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\.atl\\.skill-registry.cache.json": {
     "mtime": 1778665519.9501464,
     "ast_hash": "72be60c303ff6c4f049130bb10b50d20",
@@ -54,9 +154,109 @@
     "ast_hash": "8c6d4737dd263125a4d41d42c48bcdef",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\.codebase-wiki\\sources\\git-commits\\src-git-commits-4dc469bcf2e791-809ef460.json": {
+    "mtime": 1779293779.69709,
+    "ast_hash": "2447953c58f794df90884193f0953820",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.codegraph\\config.json": {
+    "mtime": 1779290836.546862,
+    "ast_hash": "6732e08b441217b2d9f92d9a5d38f187",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\.codex\\hooks.json": {
     "mtime": 1778870204.5468738,
     "ast_hash": "250a74ef6dc381c4613e54a1fbf29f78",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\motion-framer\\assets\\starter_motion\\package.json": {
+    "mtime": 1779047696.0167289,
+    "ast_hash": "2c076408aed41feafb7ee942d74b9fd7",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\motion-framer\\assets\\starter_motion\\vite.config.js": {
+    "mtime": 1779047696.020354,
+    "ast_hash": "9ec6d225366923caed367230ea5efdc8",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\motion-framer\\assets\\starter_motion\\src\\App.jsx": {
+    "mtime": 1779047696.0178766,
+    "ast_hash": "1ce98a2a6b82f7fc394b92c9ea2138be",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\motion-framer\\assets\\starter_motion\\src\\main.jsx": {
+    "mtime": 1779047696.0188842,
+    "ast_hash": "312c539f1a6e5d7d85cd5e4f54cc1e5e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\motion-framer\\assets\\starter_motion\\src\\components\\DraggableBox.jsx": {
+    "mtime": 1779047696.0178766,
+    "ast_hash": "03638094380f7c5b14e759ae0723bbc3",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\motion-framer\\assets\\starter_motion\\src\\components\\HoverCard.jsx": {
+    "mtime": 1779047696.0188842,
+    "ast_hash": "371f9b6cbadc27df788db7f7305975ff",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\motion-framer\\assets\\starter_motion\\src\\components\\StaggerList.jsx": {
+    "mtime": 1779047696.0188842,
+    "ast_hash": "dae9c73e6f4273264b6952a114492a68",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\motion-framer\\scripts\\animation_generator.py": {
+    "mtime": 1779047696.020354,
+    "ast_hash": "89202d0e3598a028d70be7b8ec9a3164",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\motion-framer\\scripts\\variant_builder.py": {
+    "mtime": 1779047696.0213573,
+    "ast_hash": "409aa5037aa4dfaff91bec89c043f8b9",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\react-three-fiber\\assets\\starter_r3f\\package.json": {
+    "mtime": 1779047681.8478775,
+    "ast_hash": "e3440e49e94e5387e86a8aebbd9e657a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\react-three-fiber\\assets\\starter_r3f\\vite.config.js": {
+    "mtime": 1779047681.8520558,
+    "ast_hash": "2dcf8dce27786680b1069334768efb5a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\react-three-fiber\\assets\\starter_r3f\\src\\App.jsx": {
+    "mtime": 1779047681.8488767,
+    "ast_hash": "1480a7693a742a90cb6b8f7147de440c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\react-three-fiber\\assets\\starter_r3f\\src\\Experience.jsx": {
+    "mtime": 1779047681.8488767,
+    "ast_hash": "3536dcf39d3576b38d4884a07bbb3c06",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\react-three-fiber\\assets\\starter_r3f\\src\\main.jsx": {
+    "mtime": 1779047681.8510358,
+    "ast_hash": "312c539f1a6e5d7d85cd5e4f54cc1e5e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\react-three-fiber\\assets\\starter_r3f\\src\\components\\Box.jsx": {
+    "mtime": 1779047681.849876,
+    "ast_hash": "fa3277ab8d5b39826d6a1925a4fee9ec",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\react-three-fiber\\assets\\starter_r3f\\src\\components\\Sphere.jsx": {
+    "mtime": 1779047681.8510358,
+    "ast_hash": "860bbe5400f30878af37f563c94f7b40",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\react-three-fiber\\scripts\\component_generator.py": {
+    "mtime": 1779047681.8534446,
+    "ast_hash": "42e880b11623a1db7fffa7fb59b8b102",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\react-three-fiber\\scripts\\scene_setup.py": {
+    "mtime": 1779047681.8534446,
+    "ast_hash": "80b5b7e2a0d0e4abb96163573c927f76",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\.cortex\\project-profile.json": {
@@ -119,6 +319,36 @@
     "ast_hash": "3a8ae89bc33bdcb82168f82f33406113",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\.pi\\gsd\\hooks\\gsd-check-update.js": {
+    "mtime": 1779297382.116599,
+    "ast_hash": "0a9ce26cff80ebaeb6b8e3b28e3f4aca",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\hooks\\gsd-context-monitor.js": {
+    "mtime": 1779297382.3162155,
+    "ast_hash": "c1a16c39b242c902377575d719e98ff3",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\hooks\\gsd-prompt-guard.js": {
+    "mtime": 1779297382.3795707,
+    "ast_hash": "04e0a0ec9bcf1078fde1246d95657825",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\hooks\\gsd-statusline.js": {
+    "mtime": 1779297382.465898,
+    "ast_hash": "80936aa570290396730472e93c78e7e5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\hooks\\gsd-workflow-guard.js": {
+    "mtime": 1779297382.550535,
+    "ast_hash": "f0bc574c59f16374887ae80d1d077276",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\config.json": {
+    "mtime": 1779297382.9273624,
+    "ast_hash": "ab5e14d7e787fb8cfb2ee5f186edd7c9",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\.roo\\mcp.json": {
     "mtime": 1778492727.5334086,
     "ast_hash": "4f8c287c96e12e14eac9339e0f1755a8",
@@ -149,34 +379,49 @@
     "ast_hash": "b155a7c4fae5aa5d89c44b13dd8eedd9",
     "semantic_hash": ""
   },
-  "D:\\temp\\devorbit\\devorbit-api\\scratch\\apply_sql.js": {
-    "mtime": 1778604427.6302445,
-    "ast_hash": "99b3567c505fc2df8d51c15cf37adca0",
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\hooks\\gsd-check-update.js": {
+    "mtime": 1779297382.116599,
+    "ast_hash": "0a9ce26cff80ebaeb6b8e3b28e3f4aca",
     "semantic_hash": ""
   },
-  "D:\\temp\\devorbit\\devorbit-api\\scratch\\DbCheck.java": {
-    "mtime": 1778602516.8193781,
-    "ast_hash": "ffc6e5c516e24e450e5ba5325f5512af",
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\hooks\\gsd-context-monitor.js": {
+    "mtime": 1779297382.3162155,
+    "ast_hash": "c1a16c39b242c902377575d719e98ff3",
     "semantic_hash": ""
   },
-  "D:\\temp\\devorbit\\devorbit-api\\scratch\\filtered_repos.sql": {
-    "mtime": 1778604322.7733047,
-    "ast_hash": "2d29260971d05e33b300629809b019cf",
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\hooks\\gsd-prompt-guard.js": {
+    "mtime": 1779297382.3795707,
+    "ast_hash": "04e0a0ec9bcf1078fde1246d95657825",
     "semantic_hash": ""
   },
-  "D:\\temp\\devorbit\\devorbit-api\\scratch\\filtered_repos_safe.sql": {
-    "mtime": 1778604408.4494205,
-    "ast_hash": "548c6d9ba5721abf2d4c207b10abad23",
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\hooks\\gsd-statusline.js": {
+    "mtime": 1779297382.465898,
+    "ast_hash": "80936aa570290396730472e93c78e7e5",
     "semantic_hash": ""
   },
-  "D:\\temp\\devorbit\\devorbit-api\\scratch\\fix_sql.js": {
-    "mtime": 1778604400.2949479,
-    "ast_hash": "2993bc290c03a87be6c22b8a74f09b75",
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\hooks\\gsd-workflow-guard.js": {
+    "mtime": 1779297382.550535,
+    "ast_hash": "f0bc574c59f16374887ae80d1d077276",
     "semantic_hash": ""
   },
-  "D:\\temp\\devorbit\\devorbit-api\\scratch\\insert_repos.js": {
-    "mtime": 1778604312.3268209,
-    "ast_hash": "f1d55fc9a2ae5fda3c87e9b395a0be14",
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\config.json": {
+    "mtime": 1779297382.9273624,
+    "ast_hash": "ab5e14d7e787fb8cfb2ee5f186edd7c9",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.understand-anything\\fingerprints.json": {
+    "mtime": 1779435590.6595976,
+    "ast_hash": "0e76815e388495cc2ddb5c02e7987bd6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.understand-anything\\knowledge-graph.json": {
+    "mtime": 1779435589.3686562,
+    "ast_hash": "443e6908a54fe6ee7fac336bfc881e40",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.understand-anything\\meta.json": {
+    "mtime": 1779435590.6750655,
+    "ast_hash": "280c93b8561b2d251f5d4b141185ff28",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\scripts\\backup_supabase.py": {
@@ -195,13 +440,13 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\config\\GithubClientConfig.java": {
-    "mtime": 1778847954.6821322,
-    "ast_hash": "78483689cd0fc5747dc9c47899334df8",
+    "mtime": 1779365055.8635654,
+    "ast_hash": "ac57b43e90b05600055266ca9fe37f9b",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\config\\GithubProperties.java": {
-    "mtime": 1777476274.5430017,
-    "ast_hash": "e6435746a8eb84b4f17537ca7541f5ad",
+    "mtime": 1779365051.3500926,
+    "ast_hash": "2451c11a149b0b274f1f55fc042a4be7",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\config\\JacksonConfig.java": {
@@ -220,8 +465,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\config\\OpenApiConfig.java": {
-    "mtime": 1777518382.8343215,
-    "ast_hash": "c600000cee9c4c5a48584ab1883455ab",
+    "mtime": 1779365061.7569914,
+    "ast_hash": "9bbef2f1d762dee432d9dcfbfc7921ec",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\config\\RepoCandidateDataInitializer.java": {
@@ -230,8 +475,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\config\\SecurityConfig.java": {
-    "mtime": 1778774619.4148378,
-    "ast_hash": "447eb514bcca2b22e2a9537dfe1a81f6",
+    "mtime": 1779365204.4352827,
+    "ast_hash": "c301d609dea983fed7c132e8dba21bd8",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\constant\\CurriculumConstants.java": {
@@ -240,103 +485,93 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\AdminAuthController.java": {
-    "mtime": 1777544062.8321583,
-    "ast_hash": "878c9364dece8f32593ab1f5d9c32ca1",
+    "mtime": 1779295554.468598,
+    "ast_hash": "4f1828e0fdf27c06142b476b6c37251b",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\AdminCourseController.java": {
-    "mtime": 1778847954.7682948,
-    "ast_hash": "1fcb9c76db12a7d8c3bb9298b104a1e4",
+    "mtime": 1779364810.896323,
+    "ast_hash": "8e53bb8edce865b4aee2e4647b44ed1c",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\AdminCourseRelationshipController.java": {
-    "mtime": 1778847954.790759,
-    "ast_hash": "7a075828f8d584e351b0deef32e029fa",
+    "mtime": 1779295680.3033078,
+    "ast_hash": "c60f5fa2fffddb8b5c933ef110b20ace",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\AdminCourseResourceController.java": {
-    "mtime": 1778847954.8106802,
-    "ast_hash": "7abceca71e469e80329592c6f24a1e53",
+    "mtime": 1779295680.3053029,
+    "ast_hash": "4e380e2b60ab93a9eba518ead31b13db",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\AdminGithubController.java": {
-    "mtime": 1778847954.8313048,
-    "ast_hash": "1d7611e80b576f24605cf91822dae4dd",
+    "mtime": 1779295600.690797,
+    "ast_hash": "ec1d9a6db333da03488101ac6525cd43",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\AdminNoteController.java": {
-    "mtime": 1778847954.8572948,
-    "ast_hash": "2a42da53ab5dea8f24fc70ece9add628",
+    "mtime": 1779364815.8038242,
+    "ast_hash": "7f5f5f221d54746474753d005f0e348e",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\AdminRepoCandidateController.java": {
-    "mtime": 1778847954.8789704,
-    "ast_hash": "9d8df46f02fa769040388b7227e697b5",
+    "mtime": 1779364821.070336,
+    "ast_hash": "c6b8ecd3de704f4b681f4d32c4d28f4b",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\AdminRepoController.java": {
-    "mtime": 1778847954.898305,
-    "ast_hash": "7c73a2d3e75dffbddd60676a0a695aad",
+    "mtime": 1779364833.5109048,
+    "ast_hash": "ac1b2230c2c352ec38c18fc887ef9f81",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\AdminRoadmapController.java": {
-    "mtime": 1778847954.919844,
-    "ast_hash": "5d2c54152facca6545b11cee41abffb0",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\FileUploadController.java": {
-    "mtime": 1778847954.9381738,
-    "ast_hash": "e8fde5532fb18d3b15c7af440b75a6b7",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\HealthController.java": {
-    "mtime": 1777520005.1157806,
-    "ast_hash": "a0a6713eb566215668baaf449835be32",
+    "mtime": 1779364824.2129993,
+    "ast_hash": "15add250d6278ef0c8110eb6d41b3e23",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\PhotoboothFrameController.java": {
-    "mtime": 1778772384.9597337,
-    "ast_hash": "42ed274523b3bfb4d9662ab71b026634",
+    "mtime": 1779295572.18447,
+    "ast_hash": "5a6cf999acbfd4f74d0a47fe18b5a770",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\PublicAiController.java": {
-    "mtime": 1778765866.6772342,
-    "ast_hash": "e7ab2bfe1edd47f86889da0c9f7494b8",
+    "mtime": 1779295622.527073,
+    "ast_hash": "62fbfa4872c2e92f8792deda83a679e5",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\PublicCourseController.java": {
-    "mtime": 1778847954.9623241,
-    "ast_hash": "5afffb73f79f36669ff20e5b0ae68e94",
+    "mtime": 1779295000.9614432,
+    "ast_hash": "63bde75b496a89d275181d8321fa7453",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\PublicCourseRelationshipController.java": {
-    "mtime": 1778847954.9824154,
-    "ast_hash": "986429e48a542d6581f6969ec1ec7d83",
+    "mtime": 1779295658.9410655,
+    "ast_hash": "76fa115da08c663342a79543137f4dc7",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\PublicDiscoveryController.java": {
-    "mtime": 1778847955.002788,
-    "ast_hash": "45527151abb4f300a3adef15aea292da",
+    "mtime": 1779295658.9430854,
+    "ast_hash": "e2e34082608d84de803f46ce1d8242f4",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\PublicRepoController.java": {
-    "mtime": 1779039117.468216,
-    "ast_hash": "b333dd6687f4c21373fbee8608ed1b31",
+    "mtime": 1779295572.186568,
+    "ast_hash": "5c4278f17482afad210cb6db673aa4a2",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\PublicTechStackController.java": {
-    "mtime": 1777547963.477356,
-    "ast_hash": "db64b83e44dbb6541ee82e92692baf28",
+    "mtime": 1779364806.4570043,
+    "ast_hash": "dd639c100731ba5ad3a639ac16486ca8",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\StudentAuthController.java": {
-    "mtime": 1778766646.0450723,
-    "ast_hash": "407cf3d815b506e1d157128e385c3be1",
+    "mtime": 1779364802.8712845,
+    "ast_hash": "4b3714941c388c60d5fb2b5577e6f5dc",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\controller\\StudentBookmarkController.java": {
-    "mtime": 1778779159.6254694,
-    "ast_hash": "e9124ea0a8cb6fcdfd4ca66b879dbd49",
+    "mtime": 1779295600.6917887,
+    "ast_hash": "36fe0fcb146369d929080fdaffd3e481",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\PhotoboothFrameDTO.java": {
@@ -345,8 +580,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\admin\\AdminCourseUpsertRequest.java": {
-    "mtime": 1778847955.040514,
-    "ast_hash": "45f0f32d601b23bbb956120319d3ede6",
+    "mtime": 1779295750.9036682,
+    "ast_hash": "42ab2de51dd1b98f3aedeccbeecdbdb9",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\admin\\ApprovedRepoUpdateRequest.java": {
@@ -395,13 +630,13 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\admin\\LoginRequest.java": {
-    "mtime": 1777544053.7952209,
-    "ast_hash": "8ca5257baa5137676678b34c519a4539",
+    "mtime": 1779295750.8966713,
+    "ast_hash": "c3fb6d867cbc97bc198187bc66cd64ab",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\admin\\LoginResponse.java": {
-    "mtime": 1777474899.3005147,
-    "ast_hash": "7eceaa6585c51f26ad5a98b6b93b500c",
+    "mtime": 1779295750.8966713,
+    "ast_hash": "3f96dfe988b5f90d11d8793d913b227c",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\admin\\NoteCodeSnippetResponse.java": {
@@ -432,11 +667,6 @@
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\admin\\ReviewerStatsResponse.java": {
     "mtime": 1778847955.3574815,
     "ast_hash": "8b1019865fc600778d64767ddb75a2cf",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\admin\\ReviewNoteRequest.java": {
-    "mtime": 1778847955.3321817,
-    "ast_hash": "28ba752332e02c88bd99bb56025b1165",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\admin\\RoadmapRequest.java": {
@@ -480,18 +710,18 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\publicapi\\AiResponse.java": {
-    "mtime": 1778847955.5232582,
-    "ast_hash": "bfb87a075344da5afe11d67ed3f85b88",
+    "mtime": 1779295717.410719,
+    "ast_hash": "160950790a8f1386147ab8c9971045e2",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\publicapi\\CourseDetailResponse.java": {
-    "mtime": 1778847955.5537012,
-    "ast_hash": "e901c05af09088b36edfc915f07b1ff1",
+    "mtime": 1779295717.409716,
+    "ast_hash": "06296e4cb40e9abc3e537badcc993cfa",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\publicapi\\CourseSummaryResponse.java": {
-    "mtime": 1778847955.5809946,
-    "ast_hash": "bb44edd4af400f233a99524c1eba2f14",
+    "mtime": 1779295689.8937318,
+    "ast_hash": "e8e79fb41d0e5c8b61aea2a64927fd61",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\publicapi\\ElectiveGroupResponse.java": {
@@ -500,13 +730,13 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\publicapi\\KnowledgeGraphResponse.java": {
-    "mtime": 1778847955.627497,
-    "ast_hash": "efb9c60c3ba17feb65c2ca344e8d4460",
+    "mtime": 1779295717.410719,
+    "ast_hash": "0bdad6667865e5452b45f7a27e6fdf47",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\publicapi\\RepoSummaryResponse.java": {
-    "mtime": 1778847955.6496782,
-    "ast_hash": "74efbad5f55282b60e582697359787b9",
+    "mtime": 1779295717.4047139,
+    "ast_hash": "f70aa8610e9953f689b7869467340728",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\publicapi\\RoadmapGenerationRequest.java": {
@@ -520,8 +750,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\publicapi\\TechStackResponse.java": {
-    "mtime": 1777473714.0571022,
-    "ast_hash": "f3f555c16b134e6211f62cf172faf631",
+    "mtime": 1779295722.6732957,
+    "ast_hash": "cfb45af3501e56c2984c88fb504382fc",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\dto\\student\\StudentAuthResponse.java": {
@@ -555,113 +785,108 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\AdminUser.java": {
-    "mtime": 1777473528.6446152,
-    "ast_hash": "ff5fe0155c3f9610f4bd4f3413701512",
+    "mtime": 1779295351.7166147,
+    "ast_hash": "0013cfc0f535da3ca4c3cf644c204560",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\Course.java": {
-    "mtime": 1778847955.802386,
-    "ast_hash": "f9be77a719686a8fbcb7267f27ac8184",
+    "mtime": 1779294937.123229,
+    "ast_hash": "ff8c16b95e971be8318eac6b85335fb2",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\CourseArticle.java": {
-    "mtime": 1778847955.828991,
-    "ast_hash": "3dcb8039ec9a2668b3b81919ccf23532",
+    "mtime": 1779295872.2875535,
+    "ast_hash": "3a03e4eeddd40e9215b726a1a53579d3",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\CourseRelationship.java": {
-    "mtime": 1778847955.8764353,
-    "ast_hash": "cbd5265e562576c23af94c7dd6f2f079",
+    "mtime": 1779295390.9527533,
+    "ast_hash": "9c0cf7d2ecd3b7880d1d1d47c76307d9",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\CourseRelationType.java": {
-    "mtime": 1778847955.856134,
-    "ast_hash": "1d74797d1cf2927a058bd6685ca81c62",
+    "mtime": 1779295491.4874232,
+    "ast_hash": "7d97a12ea59cab3494602961a5087769",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\CourseTutorial.java": {
-    "mtime": 1778847955.8933196,
-    "ast_hash": "f524d7e4690a4eb8bd8231597b12edaf",
+    "mtime": 1779295379.3384087,
+    "ast_hash": "20e8d723e035c7304011a51c430f1f7b",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\CourseYoutubePlaylist.java": {
-    "mtime": 1778847955.9131427,
-    "ast_hash": "1742a0f37db2b2b852a46d761eea015b",
+    "mtime": 1779295418.0708973,
+    "ast_hash": "133ae92527fe25862d03d325a6bd5265",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\GithubRepo.java": {
-    "mtime": 1778847955.9346614,
-    "ast_hash": "790c4d94db094a8476a764c3b9e9f339",
+    "mtime": 1779295456.1070738,
+    "ast_hash": "76fda28f557a7be808a5edef25bb8ee8",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\LearningRoadmap.java": {
-    "mtime": 1778847955.9539547,
-    "ast_hash": "5d04262a981dcaa4f9f3f127a8528934",
+    "mtime": 1779295438.1628547,
+    "ast_hash": "348beef10ead30a67d49c0dc9cbbdb1c",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\Note.java": {
-    "mtime": 1778847955.973861,
-    "ast_hash": "f0178990d335a7db6e7f4d08d01f63e2",
+    "mtime": 1779295418.1685064,
+    "ast_hash": "f315d3dac45fd37d8af851981d5f764f",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\NoteCodeSnippet.java": {
-    "mtime": 1778847955.9940314,
-    "ast_hash": "c4ae356274916d480abf4fa3c267a45f",
+    "mtime": 1779295418.1645112,
+    "ast_hash": "d48deaee2032d66542e33f52fe87207f",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\NoteTargetType.java": {
-    "mtime": 1778847956.012981,
-    "ast_hash": "7be59178d79e0e9f7bc62b88dd52a1b6",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\Otp.java": {
-    "mtime": 1778847956.040835,
-    "ast_hash": "0866d6006865a727f03889304d7761f5",
+    "mtime": 1779295491.486427,
+    "ast_hash": "0eac1b000d8d16d45dca447392daa9a5",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\PhotoboothFrame.java": {
-    "mtime": 1778847956.065881,
-    "ast_hash": "c90a53bfdb9a82d2f3bb41c670887ee1",
+    "mtime": 1779295515.3610487,
+    "ast_hash": "6a211593874583271fe253c0db8ee2db",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\RepoCandidate.java": {
-    "mtime": 1778847956.0843558,
-    "ast_hash": "50227af0d3beee2348add7eae9038685",
+    "mtime": 1779295515.360044,
+    "ast_hash": "9a534d234b0dd3712aca59c58a5512cc",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\RepoCandidateStatus.java": {
-    "mtime": 1777473134.2384062,
-    "ast_hash": "defc25e1b7e80f19bfd538f8bf58f42d",
+    "mtime": 1779295491.486427,
+    "ast_hash": "feb8a0d3936eea933a0cf8b963ff7254",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\RoadmapItem.java": {
-    "mtime": 1778847956.103546,
-    "ast_hash": "7b71fedb6696fe3b1c8188ce03e3ff7f",
+    "mtime": 1779295438.1636517,
+    "ast_hash": "21ca42f3a07ad885e30a9368779ec3f0",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\RoadmapItemTargetType.java": {
-    "mtime": 1778847956.1244092,
-    "ast_hash": "23b492d117dff54eaa45a25e5363daf0",
+    "mtime": 1779295491.4874232,
+    "ast_hash": "d4883f9bca29141a585267544cf97a1b",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\RoadmapPhase.java": {
-    "mtime": 1778847956.1533463,
-    "ast_hash": "e1bd51af46e5d25e0848a297b9bd1d76",
+    "mtime": 1779295438.1628547,
+    "ast_hash": "5da20b968b438ac31dcc71b0b9e6dc33",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\StudentBookmark.java": {
-    "mtime": 1778779146.6911418,
-    "ast_hash": "12566ba9cba2795664d7490569985cd4",
+    "mtime": 1779295479.9104207,
+    "ast_hash": "051b0c14b0c085d9d4594f558d9b6cdc",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\StudentUser.java": {
-    "mtime": 1777526473.137862,
-    "ast_hash": "0bdf8a48f8d93c96eae9441a62d3f7ee",
+    "mtime": 1779295456.1140797,
+    "ast_hash": "57f47a6cbf63981be5e7067653a142ec",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\entity\\TechStack.java": {
-    "mtime": 1777547909.965413,
-    "ast_hash": "96b2a6588db583a20a4a9b4602dd07a8",
+    "mtime": 1779295479.909412,
+    "ast_hash": "7d12d46a242123d33ac71d81c3daa568",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\event\\RelationshipChangedEvent.java": {
@@ -705,8 +930,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\repository\\CourseRepository.java": {
-    "mtime": 1778847956.2955909,
-    "ast_hash": "67732c3837f66c363ed3cf6d3da19e25",
+    "mtime": 1779294952.4480317,
+    "ast_hash": "6032a90d014a2115a15a1223fe82c640",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\repository\\CourseTutorialRepository.java": {
@@ -737,11 +962,6 @@
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\repository\\NoteRepository.java": {
     "mtime": 1778847956.4297965,
     "ast_hash": "8f02f590766ddb6e13afbbba0207c6ce",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\repository\\OtpRepository.java": {
-    "mtime": 1778847956.4500246,
-    "ast_hash": "70365780ae5ab03f52cedf4ef9bffc0f",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\repository\\PhotoboothFrameRepository.java": {
@@ -785,8 +1005,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\AdminNoteService.java": {
-    "mtime": 1778847956.554361,
-    "ast_hash": "25c4f78e9b3ffaf7b44440f1b42e864d",
+    "mtime": 1779364841.8116808,
+    "ast_hash": "ecc791e1f2c0759d1a70f2b585ec9f14",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\AiService.java": {
@@ -795,8 +1015,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\CourseArticleService.java": {
-    "mtime": 1778847956.5797067,
-    "ast_hash": "60daa5a0b855692707cbc49af157a5e6",
+    "mtime": 1779291594.2851672,
+    "ast_hash": "ec4ce96cf5b9ecffbc950efab2cd10fd",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\CourseRelationshipService.java": {
@@ -805,23 +1025,18 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\CourseService.java": {
-    "mtime": 1778847956.625393,
-    "ast_hash": "9d77edb6192a525e0666786be1479547",
+    "mtime": 1779364845.0507288,
+    "ast_hash": "771be588e58f46945842323be79f0fb9",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\CourseTutorialService.java": {
-    "mtime": 1778847956.641857,
-    "ast_hash": "ed5ac97367c6e711ed69b5eb678ade62",
+    "mtime": 1779291594.2726326,
+    "ast_hash": "cb1fede5622a51ddf0ff9c4057dd2731",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\CourseYoutubePlaylistService.java": {
-    "mtime": 1778847956.6585598,
-    "ast_hash": "6c70c4b1354d8a8a82b50b659d4cde9e",
-    "semantic_hash": ""
-  },
-  "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\EmailService.java": {
-    "mtime": 1778847956.6800742,
-    "ast_hash": "9e6d741030173609ef43d699ad7ecdbf",
+    "mtime": 1779291594.2851672,
+    "ast_hash": "74faa30b9f7a817e9acc03a211ba26b4",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\GithubRepoService.java": {
@@ -845,8 +1060,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\LearningRoadmapService.java": {
-    "mtime": 1778847956.777138,
-    "ast_hash": "0ab68019565c98624e62d0b5bcedf3bc",
+    "mtime": 1779291623.338555,
+    "ast_hash": "7440b5174c8881a5a50393a436c30179",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\PhotoboothFrameService.java": {
@@ -855,8 +1070,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\RepoCandidateService.java": {
-    "mtime": 1778847956.8005965,
-    "ast_hash": "f60f412ada832e302ac70821befac194",
+    "mtime": 1779364848.3378966,
+    "ast_hash": "772050b5b8896db471af3ad648f96d7b",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\StudentAuthService.java": {
@@ -875,8 +1090,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\TechStackService.java": {
-    "mtime": 1777547963.4726899,
-    "ast_hash": "8847d2eb4db5f12c2c24fbf9a0665a25",
+    "mtime": 1779364837.3045623,
+    "ast_hash": "71461ea5be979ad5990fd48ea8ae0c8a",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\service\\ai\\AdviceGenerator.java": {
@@ -995,8 +1210,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\build.gradle.kts": {
-    "mtime": 1778873660.6938329,
-    "ast_hash": "6ae4f81e58c2cdc3697bd8f63a724a15",
+    "mtime": 1779365228.0760548,
+    "ast_hash": "a707cecc52a1e77be53f7b8b36916738",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-mobile\\app\\src\\main\\java\\vn\\edu\\uit\\devorbit\\mobile\\DevOrbitApplication.kt": {
@@ -1855,8 +2070,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\package.json": {
-    "mtime": 1779042395.9627202,
-    "ast_hash": "ff1fdcd84919d8dd5b0d9940eded5812",
+    "mtime": 1779047849.5942123,
+    "ast_hash": "9ada5d509357d4e43415594d7fe7b48e",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\postcss.config.js": {
@@ -1865,8 +2080,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\tailwind.config.js": {
-    "mtime": 1778847960.3953683,
-    "ast_hash": "a2b1da53bd66c6ddd5146c5f51e0e7a6",
+    "mtime": 1779048152.832937,
+    "ast_hash": "62f5bb570481e8e8878aaf2ee4a6f3a6",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\tsconfig.json": {
@@ -1880,8 +2095,38 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\vite.config.ts": {
-    "mtime": 1779042189.6726258,
-    "ast_hash": "8eb35039765e447c10237fafd2e70a7c",
+    "mtime": 1779365084.86552,
+    "ast_hash": "0318325c48b0ea9a3d783970a8adb19e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\hooks\\gsd-check-update.js": {
+    "mtime": 1779297382.116599,
+    "ast_hash": "0a9ce26cff80ebaeb6b8e3b28e3f4aca",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\hooks\\gsd-context-monitor.js": {
+    "mtime": 1779297382.3162155,
+    "ast_hash": "c1a16c39b242c902377575d719e98ff3",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\hooks\\gsd-prompt-guard.js": {
+    "mtime": 1779297382.3795707,
+    "ast_hash": "04e0a0ec9bcf1078fde1246d95657825",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\hooks\\gsd-statusline.js": {
+    "mtime": 1779297382.465898,
+    "ast_hash": "80936aa570290396730472e93c78e7e5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\hooks\\gsd-workflow-guard.js": {
+    "mtime": 1779297382.550535,
+    "ast_hash": "f0bc574c59f16374887ae80d1d077276",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\config.json": {
+    "mtime": 1779297382.9273624,
+    "ast_hash": "ab5e14d7e787fb8cfb2ee5f186edd7c9",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\.vercel\\project.json": {
@@ -1890,8 +2135,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\App.tsx": {
-    "mtime": 1778441188.4022593,
-    "ast_hash": "bf528db36493aef4a0e1f95d9d51d87a",
+    "mtime": 1779047385.909454,
+    "ast_hash": "8c4447d3f3f280163a90635bca2d7bf7",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\main.tsx": {
@@ -1900,8 +2145,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\router.tsx": {
-    "mtime": 1778847960.3422933,
-    "ast_hash": "6a0cf8a029fb5bb7a0872209a9358bda",
+    "mtime": 1779049655.7412128,
+    "ast_hash": "7e468e8251c67b145dac033b93901d44",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\vite-env.d.ts": {
@@ -1915,13 +2160,18 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\Layout.tsx": {
-    "mtime": 1779044153.6591232,
-    "ast_hash": "ab3ba2e5edea9f39d698b5405bc6f5d6",
+    "mtime": 1779050807.4356942,
+    "ast_hash": "725af207209abb39c6d4e45c6fe65e40",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\ParticleNetwork.tsx": {
-    "mtime": 1778873660.6998692,
-    "ast_hash": "2759fec27cba9b83321b33dd546c5784",
+    "mtime": 1779049397.551047,
+    "ast_hash": "b2d99a269e28f0d6d97c955164644576",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\components\\SmoothScrollProvider.tsx": {
+    "mtime": 1779049088.1136398,
+    "ast_hash": "384efb3b27862eb4c7710f3c0b435e16",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\ThemeToggle.tsx": {
@@ -2040,33 +2290,38 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\student\\curriculumData.ts": {
-    "mtime": 1778762144.662266,
-    "ast_hash": "725694bc954bb441a3ae28fcd03f241a",
+    "mtime": 1779048887.7226782,
+    "ast_hash": "af65d65956dba02f4181150972fe05aa",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\student\\DiscoveryFeed.tsx": {
-    "mtime": 1779044159.9610846,
-    "ast_hash": "13207faeeec0010d603dd23c55a52d30",
+    "mtime": 1779049303.3728733,
+    "ast_hash": "6a354c650449aa7e0688a2d1cc93b7ef",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\student\\FileTreeExplorer.tsx": {
-    "mtime": 1778863220.102386,
-    "ast_hash": "74cd6d51ca4bfb258f378a6208e07798",
+    "mtime": 1779051045.7774947,
+    "ast_hash": "82183e090828d1ca08edfde847370fdc",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\components\\student\\HeroStoryCarousel.tsx": {
+    "mtime": 1779051045.7774947,
+    "ast_hash": "14900ab13f59a3f50ed96685c7385656",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\student\\KanbanBoard.tsx": {
-    "mtime": 1779044192.927965,
-    "ast_hash": "2250768c2e93356d89ca72cdf1f96ff9",
+    "mtime": 1779050229.9056096,
+    "ast_hash": "926660a7c0c17fb7b6c1e8e0eac8acea",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\student\\KanbanCard.tsx": {
-    "mtime": 1778847959.842626,
-    "ast_hash": "8ded5ebb44b684668958c8e9d5444ce3",
+    "mtime": 1779050031.44306,
+    "ast_hash": "61ba4ad1209e2b16c2d1a45a534c9bf0",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\student\\KanbanColumn.tsx": {
-    "mtime": 1778847959.8654299,
-    "ast_hash": "e010b92bcc29ddb4686f7d52ac4e0672",
+    "mtime": 1779050019.1889195,
+    "ast_hash": "10c090413f7d1d3ed08c9db9c7032b9e",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\student\\RepoCard.tsx": {
@@ -2077,6 +2332,16 @@
   "D:\\temp\\devorbit\\devorbit-web\\src\\components\\student\\RepoFilterBar.tsx": {
     "mtime": 1778752825.7115386,
     "ast_hash": "88bf8f43c11c96c5bb519fe803d5f8ec",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\components\\ui\\EnhancedCard.tsx": {
+    "mtime": 1779048071.6922474,
+    "ast_hash": "1770dd56bbddd478a127f22891df1a68",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\components\\ui\\MagneticButton.tsx": {
+    "mtime": 1779048071.691239,
+    "ast_hash": "e5c3bb5c1906aa3026d45db52e3a84ab",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\hooks\\useAiGraphQuery.ts": {
@@ -2119,6 +2384,11 @@
     "ast_hash": "51a205dc2df370dfb28b5b3a0c93bad3",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\lib\\config.ts": {
+    "mtime": 1779365166.486807,
+    "ast_hash": "e3996a03f821282cf35d41661576cf49",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\devorbit-web\\src\\lib\\contentCleaner.ts": {
     "mtime": 1779046995.2378776,
     "ast_hash": "f6a000cbfab3770d47b97842899b95b1",
@@ -2152,6 +2422,76 @@
   "D:\\temp\\devorbit\\devorbit-web\\src\\lib\\frames\\frameService.ts": {
     "mtime": 1778847959.942398,
     "ast_hash": "34a9274ae5c347c28e2948cdd63f51bf",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\index.ts": {
+    "mtime": 1779047916.464561,
+    "ast_hash": "c6216cb2553650feab32a5c867e0217d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\effects\\useGsapScroll.ts": {
+    "mtime": 1779047916.464561,
+    "ast_hash": "132b223519173d151fcd0ea708dd06c2",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\hooks\\useDeviceTilt.ts": {
+    "mtime": 1779048370.4679413,
+    "ast_hash": "543079e38a6088cd8451aa0273d4f810",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\hooks\\useMagneticHover.ts": {
+    "mtime": 1779047882.8594952,
+    "ast_hash": "cc772370beedf5bf5ae7eb0529bbf723",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\hooks\\useParallaxScroll.ts": {
+    "mtime": 1779049183.101631,
+    "ast_hash": "644d086331f89a736f5e526d3546b040",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\hooks\\useReducedMotion.ts": {
+    "mtime": 1779048361.0962484,
+    "ast_hash": "dced0325642571386edacd166cfe00c6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\hooks\\useScrollProgress.ts": {
+    "mtime": 1779049177.9093535,
+    "ast_hash": "3fef8b88d95231c7e15c90a13c965d54",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\primitives\\BlurReveal.tsx": {
+    "mtime": 1779047901.9027662,
+    "ast_hash": "72267c471bf478174d3b922552624454",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\primitives\\CinematicTextReveal.tsx": {
+    "mtime": 1779047901.9027662,
+    "ast_hash": "a84af82d322659cca6b23e8dfe4650f6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\primitives\\FadeReveal.tsx": {
+    "mtime": 1779047901.9027662,
+    "ast_hash": "c1bea1f90c85fa285b23be6cab05bf9b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\primitives\\ParallaxLayer.tsx": {
+    "mtime": 1779047901.9065888,
+    "ast_hash": "d4a1fe007b29e78ce554b7dd0e32db6c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\primitives\\ScrollProgressIndicator.tsx": {
+    "mtime": 1779047916.464561,
+    "ast_hash": "fea5fbbd2df9d4dbc901283efdc0294c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\primitives\\SectionTransition.tsx": {
+    "mtime": 1779047901.9027662,
+    "ast_hash": "d2b80197517b58ec05d820f691b73d56",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\motion\\primitives\\StaggerReveal.tsx": {
+    "mtime": 1779047901.9027662,
+    "ast_hash": "5faf3304ece73c4ae1faf9b3ad20e66f",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\pages\\admin\\AdminCandidatesPage.tsx": {
@@ -2210,18 +2550,18 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\pages\\student\\CourseDetailPage.tsx": {
-    "mtime": 1779044168.684219,
-    "ast_hash": "1541fcd0f7147834d7fd74988c9b825b",
+    "mtime": 1779048387.912392,
+    "ast_hash": "61f6c38443260847c72b363ca2f2ba65",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\pages\\student\\CourseListPage.tsx": {
-    "mtime": 1779044218.3911853,
-    "ast_hash": "ee45cd8e7c0bbf0ae2ee793ac5fd8ff8",
+    "mtime": 1779048468.8503382,
+    "ast_hash": "01a1b3f8a409a1e0225efd1115f212a0",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\pages\\student\\HomePage.tsx": {
-    "mtime": 1779044218.3891542,
-    "ast_hash": "6ab00678bbeafe19efe675d6695ae7b2",
+    "mtime": 1779050671.0969746,
+    "ast_hash": "89c9b3580a8a52114d6c07a6dd9ac6dd",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\pages\\student\\KnowledgeGraphPage.tsx": {
@@ -2230,8 +2570,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\pages\\student\\PhotoboothPage.tsx": {
-    "mtime": 1778873660.701864,
-    "ast_hash": "4b547068bc25671b4aed425e89752c8e",
+    "mtime": 1779049509.1908662,
+    "ast_hash": "f8da713e6936594f9c7f7fa045db21de",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\pages\\student\\PhotographPage.tsx": {
@@ -2260,7 +2600,7 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\pages\\student\\knowledge-graph\\GalaxyPage.tsx": {
-    "mtime": 1779043862.0672834,
+    "mtime": 1779049237.193655,
     "ast_hash": "0cdceb5329c501699b174088dcaf91d1",
     "semantic_hash": ""
   },
@@ -2337,6 +2677,56 @@
   "D:\\temp\\devorbit\\devorbit-web\\src\\pages\\student\\knowledge-graph\\ui\\TimeTravelSlider.tsx": {
     "mtime": 1778873660.7079484,
     "ast_hash": "9267b95c4e67f2ce615934e9cbacd769",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\performance\\index.ts": {
+    "mtime": 1779049090.9033327,
+    "ast_hash": "403dc252dc8eb5b5ac65c00d034f0fb0",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\performance\\usePerformanceProfile.ts": {
+    "mtime": 1779051058.905375,
+    "ast_hash": "878700c801dac15670fa8666b203821c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\scenes\\AIPathways.tsx": {
+    "mtime": 1779048059.3596475,
+    "ast_hash": "9e13ddc7d7e76e572e3cc98e3b7c5d6b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\scenes\\AmbientBloom.tsx": {
+    "mtime": 1779051045.7774947,
+    "ast_hash": "ee4f4b6aed2c99e85cf233c88e16981c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\scenes\\CameraController.tsx": {
+    "mtime": 1779051045.7774947,
+    "ast_hash": "09b0aba31cb118259d4e413697eb5ce1",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\scenes\\FloatingParticles.tsx": {
+    "mtime": 1779049402.3030286,
+    "ast_hash": "ed1ad707b33c25a697a958d7c223f87c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\scenes\\index.ts": {
+    "mtime": 1779048032.9934702,
+    "ast_hash": "153290875fcf5f248edd3925960abfe7",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\scenes\\KnowledgeGalaxy.tsx": {
+    "mtime": 1779049149.599496,
+    "ast_hash": "4e2391400033db0d8967abf5232be359",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\scenes\\OrbitalNodes.tsx": {
+    "mtime": 1779049158.7736027,
+    "ast_hash": "eba0fedc8e76cb5fb670ad57f0a89998",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\src\\scenes\\SceneComposer.tsx": {
+    "mtime": 1779049399.8328536,
+    "ast_hash": "5851f7b6a64207d531930ff34e82b437",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\src\\types\\api.ts": {
@@ -15564,6 +15954,11 @@
     "ast_hash": "312a4d65ae621db657025ba111ad04f4",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\scripts\\generate-curriculum.mjs": {
+    "mtime": 1779048884.912053,
+    "ast_hash": "2870c2df93b9048a7716bbc053e98618",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\scripts\\review\\api.py": {
     "mtime": 1778847960.7075994,
     "ast_hash": "c91ace531fa3267656ba22c771a73188",
@@ -15635,8 +16030,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\AGENTS.md": {
-    "mtime": 1778875148.5520456,
-    "ast_hash": "0d33d8a0e141c7306e1d26e052951f63",
+    "mtime": 1779293775.3125868,
+    "ast_hash": "8737e729adda3df3112e87a9e4b7c390",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\daa.uit.edu.vn_content_cu-nhan-nganh-ky-thuat-phan-mem-ap-dung-tu-khoa-20-2025.2026-05-11T12_20_52.521Z.md": {
@@ -15650,8 +16045,8 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\docker-compose.yml": {
-    "mtime": 1778847941.939739,
-    "ast_hash": "d81276b0d48505e50c6ef53ad82aec23",
+    "mtime": 1779365201.071201,
+    "ast_hash": "6530dd908e53a852ef201394c603a27b",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\README.md": {
@@ -15874,9 +16269,14 @@
     "ast_hash": "32de1849f79c3c29af21cf62e1533688",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\.agents\\skills\\frontend-design\\LICENSE.txt": {
+    "mtime": 1779047707.7656572,
+    "ast_hash": "29256199be2a609aac596980ffc11996",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\.agents\\skills\\frontend-design\\SKILL.md": {
-    "mtime": 1778594981.5825083,
-    "ast_hash": "5c392562ec1cf5ffa6b9d2319375373f",
+    "mtime": 1779047707.7656572,
+    "ast_hash": "400c8b8231420f30b48aed0a6f37df9f",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\.agents\\skills\\full-output-enforcement\\SKILL.md": {
@@ -15904,6 +16304,31 @@
     "ast_hash": "32f8681f79a681d00a4b72ddce4415b1",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\.agents\\skills\\motion-framer\\SKILL.md": {
+    "mtime": 1779047696.0127192,
+    "ast_hash": "3f76211f2aa665fa4f1a99e5bd1c4106",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\motion-framer\\assets\\examples\\README.md": {
+    "mtime": 1779047696.015361,
+    "ast_hash": "ed17382176d85a1b0ddecea50e19c3b8",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\motion-framer\\assets\\starter_motion\\index.html": {
+    "mtime": 1779047696.0167289,
+    "ast_hash": "9a76c746ada273c1e381363b13397885",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\motion-framer\\assets\\starter_motion\\README.md": {
+    "mtime": 1779047696.015361,
+    "ast_hash": "0545e284298bd32678dc351858af625e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\motion-framer\\references\\api_reference.md": {
+    "mtime": 1779047696.020354,
+    "ast_hash": "fb987fd96885abe6009fc76ea8ad7f7f",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\.agents\\skills\\performance-analysis\\SKILL.md": {
     "mtime": 1778863984.5782337,
     "ast_hash": "087d29703697bf3df71e66e7dcab9537",
@@ -15922,6 +16347,31 @@
   "D:\\temp\\devorbit\\.agents\\skills\\planner\\SKILL.md": {
     "mtime": 1778323384.8029487,
     "ast_hash": "e8141aa23907b49a650263563e271b11",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\react-three-fiber\\SKILL.md": {
+    "mtime": 1779047681.8454542,
+    "ast_hash": "af376ef698b76fe3db61bea04eef0c76",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\react-three-fiber\\assets\\examples\\README.md": {
+    "mtime": 1779047681.846871,
+    "ast_hash": "cc3d198cbbb48e67bb135e616eecbae5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\react-three-fiber\\assets\\starter_r3f\\index.html": {
+    "mtime": 1779047681.8478775,
+    "ast_hash": "8db3a381587b36c2815946de2204145e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\react-three-fiber\\assets\\starter_r3f\\README.md": {
+    "mtime": 1779047681.846871,
+    "ast_hash": "a61bd3b3f6c4d38b7acc50273e45a4ec",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.agents\\skills\\react-three-fiber\\references\\api_reference.md": {
+    "mtime": 1779047681.8520558,
+    "ast_hash": "44d7ca218fc62dc5df6e59ddabd05520",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\.agents\\skills\\redesign-existing-projects\\SKILL.md": {
@@ -16004,6 +16454,71 @@
     "ast_hash": "9ba618bb478c9fe1efb360d255a25eba",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\.codebase-wiki\\INDEX.md": {
+    "mtime": 1779293779.696083,
+    "ast_hash": "5a8cdbdc88a6acdaaddace8e38d93ac2",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.codebase-wiki\\SCHEMA.md": {
+    "mtime": 1779293775.309595,
+    "ast_hash": "4c386daef18245bae4fd842df9c6d713",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.codebase-wiki\\entities\\mobile.md": {
+    "mtime": 1779293779.6880922,
+    "ast_hash": "f1424eb80b9eb9dbfce43714951b1807",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.codebase-wiki\\entities\\photobooth.md": {
+    "mtime": 1779293779.690085,
+    "ast_hash": "e660a94e14d94ba7f195a27eed577649",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.codebase-wiki\\entities\\root.md": {
+    "mtime": 1779293779.6721635,
+    "ast_hash": "8032a75d638b2db3794ecc35736a9f7e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.codebase-wiki\\entities\\ui.md": {
+    "mtime": 1779293779.6920846,
+    "ast_hash": "d0367cf1b8ae1593985d9fe11a298e30",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.codebase-wiki\\meta\\LOG.md": {
+    "mtime": 1779293779.69709,
+    "ast_hash": "91aa072fc1f9d501f46e7c7bb2652c63",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.codebase-wiki\\templates\\comparison.md": {
+    "mtime": 1779293775.3105931,
+    "ast_hash": "f32da074d7d367d33a7391d35d68bff7",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.codebase-wiki\\templates\\concept.md": {
+    "mtime": 1779293775.3105931,
+    "ast_hash": "ee59a905cd5810b2b396215ca69f13d5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.codebase-wiki\\templates\\decision.md": {
+    "mtime": 1779293775.3105931,
+    "ast_hash": "69b53416b75d24fa2290607939cb2875",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.codebase-wiki\\templates\\entity.md": {
+    "mtime": 1779293775.3105931,
+    "ast_hash": "6ea8231850611ec5ee99d976d862e39e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.codebase-wiki\\templates\\evolution.md": {
+    "mtime": 1779293775.3105931,
+    "ast_hash": "4dc015a2362610d22d4a36a1e7d7439c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.codebase-wiki\\templates\\query.md": {
+    "mtime": 1779293775.3105931,
+    "ast_hash": "ee1813ff9a19959b9fc3dd117c11d7fc",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\.codex\\instructions.md": {
     "mtime": 1778503742.2304273,
     "ast_hash": "07c8fb33e0e1ab000a2a3f8713401f5a",
@@ -16044,9 +16559,14 @@
     "ast_hash": "af34183dcdccaafb13ed30f31725aa11",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\frontend-design\\LICENSE.txt": {
+    "mtime": 1779047707.7656572,
+    "ast_hash": "29256199be2a609aac596980ffc11996",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\.commandcode\\skills\\frontend-design\\SKILL.md": {
-    "mtime": 1778594981.5825083,
-    "ast_hash": "5c392562ec1cf5ffa6b9d2319375373f",
+    "mtime": 1779047707.7656572,
+    "ast_hash": "400c8b8231420f30b48aed0a6f37df9f",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\.commandcode\\skills\\full-output-enforcement\\SKILL.md": {
@@ -16074,6 +16594,31 @@
     "ast_hash": "32f8681f79a681d00a4b72ddce4415b1",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\motion-framer\\SKILL.md": {
+    "mtime": 1779047696.0127192,
+    "ast_hash": "3f76211f2aa665fa4f1a99e5bd1c4106",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\motion-framer\\assets\\examples\\README.md": {
+    "mtime": 1779047696.015361,
+    "ast_hash": "ed17382176d85a1b0ddecea50e19c3b8",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\motion-framer\\assets\\starter_motion\\index.html": {
+    "mtime": 1779047696.0167289,
+    "ast_hash": "9a76c746ada273c1e381363b13397885",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\motion-framer\\assets\\starter_motion\\README.md": {
+    "mtime": 1779047696.015361,
+    "ast_hash": "0545e284298bd32678dc351858af625e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\motion-framer\\references\\api_reference.md": {
+    "mtime": 1779047696.020354,
+    "ast_hash": "fb987fd96885abe6009fc76ea8ad7f7f",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\.commandcode\\skills\\performance-analysis\\SKILL.md": {
     "mtime": 1778863984.5782337,
     "ast_hash": "087d29703697bf3df71e66e7dcab9537",
@@ -16082,6 +16627,31 @@
   "D:\\temp\\devorbit\\.commandcode\\skills\\performance-optimization\\SKILL.md": {
     "mtime": 1778764726.124353,
     "ast_hash": "aec75b3b8edb80f6dcf612143f354f2a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\react-three-fiber\\SKILL.md": {
+    "mtime": 1779047681.8454542,
+    "ast_hash": "af376ef698b76fe3db61bea04eef0c76",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\react-three-fiber\\assets\\examples\\README.md": {
+    "mtime": 1779047681.846871,
+    "ast_hash": "cc3d198cbbb48e67bb135e616eecbae5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\react-three-fiber\\assets\\starter_r3f\\index.html": {
+    "mtime": 1779047681.8478775,
+    "ast_hash": "8db3a381587b36c2815946de2204145e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\react-three-fiber\\assets\\starter_r3f\\README.md": {
+    "mtime": 1779047681.846871,
+    "ast_hash": "a61bd3b3f6c4d38b7acc50273e45a4ec",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.commandcode\\skills\\react-three-fiber\\references\\api_reference.md": {
+    "mtime": 1779047681.8520558,
+    "ast_hash": "44d7ca218fc62dc5df6e59ddabd05520",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\.commandcode\\skills\\redesign-existing-projects\\SKILL.md": {
@@ -16359,6 +16929,976 @@
     "ast_hash": "4833697fe7b4061f2fa4ba4328942d6a",
     "semantic_hash": ""
   },
+  "D:\\temp\\devorbit\\.pi\\gsd\\agents\\gsd-advisor-researcher.md": {
+    "mtime": 1779297389.6381643,
+    "ast_hash": "65be3b96bd61ef9378211e517f12ddd5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\agents\\gsd-assumptions-analyzer.md": {
+    "mtime": 1779297389.660647,
+    "ast_hash": "f93082f9ebbd162ee1be7a3dd8246691",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\agents\\gsd-codebase-mapper.md": {
+    "mtime": 1779297389.6771812,
+    "ast_hash": "4b148a0cdfbd94cdc7e13e1f1eef7fa5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\agents\\gsd-debugger.md": {
+    "mtime": 1779297389.717802,
+    "ast_hash": "987928fc5fda920e28da6a4d8d59bba2",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\agents\\gsd-executor.md": {
+    "mtime": 1779297389.7464724,
+    "ast_hash": "ade3f3ed357711a8b8686230b5c312fc",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\agents\\gsd-integration-checker.md": {
+    "mtime": 1779297389.7713974,
+    "ast_hash": "dcfea4cd0894613b3398c14b5f52f270",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\agents\\gsd-nyquist-auditor.md": {
+    "mtime": 1779297389.7882602,
+    "ast_hash": "50a90205e88b78b808f62b3e8d05f90c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\agents\\gsd-phase-researcher.md": {
+    "mtime": 1779297389.8083968,
+    "ast_hash": "4a62cb61e442f99267a0d8f368349cd5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\agents\\gsd-plan-checker.md": {
+    "mtime": 1779297389.8330905,
+    "ast_hash": "611b5d6dc2cf75c78807541fcf2df264",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\agents\\gsd-planner.md": {
+    "mtime": 1779297389.89291,
+    "ast_hash": "07c6d6ab25c5241323fdc6dc56477bce",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\agents\\gsd-project-researcher.md": {
+    "mtime": 1779297389.9140332,
+    "ast_hash": "dccd4b048d07835c3f900d1b14a7d89d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\agents\\gsd-research-synthesizer.md": {
+    "mtime": 1779297389.9329963,
+    "ast_hash": "97060615e532847106aee18ba190e7fa",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\agents\\gsd-roadmapper.md": {
+    "mtime": 1779297389.9505467,
+    "ast_hash": "2dc840638be5cd7c6f3a9602e39bc9e0",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\agents\\gsd-ui-auditor.md": {
+    "mtime": 1779297389.9711423,
+    "ast_hash": "554a2d837e59b3a9dadb0377b16ef903",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\agents\\gsd-ui-checker.md": {
+    "mtime": 1779297389.9872663,
+    "ast_hash": "b9aae05377ccf665fd3a9b1e605b0b5d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\agents\\gsd-ui-researcher.md": {
+    "mtime": 1779297390.0401008,
+    "ast_hash": "8dea478a998c35d4984051630859994b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\agents\\gsd-user-profiler.md": {
+    "mtime": 1779297390.0638678,
+    "ast_hash": "8e0665655f50a7f613317ad3f113b613",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\agents\\gsd-verifier.md": {
+    "mtime": 1779297390.100149,
+    "ast_hash": "3fc65c20b358898389ec9c5a11f8e87e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-add-backlog.md": {
+    "mtime": 1779297384.3267696,
+    "ast_hash": "0db536be23cd441b41b537540a2c772b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-add-phase.md": {
+    "mtime": 1779297384.3535025,
+    "ast_hash": "3b590ff36606475e8c2fd766e7502306",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-add-tests.md": {
+    "mtime": 1779297384.3861878,
+    "ast_hash": "b27fd245d8305679de74f1e0aff51441",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-add-todo.md": {
+    "mtime": 1779297384.403024,
+    "ast_hash": "1c3c174e232bf837e82b1cda4200d52a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-audit-milestone.md": {
+    "mtime": 1779297384.476036,
+    "ast_hash": "92c08d25eb6a6e05379ecd1f82ddd46b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-audit-uat.md": {
+    "mtime": 1779297384.483356,
+    "ast_hash": "08045260d59673c1099b92e09d6b2ba5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-autonomous.md": {
+    "mtime": 1779297384.4956539,
+    "ast_hash": "210255ccc63c294dbfc49a417193e9e4",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-check-todos.md": {
+    "mtime": 1779297384.5147686,
+    "ast_hash": "769b8c4373cc093685a285fc07880fc3",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-cleanup.md": {
+    "mtime": 1779297384.526927,
+    "ast_hash": "2830b5bc0e7b199f3ee913add9fe8256",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-complete-milestone.md": {
+    "mtime": 1779297384.5593352,
+    "ast_hash": "cf990af98c1b3189a1f46b0536eef5d0",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-debug.md": {
+    "mtime": 1779297384.5681815,
+    "ast_hash": "6d7915ae4131bbbeacdf7f6d509fbb96",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-discuss-milestone.md": {
+    "mtime": 1779297384.6325083,
+    "ast_hash": "91d71a408ed46e2f8f3221c76331a5bd",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-discuss-phase.md": {
+    "mtime": 1779297384.6435149,
+    "ast_hash": "d0c6286c62f3a4b6429da96f6a740907",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-do.md": {
+    "mtime": 1779297384.6543305,
+    "ast_hash": "735828c5cf35fcf810539977ea03ad9d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-execute-milestone.md": {
+    "mtime": 1779297384.6956625,
+    "ast_hash": "58a0ab3fe22688c1cb5543e33c9d0702",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-execute-phase.md": {
+    "mtime": 1779297384.7254949,
+    "ast_hash": "82e9e754330c81bc4958406223cf90a3",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-fast.md": {
+    "mtime": 1779297384.7667623,
+    "ast_hash": "904db840487b1a4e036e4d9672cc27d8",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-forensics.md": {
+    "mtime": 1779297384.7860248,
+    "ast_hash": "7af61bdf1576820dcb7b98282124e193",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-insert-phase.md": {
+    "mtime": 1779297384.8000271,
+    "ast_hash": "43d61cd2cecc0d3ada6edad37675bb33",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-join-discord.md": {
+    "mtime": 1779297384.8410153,
+    "ast_hash": "4e97277b9d2096cb17b9940b5fb6c9f5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-list-phase-assumptions.md": {
+    "mtime": 1779297384.8595984,
+    "ast_hash": "f8213af1730e9191fae99d673717b497",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-list-workspaces.md": {
+    "mtime": 1779297384.8685584,
+    "ast_hash": "71883071d4ff23283af8f5b71a64acb7",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-manager.md": {
+    "mtime": 1779297384.8879163,
+    "ast_hash": "b51a07a66fdac7a9f0238f912fbd056b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-map-codebase.md": {
+    "mtime": 1779297384.911045,
+    "ast_hash": "af8693454962c5c99c84a4e75f00a7dd",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-milestone-summary.md": {
+    "mtime": 1779297384.9252524,
+    "ast_hash": "2f31ee0bb51f5015ea7feea92c33319d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-new-milestone.md": {
+    "mtime": 1779297384.9414475,
+    "ast_hash": "da772c47676a745138e8b1a748f175b3",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-new-project.md": {
+    "mtime": 1779297384.9632244,
+    "ast_hash": "e85deab5ee050f939127260f4811d164",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-new-workspace.md": {
+    "mtime": 1779297384.9732203,
+    "ast_hash": "fe04744ff44485c0e8f38be3598f274c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-note.md": {
+    "mtime": 1779297385.0183878,
+    "ast_hash": "9346f42512d0a34db138ee2e48602ddd",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-pause-work.md": {
+    "mtime": 1779297385.0339234,
+    "ast_hash": "5e5f375411887c01b14e77694b932b2a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-plan-milestone-gaps.md": {
+    "mtime": 1779297385.0942655,
+    "ast_hash": "92670de09d88ae28ff0227a3865a45de",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-plan-milestone.md": {
+    "mtime": 1779297385.1041007,
+    "ast_hash": "876afc19a321ff3cfe487f44568d29b6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-plan-phase.md": {
+    "mtime": 1779297385.111103,
+    "ast_hash": "ae9ce9faae668cc11cb759e43772ae61",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-plant-seed.md": {
+    "mtime": 1779297385.1520514,
+    "ast_hash": "1ad26fbaaae47b143f5caa87dea24174",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-pr-branch.md": {
+    "mtime": 1779297385.1655798,
+    "ast_hash": "2a3cea51e9151c99722f34da8e3c353a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-profile-user.md": {
+    "mtime": 1779297385.173944,
+    "ast_hash": "2f4e4bea12508750c656ab146b1f6136",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-quick.md": {
+    "mtime": 1779297385.1936462,
+    "ast_hash": "351aa96181cf34d8728fdf1a3e20e903",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-reapply-patches.md": {
+    "mtime": 1779297385.2102757,
+    "ast_hash": "149cbdf7f836e5a074ea3fe7472a0ff0",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-remove-phase.md": {
+    "mtime": 1779297385.2212894,
+    "ast_hash": "1d3ffc90b29e6318b9caa7f333b091f8",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-remove-workspace.md": {
+    "mtime": 1779297385.254005,
+    "ast_hash": "1cd8e580c5f359feb83826e8cb16c9e8",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-research-phase.md": {
+    "mtime": 1779297385.2636473,
+    "ast_hash": "b6894dadfb6fb559c937ea26e29b8164",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-resume-work.md": {
+    "mtime": 1779297385.2895937,
+    "ast_hash": "a3539210cfb80c3f63630d90550d31ab",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-review-backlog.md": {
+    "mtime": 1779297385.3143983,
+    "ast_hash": "276662fc410b938b071440424f0c599a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-review.md": {
+    "mtime": 1779297385.3229663,
+    "ast_hash": "16f2aaef183b0c5f893ba17087b83475",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-session-report.md": {
+    "mtime": 1779297385.350139,
+    "ast_hash": "bf3cde7236307af5cb38f98cf2897743",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-set-profile.md": {
+    "mtime": 1779297385.3654237,
+    "ast_hash": "e5882d6b62677d158c3b7ded4be2b5d1",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-settings.md": {
+    "mtime": 1779297385.3839262,
+    "ast_hash": "5e931bf6c558c92f7cee38ff302b0669",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-ship.md": {
+    "mtime": 1779297385.387982,
+    "ast_hash": "0a677a1753e2e40a691afefab690eea0",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-thread.md": {
+    "mtime": 1779297385.395486,
+    "ast_hash": "601ebd7ddd8353bf89703d03c4b529d9",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-ui-phase.md": {
+    "mtime": 1779297385.4383552,
+    "ast_hash": "23e0353d845a35a09a237d53cfe79011",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-ui-review.md": {
+    "mtime": 1779297385.482715,
+    "ast_hash": "e16371bf3bcb1643c3fa8c9ae0e8268a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-validate-phase.md": {
+    "mtime": 1779297385.552283,
+    "ast_hash": "fc07f44ebf8f533370524845ddb31cc4",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-verify-work.md": {
+    "mtime": 1779297385.6197505,
+    "ast_hash": "d0220005166fc79d67022c3bfb7d47fb",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\prompts\\gsd-workstreams.md": {
+    "mtime": 1779297385.646924,
+    "ast_hash": "aefdb8e9a0db1fb23f9f7ddb246243b3",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\references\\checkpoints.md": {
+    "mtime": 1779297390.1218188,
+    "ast_hash": "638c08be47d5cc92684df1fc142c87cb",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\references\\continuation-format.md": {
+    "mtime": 1779297390.137656,
+    "ast_hash": "c6cbba6cf28aad0c230493a003217529",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\references\\decimal-phase-calculation.md": {
+    "mtime": 1779297390.1548002,
+    "ast_hash": "1e470b87aab213dee9e017425084f497",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\references\\git-integration.md": {
+    "mtime": 1779297390.1733463,
+    "ast_hash": "b55d6363ce5ee4912f4c9787a77d150c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\references\\git-planning-commit.md": {
+    "mtime": 1779297390.1906905,
+    "ast_hash": "10cd79d009be7992258a918404695580",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\references\\model-profile-resolution.md": {
+    "mtime": 1779297390.2051847,
+    "ast_hash": "0b89ece6cf8e6d3ff6927ab42019997f",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\references\\model-profiles.md": {
+    "mtime": 1779297390.2249465,
+    "ast_hash": "954e53cd1c891449084c9f47ed6e2aff",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\references\\phase-argument-parsing.md": {
+    "mtime": 1779297390.2384925,
+    "ast_hash": "dab154e70d2e29712a812c0d4ff0416f",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\references\\planning-config.md": {
+    "mtime": 1779297390.2558966,
+    "ast_hash": "16c19148875511126440ce4a43c946de",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\references\\questioning.md": {
+    "mtime": 1779297390.2740202,
+    "ast_hash": "2e22992a96276dd571eace6c7c362cfd",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\references\\tdd.md": {
+    "mtime": 1779297390.3071115,
+    "ast_hash": "19d8a3e6bbc615710ce7e27177844ad4",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\references\\ui-brand.md": {
+    "mtime": 1779297390.3582613,
+    "ast_hash": "680b66ac8a03eb12164f3a337bc09eeb",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\references\\user-profiling.md": {
+    "mtime": 1779297390.379973,
+    "ast_hash": "96aba40ec3e87de975a61aa2fec4a16c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\references\\verification-patterns.md": {
+    "mtime": 1779297390.4220328,
+    "ast_hash": "c1a8877c045c9e89978bffa0fb57fd18",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\references\\workstream-flag.md": {
+    "mtime": 1779297390.443101,
+    "ast_hash": "ae56399c77244216ac4a9b0591eb0bff",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\claude-md.md": {
+    "mtime": 1779297390.457879,
+    "ast_hash": "272c89c4cb58aac8d8095235f4b8fcc7",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\context.md": {
+    "mtime": 1779297390.624236,
+    "ast_hash": "b974b872ba20748408d16a1115a7e36f",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\continue-here.md": {
+    "mtime": 1779297390.6384664,
+    "ast_hash": "feb1fe81260fcc133e4fa47a8e8e1b4e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\copilot-instructions.md": {
+    "mtime": 1779297390.6535022,
+    "ast_hash": "d687178aac36c9497fa94f73895c8f4f",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\debug-subagent-prompt.md": {
+    "mtime": 1779297390.6697533,
+    "ast_hash": "24fa1011c6357f81b659b287c4bd537a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\DEBUG.md": {
+    "mtime": 1779297390.6890953,
+    "ast_hash": "046082a5fb711bddd6d54361e0352899",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\dev-preferences.md": {
+    "mtime": 1779297390.7041242,
+    "ast_hash": "a4e5dd7a0c8fa5c27995f4e33d055153",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\discovery.md": {
+    "mtime": 1779297390.7196426,
+    "ast_hash": "d478e8aa2ff6610354042d02b4a68cad",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\discussion-log.md": {
+    "mtime": 1779297390.7328308,
+    "ast_hash": "ace7edf22c7105109aeb8f0ff825b84b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\milestone-archive.md": {
+    "mtime": 1779297390.7545075,
+    "ast_hash": "2ecf0cd7ec0b83a86ecfa26b37807f08",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\milestone-context.md": {
+    "mtime": 1779297390.774369,
+    "ast_hash": "98084410b2a0b5e22370ce1bad1ddfb6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\milestone.md": {
+    "mtime": 1779297390.7990978,
+    "ast_hash": "aa6a849cf855d35da7d761ce2bf63cbd",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\phase-prompt.md": {
+    "mtime": 1779297390.828675,
+    "ast_hash": "17e09dfb309620bd2ca5d616f3db695f",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\planner-subagent-prompt.md": {
+    "mtime": 1779297390.8562632,
+    "ast_hash": "cb3db0aab4d9fe11628bbdfe657462a1",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\project.md": {
+    "mtime": 1779297390.8780375,
+    "ast_hash": "7e496ce73cad5ab34b23dd70dc3ed67a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\requirements.md": {
+    "mtime": 1779297390.8940012,
+    "ast_hash": "78a42584cdb7ac4fb1670828ab11b9b7",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\research.md": {
+    "mtime": 1779297391.000385,
+    "ast_hash": "22a0c5bbb6d193c5cc028c659bf93c14",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\retrospective.md": {
+    "mtime": 1779297391.0125542,
+    "ast_hash": "441d864c3b48f1e50c0a65819dfb2da6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\roadmap.md": {
+    "mtime": 1779297391.0252986,
+    "ast_hash": "2a0b2286575c31d2c5d04d7dda39ca8a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\state.md": {
+    "mtime": 1779297391.0401733,
+    "ast_hash": "628fcdfbe8ca51d9d56a980d92d5cd46",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\summary-complex.md": {
+    "mtime": 1779297391.0505068,
+    "ast_hash": "3d3fe4b6d8d69dd22fafdfad190cb68e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\summary-minimal.md": {
+    "mtime": 1779297391.0627465,
+    "ast_hash": "cb56b997ba0a6c6b88830fb0b34e3835",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\summary-standard.md": {
+    "mtime": 1779297391.0770695,
+    "ast_hash": "a9282a79c26b7408ccc69f417f2c7bbc",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\summary.md": {
+    "mtime": 1779297391.0906787,
+    "ast_hash": "77ca7d754c0901be41c891d50a4ac469",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\UAT.md": {
+    "mtime": 1779297391.1080883,
+    "ast_hash": "20009a81f63152384243fce2e74f9846",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\UI-SPEC.md": {
+    "mtime": 1779297391.124106,
+    "ast_hash": "53750f4a594906722b49ba756bb1e4a9",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\user-profile.md": {
+    "mtime": 1779297391.1413596,
+    "ast_hash": "e02ba718f096a9c0391516d1088dc9e2",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\user-setup.md": {
+    "mtime": 1779297391.1644826,
+    "ast_hash": "205196fbfcf6203b571183369956e6c6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\VALIDATION.md": {
+    "mtime": 1779297391.1764514,
+    "ast_hash": "7abdfe02972bb25f6c3f08c74c73fe3e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\verification-report.md": {
+    "mtime": 1779297391.1946933,
+    "ast_hash": "00c98b77bc7411ddf81e657a134f7f65",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\codebase\\architecture.md": {
+    "mtime": 1779297390.4798157,
+    "ast_hash": "514c389cf3dab629ba0edd7e4da5c190",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\codebase\\concerns.md": {
+    "mtime": 1779297390.4984233,
+    "ast_hash": "8cae5a40fe882eea3220bf69e0824e9b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\codebase\\conventions.md": {
+    "mtime": 1779297390.5232728,
+    "ast_hash": "d96a28d987f705543d669491be773915",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\codebase\\integrations.md": {
+    "mtime": 1779297390.543437,
+    "ast_hash": "080c74b99947918e5f790300e0fbc2f3",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\codebase\\stack.md": {
+    "mtime": 1779297390.5617561,
+    "ast_hash": "c75effaa928d5c93784a1e136674097b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\codebase\\structure.md": {
+    "mtime": 1779297390.5807526,
+    "ast_hash": "8557c7c997c0b2952e39eb16bf85a6a5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\codebase\\testing.md": {
+    "mtime": 1779297390.6098945,
+    "ast_hash": "8284aecc988d2fca720d60a44806ca10",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\research-project\\ARCHITECTURE.md": {
+    "mtime": 1779297390.9142983,
+    "ast_hash": "904b29787411bc00ac2ca5e5c98aeee0",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\research-project\\FEATURES.md": {
+    "mtime": 1779297390.9320004,
+    "ast_hash": "e1877e8cc0249eb79ec497159186e26d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\research-project\\PITFALLS.md": {
+    "mtime": 1779297390.9440002,
+    "ast_hash": "e0023c29b7c4e9e04a178db6a6057e3e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\research-project\\STACK.md": {
+    "mtime": 1779297390.9614131,
+    "ast_hash": "66feafaa3e7e9d11cee82c24408ead8c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\templates\\research-project\\SUMMARY.md": {
+    "mtime": 1779297390.9771423,
+    "ast_hash": "c777da0f9f3a0c20a5b70947e23ad9d9",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\add-backlog.md": {
+    "mtime": 1779297391.2110145,
+    "ast_hash": "3aecf31173ffa78e98899da62fed1f28",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\add-phase.md": {
+    "mtime": 1779297391.2272587,
+    "ast_hash": "1b1365912ed6563cc60630f570a26e96",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\add-tests.md": {
+    "mtime": 1779297391.2820542,
+    "ast_hash": "6bb0f2523cca6689bed31d41cf6dad2a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\add-todo.md": {
+    "mtime": 1779297391.3050766,
+    "ast_hash": "96c0e1abe74be8812c8465a4fbb72388",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\audit-milestone.md": {
+    "mtime": 1779297391.3219552,
+    "ast_hash": "2a401b1ec37ccfcb69bdd290f19ffd94",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\audit-uat.md": {
+    "mtime": 1779297391.3377924,
+    "ast_hash": "55444e3afaffdfb56663fa2081241644",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\autonomous.md": {
+    "mtime": 1779297391.362212,
+    "ast_hash": "dfb533b2576fb88749fece4631672315",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\check-todos.md": {
+    "mtime": 1779297391.3825643,
+    "ast_hash": "7c51f0a6d2c646db0dea760af99c5e65",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\cleanup.md": {
+    "mtime": 1779297391.3973641,
+    "ast_hash": "fef4bfeebc8d4c1a9d3da71bfeee84fe",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\complete-milestone.md": {
+    "mtime": 1779297391.4135697,
+    "ast_hash": "837423b886c51b42f6ab5f9ee264bd29",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\debug.md": {
+    "mtime": 1779297391.430715,
+    "ast_hash": "f37161d93a73b4149936e51ef0f437ab",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\diagnose-issues.md": {
+    "mtime": 1779297391.4487057,
+    "ast_hash": "cf2864eedd48e121ff102b8676c37dd6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\discovery-phase.md": {
+    "mtime": 1779297391.4642494,
+    "ast_hash": "35cd3c31d03c0d509dc65329debf07fb",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\discuss-milestone.md": {
+    "mtime": 1779297391.48119,
+    "ast_hash": "83eea04c95b26af54c306a698626e689",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\discuss-phase-assumptions.md": {
+    "mtime": 1779297391.564293,
+    "ast_hash": "e34fe9c0f920ba55f39a52f29450df6e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\discuss-phase.md": {
+    "mtime": 1779297391.5863936,
+    "ast_hash": "0bcc628783bf2da32cc479e94f7fd521",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\do.md": {
+    "mtime": 1779297391.60698,
+    "ast_hash": "92d579e5b08ac8ed049f6a8f93d03066",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\execute-milestone.md": {
+    "mtime": 1779297391.6321778,
+    "ast_hash": "86dff20b9e727b98d197d0a589ef6364",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\execute-phase.md": {
+    "mtime": 1779297391.6477408,
+    "ast_hash": "355083e077d5d52a0679ced7afcd5530",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\execute-plan.md": {
+    "mtime": 1779297391.6641183,
+    "ast_hash": "bad885fc09e69b2dd13d2f5871b78ed9",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\fast.md": {
+    "mtime": 1779297391.6791317,
+    "ast_hash": "e82dba237998cbabbc37b1353396fbcc",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\forensics.md": {
+    "mtime": 1779297391.697906,
+    "ast_hash": "1beaad74f3fa65fe285453f0c5a73023",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\health.md": {
+    "mtime": 1779297391.7189329,
+    "ast_hash": "c7924d54f891f8844f9971327c2d8945",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\help.md": {
+    "mtime": 1779297391.7366724,
+    "ast_hash": "65c53a07953889cf35e6d15ae8c14bb6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\insert-phase.md": {
+    "mtime": 1779297391.7559955,
+    "ast_hash": "a22298f9f3e0a8fd860c5855a7431a33",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\list-phase-assumptions.md": {
+    "mtime": 1779297391.7750664,
+    "ast_hash": "e964efc0a245aa02a14b4321b1b1489e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\list-workspaces.md": {
+    "mtime": 1779297391.7981093,
+    "ast_hash": "fc75fe3deade7690a541d8ae90c6a588",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\manager.md": {
+    "mtime": 1779297391.835628,
+    "ast_hash": "156f0b47f0feee4c722d941d2daeefa6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\map-codebase.md": {
+    "mtime": 1779297391.8531969,
+    "ast_hash": "d9bd67f0122cbd2cad6cc8d9c489f381",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\milestone-summary.md": {
+    "mtime": 1779297391.8743105,
+    "ast_hash": "b5d0381dd03a0b694fd11588db898a41",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\new-milestone.md": {
+    "mtime": 1779297391.8933983,
+    "ast_hash": "d4ab1768f5f324400a3f281b3d381d60",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\new-project.md": {
+    "mtime": 1779297391.9136126,
+    "ast_hash": "822d3dd41b24c8e238c4463e5f4ffd2b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\new-workspace.md": {
+    "mtime": 1779297391.9308572,
+    "ast_hash": "203f09253b58df6c02e9c161c0179c6a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\next.md": {
+    "mtime": 1779297391.9470918,
+    "ast_hash": "a85e7cb8fd31d36d8e3de4b6ebc33bdc",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\node-repair.md": {
+    "mtime": 1779297391.96482,
+    "ast_hash": "4bc158b0dc06da3a242329d8f7ac83f7",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\note.md": {
+    "mtime": 1779297391.9828708,
+    "ast_hash": "404959e03c4b89bfae94a229c499b0e6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\pause-work.md": {
+    "mtime": 1779297392.0026224,
+    "ast_hash": "7681f3b8938022af4daafd5fe6317b0d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\plan-milestone-gaps.md": {
+    "mtime": 1779297392.020733,
+    "ast_hash": "f484eb4a9ebd67265e3a7a1e882cd246",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\plan-milestone.md": {
+    "mtime": 1779297392.0392115,
+    "ast_hash": "458bde74f7bfb9a5c5d8e0ef1f035061",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\plan-phase.md": {
+    "mtime": 1779297392.1293745,
+    "ast_hash": "7b673619520d79129aa2301d3ee827d4",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\plant-seed.md": {
+    "mtime": 1779297392.1426334,
+    "ast_hash": "0be0ac86278383ed80c3d23537f53612",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\pr-branch.md": {
+    "mtime": 1779297392.1592925,
+    "ast_hash": "299211603d77e6087c630375a1da1990",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\profile-user.md": {
+    "mtime": 1779297392.1757524,
+    "ast_hash": "56d669f7220c1be99a8afe572500c17d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\progress.md": {
+    "mtime": 1779297392.1928542,
+    "ast_hash": "5e82846c3f52476907f612a5e2399257",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\quick.md": {
+    "mtime": 1779297392.2104053,
+    "ast_hash": "bde9b7c506688b61367ef41bf81abba7",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\remove-phase.md": {
+    "mtime": 1779297392.223838,
+    "ast_hash": "3409010a0fecf97a03e4be5edf244922",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\remove-workspace.md": {
+    "mtime": 1779297392.234783,
+    "ast_hash": "8aaf5bcf9f73cd86f7731d1591123415",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\research-phase.md": {
+    "mtime": 1779297392.2494013,
+    "ast_hash": "687f22a54c2e29c9ef032929d1b7472c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\resume-project.md": {
+    "mtime": 1779297392.2655935,
+    "ast_hash": "50454502ff84de1e9f5ea424e590dd65",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\review-backlog.md": {
+    "mtime": 1779297392.2841208,
+    "ast_hash": "c3a17691bf0fc30d24bfb34fa9503c55",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\review.md": {
+    "mtime": 1779297392.3016376,
+    "ast_hash": "f13e2078d7c587d3b7163737e0ff2ab0",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\session-report.md": {
+    "mtime": 1779297392.317302,
+    "ast_hash": "6c8f86eea3652a6af453c0ef98356dc0",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\set-profile.md": {
+    "mtime": 1779297392.3338714,
+    "ast_hash": "151b66b3b04e3fb61957294c630a0cf4",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\settings.md": {
+    "mtime": 1779297392.357917,
+    "ast_hash": "b8d347df1ab8b27c4be82de3a7f717a6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\ship.md": {
+    "mtime": 1779297392.379805,
+    "ast_hash": "03be4d49d714c776615b321e0635d4db",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\stats.md": {
+    "mtime": 1779297392.394013,
+    "ast_hash": "d06dc4e20a215102a32f393e72015cdd",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\thread.md": {
+    "mtime": 1779297392.410557,
+    "ast_hash": "a15712ab915b39e1b3de887262431fa7",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\transition.md": {
+    "mtime": 1779297392.4205995,
+    "ast_hash": "f239768c3d7ab9d9fc764cf1cca40ddc",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\ui-phase.md": {
+    "mtime": 1779297392.438782,
+    "ast_hash": "4f414f0f1164fd85eb116bb175a0f7e6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\ui-review.md": {
+    "mtime": 1779297392.4561353,
+    "ast_hash": "11660d485e2e86e2fb261bae25e283b0",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\update.md": {
+    "mtime": 1779297392.4917173,
+    "ast_hash": "bee549aa22651719ce7e4da08cbaed8d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\validate-phase.md": {
+    "mtime": 1779297392.5212896,
+    "ast_hash": "e167a15aa851c612cfed765cfc6acd4c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\verify-phase.md": {
+    "mtime": 1779297392.550534,
+    "ast_hash": "20f0954728e9b3e67444f1da2c1a3680",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\verify-work.md": {
+    "mtime": 1779297392.574764,
+    "ast_hash": "d013e82e3d03f7342515057eb9060b79",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\.pi\\gsd\\workflows\\workstreams.md": {
+    "mtime": 1779297392.592839,
+    "ast_hash": "80dffa27834a8884f8758701fec53e74",
+    "semantic_hash": ""
+  },
   "D:\\temp\\devorbit\\.roo\\rules\\claude-mem-context.md": {
     "mtime": 1778492615.1405077,
     "ast_hash": "05fdb49e5ef90a3e8b36d968027c0ebe",
@@ -16380,13 +17920,998 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\AGENTS.md": {
-    "mtime": 1778873857.1287768,
-    "ast_hash": "04a0e539af42eb959af560e864e28e44",
+    "mtime": 1779295133.5225937,
+    "ast_hash": "997e3d19165324ea6978ed95b72b9b4c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\ARCHITECTURE.md": {
+    "mtime": 1779295126.1543117,
+    "ast_hash": "051fc4eb1c2571e0b8b48ceee51f773e",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\.pi\\agents\\supervisor.md": {
     "mtime": 1778873857.1287768,
     "ast_hash": "eaf8d21d254f7fa4a5b43e0c03d9b71d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\agents\\gsd-advisor-researcher.md": {
+    "mtime": 1779297384.4363077,
+    "ast_hash": "65be3b96bd61ef9378211e517f12ddd5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\agents\\gsd-assumptions-analyzer.md": {
+    "mtime": 1779297384.4571524,
+    "ast_hash": "f93082f9ebbd162ee1be7a3dd8246691",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\agents\\gsd-codebase-mapper.md": {
+    "mtime": 1779297384.5524485,
+    "ast_hash": "4b148a0cdfbd94cdc7e13e1f1eef7fa5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\agents\\gsd-debugger.md": {
+    "mtime": 1779297384.6056263,
+    "ast_hash": "987928fc5fda920e28da6a4d8d59bba2",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\agents\\gsd-executor.md": {
+    "mtime": 1779297384.74139,
+    "ast_hash": "ade3f3ed357711a8b8686230b5c312fc",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\agents\\gsd-integration-checker.md": {
+    "mtime": 1779297384.816298,
+    "ast_hash": "dcfea4cd0894613b3398c14b5f52f270",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\agents\\gsd-nyquist-auditor.md": {
+    "mtime": 1779297385.02647,
+    "ast_hash": "50a90205e88b78b808f62b3e8d05f90c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\agents\\gsd-phase-researcher.md": {
+    "mtime": 1779297385.0586436,
+    "ast_hash": "4a62cb61e442f99267a0d8f368349cd5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\agents\\gsd-plan-checker.md": {
+    "mtime": 1779297385.0772517,
+    "ast_hash": "611b5d6dc2cf75c78807541fcf2df264",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\agents\\gsd-planner.md": {
+    "mtime": 1779297385.1269784,
+    "ast_hash": "07c6d6ab25c5241323fdc6dc56477bce",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\agents\\gsd-project-researcher.md": {
+    "mtime": 1779297385.1853223,
+    "ast_hash": "dccd4b048d07835c3f900d1b14a7d89d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\agents\\gsd-research-synthesizer.md": {
+    "mtime": 1779297385.2783418,
+    "ast_hash": "97060615e532847106aee18ba190e7fa",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\agents\\gsd-roadmapper.md": {
+    "mtime": 1779297385.341912,
+    "ast_hash": "2dc840638be5cd7c6f3a9602e39bc9e0",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\agents\\gsd-ui-auditor.md": {
+    "mtime": 1779297385.4141366,
+    "ast_hash": "554a2d837e59b3a9dadb0377b16ef903",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\agents\\gsd-ui-checker.md": {
+    "mtime": 1779297385.422356,
+    "ast_hash": "b9aae05377ccf665fd3a9b1e605b0b5d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\agents\\gsd-ui-researcher.md": {
+    "mtime": 1779297385.4646814,
+    "ast_hash": "8dea478a998c35d4984051630859994b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\agents\\gsd-user-profiler.md": {
+    "mtime": 1779297385.5205572,
+    "ast_hash": "8e0665655f50a7f613317ad3f113b613",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\agents\\gsd-verifier.md": {
+    "mtime": 1779297385.5964572,
+    "ast_hash": "3fc65c20b358898389ec9c5a11f8e87e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-add-backlog.md": {
+    "mtime": 1779297384.3267696,
+    "ast_hash": "0db536be23cd441b41b537540a2c772b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-add-phase.md": {
+    "mtime": 1779297384.3535025,
+    "ast_hash": "3b590ff36606475e8c2fd766e7502306",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-add-tests.md": {
+    "mtime": 1779297384.3861878,
+    "ast_hash": "b27fd245d8305679de74f1e0aff51441",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-add-todo.md": {
+    "mtime": 1779297384.403024,
+    "ast_hash": "1c3c174e232bf837e82b1cda4200d52a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-audit-milestone.md": {
+    "mtime": 1779297384.476036,
+    "ast_hash": "92c08d25eb6a6e05379ecd1f82ddd46b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-audit-uat.md": {
+    "mtime": 1779297384.483356,
+    "ast_hash": "08045260d59673c1099b92e09d6b2ba5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-autonomous.md": {
+    "mtime": 1779297384.4956539,
+    "ast_hash": "210255ccc63c294dbfc49a417193e9e4",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-check-todos.md": {
+    "mtime": 1779297384.5147686,
+    "ast_hash": "769b8c4373cc093685a285fc07880fc3",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-cleanup.md": {
+    "mtime": 1779297384.526927,
+    "ast_hash": "2830b5bc0e7b199f3ee913add9fe8256",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-complete-milestone.md": {
+    "mtime": 1779297384.5593352,
+    "ast_hash": "cf990af98c1b3189a1f46b0536eef5d0",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-debug.md": {
+    "mtime": 1779297384.5681815,
+    "ast_hash": "6d7915ae4131bbbeacdf7f6d509fbb96",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-discuss-milestone.md": {
+    "mtime": 1779297384.6325083,
+    "ast_hash": "91d71a408ed46e2f8f3221c76331a5bd",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-discuss-phase.md": {
+    "mtime": 1779297384.6435149,
+    "ast_hash": "d0c6286c62f3a4b6429da96f6a740907",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-do.md": {
+    "mtime": 1779297384.6543305,
+    "ast_hash": "735828c5cf35fcf810539977ea03ad9d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-execute-milestone.md": {
+    "mtime": 1779297384.6956625,
+    "ast_hash": "58a0ab3fe22688c1cb5543e33c9d0702",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-execute-phase.md": {
+    "mtime": 1779297384.7254949,
+    "ast_hash": "82e9e754330c81bc4958406223cf90a3",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-fast.md": {
+    "mtime": 1779297384.7667623,
+    "ast_hash": "904db840487b1a4e036e4d9672cc27d8",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-forensics.md": {
+    "mtime": 1779297384.7860248,
+    "ast_hash": "7af61bdf1576820dcb7b98282124e193",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-insert-phase.md": {
+    "mtime": 1779297384.8000271,
+    "ast_hash": "43d61cd2cecc0d3ada6edad37675bb33",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-join-discord.md": {
+    "mtime": 1779297384.8410153,
+    "ast_hash": "4e97277b9d2096cb17b9940b5fb6c9f5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-list-phase-assumptions.md": {
+    "mtime": 1779297384.8595984,
+    "ast_hash": "f8213af1730e9191fae99d673717b497",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-list-workspaces.md": {
+    "mtime": 1779297384.8685584,
+    "ast_hash": "71883071d4ff23283af8f5b71a64acb7",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-manager.md": {
+    "mtime": 1779297384.8879163,
+    "ast_hash": "b51a07a66fdac7a9f0238f912fbd056b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-map-codebase.md": {
+    "mtime": 1779297384.911045,
+    "ast_hash": "af8693454962c5c99c84a4e75f00a7dd",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-milestone-summary.md": {
+    "mtime": 1779297384.9252524,
+    "ast_hash": "2f31ee0bb51f5015ea7feea92c33319d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-new-milestone.md": {
+    "mtime": 1779297384.9414475,
+    "ast_hash": "da772c47676a745138e8b1a748f175b3",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-new-project.md": {
+    "mtime": 1779297384.9632244,
+    "ast_hash": "e85deab5ee050f939127260f4811d164",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-new-workspace.md": {
+    "mtime": 1779297384.9732203,
+    "ast_hash": "fe04744ff44485c0e8f38be3598f274c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-note.md": {
+    "mtime": 1779297385.0183878,
+    "ast_hash": "9346f42512d0a34db138ee2e48602ddd",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-pause-work.md": {
+    "mtime": 1779297385.0339234,
+    "ast_hash": "5e5f375411887c01b14e77694b932b2a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-plan-milestone-gaps.md": {
+    "mtime": 1779297385.0942655,
+    "ast_hash": "92670de09d88ae28ff0227a3865a45de",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-plan-milestone.md": {
+    "mtime": 1779297385.1041007,
+    "ast_hash": "876afc19a321ff3cfe487f44568d29b6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-plan-phase.md": {
+    "mtime": 1779297385.111103,
+    "ast_hash": "ae9ce9faae668cc11cb759e43772ae61",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-plant-seed.md": {
+    "mtime": 1779297385.1520514,
+    "ast_hash": "1ad26fbaaae47b143f5caa87dea24174",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-pr-branch.md": {
+    "mtime": 1779297385.1655798,
+    "ast_hash": "2a3cea51e9151c99722f34da8e3c353a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-profile-user.md": {
+    "mtime": 1779297385.173944,
+    "ast_hash": "2f4e4bea12508750c656ab146b1f6136",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-quick.md": {
+    "mtime": 1779297385.1936462,
+    "ast_hash": "351aa96181cf34d8728fdf1a3e20e903",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-reapply-patches.md": {
+    "mtime": 1779297385.2102757,
+    "ast_hash": "149cbdf7f836e5a074ea3fe7472a0ff0",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-remove-phase.md": {
+    "mtime": 1779297385.2212894,
+    "ast_hash": "1d3ffc90b29e6318b9caa7f333b091f8",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-remove-workspace.md": {
+    "mtime": 1779297385.254005,
+    "ast_hash": "1cd8e580c5f359feb83826e8cb16c9e8",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-research-phase.md": {
+    "mtime": 1779297385.2636473,
+    "ast_hash": "b6894dadfb6fb559c937ea26e29b8164",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-resume-work.md": {
+    "mtime": 1779297385.2895937,
+    "ast_hash": "a3539210cfb80c3f63630d90550d31ab",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-review-backlog.md": {
+    "mtime": 1779297385.3143983,
+    "ast_hash": "276662fc410b938b071440424f0c599a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-review.md": {
+    "mtime": 1779297385.3229663,
+    "ast_hash": "16f2aaef183b0c5f893ba17087b83475",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-session-report.md": {
+    "mtime": 1779297385.350139,
+    "ast_hash": "bf3cde7236307af5cb38f98cf2897743",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-set-profile.md": {
+    "mtime": 1779297385.3654237,
+    "ast_hash": "e5882d6b62677d158c3b7ded4be2b5d1",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-settings.md": {
+    "mtime": 1779297385.3839262,
+    "ast_hash": "5e931bf6c558c92f7cee38ff302b0669",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-ship.md": {
+    "mtime": 1779297385.387982,
+    "ast_hash": "0a677a1753e2e40a691afefab690eea0",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-thread.md": {
+    "mtime": 1779297385.395486,
+    "ast_hash": "601ebd7ddd8353bf89703d03c4b529d9",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-ui-phase.md": {
+    "mtime": 1779297385.4383552,
+    "ast_hash": "23e0353d845a35a09a237d53cfe79011",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-ui-review.md": {
+    "mtime": 1779297385.482715,
+    "ast_hash": "e16371bf3bcb1643c3fa8c9ae0e8268a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-validate-phase.md": {
+    "mtime": 1779297385.552283,
+    "ast_hash": "fc07f44ebf8f533370524845ddb31cc4",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-verify-work.md": {
+    "mtime": 1779297385.6197505,
+    "ast_hash": "d0220005166fc79d67022c3bfb7d47fb",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\prompts\\gsd-workstreams.md": {
+    "mtime": 1779297385.646924,
+    "ast_hash": "aefdb8e9a0db1fb23f9f7ddb246243b3",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\references\\checkpoints.md": {
+    "mtime": 1779297383.4947796,
+    "ast_hash": "638c08be47d5cc92684df1fc142c87cb",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\references\\continuation-format.md": {
+    "mtime": 1779297383.7029407,
+    "ast_hash": "c6cbba6cf28aad0c230493a003217529",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\references\\decimal-phase-calculation.md": {
+    "mtime": 1779297383.9162304,
+    "ast_hash": "1e470b87aab213dee9e017425084f497",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\references\\git-integration.md": {
+    "mtime": 1779297384.265623,
+    "ast_hash": "b55d6363ce5ee4912f4c9787a77d150c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\references\\git-planning-commit.md": {
+    "mtime": 1779297384.286358,
+    "ast_hash": "10cd79d009be7992258a918404695580",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\references\\model-profile-resolution.md": {
+    "mtime": 1779297385.9800262,
+    "ast_hash": "0b89ece6cf8e6d3ff6927ab42019997f",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\references\\model-profiles.md": {
+    "mtime": 1779297385.9902418,
+    "ast_hash": "954e53cd1c891449084c9f47ed6e2aff",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\references\\phase-argument-parsing.md": {
+    "mtime": 1779297386.1769066,
+    "ast_hash": "dab154e70d2e29712a812c0d4ff0416f",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\references\\planning-config.md": {
+    "mtime": 1779297386.2710485,
+    "ast_hash": "16c19148875511126440ce4a43c946de",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\references\\questioning.md": {
+    "mtime": 1779297386.3433218,
+    "ast_hash": "2e22992a96276dd571eace6c7c362cfd",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\references\\tdd.md": {
+    "mtime": 1779297386.6775134,
+    "ast_hash": "19d8a3e6bbc615710ce7e27177844ad4",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\references\\ui-brand.md": {
+    "mtime": 1779297386.8696122,
+    "ast_hash": "680b66ac8a03eb12164f3a337bc09eeb",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\references\\user-profiling.md": {
+    "mtime": 1779297387.0415452,
+    "ast_hash": "96aba40ec3e87de975a61aa2fec4a16c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\references\\verification-patterns.md": {
+    "mtime": 1779297387.1452131,
+    "ast_hash": "c1a8877c045c9e89978bffa0fb57fd18",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\references\\workstream-flag.md": {
+    "mtime": 1779297387.1949518,
+    "ast_hash": "ae56399c77244216ac4a9b0591eb0bff",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\claude-md.md": {
+    "mtime": 1779297383.523983,
+    "ast_hash": "272c89c4cb58aac8d8095235f4b8fcc7",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\context.md": {
+    "mtime": 1779297383.642223,
+    "ast_hash": "b974b872ba20748408d16a1115a7e36f",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\continue-here.md": {
+    "mtime": 1779297383.7509544,
+    "ast_hash": "feb1fe81260fcc133e4fa47a8e8e1b4e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\copilot-instructions.md": {
+    "mtime": 1779297383.8377995,
+    "ast_hash": "d687178aac36c9497fa94f73895c8f4f",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\debug-subagent-prompt.md": {
+    "mtime": 1779297383.8564732,
+    "ast_hash": "24fa1011c6357f81b659b287c4bd537a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\DEBUG.md": {
+    "mtime": 1779297383.8730762,
+    "ast_hash": "046082a5fb711bddd6d54361e0352899",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\dev-preferences.md": {
+    "mtime": 1779297383.9311306,
+    "ast_hash": "a4e5dd7a0c8fa5c27995f4e33d055153",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\discovery.md": {
+    "mtime": 1779297383.9984286,
+    "ast_hash": "d478e8aa2ff6610354042d02b4a68cad",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\discussion-log.md": {
+    "mtime": 1779297384.090153,
+    "ast_hash": "ace7edf22c7105109aeb8f0ff825b84b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\milestone-archive.md": {
+    "mtime": 1779297385.8537216,
+    "ast_hash": "2ecf0cd7ec0b83a86ecfa26b37807f08",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\milestone-context.md": {
+    "mtime": 1779297385.8805294,
+    "ast_hash": "98084410b2a0b5e22370ce1bad1ddfb6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\milestone.md": {
+    "mtime": 1779297385.9580078,
+    "ast_hash": "aa6a849cf855d35da7d761ce2bf63cbd",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\phase-prompt.md": {
+    "mtime": 1779297386.187085,
+    "ast_hash": "17e09dfb309620bd2ca5d616f3db695f",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\planner-subagent-prompt.md": {
+    "mtime": 1779297386.250712,
+    "ast_hash": "cb3db0aab4d9fe11628bbdfe657462a1",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\project.md": {
+    "mtime": 1779297386.3252568,
+    "ast_hash": "7e496ce73cad5ab34b23dd70dc3ed67a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\requirements.md": {
+    "mtime": 1779297386.3913155,
+    "ast_hash": "78a42584cdb7ac4fb1670828ab11b9b7",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\research.md": {
+    "mtime": 1779297386.4141376,
+    "ast_hash": "22a0c5bbb6d193c5cc028c659bf93c14",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\retrospective.md": {
+    "mtime": 1779297386.4327881,
+    "ast_hash": "441d864c3b48f1e50c0a65819dfb2da6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\roadmap.md": {
+    "mtime": 1779297386.4648058,
+    "ast_hash": "2a0b2286575c31d2c5d04d7dda39ca8a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\state.md": {
+    "mtime": 1779297386.575297,
+    "ast_hash": "628fcdfbe8ca51d9d56a980d92d5cd46",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\summary-complex.md": {
+    "mtime": 1779297386.601802,
+    "ast_hash": "3d3fe4b6d8d69dd22fafdfad190cb68e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\summary-minimal.md": {
+    "mtime": 1779297386.6063871,
+    "ast_hash": "cb56b997ba0a6c6b88830fb0b34e3835",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\summary-standard.md": {
+    "mtime": 1779297386.6269643,
+    "ast_hash": "a9282a79c26b7408ccc69f417f2c7bbc",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\summary.md": {
+    "mtime": 1779297386.6621592,
+    "ast_hash": "77ca7d754c0901be41c891d50a4ac469",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\UAT.md": {
+    "mtime": 1779297386.8450823,
+    "ast_hash": "20009a81f63152384243fce2e74f9846",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\UI-SPEC.md": {
+    "mtime": 1779297386.9366663,
+    "ast_hash": "53750f4a594906722b49ba756bb1e4a9",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\user-profile.md": {
+    "mtime": 1779297386.9900782,
+    "ast_hash": "e02ba718f096a9c0391516d1088dc9e2",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\user-setup.md": {
+    "mtime": 1779297387.0700042,
+    "ast_hash": "205196fbfcf6203b571183369956e6c6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\VALIDATION.md": {
+    "mtime": 1779297387.1326768,
+    "ast_hash": "7abdfe02972bb25f6c3f08c74c73fe3e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\verification-report.md": {
+    "mtime": 1779297387.151622,
+    "ast_hash": "00c98b77bc7411ddf81e657a134f7f65",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\codebase\\architecture.md": {
+    "mtime": 1779297383.2487216,
+    "ast_hash": "514c389cf3dab629ba0edd7e4da5c190",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\codebase\\concerns.md": {
+    "mtime": 1779297383.6020896,
+    "ast_hash": "8cae5a40fe882eea3220bf69e0824e9b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\codebase\\conventions.md": {
+    "mtime": 1779297383.7928693,
+    "ast_hash": "d96a28d987f705543d669491be773915",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\codebase\\integrations.md": {
+    "mtime": 1779297385.7484524,
+    "ast_hash": "080c74b99947918e5f790300e0fbc2f3",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\codebase\\stack.md": {
+    "mtime": 1779297386.527914,
+    "ast_hash": "c75effaa928d5c93784a1e136674097b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\codebase\\structure.md": {
+    "mtime": 1779297386.597279,
+    "ast_hash": "8557c7c997c0b2952e39eb16bf85a6a5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\codebase\\testing.md": {
+    "mtime": 1779297386.7351418,
+    "ast_hash": "8284aecc988d2fca720d60a44806ca10",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\research-project\\ARCHITECTURE.md": {
+    "mtime": 1779297383.3075707,
+    "ast_hash": "904b29787411bc00ac2ca5e5c98aeee0",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\research-project\\FEATURES.md": {
+    "mtime": 1779297384.2055256,
+    "ast_hash": "e1877e8cc0249eb79ec497159186e26d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\research-project\\PITFALLS.md": {
+    "mtime": 1779297386.2011445,
+    "ast_hash": "e0023c29b7c4e9e04a178db6a6057e3e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\research-project\\STACK.md": {
+    "mtime": 1779297386.5584078,
+    "ast_hash": "66feafaa3e7e9d11cee82c24408ead8c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\templates\\research-project\\SUMMARY.md": {
+    "mtime": 1779297386.649097,
+    "ast_hash": "c777da0f9f3a0c20a5b70947e23ad9d9",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\add-backlog.md": {
+    "mtime": 1779297383.0252101,
+    "ast_hash": "a0ee928eaf0256b6afc0d4c5cb63da9f",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\add-phase.md": {
+    "mtime": 1779297383.109526,
+    "ast_hash": "3453515856792db07106b32f6630cd5e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\add-tests.md": {
+    "mtime": 1779297383.1568005,
+    "ast_hash": "9c22458b6aec153b98c4444751076148",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\add-todo.md": {
+    "mtime": 1779297383.205293,
+    "ast_hash": "775d436825df1e78d15eea868301e80c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\audit-milestone.md": {
+    "mtime": 1779297383.342578,
+    "ast_hash": "01c38fba908aed65e9a7211ea134689d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\audit-uat.md": {
+    "mtime": 1779297383.3871536,
+    "ast_hash": "3859bff1e422fc653760fe9a73c84957",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\autonomous.md": {
+    "mtime": 1779297383.4381647,
+    "ast_hash": "ec195531b3d275c0d7ed239c75e46359",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\check-todos.md": {
+    "mtime": 1779297383.4665625,
+    "ast_hash": "ace9676e22a2be8cb5dda5dabd705c41",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\cleanup.md": {
+    "mtime": 1779297383.5489583,
+    "ast_hash": "0559f00354f6ea3f86e3ba583ef4a444",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\complete-milestone.md": {
+    "mtime": 1779297383.5619693,
+    "ast_hash": "326cc0f45d665821f9c519f28c16c5b9",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\debug.md": {
+    "mtime": 1779297383.9024618,
+    "ast_hash": "a830b05d8f2013ad72b4b46383440e1d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\diagnose-issues.md": {
+    "mtime": 1779297383.950459,
+    "ast_hash": "9cf3e29a57f8681a7b0f4e50ef1060cc",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\discovery-phase.md": {
+    "mtime": 1779297383.9705505,
+    "ast_hash": "d8b1a6cfb8d82e6e3ec18521da095988",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\discuss-milestone.md": {
+    "mtime": 1779297384.0194602,
+    "ast_hash": "7c3d7ec2ea9c0b854677d998619a98df",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\discuss-phase-assumptions.md": {
+    "mtime": 1779297384.0481708,
+    "ast_hash": "28c4362520b2afee2988aee3fc19ff69",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\discuss-phase.md": {
+    "mtime": 1779297384.0708601,
+    "ast_hash": "007b1009b96c8a4658f8b42692590b86",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\do.md": {
+    "mtime": 1779297384.110405,
+    "ast_hash": "4157974e9cf512ab9430a900bcbcf5e0",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\execute-milestone.md": {
+    "mtime": 1779297384.1318445,
+    "ast_hash": "f3ec988f2be863797bee2011f9570552",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\execute-phase.md": {
+    "mtime": 1779297384.1512895,
+    "ast_hash": "6b989547ea965683198b8f98efc6db8b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\execute-plan.md": {
+    "mtime": 1779297384.1767738,
+    "ast_hash": "e911fc68b1491958a4da9718b408451a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\fast.md": {
+    "mtime": 1779297384.1881485,
+    "ast_hash": "ca51dae9d9f1273ab4192ac02e108232",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\forensics.md": {
+    "mtime": 1779297384.2481196,
+    "ast_hash": "4e2ff20b8c85261905da94cfc4967910",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\health.md": {
+    "mtime": 1779297385.6669865,
+    "ast_hash": "e771205e65fd29cce3649b142cee0807",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\help.md": {
+    "mtime": 1779297385.7015722,
+    "ast_hash": "e91e1746fac599968ad409be482eb5a6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\insert-phase.md": {
+    "mtime": 1779297385.7227564,
+    "ast_hash": "61474a0c212eda07b0170790a26f8a77",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\list-phase-assumptions.md": {
+    "mtime": 1779297385.76278,
+    "ast_hash": "9868b6fb2fe3503240c53e7b88a14145",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\list-workspaces.md": {
+    "mtime": 1779297385.785947,
+    "ast_hash": "a57f9eaf4f984126dea3c64fa57115ed",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\manager.md": {
+    "mtime": 1779297385.8222744,
+    "ast_hash": "e29a8d2768cdc19a5e129a11c833ec6c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\map-codebase.md": {
+    "mtime": 1779297385.8467016,
+    "ast_hash": "02abdd4b36acbb51b13571f71d04fd81",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\milestone-summary.md": {
+    "mtime": 1779297385.9120977,
+    "ast_hash": "ec55cbef3538f653954d757c50b8dd57",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\new-milestone.md": {
+    "mtime": 1779297386.0240974,
+    "ast_hash": "6b732ae82b73387836b658cc70aa07ae",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\new-project.md": {
+    "mtime": 1779297386.056939,
+    "ast_hash": "8bebb10fadda2733af80e4711ec1cdf7",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\new-workspace.md": {
+    "mtime": 1779297386.0823379,
+    "ast_hash": "a3de82f90faa3012fe4eb4187dc68df2",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\next.md": {
+    "mtime": 1779297386.1026356,
+    "ast_hash": "04f22a33ce5381ddedb0d288383fded6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\node-repair.md": {
+    "mtime": 1779297386.118114,
+    "ast_hash": "74acb70dafa43e1a96cf4b264a148c1d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\note.md": {
+    "mtime": 1779297386.1273277,
+    "ast_hash": "c95a8b7bf515c59ca6095536ead39bfa",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\pause-work.md": {
+    "mtime": 1779297386.1430154,
+    "ast_hash": "668abbafe2371a17159ce1db25372336",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\plan-milestone-gaps.md": {
+    "mtime": 1779297386.2111397,
+    "ast_hash": "ec964bbfb3ba161348596ecee3ca447c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\plan-milestone.md": {
+    "mtime": 1779297386.222139,
+    "ast_hash": "2b1acd7aa98d0d3f1d33d93e3e006fc7",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\plan-phase.md": {
+    "mtime": 1779297386.2416093,
+    "ast_hash": "a44ea634de6354dc362f3b2867b1f665",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\plant-seed.md": {
+    "mtime": 1779297386.2773805,
+    "ast_hash": "217d7312532a48ca3cca4db439ed3785",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\pr-branch.md": {
+    "mtime": 1779297386.29038,
+    "ast_hash": "70e5f325d62cd99e4da3394caf98f4ef",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\profile-user.md": {
+    "mtime": 1779297386.298394,
+    "ast_hash": "a408ade095b2b613e7b3d51d22d71501",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\progress.md": {
+    "mtime": 1779297386.3083947,
+    "ast_hash": "d84177acb247fdc0576d3e7488a76d12",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\quick.md": {
+    "mtime": 1779297386.351338,
+    "ast_hash": "57e3263720bc34e6e84d5008d16072c1",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\remove-phase.md": {
+    "mtime": 1779297386.3732798,
+    "ast_hash": "102c08a048fdd7e84d090a3060608f2a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\remove-workspace.md": {
+    "mtime": 1779297386.3833177,
+    "ast_hash": "1a2b11793ddd118be6dd13ec62418d78",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\research-phase.md": {
+    "mtime": 1779297386.397036,
+    "ast_hash": "80f822d59daa18389227193bc9a96fbd",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\resume-project.md": {
+    "mtime": 1779297386.428618,
+    "ast_hash": "d83aea34d676e6ea2222188fb0572825",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\review-backlog.md": {
+    "mtime": 1779297386.43802,
+    "ast_hash": "af7653859fef271ea195af963eb38279",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\review.md": {
+    "mtime": 1779297386.4510367,
+    "ast_hash": "13883bdc06a58ad4107337ef44b9ea23",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\session-report.md": {
+    "mtime": 1779297386.4743896,
+    "ast_hash": "9306ef311afe9a397584bd2b1b308775",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\set-profile.md": {
+    "mtime": 1779297386.4927526,
+    "ast_hash": "c4fe3d145e78cec85816d158048f6ea5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\settings.md": {
+    "mtime": 1779297386.5123348,
+    "ast_hash": "1ccd08da4e1666c0f2d2d90210a5a2e6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\ship.md": {
+    "mtime": 1779297386.519908,
+    "ast_hash": "80870cfba96e3f2f8039853fc896549a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\stats.md": {
+    "mtime": 1779297386.5851176,
+    "ast_hash": "a17b26a013f22d7ee8492c4a0b013130",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\thread.md": {
+    "mtime": 1779297386.7651427,
+    "ast_hash": "f2fbe2f5630248509bc2c509f3e4814b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\transition.md": {
+    "mtime": 1779297386.8093958,
+    "ast_hash": "3944fa35d272a43077a05b252980c9f3",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\ui-phase.md": {
+    "mtime": 1779297386.8929543,
+    "ast_hash": "b6827b6ed21d8bce0b2e31dc80d2ee94",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\ui-review.md": {
+    "mtime": 1779297386.905908,
+    "ast_hash": "7ebd20a430b8acb96e78e5086edd7a30",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\update.md": {
+    "mtime": 1779297386.9737995,
+    "ast_hash": "8210e8f2a09f9d05e70de2526da85a18",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\validate-phase.md": {
+    "mtime": 1779297387.1050293,
+    "ast_hash": "764d8d247510c6c2c1d0718f76ab37cd",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\verify-phase.md": {
+    "mtime": 1779297387.1738386,
+    "ast_hash": "c3d7926c568a82361669a1f4fd633afc",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\verify-work.md": {
+    "mtime": 1779297387.1854196,
+    "ast_hash": "ab97bbd67262ab40ca5b428e102dfb2e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\.pi\\gsd\\workflows\\workstreams.md": {
+    "mtime": 1779297387.219969,
+    "ast_hash": "36bf6a3210c7572897a282ddb6b6f936",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\docs\\ONBOARDING.md": {
+    "mtime": 1779436753.3728807,
+    "ast_hash": "a8045b7603043aff57937cb99efb92e2",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-api\\docs\\security-audit.md": {
+    "mtime": 1779437530.259791,
+    "ast_hash": "755da08b738d9a8bdacdf81a944c1cab",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\java\\vn\\edu\\uit\\devorbit_api\\config\\AGENTS.md": {
@@ -16410,13 +18935,13 @@
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\resources\\application-local.yaml": {
-    "mtime": 1778765849.7058442,
-    "ast_hash": "4d4ef7f9692e6596187f8b59bd7e31e7",
+    "mtime": 1779365071.1056128,
+    "ast_hash": "0e2e1716202a4041d3f01bdfd2c6b3ce",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\main\\resources\\application.yaml": {
-    "mtime": 1778847956.8452594,
-    "ast_hash": "b840165fd5fa1c6999f4b07fdc6e7804",
+    "mtime": 1779365068.5453165,
+    "ast_hash": "7d2f9fb7aa4a8843d7d180c73ad725a5",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-api\\src\\test\\resources\\application-test.yaml": {
@@ -16502,6 +19027,981 @@
   "D:\\temp\\devorbit\\devorbit-web\\index.html": {
     "mtime": 1778752575.9647765,
     "ast_hash": "41129b8ce67bb32bfec30061070768e6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\README.md": {
+    "mtime": 1779363423.8081963,
+    "ast_hash": "33fb0729ee2d112115e390a691553993",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\agents\\gsd-advisor-researcher.md": {
+    "mtime": 1779297384.4363077,
+    "ast_hash": "65be3b96bd61ef9378211e517f12ddd5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\agents\\gsd-assumptions-analyzer.md": {
+    "mtime": 1779297384.4571524,
+    "ast_hash": "f93082f9ebbd162ee1be7a3dd8246691",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\agents\\gsd-codebase-mapper.md": {
+    "mtime": 1779297384.5524485,
+    "ast_hash": "4b148a0cdfbd94cdc7e13e1f1eef7fa5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\agents\\gsd-debugger.md": {
+    "mtime": 1779297384.6056263,
+    "ast_hash": "987928fc5fda920e28da6a4d8d59bba2",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\agents\\gsd-executor.md": {
+    "mtime": 1779297384.74139,
+    "ast_hash": "ade3f3ed357711a8b8686230b5c312fc",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\agents\\gsd-integration-checker.md": {
+    "mtime": 1779297384.816298,
+    "ast_hash": "dcfea4cd0894613b3398c14b5f52f270",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\agents\\gsd-nyquist-auditor.md": {
+    "mtime": 1779297385.02647,
+    "ast_hash": "50a90205e88b78b808f62b3e8d05f90c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\agents\\gsd-phase-researcher.md": {
+    "mtime": 1779297385.0586436,
+    "ast_hash": "4a62cb61e442f99267a0d8f368349cd5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\agents\\gsd-plan-checker.md": {
+    "mtime": 1779297385.0772517,
+    "ast_hash": "611b5d6dc2cf75c78807541fcf2df264",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\agents\\gsd-planner.md": {
+    "mtime": 1779297385.1269784,
+    "ast_hash": "07c6d6ab25c5241323fdc6dc56477bce",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\agents\\gsd-project-researcher.md": {
+    "mtime": 1779297385.1853223,
+    "ast_hash": "dccd4b048d07835c3f900d1b14a7d89d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\agents\\gsd-research-synthesizer.md": {
+    "mtime": 1779297385.2783418,
+    "ast_hash": "97060615e532847106aee18ba190e7fa",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\agents\\gsd-roadmapper.md": {
+    "mtime": 1779297385.341912,
+    "ast_hash": "2dc840638be5cd7c6f3a9602e39bc9e0",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\agents\\gsd-ui-auditor.md": {
+    "mtime": 1779297385.4141366,
+    "ast_hash": "554a2d837e59b3a9dadb0377b16ef903",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\agents\\gsd-ui-checker.md": {
+    "mtime": 1779297385.422356,
+    "ast_hash": "b9aae05377ccf665fd3a9b1e605b0b5d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\agents\\gsd-ui-researcher.md": {
+    "mtime": 1779297385.4646814,
+    "ast_hash": "8dea478a998c35d4984051630859994b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\agents\\gsd-user-profiler.md": {
+    "mtime": 1779297385.5205572,
+    "ast_hash": "8e0665655f50a7f613317ad3f113b613",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\agents\\gsd-verifier.md": {
+    "mtime": 1779297385.5964572,
+    "ast_hash": "3fc65c20b358898389ec9c5a11f8e87e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-add-backlog.md": {
+    "mtime": 1779297384.3267696,
+    "ast_hash": "0db536be23cd441b41b537540a2c772b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-add-phase.md": {
+    "mtime": 1779297384.3535025,
+    "ast_hash": "3b590ff36606475e8c2fd766e7502306",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-add-tests.md": {
+    "mtime": 1779297384.3861878,
+    "ast_hash": "b27fd245d8305679de74f1e0aff51441",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-add-todo.md": {
+    "mtime": 1779297384.403024,
+    "ast_hash": "1c3c174e232bf837e82b1cda4200d52a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-audit-milestone.md": {
+    "mtime": 1779297384.476036,
+    "ast_hash": "92c08d25eb6a6e05379ecd1f82ddd46b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-audit-uat.md": {
+    "mtime": 1779297384.483356,
+    "ast_hash": "08045260d59673c1099b92e09d6b2ba5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-autonomous.md": {
+    "mtime": 1779297384.4956539,
+    "ast_hash": "210255ccc63c294dbfc49a417193e9e4",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-check-todos.md": {
+    "mtime": 1779297384.5147686,
+    "ast_hash": "769b8c4373cc093685a285fc07880fc3",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-cleanup.md": {
+    "mtime": 1779297384.526927,
+    "ast_hash": "2830b5bc0e7b199f3ee913add9fe8256",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-complete-milestone.md": {
+    "mtime": 1779297384.5593352,
+    "ast_hash": "cf990af98c1b3189a1f46b0536eef5d0",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-debug.md": {
+    "mtime": 1779297384.5681815,
+    "ast_hash": "6d7915ae4131bbbeacdf7f6d509fbb96",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-discuss-milestone.md": {
+    "mtime": 1779297384.6325083,
+    "ast_hash": "91d71a408ed46e2f8f3221c76331a5bd",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-discuss-phase.md": {
+    "mtime": 1779297384.6435149,
+    "ast_hash": "d0c6286c62f3a4b6429da96f6a740907",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-do.md": {
+    "mtime": 1779297384.6543305,
+    "ast_hash": "735828c5cf35fcf810539977ea03ad9d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-execute-milestone.md": {
+    "mtime": 1779297384.6956625,
+    "ast_hash": "58a0ab3fe22688c1cb5543e33c9d0702",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-execute-phase.md": {
+    "mtime": 1779297384.7254949,
+    "ast_hash": "82e9e754330c81bc4958406223cf90a3",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-fast.md": {
+    "mtime": 1779297384.7667623,
+    "ast_hash": "904db840487b1a4e036e4d9672cc27d8",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-forensics.md": {
+    "mtime": 1779297384.7860248,
+    "ast_hash": "7af61bdf1576820dcb7b98282124e193",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-insert-phase.md": {
+    "mtime": 1779297384.8000271,
+    "ast_hash": "43d61cd2cecc0d3ada6edad37675bb33",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-join-discord.md": {
+    "mtime": 1779297384.8410153,
+    "ast_hash": "4e97277b9d2096cb17b9940b5fb6c9f5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-list-phase-assumptions.md": {
+    "mtime": 1779297384.8595984,
+    "ast_hash": "f8213af1730e9191fae99d673717b497",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-list-workspaces.md": {
+    "mtime": 1779297384.8685584,
+    "ast_hash": "71883071d4ff23283af8f5b71a64acb7",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-manager.md": {
+    "mtime": 1779297384.8879163,
+    "ast_hash": "b51a07a66fdac7a9f0238f912fbd056b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-map-codebase.md": {
+    "mtime": 1779297384.911045,
+    "ast_hash": "af8693454962c5c99c84a4e75f00a7dd",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-milestone-summary.md": {
+    "mtime": 1779297384.9252524,
+    "ast_hash": "2f31ee0bb51f5015ea7feea92c33319d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-new-milestone.md": {
+    "mtime": 1779297384.9414475,
+    "ast_hash": "da772c47676a745138e8b1a748f175b3",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-new-project.md": {
+    "mtime": 1779297384.9632244,
+    "ast_hash": "e85deab5ee050f939127260f4811d164",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-new-workspace.md": {
+    "mtime": 1779297384.9732203,
+    "ast_hash": "fe04744ff44485c0e8f38be3598f274c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-note.md": {
+    "mtime": 1779297385.0183878,
+    "ast_hash": "9346f42512d0a34db138ee2e48602ddd",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-pause-work.md": {
+    "mtime": 1779297385.0339234,
+    "ast_hash": "5e5f375411887c01b14e77694b932b2a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-plan-milestone-gaps.md": {
+    "mtime": 1779297385.0942655,
+    "ast_hash": "92670de09d88ae28ff0227a3865a45de",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-plan-milestone.md": {
+    "mtime": 1779297385.1041007,
+    "ast_hash": "876afc19a321ff3cfe487f44568d29b6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-plan-phase.md": {
+    "mtime": 1779297385.111103,
+    "ast_hash": "ae9ce9faae668cc11cb759e43772ae61",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-plant-seed.md": {
+    "mtime": 1779297385.1520514,
+    "ast_hash": "1ad26fbaaae47b143f5caa87dea24174",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-pr-branch.md": {
+    "mtime": 1779297385.1655798,
+    "ast_hash": "2a3cea51e9151c99722f34da8e3c353a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-profile-user.md": {
+    "mtime": 1779297385.173944,
+    "ast_hash": "2f4e4bea12508750c656ab146b1f6136",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-quick.md": {
+    "mtime": 1779297385.1936462,
+    "ast_hash": "351aa96181cf34d8728fdf1a3e20e903",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-reapply-patches.md": {
+    "mtime": 1779297385.2102757,
+    "ast_hash": "149cbdf7f836e5a074ea3fe7472a0ff0",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-remove-phase.md": {
+    "mtime": 1779297385.2212894,
+    "ast_hash": "1d3ffc90b29e6318b9caa7f333b091f8",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-remove-workspace.md": {
+    "mtime": 1779297385.254005,
+    "ast_hash": "1cd8e580c5f359feb83826e8cb16c9e8",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-research-phase.md": {
+    "mtime": 1779297385.2636473,
+    "ast_hash": "b6894dadfb6fb559c937ea26e29b8164",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-resume-work.md": {
+    "mtime": 1779297385.2895937,
+    "ast_hash": "a3539210cfb80c3f63630d90550d31ab",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-review-backlog.md": {
+    "mtime": 1779297385.3143983,
+    "ast_hash": "276662fc410b938b071440424f0c599a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-review.md": {
+    "mtime": 1779297385.3229663,
+    "ast_hash": "16f2aaef183b0c5f893ba17087b83475",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-session-report.md": {
+    "mtime": 1779297385.350139,
+    "ast_hash": "bf3cde7236307af5cb38f98cf2897743",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-set-profile.md": {
+    "mtime": 1779297385.3654237,
+    "ast_hash": "e5882d6b62677d158c3b7ded4be2b5d1",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-settings.md": {
+    "mtime": 1779297385.3839262,
+    "ast_hash": "5e931bf6c558c92f7cee38ff302b0669",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-ship.md": {
+    "mtime": 1779297385.387982,
+    "ast_hash": "0a677a1753e2e40a691afefab690eea0",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-thread.md": {
+    "mtime": 1779297385.395486,
+    "ast_hash": "601ebd7ddd8353bf89703d03c4b529d9",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-ui-phase.md": {
+    "mtime": 1779297385.4383552,
+    "ast_hash": "23e0353d845a35a09a237d53cfe79011",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-ui-review.md": {
+    "mtime": 1779297385.482715,
+    "ast_hash": "e16371bf3bcb1643c3fa8c9ae0e8268a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-validate-phase.md": {
+    "mtime": 1779297385.552283,
+    "ast_hash": "fc07f44ebf8f533370524845ddb31cc4",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-verify-work.md": {
+    "mtime": 1779297385.6197505,
+    "ast_hash": "d0220005166fc79d67022c3bfb7d47fb",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\prompts\\gsd-workstreams.md": {
+    "mtime": 1779297385.646924,
+    "ast_hash": "aefdb8e9a0db1fb23f9f7ddb246243b3",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\references\\checkpoints.md": {
+    "mtime": 1779297383.4947796,
+    "ast_hash": "638c08be47d5cc92684df1fc142c87cb",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\references\\continuation-format.md": {
+    "mtime": 1779297383.7029407,
+    "ast_hash": "c6cbba6cf28aad0c230493a003217529",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\references\\decimal-phase-calculation.md": {
+    "mtime": 1779297383.9162304,
+    "ast_hash": "1e470b87aab213dee9e017425084f497",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\references\\git-integration.md": {
+    "mtime": 1779297384.265623,
+    "ast_hash": "b55d6363ce5ee4912f4c9787a77d150c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\references\\git-planning-commit.md": {
+    "mtime": 1779297384.286358,
+    "ast_hash": "10cd79d009be7992258a918404695580",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\references\\model-profile-resolution.md": {
+    "mtime": 1779297385.9800262,
+    "ast_hash": "0b89ece6cf8e6d3ff6927ab42019997f",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\references\\model-profiles.md": {
+    "mtime": 1779297385.9902418,
+    "ast_hash": "954e53cd1c891449084c9f47ed6e2aff",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\references\\phase-argument-parsing.md": {
+    "mtime": 1779297386.1769066,
+    "ast_hash": "dab154e70d2e29712a812c0d4ff0416f",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\references\\planning-config.md": {
+    "mtime": 1779297386.2710485,
+    "ast_hash": "16c19148875511126440ce4a43c946de",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\references\\questioning.md": {
+    "mtime": 1779297386.3433218,
+    "ast_hash": "2e22992a96276dd571eace6c7c362cfd",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\references\\tdd.md": {
+    "mtime": 1779297386.6775134,
+    "ast_hash": "19d8a3e6bbc615710ce7e27177844ad4",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\references\\ui-brand.md": {
+    "mtime": 1779297386.8696122,
+    "ast_hash": "680b66ac8a03eb12164f3a337bc09eeb",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\references\\user-profiling.md": {
+    "mtime": 1779297387.0415452,
+    "ast_hash": "96aba40ec3e87de975a61aa2fec4a16c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\references\\verification-patterns.md": {
+    "mtime": 1779297387.1452131,
+    "ast_hash": "c1a8877c045c9e89978bffa0fb57fd18",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\references\\workstream-flag.md": {
+    "mtime": 1779297387.1949518,
+    "ast_hash": "ae56399c77244216ac4a9b0591eb0bff",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\claude-md.md": {
+    "mtime": 1779297383.523983,
+    "ast_hash": "272c89c4cb58aac8d8095235f4b8fcc7",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\context.md": {
+    "mtime": 1779297383.642223,
+    "ast_hash": "b974b872ba20748408d16a1115a7e36f",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\continue-here.md": {
+    "mtime": 1779297383.7509544,
+    "ast_hash": "feb1fe81260fcc133e4fa47a8e8e1b4e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\copilot-instructions.md": {
+    "mtime": 1779297383.8377995,
+    "ast_hash": "d687178aac36c9497fa94f73895c8f4f",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\debug-subagent-prompt.md": {
+    "mtime": 1779297383.8564732,
+    "ast_hash": "24fa1011c6357f81b659b287c4bd537a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\DEBUG.md": {
+    "mtime": 1779297383.8730762,
+    "ast_hash": "046082a5fb711bddd6d54361e0352899",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\dev-preferences.md": {
+    "mtime": 1779297383.9311306,
+    "ast_hash": "a4e5dd7a0c8fa5c27995f4e33d055153",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\discovery.md": {
+    "mtime": 1779297383.9984286,
+    "ast_hash": "d478e8aa2ff6610354042d02b4a68cad",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\discussion-log.md": {
+    "mtime": 1779297384.090153,
+    "ast_hash": "ace7edf22c7105109aeb8f0ff825b84b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\milestone-archive.md": {
+    "mtime": 1779297385.8537216,
+    "ast_hash": "2ecf0cd7ec0b83a86ecfa26b37807f08",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\milestone-context.md": {
+    "mtime": 1779297385.8805294,
+    "ast_hash": "98084410b2a0b5e22370ce1bad1ddfb6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\milestone.md": {
+    "mtime": 1779297385.9580078,
+    "ast_hash": "aa6a849cf855d35da7d761ce2bf63cbd",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\phase-prompt.md": {
+    "mtime": 1779297386.187085,
+    "ast_hash": "17e09dfb309620bd2ca5d616f3db695f",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\planner-subagent-prompt.md": {
+    "mtime": 1779297386.250712,
+    "ast_hash": "cb3db0aab4d9fe11628bbdfe657462a1",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\project.md": {
+    "mtime": 1779297386.3252568,
+    "ast_hash": "7e496ce73cad5ab34b23dd70dc3ed67a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\requirements.md": {
+    "mtime": 1779297386.3913155,
+    "ast_hash": "78a42584cdb7ac4fb1670828ab11b9b7",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\research.md": {
+    "mtime": 1779297386.4141376,
+    "ast_hash": "22a0c5bbb6d193c5cc028c659bf93c14",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\retrospective.md": {
+    "mtime": 1779297386.4327881,
+    "ast_hash": "441d864c3b48f1e50c0a65819dfb2da6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\roadmap.md": {
+    "mtime": 1779297386.4648058,
+    "ast_hash": "2a0b2286575c31d2c5d04d7dda39ca8a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\state.md": {
+    "mtime": 1779297386.575297,
+    "ast_hash": "628fcdfbe8ca51d9d56a980d92d5cd46",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\summary-complex.md": {
+    "mtime": 1779297386.601802,
+    "ast_hash": "3d3fe4b6d8d69dd22fafdfad190cb68e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\summary-minimal.md": {
+    "mtime": 1779297386.6063871,
+    "ast_hash": "cb56b997ba0a6c6b88830fb0b34e3835",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\summary-standard.md": {
+    "mtime": 1779297386.6269643,
+    "ast_hash": "a9282a79c26b7408ccc69f417f2c7bbc",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\summary.md": {
+    "mtime": 1779297386.6621592,
+    "ast_hash": "77ca7d754c0901be41c891d50a4ac469",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\UAT.md": {
+    "mtime": 1779297386.8450823,
+    "ast_hash": "20009a81f63152384243fce2e74f9846",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\UI-SPEC.md": {
+    "mtime": 1779297386.9366663,
+    "ast_hash": "53750f4a594906722b49ba756bb1e4a9",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\user-profile.md": {
+    "mtime": 1779297386.9900782,
+    "ast_hash": "e02ba718f096a9c0391516d1088dc9e2",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\user-setup.md": {
+    "mtime": 1779297387.0700042,
+    "ast_hash": "205196fbfcf6203b571183369956e6c6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\VALIDATION.md": {
+    "mtime": 1779297387.1326768,
+    "ast_hash": "7abdfe02972bb25f6c3f08c74c73fe3e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\verification-report.md": {
+    "mtime": 1779297387.151622,
+    "ast_hash": "00c98b77bc7411ddf81e657a134f7f65",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\codebase\\architecture.md": {
+    "mtime": 1779297383.2487216,
+    "ast_hash": "514c389cf3dab629ba0edd7e4da5c190",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\codebase\\concerns.md": {
+    "mtime": 1779297383.6020896,
+    "ast_hash": "8cae5a40fe882eea3220bf69e0824e9b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\codebase\\conventions.md": {
+    "mtime": 1779297383.7928693,
+    "ast_hash": "d96a28d987f705543d669491be773915",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\codebase\\integrations.md": {
+    "mtime": 1779297385.7484524,
+    "ast_hash": "080c74b99947918e5f790300e0fbc2f3",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\codebase\\stack.md": {
+    "mtime": 1779297386.527914,
+    "ast_hash": "c75effaa928d5c93784a1e136674097b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\codebase\\structure.md": {
+    "mtime": 1779297386.597279,
+    "ast_hash": "8557c7c997c0b2952e39eb16bf85a6a5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\codebase\\testing.md": {
+    "mtime": 1779297386.7351418,
+    "ast_hash": "8284aecc988d2fca720d60a44806ca10",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\research-project\\ARCHITECTURE.md": {
+    "mtime": 1779297383.3075707,
+    "ast_hash": "904b29787411bc00ac2ca5e5c98aeee0",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\research-project\\FEATURES.md": {
+    "mtime": 1779297384.2055256,
+    "ast_hash": "e1877e8cc0249eb79ec497159186e26d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\research-project\\PITFALLS.md": {
+    "mtime": 1779297386.2011445,
+    "ast_hash": "e0023c29b7c4e9e04a178db6a6057e3e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\research-project\\STACK.md": {
+    "mtime": 1779297386.5584078,
+    "ast_hash": "66feafaa3e7e9d11cee82c24408ead8c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\templates\\research-project\\SUMMARY.md": {
+    "mtime": 1779297386.649097,
+    "ast_hash": "c777da0f9f3a0c20a5b70947e23ad9d9",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\add-backlog.md": {
+    "mtime": 1779297383.0252101,
+    "ast_hash": "a0ee928eaf0256b6afc0d4c5cb63da9f",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\add-phase.md": {
+    "mtime": 1779297383.109526,
+    "ast_hash": "3453515856792db07106b32f6630cd5e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\add-tests.md": {
+    "mtime": 1779297383.1568005,
+    "ast_hash": "9c22458b6aec153b98c4444751076148",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\add-todo.md": {
+    "mtime": 1779297383.205293,
+    "ast_hash": "775d436825df1e78d15eea868301e80c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\audit-milestone.md": {
+    "mtime": 1779297383.342578,
+    "ast_hash": "01c38fba908aed65e9a7211ea134689d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\audit-uat.md": {
+    "mtime": 1779297383.3871536,
+    "ast_hash": "3859bff1e422fc653760fe9a73c84957",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\autonomous.md": {
+    "mtime": 1779297383.4381647,
+    "ast_hash": "ec195531b3d275c0d7ed239c75e46359",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\check-todos.md": {
+    "mtime": 1779297383.4665625,
+    "ast_hash": "ace9676e22a2be8cb5dda5dabd705c41",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\cleanup.md": {
+    "mtime": 1779297383.5489583,
+    "ast_hash": "0559f00354f6ea3f86e3ba583ef4a444",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\complete-milestone.md": {
+    "mtime": 1779297383.5619693,
+    "ast_hash": "326cc0f45d665821f9c519f28c16c5b9",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\debug.md": {
+    "mtime": 1779297383.9024618,
+    "ast_hash": "a830b05d8f2013ad72b4b46383440e1d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\diagnose-issues.md": {
+    "mtime": 1779297383.950459,
+    "ast_hash": "9cf3e29a57f8681a7b0f4e50ef1060cc",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\discovery-phase.md": {
+    "mtime": 1779297383.9705505,
+    "ast_hash": "d8b1a6cfb8d82e6e3ec18521da095988",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\discuss-milestone.md": {
+    "mtime": 1779297384.0194602,
+    "ast_hash": "7c3d7ec2ea9c0b854677d998619a98df",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\discuss-phase-assumptions.md": {
+    "mtime": 1779297384.0481708,
+    "ast_hash": "28c4362520b2afee2988aee3fc19ff69",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\discuss-phase.md": {
+    "mtime": 1779297384.0708601,
+    "ast_hash": "007b1009b96c8a4658f8b42692590b86",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\do.md": {
+    "mtime": 1779297384.110405,
+    "ast_hash": "4157974e9cf512ab9430a900bcbcf5e0",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\execute-milestone.md": {
+    "mtime": 1779297384.1318445,
+    "ast_hash": "f3ec988f2be863797bee2011f9570552",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\execute-phase.md": {
+    "mtime": 1779297384.1512895,
+    "ast_hash": "6b989547ea965683198b8f98efc6db8b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\execute-plan.md": {
+    "mtime": 1779297384.1767738,
+    "ast_hash": "e911fc68b1491958a4da9718b408451a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\fast.md": {
+    "mtime": 1779297384.1881485,
+    "ast_hash": "ca51dae9d9f1273ab4192ac02e108232",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\forensics.md": {
+    "mtime": 1779297384.2481196,
+    "ast_hash": "4e2ff20b8c85261905da94cfc4967910",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\health.md": {
+    "mtime": 1779297385.6669865,
+    "ast_hash": "e771205e65fd29cce3649b142cee0807",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\help.md": {
+    "mtime": 1779297385.7015722,
+    "ast_hash": "e91e1746fac599968ad409be482eb5a6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\insert-phase.md": {
+    "mtime": 1779297385.7227564,
+    "ast_hash": "61474a0c212eda07b0170790a26f8a77",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\list-phase-assumptions.md": {
+    "mtime": 1779297385.76278,
+    "ast_hash": "9868b6fb2fe3503240c53e7b88a14145",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\list-workspaces.md": {
+    "mtime": 1779297385.785947,
+    "ast_hash": "a57f9eaf4f984126dea3c64fa57115ed",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\manager.md": {
+    "mtime": 1779297385.8222744,
+    "ast_hash": "e29a8d2768cdc19a5e129a11c833ec6c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\map-codebase.md": {
+    "mtime": 1779297385.8467016,
+    "ast_hash": "02abdd4b36acbb51b13571f71d04fd81",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\milestone-summary.md": {
+    "mtime": 1779297385.9120977,
+    "ast_hash": "ec55cbef3538f653954d757c50b8dd57",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\new-milestone.md": {
+    "mtime": 1779297386.0240974,
+    "ast_hash": "6b732ae82b73387836b658cc70aa07ae",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\new-project.md": {
+    "mtime": 1779297386.056939,
+    "ast_hash": "8bebb10fadda2733af80e4711ec1cdf7",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\new-workspace.md": {
+    "mtime": 1779297386.0823379,
+    "ast_hash": "a3de82f90faa3012fe4eb4187dc68df2",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\next.md": {
+    "mtime": 1779297386.1026356,
+    "ast_hash": "04f22a33ce5381ddedb0d288383fded6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\node-repair.md": {
+    "mtime": 1779297386.118114,
+    "ast_hash": "74acb70dafa43e1a96cf4b264a148c1d",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\note.md": {
+    "mtime": 1779297386.1273277,
+    "ast_hash": "c95a8b7bf515c59ca6095536ead39bfa",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\pause-work.md": {
+    "mtime": 1779297386.1430154,
+    "ast_hash": "668abbafe2371a17159ce1db25372336",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\plan-milestone-gaps.md": {
+    "mtime": 1779297386.2111397,
+    "ast_hash": "ec964bbfb3ba161348596ecee3ca447c",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\plan-milestone.md": {
+    "mtime": 1779297386.222139,
+    "ast_hash": "2b1acd7aa98d0d3f1d33d93e3e006fc7",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\plan-phase.md": {
+    "mtime": 1779297386.2416093,
+    "ast_hash": "a44ea634de6354dc362f3b2867b1f665",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\plant-seed.md": {
+    "mtime": 1779297386.2773805,
+    "ast_hash": "217d7312532a48ca3cca4db439ed3785",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\pr-branch.md": {
+    "mtime": 1779297386.29038,
+    "ast_hash": "70e5f325d62cd99e4da3394caf98f4ef",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\profile-user.md": {
+    "mtime": 1779297386.298394,
+    "ast_hash": "a408ade095b2b613e7b3d51d22d71501",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\progress.md": {
+    "mtime": 1779297386.3083947,
+    "ast_hash": "d84177acb247fdc0576d3e7488a76d12",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\quick.md": {
+    "mtime": 1779297386.351338,
+    "ast_hash": "57e3263720bc34e6e84d5008d16072c1",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\remove-phase.md": {
+    "mtime": 1779297386.3732798,
+    "ast_hash": "102c08a048fdd7e84d090a3060608f2a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\remove-workspace.md": {
+    "mtime": 1779297386.3833177,
+    "ast_hash": "1a2b11793ddd118be6dd13ec62418d78",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\research-phase.md": {
+    "mtime": 1779297386.397036,
+    "ast_hash": "80f822d59daa18389227193bc9a96fbd",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\resume-project.md": {
+    "mtime": 1779297386.428618,
+    "ast_hash": "d83aea34d676e6ea2222188fb0572825",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\review-backlog.md": {
+    "mtime": 1779297386.43802,
+    "ast_hash": "af7653859fef271ea195af963eb38279",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\review.md": {
+    "mtime": 1779297386.4510367,
+    "ast_hash": "13883bdc06a58ad4107337ef44b9ea23",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\session-report.md": {
+    "mtime": 1779297386.4743896,
+    "ast_hash": "9306ef311afe9a397584bd2b1b308775",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\set-profile.md": {
+    "mtime": 1779297386.4927526,
+    "ast_hash": "c4fe3d145e78cec85816d158048f6ea5",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\settings.md": {
+    "mtime": 1779297386.5123348,
+    "ast_hash": "1ccd08da4e1666c0f2d2d90210a5a2e6",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\ship.md": {
+    "mtime": 1779297386.519908,
+    "ast_hash": "80870cfba96e3f2f8039853fc896549a",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\stats.md": {
+    "mtime": 1779297386.5851176,
+    "ast_hash": "a17b26a013f22d7ee8492c4a0b013130",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\thread.md": {
+    "mtime": 1779297386.7651427,
+    "ast_hash": "f2fbe2f5630248509bc2c509f3e4814b",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\transition.md": {
+    "mtime": 1779297386.8093958,
+    "ast_hash": "3944fa35d272a43077a05b252980c9f3",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\ui-phase.md": {
+    "mtime": 1779297386.8929543,
+    "ast_hash": "b6827b6ed21d8bce0b2e31dc80d2ee94",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\ui-review.md": {
+    "mtime": 1779297386.905908,
+    "ast_hash": "7ebd20a430b8acb96e78e5086edd7a30",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\update.md": {
+    "mtime": 1779297386.9737995,
+    "ast_hash": "8210e8f2a09f9d05e70de2526da85a18",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\validate-phase.md": {
+    "mtime": 1779297387.1050293,
+    "ast_hash": "764d8d247510c6c2c1d0718f76ab37cd",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\verify-phase.md": {
+    "mtime": 1779297387.1738386,
+    "ast_hash": "c3d7926c568a82361669a1f4fd633afc",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\verify-work.md": {
+    "mtime": 1779297387.1854196,
+    "ast_hash": "ab97bbd67262ab40ca5b428e102dfb2e",
+    "semantic_hash": ""
+  },
+  "D:\\temp\\devorbit\\devorbit-web\\.pi\\gsd\\workflows\\workstreams.md": {
+    "mtime": 1779297387.219969,
+    "ast_hash": "36bf6a3210c7572897a282ddb6b6f936",
     "semantic_hash": ""
   },
   "D:\\temp\\devorbit\\devorbit-web\\.vercel\\README.txt": {

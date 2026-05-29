@@ -101,9 +101,9 @@ export function RepoAiAnalysisSection({ repo, analysis, loading, error }: RepoAi
       <div className="orbit-card p-5 md:p-6 border-orbit-border bg-orbit-surface/60">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h3 className="text-[15px] font-black text-orbit-text">Phân tích chi tiết</h3>
+            <h3 className="text-[15px] font-black text-orbit-text">Mở rộng cho bạn</h3>
             <p className="mt-1 text-[12px] leading-relaxed text-orbit-text-muted">
-              Mở khi cần xem thêm điểm mạnh, điểm yếu và bước kiểm tra tiếp theo.
+              Gợi ý cách học, cách khai thác và những điểm cần cẩn thận khi dùng repo này.
             </p>
           </div>
           <button
@@ -112,7 +112,7 @@ export function RepoAiAnalysisSection({ repo, analysis, loading, error }: RepoAi
             className="inline-flex items-center justify-center gap-2 rounded-2xl border border-orbit-border bg-orbit-elevated px-4 py-3 text-[11px] font-black uppercase tracking-[0.12em] text-orbit-text-secondary transition-all hover:border-orbit-accent/30 hover:text-orbit-text"
             aria-expanded={detailsOpen}
           >
-            {detailsOpen ? 'Ẩn chi tiết' : 'Xem chi tiết'}
+            {detailsOpen ? 'Thu gọn' : 'Mở rộng'}
             <CaretDown className={`h-4 w-4 transition-transform ${detailsOpen ? 'rotate-180' : ''}`} weight="bold" />
           </button>
         </div>
@@ -120,11 +120,14 @@ export function RepoAiAnalysisSection({ repo, analysis, loading, error }: RepoAi
 
       {detailsOpen && (
         <div className="grid gap-5 lg:grid-cols-2">
-          <StrengthWeaknessCard strengths={evaluation.strengths} weaknesses={evaluation.weaknesses} />
+          <div className="lg:col-span-2">
+            <StrengthWeaknessCard strengths={evaluation.strengths} weaknesses={evaluation.weaknesses} />
+          </div>
           <NextActionsCard actions={evaluation.nextActions} />
-          {evaluation.sections.map((section) => (
-            <DetailGroupCard key={section.title} title={section.title} items={section.items} />
-          ))}
+          <LearningStrategyCard strategies={evaluation.learningStrategy} />
+          <div className="lg:col-span-2">
+            <CautionCard cautions={evaluation.cautionNotes} />
+          </div>
         </div>
       )}
     </section>
@@ -135,7 +138,7 @@ function OverviewCard({ repo, evaluation }: { repo: RepoSummary; evaluation: Rep
   const metadata = repo as RepoDisplayMetadata
   const owner = getRepoOwner(repo.githubUrl)
   const license = getLicenseLabel(metadata.license)
-  const updatedAt = formatVietnameseRelativeDate(metadata.updatedAt ?? metadata.lastPushedAt)
+  const updatedAt = formatVietnameseRelativeDate(metadata.lastPushedAt ?? metadata.updatedAt)
   const forks = typeof metadata.forks === 'number' ? metadata.forks : null
   const scoreTone = ratingToneClasses[evaluation.usefulnessRating]
   const groupLabel = evaluation.repoType === 'exam_review' ? 'Tài liệu ôn tập / đề thi' : evaluation.courseGroupLabel
@@ -357,10 +360,13 @@ function FileTreePreview({ files, open, onToggle }: { files: string[]; open: boo
 function StrengthWeaknessCard({ strengths, weaknesses }: { strengths: string[]; weaknesses: string[] }) {
   return (
     <article className="orbit-card p-6 border-orbit-border bg-orbit-surface/70">
-      <div className="mb-5 flex items-center gap-3">
+      <div className="mb-4 flex items-center gap-3">
         <CheckCircle className="h-5 w-5 text-orbit-accent" weight="duotone" />
         <h3 className="text-[15px] font-black text-orbit-text">Điểm mạnh / Điểm yếu</h3>
       </div>
+      <p className="mb-4 text-[12px] leading-relaxed text-orbit-text-muted">
+        Những ưu điểm và hạn chế của repo dựa trên dữ liệu hiện có.
+      </p>
       <div className="grid gap-5 sm:grid-cols-2">
         <EvaluationList title="Điểm mạnh" items={strengths} tone="accent" />
         <EvaluationList title="Điểm yếu" items={weaknesses} tone="amber" />
@@ -372,10 +378,13 @@ function StrengthWeaknessCard({ strengths, weaknesses }: { strengths: string[]; 
 function NextActionsCard({ actions }: { actions: string[] }) {
   return (
     <article className="orbit-card p-6 border-orbit-border bg-orbit-surface/70">
-      <div className="mb-5 flex items-center gap-3">
+      <div className="mb-4 flex items-center gap-3">
         <RocketLaunch className="h-5 w-5 text-orbit-accent" weight="duotone" />
         <h3 className="text-[15px] font-black text-orbit-text">Hành động tiếp theo</h3>
       </div>
+      <p className="mb-3 text-[12px] leading-relaxed text-orbit-text-muted">
+        Các bước cụ thể để bắt đầu với repo này.
+      </p>
       <ol className="space-y-4">
         {actions.map((action, index) => (
           <li key={action} className="flex gap-3 text-[13px] leading-relaxed text-orbit-text-secondary">
@@ -390,15 +399,37 @@ function NextActionsCard({ actions }: { actions: string[] }) {
   )
 }
 
-function DetailGroupCard({ title, items }: { title: string; items: string[] }) {
+function LearningStrategyCard({ strategies }: { strategies: string[] }) {
   return (
-    <article className="orbit-card-glow p-6 border-orbit-border">
-      <div className="mb-5 flex items-center gap-3">
-        <BookOpen className="h-5 w-5 text-orbit-accent" weight="duotone" />
-        <h3 className="text-[15px] font-black text-orbit-text">{title}</h3>
+    <article className="orbit-card p-6 border-orbit-border bg-orbit-surface/70">
+      <div className="mb-4 flex items-center gap-3">
+        <BookOpen className="h-5 w-5 text-indigo-400" weight="duotone" />
+        <h3 className="text-[15px] font-black text-orbit-text">Chiến lược học tập với repo</h3>
       </div>
+      <p className="mb-3 text-[12px] leading-relaxed text-orbit-text-muted">
+        Cách khai thác repo này hiệu quả theo đúng loại nội dung.
+      </p>
       <ul className="space-y-3">
-        {items.map((item) => (
+        {strategies.map((item) => (
+          <Bullet key={item}>{item}</Bullet>
+        ))}
+      </ul>
+    </article>
+  )
+}
+
+function CautionCard({ cautions }: { cautions: string[] }) {
+  return (
+    <article className="orbit-card p-6 border-orbit-border bg-orbit-surface/70">
+      <div className="mb-4 flex items-center gap-3">
+        <WarningCircle className="h-5 w-5 text-amber-300" weight="duotone" />
+        <h3 className="text-[15px] font-black text-orbit-text">Cần cẩn thận</h3>
+      </div>
+      <p className="mb-3 text-[12px] leading-relaxed text-orbit-text-muted">
+        Những điểm dễ sai hoặc rủi ro khi dùng repo này.
+      </p>
+      <ul className="space-y-3">
+        {cautions.map((item) => (
           <Bullet key={item}>{item}</Bullet>
         ))}
       </ul>

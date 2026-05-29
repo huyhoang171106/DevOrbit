@@ -53,7 +53,10 @@ create table if not exists courses (
     mamh_old     varchar(50),
     equivalent_mh text,
     prerequisite_mh text,
-    previous_mh  text
+    previous_mh  text,
+    learning_objectives text,
+    grading_criteria text,
+    topics jsonb default '[]'::jsonb
 );
 
 -- External learning resources linked to each course

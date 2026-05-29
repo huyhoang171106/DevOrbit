@@ -43,6 +43,10 @@ app:
   openapi:
     local-dev-url: ${OPENAPI_LOCAL_DEV_URL:http://localhost:8080}
     contact-email: ${API_CONTACT_EMAIL:devorbit@uit.edu.vn}
+  opencode:
+    api-url: ${OPENCODE_API_URL:https://opencode.ai/zen/go/v1}
+    api-key: ${OPENCODE_API_KEY:}
+    model: ${OPENCODE_MODEL:deepseek-v4-flash}
 
 server:
   port: ${SERVER_PORT:8080}

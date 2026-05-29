@@ -32,5 +32,8 @@ public record AdminCourseUpsertRequest(
     String equivalentMH,                 // Equivalent course for credit transfer
     String prerequisiteMH,               // Prerequisite course (must take first)
     String previousMH,                   // Recommended prior course
-    String description                   // Course description (optional)
+    String description,                  // Course description (optional)
+    String learningObjectives,
+    String gradingCriteria,
+    com.fasterxml.jackson.databind.JsonNode topics
 ) {}

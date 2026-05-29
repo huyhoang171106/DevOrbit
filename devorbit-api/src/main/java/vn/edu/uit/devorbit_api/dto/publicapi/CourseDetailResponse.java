@@ -29,5 +29,8 @@ public record CourseDetailResponse(
     String equivalentMH,   // Code of equivalent course for credit transfer
     String prerequisiteMH, // Code of prerequisite course (must be taken first)
     String previousMH,     // Code of recommended prior course (soft prerequisite)
+    String learningObjectives,
+    String gradingCriteria,
+    com.fasterxml.jackson.databind.JsonNode topics,
     List<RepoSummaryResponse> repos  // Active GitHub repos linked to this course
 ) {}

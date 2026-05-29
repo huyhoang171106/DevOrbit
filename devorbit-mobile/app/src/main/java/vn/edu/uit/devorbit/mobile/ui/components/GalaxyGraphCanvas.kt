@@ -26,11 +26,9 @@ fun GalaxyGraphCanvas(
     selectedNode: GraphNode?,
     onNodeClick: (GraphNode) -> Unit
 ) {
-    // Spatial positioning state
     var offset by remember { mutableStateOf(Offset.Zero) }
     var scale by remember { mutableFloatStateOf(0.8f) }
-    
-    // Physics-based node positions (randomized for now, normally would use force-directed layout)
+
     val nodePositions = remember(nodes) {
         nodes.associate { node ->
             val angle = Random.nextDouble() * 2.0 * Math.PI
@@ -42,20 +40,21 @@ fun GalaxyGraphCanvas(
         }
     }
 
-    val infiniteTransition = rememberInfiniteTransition(label = "StarTwinkle")
-    val twinkle by infiniteTransition.animateFloat(
-        initialValue = 0.4f,
+    // Subtle breathing animation for nodes
+    val infiniteTransition = rememberInfiniteTransition(label = "NodeBreath")
+    val breath by infiniteTransition.animateFloat(
+        initialValue = 0.85f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = LinearEasing),
+            animation = tween(3000, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "Twinkle"
+        label = "Breath"
     )
 
-    val plasmaColor = CosmicTheme.colors.plasma
-    val supernovaColor = CosmicTheme.colors.supernova
-    val dashEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+    val amberColor = CosmicTheme.colors.plasma
+    val dangerColor = CosmicTheme.colors.supernova
+    val sageColor = CosmicTheme.colors.aurora
 
     Canvas(
         modifier = Modifier
@@ -70,8 +69,7 @@ fun GalaxyGraphCanvas(
                 detectTapGestures { tapOffset ->
                     val centerX = size.width / 2
                     val centerY = size.height / 2
-                    // Hit testing in world space
-                    val worldTap = (tapOffset - offset - androidx.compose.ui.geometry.Offset(centerX.toFloat(), centerY.toFloat())) / scale
+                    val worldTap = (tapOffset - offset - Offset(centerX.toFloat(), centerY.toFloat())) / scale
                     nodePositions.forEach { (id, pos) ->
                         if ((worldTap - pos).getDistance() < 50f) {
                             nodes.find { it.id == id }?.let { onNodeClick(it) }
@@ -88,49 +86,56 @@ fun GalaxyGraphCanvas(
             canvas.translate(centerX + offset.x, centerY + offset.y)
             canvas.scale(scale, scale)
 
-            // Draw Connections (Constellations)
+            // Connections: thin solid lines
             links.forEach { link ->
                 val start = nodePositions[link.sourceId]
                 val end = nodePositions[link.targetId]
                 if (start != null && end != null) {
                     drawLine(
-                        color = plasmaColor.copy(alpha = 0.15f),
+                        color = amberColor.copy(alpha = 0.1f),
                         start = start,
                         end = end,
-                        strokeWidth = 1.dp.toPx() / scale,
-                        pathEffect = dashEffect
+                        strokeWidth = 1.dp.toPx() / scale
                     )
                 }
             }
 
-            // Draw Nodes (Stars)
+            // Nodes
             nodes.forEach { node ->
                 val pos = nodePositions[node.id] ?: Offset.Zero
                 val isSelected = node.id == selectedNode?.id
-                val accentColor = if (isSelected) supernovaColor else plasmaColor
-                
-                // Outer Glow - Nebula atmosphere
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            accentColor.copy(alpha = 0.25f * twinkle),
-                            Color.Transparent
-                        ),
-                        center = pos,
-                        radius = (if (isSelected) 40.dp else 20.dp).toPx()
-                    ),
-                    radius = (if (isSelected) 40.dp else 20.dp).toPx(),
-                    center = pos
-                )
 
-                // Star Core
+                val nodeColor = when {
+                    isSelected -> dangerColor
+                    node.impactScore >= 7.0 -> amberColor
+                    node.impactScore >= 4.0 -> sageColor
+                    else -> amberColor.copy(alpha = 0.6f)
+                }
+
+                // Outer glow (subtle, only for selected or high-impact)
+                if (isSelected || node.impactScore >= 7.0) {
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                nodeColor.copy(alpha = 0.15f * breath),
+                                androidx.compose.ui.graphics.Color.Transparent
+                            ),
+                            center = pos,
+                            radius = (if (isSelected) 36.dp else 20.dp).toPx()
+                        ),
+                        radius = (if (isSelected) 36.dp else 20.dp).toPx(),
+                        center = pos
+                    )
+                }
+
+                // Node core
                 drawCircle(
-                    color = if (isSelected) supernovaColor else Color.White,
-                    radius = (if (isSelected) 6.dp else 3.dp).toPx(),
+                    color = if (isSelected) androidx.compose.ui.graphics.Color.White else nodeColor,
+                    radius = (if (isSelected) 6.dp else 3.5.dp).toPx(),
                     center = pos
                 )
             }
-            
+
             canvas.restore()
         }
     }

@@ -49,7 +49,7 @@ export function HomePage() {
           />
         </div>
 
-        <div className="relative z-10 w-full max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12 py-24 md:py-32">
+        <div className="relative z-10 w-full max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12 py-12 sm:py-24 md:py-32">
           <motion.div
             className="grid lg:grid-cols-12 gap-16 lg:gap-24 items-center"
             variants={staggerContainer}
@@ -108,7 +108,7 @@ export function HomePage() {
             </div>
 
             {/* Right: Hero Story Carousel (cinematic scene narrative) */}
-            <motion.div variants={fadeUp} className="lg:col-span-5 relative">
+            <motion.div variants={fadeUp} className="lg:col-span-5 relative w-full overflow-hidden">
               <HeroStoryCarousel />
             </motion.div>
           </motion.div>
@@ -116,7 +116,7 @@ export function HomePage() {
       </SectionTransition>
 
       {/* ─── HOW IT WORKS: Cinematic Story Section ─── */}
-      <SectionTransition atmosphere="deep" className="relative w-full overflow-hidden py-36 md:py-48 border-b border-orbit-border/40">
+      <SectionTransition atmosphere="deep" className="relative w-full overflow-hidden py-16 sm:py-36 md:py-48 border-b border-orbit-border/40">
         {/* Background depth */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-orbit-accent/3 blur-[150px] rounded-full" />
@@ -414,7 +414,7 @@ export function HomePage() {
       </SectionTransition>
 
       {/* ─── DISCOVERY FEED ─── */}
-      <SectionTransition atmosphere="deep" className="relative py-28 md:py-36">
+      <SectionTransition atmosphere="deep" className="relative py-16 sm:py-28 md:py-36">
         <div className="w-full max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12">
           <motion.div
             className="max-w-xl mb-16"

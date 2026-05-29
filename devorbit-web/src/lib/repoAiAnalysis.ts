@@ -205,7 +205,7 @@ function getRepoSignals(repo: RepoSummary): RepoSignals {
     courseLabel: formatCourseLabel(repo),
     stars: typeof repo.stars === 'number' ? repo.stars : null,
     forks: typeof metadata.forks === 'number' ? metadata.forks : null,
-    updatedAt: formatVietnameseRelativeDate(metadata.updatedAt ?? metadata.lastPushedAt),
+    updatedAt: formatVietnameseRelativeDate(metadata.lastPushedAt ?? metadata.updatedAt),
     deadline: cleanText(metadata.deadline),
   }
 }

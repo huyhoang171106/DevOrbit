@@ -17,6 +17,8 @@ import vn.edu.uit.devorbit_api.repository.GithubRepoRepository;
 import vn.edu.uit.devorbit_api.repository.RepoCandidateRepository;
 
 import java.time.Duration;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -294,17 +296,12 @@ public class GithubScanService {
 
     private String fetchLatestCommitDate(String owner, String repo, String defaultBranch) {
         try {
+            String commitsPath = "/repos/" + owner + "/" + repo + "/commits"
+                + (defaultBranch != null && !defaultBranch.isBlank()
+                    ? "?sha=" + URLEncoder.encode(defaultBranch, StandardCharsets.UTF_8) + "&per_page=1"
+                    : "?per_page=1");
             JsonNode commits = webClient.get()
-                .uri(uriBuilder -> defaultBranch != null && !defaultBranch.isBlank()
-                    ? uriBuilder
-                        .path("/repos/{owner}/{repo}/commits")
-                        .queryParam("sha", defaultBranch)
-                        .queryParam("per_page", 1)
-                        .build(owner, repo)
-                    : uriBuilder
-                        .path("/repos/{owner}/{repo}/commits")
-                        .queryParam("per_page", 1)
-                        .build(owner, repo))
+                .uri(commitsPath)
                 .retrieve()
                 .bodyToMono(JsonNode.class)
                 .block(Duration.ofSeconds(8));

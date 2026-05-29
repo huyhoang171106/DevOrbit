@@ -10,10 +10,10 @@
 | Mobile Features | Course hub, repo detail, tech stack filter, explore screen | in_progress |
 | SE2025 Curriculum | Course structure, relationships, tech stacks, seed data | implemented |
 | UI Redesign | Mobile UI redesign with premium visual system | in_progress |
+| AI Course Assistant | Chat widget for syllabus Q&A and learning advice | implemented |
 
 ## Planned Stories Not Yet Created
 
-- US-020: Admin dashboard statistics
-- US-021: Scheduled GitHub scan (cron job)
-- US-022: Social features (repo voting, comments)
-- US-023: CI/CD pipeline
+- US-022: Scheduled GitHub scan (cron job)
+- US-023: Social features (repo voting, comments)
+- US-024: CI/CD pipeline

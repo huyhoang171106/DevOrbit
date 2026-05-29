@@ -1,6 +1,5 @@
 package vn.edu.uit.devorbit.mobile.ui.screen.plan
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -12,13 +11,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import vn.edu.uit.devorbit.mobile.domain.model.BreakdownStep
 import vn.edu.uit.devorbit.mobile.domain.model.TaskBreakdown
-import vn.edu.uit.devorbit.mobile.ui.components.GlassCard
 import vn.edu.uit.devorbit.mobile.ui.theme.*
 
 @Composable
@@ -39,65 +36,67 @@ fun TaskBreakdownScreen(
     ) {
         Text(
             text = "Phân tích nhiệm vụ",
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextPrimary
+            style = CosmicTheme.typography.display,
+            color = CosmicTheme.colors.textPrimary,
+            modifier = Modifier.padding(top = 12.dp)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Goal input
-        GlassCard(modifier = Modifier.fillMaxWidth()) {
-            Column {
-                Text("Mục tiêu", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = TextSecondary)
-                Spacer(modifier = Modifier.height(6.dp))
+        // Goal input card
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(14.dp),
+            color = CosmicTheme.colors.nebula,
+            border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text("Mục tiêu", style = CosmicTheme.typography.label, color = CosmicTheme.colors.textTertiary)
+                Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = goal,
                     onValueChange = onGoalChange,
-                    placeholder = { Text("VD: Học xong chương 3 môn CSDL", color = TextSecondary) },
+                    placeholder = { Text("VD: Học xong chương 3 môn CSDL", color = CosmicTheme.colors.textTertiary) },
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = TextPrimary,
-                        unfocusedTextColor = TextPrimary,
-                        focusedBorderColor = CosmicNebulaPurple,
-                        unfocusedBorderColor = GlassBorder,
-                        cursorColor = CosmicNebulaPurple
+                        focusedTextColor = CosmicTheme.colors.textPrimary,
+                        unfocusedTextColor = CosmicTheme.colors.textPrimary,
+                        focusedBorderColor = CosmicTheme.colors.plasma,
+                        unfocusedBorderColor = CosmicTheme.colors.glassBorder,
+                        cursorColor = CosmicTheme.colors.plasma
                     ),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(10.dp),
                     singleLine = true
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
-                Text("Độ khó", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = TextSecondary)
-                Spacer(modifier = Modifier.height(6.dp))
+                Text("Độ khó", style = CosmicTheme.typography.label, color = CosmicTheme.colors.textTertiary)
+                Spacer(modifier = Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf("easy", "medium", "hard").forEach { level ->
+                    listOf("easy" to "Dễ", "medium" to "Trung bình", "hard" to "Khó").forEach { (level, label) ->
                         DifficultyChip(
-                            label = when (level) {
-                                "easy" -> "Dễ"
-                                "hard" -> "Khó"
-                                else -> "Trung bình"
-                            },
+                            label = label,
                             selected = difficulty == level,
                             onClick = { onDifficultyChange(level) }
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
                     onClick = onBreakdown,
                     enabled = goal.isNotBlank(),
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = CosmicNebulaPurple,
-                        contentColor = TextPrimary
+                        containerColor = CosmicTheme.colors.plasma,
+                        contentColor = CosmicTheme.colors.void
                     ),
-                    shape = RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(10.dp),
+                    contentPadding = PaddingValues(vertical = 14.dp)
                 ) {
-                    Text("Phân tích")
+                    Text("Phân tích", fontWeight = FontWeight.SemiBold)
                 }
             }
         }
@@ -105,14 +104,12 @@ fun TaskBreakdownScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         if (breakdown != null) {
-            // Breakdown results
             Text(
                 text = "Các bước thực hiện",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = TextPrimary
+                style = CosmicTheme.typography.command,
+                color = CosmicTheme.colors.textTertiary
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -123,24 +120,28 @@ fun TaskBreakdownScreen(
                 }
 
                 item {
-                    // Total summary
-                    GlassCard(modifier = Modifier.fillMaxWidth()) {
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        color = CosmicTheme.colors.nebula,
+                        border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+                    ) {
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
                                 text = "Tổng thời gian ước tính",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = TextSecondary
+                                style = CosmicTheme.typography.body,
+                                color = CosmicTheme.colors.textSecondary
                             )
                             Text(
                                 text = "${breakdown.totalEstimatedMinutes} phút",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = CosmicGlowBlue
+                                style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold),
+                                color = CosmicTheme.colors.aurora
                             )
                         }
                     }
@@ -148,18 +149,25 @@ fun TaskBreakdownScreen(
 
                 item {
                     Spacer(modifier = Modifier.height(4.dp))
-                    Button(
+                    OutlinedButton(
                         onClick = onCreateTasks,
                         modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = CosmicGlowBlue.copy(alpha = 0.15f),
-                            contentColor = CosmicGlowBlue
-                        ),
-                        shape = RoundedCornerShape(16.dp)
+                        border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.plasma.copy(alpha = 0.3f)),
+                        shape = RoundedCornerShape(10.dp),
+                        contentPadding = PaddingValues(vertical = 14.dp)
                     ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Tạo task từ breakdown")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = CosmicTheme.colors.plasma
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            "Tạo task từ breakdown",
+                            color = CosmicTheme.colors.plasma,
+                            fontWeight = FontWeight.SemiBold
+                        )
                     }
                 }
             }
@@ -175,36 +183,42 @@ private fun DifficultyChip(
 ) {
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(12.dp),
-        color = if (selected) CosmicNebulaPurple.copy(alpha = 0.3f) else GlassWhite,
-        border = if (selected) null else null
+        shape = RoundedCornerShape(8.dp),
+        color = if (selected) CosmicTheme.colors.plasma.copy(alpha = 0.15f) else CosmicTheme.colors.nebula,
+        border = if (!selected) androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder) else null
     ) {
         Text(
             text = label,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            fontSize = 13.sp,
-            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-            color = if (selected) CosmicNebulaPurple else TextSecondary
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+            style = CosmicTheme.typography.label.copy(fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium),
+            color = if (selected) CosmicTheme.colors.plasma else CosmicTheme.colors.textTertiary
         )
     }
 }
 
 @Composable
 private fun BreakdownStepCard(index: Int, step: BreakdownStep) {
-    GlassCard(modifier = Modifier.fillMaxWidth()) {
-        Row(verticalAlignment = Alignment.Top) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = CosmicTheme.colors.nebula,
+        border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+    ) {
+        Row(
+            modifier = Modifier.padding(14.dp),
+            verticalAlignment = Alignment.Top
+        ) {
             // Step number
             Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = CosmicNebulaPurple.copy(alpha = 0.25f),
-                modifier = Modifier.size(32.dp)
+                shape = RoundedCornerShape(8.dp),
+                color = CosmicTheme.colors.plasma.copy(alpha = 0.12f),
+                modifier = Modifier.size(30.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Text(
                         text = "${index + 1}",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = CosmicNebulaPurple
+                        style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.Bold),
+                        color = CosmicTheme.colors.plasma
                     )
                 }
             }
@@ -213,15 +227,14 @@ private fun BreakdownStepCard(index: Int, step: BreakdownStep) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = step.title,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = TextPrimary,
+                        style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Medium),
+                        color = CosmicTheme.colors.textPrimary,
                         modifier = Modifier.weight(1f)
                     )
                     if (step.isNextAction) {
                         Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = CosmicStarBlue.copy(alpha = 0.2f)
+                            shape = RoundedCornerShape(6.dp),
+                            color = CosmicTheme.colors.plasma.copy(alpha = 0.12f)
                         ) {
                             Row(
                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
@@ -230,28 +243,27 @@ private fun BreakdownStepCard(index: Int, step: BreakdownStep) {
                                 Icon(
                                     Icons.Default.Star,
                                     contentDescription = null,
-                                    tint = CosmicStarBlue,
+                                    tint = CosmicTheme.colors.plasma,
                                     modifier = Modifier.size(12.dp)
                                 )
                                 Spacer(modifier = Modifier.width(3.dp))
                                 Text(
-                                    text = "Next action",
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = CosmicStarBlue
+                                    text = "Tiếp theo",
+                                    style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.Bold),
+                                    color = CosmicTheme.colors.plasma
                                 )
                             }
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
                         text = "${step.estimatedMinutes} phút",
-                        fontSize = 12.sp,
-                        color = TextSecondary
+                        style = CosmicTheme.typography.label,
+                        color = CosmicTheme.colors.textTertiary
                     )
-                    DifficultyBadge(step.difficulty)
+                    DifficultySmallBadge(difficulty = step.difficulty)
                 }
             }
         }
@@ -259,21 +271,20 @@ private fun BreakdownStepCard(index: Int, step: BreakdownStep) {
 }
 
 @Composable
-private fun DifficultyBadge(difficulty: String) {
+private fun DifficultySmallBadge(difficulty: String) {
     val (label, color) = when (difficulty.lowercase()) {
-        "easy" -> "Dễ" to CosmicGlowBlue
-        "hard" -> "Khó" to CosmicGlowPurple
-        else -> "TB" to Color(0xFFFBC02D)
+        "easy" -> "Dễ" to CosmicTheme.colors.aurora
+        "hard" -> "Khó" to CosmicTheme.colors.supernova
+        else -> "TB" to CosmicTheme.colors.plasma
     }
     Surface(
-        shape = RoundedCornerShape(8.dp),
-        color = color.copy(alpha = 0.2f)
+        shape = RoundedCornerShape(4.dp),
+        color = color.copy(alpha = 0.12f)
     ) {
         Text(
             text = label,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp),
+            style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.Bold),
             color = color
         )
     }

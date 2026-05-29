@@ -16,6 +16,7 @@ import vn.edu.uit.devorbit_api.service.CourseArticleService;
 import vn.edu.uit.devorbit_api.service.KnowledgeGraphService;
 
 import java.util.List;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * PUBLIC COURSE CONTROLLER = the HTTP layer for course-related endpoints
@@ -53,12 +54,24 @@ public class PublicCourseController {
     /**
      * GET /api/courses
      * Returns a LIST of all courses (basic info: id, code, name, repo count).
-     * This is the main endpoint for the course listing page.
+     * Supports optional search/filter query parameters:
+     *   ?q=keyword      — filter by name or code (case-insensitive)
+     *   ?subjectType=X  — filter by subject type (DAI_CUONG, CHUYEN_NGANH, CO_SO, etc.)
+     *   ?semester=N     — filter by semester
+     *   ?managementUnit=X — filter by management unit (CNPM, HTTT, etc.)
      * Results are sorted by repo count (most repos first).
      */
     @GetMapping
-    public List<CourseSummaryResponse> getCourses() {
-        return courseService.getActiveCourseSummaries();
+    public List<CourseSummaryResponse> getCourses(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String subjectType,
+            @RequestParam(required = false) Integer semester,
+            @RequestParam(required = false) String managementUnit) {
+        boolean hasFilters = q != null || subjectType != null || semester != null || managementUnit != null;
+        if (!hasFilters) {
+            return courseService.getActiveCourseSummaries();
+        }
+        return courseService.searchCourses(q, subjectType, semester, managementUnit);
     }
 
     /**

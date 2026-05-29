@@ -1,14 +1,17 @@
 package vn.edu.uit.devorbit.mobile.ui.screen.courses
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import vn.edu.uit.devorbit.mobile.data.local.entity.CourseEntity
@@ -25,7 +28,7 @@ fun CourseListScreen(
     var searchQuery by remember { mutableStateOf("") }
 
     val filteredCourses = courses.filter {
-        it.tenMH.contains(searchQuery, ignoreCase = true) || 
+        it.tenMH.contains(searchQuery, ignoreCase = true) ||
         it.maMH.contains(searchQuery, ignoreCase = true)
     }
 
@@ -35,23 +38,24 @@ fun CourseListScreen(
             onValueChange = { searchQuery = it },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(CosmicTheme.spacing.medium),
-            placeholder = { Text("Search course code or name...", color = CosmicTheme.colors.textTertiary) },
-            leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null, tint = CosmicTheme.colors.plasma) },
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            placeholder = { Text("Tìm mã hoặc tên môn học...", color = CosmicTheme.colors.textTertiary) },
+            leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null, tint = CosmicTheme.colors.textTertiary) },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = CosmicTheme.colors.plasma,
                 unfocusedBorderColor = CosmicTheme.colors.glassBorder,
                 cursorColor = CosmicTheme.colors.plasma,
-                focusedTextColor = Color.White,
-                unfocusedTextColor = Color.White
+                focusedTextColor = CosmicTheme.colors.textPrimary,
+                unfocusedTextColor = CosmicTheme.colors.textPrimary
             ),
-            shape = MaterialTheme.shapes.medium
+            shape = RoundedCornerShape(12.dp),
+            singleLine = true
         )
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = 100.dp),
-            verticalArrangement = Arrangement.spacedBy(CosmicTheme.spacing.small)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(filteredCourses, key = { it.id }) { course ->
                 CourseListItem(course = course, onClick = { onCourseClick(course) })
@@ -63,25 +67,35 @@ fun CourseListScreen(
 @Composable
 fun CourseListItem(course: CourseEntity, onClick: () -> Unit) {
     Surface(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = CosmicTheme.spacing.medium),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
         onClick = onClick,
-        color = CosmicTheme.colors.nebula.copy(alpha = 0.5f),
-        shape = MaterialTheme.shapes.medium,
-        border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+        shape = RoundedCornerShape(12.dp),
+        color = CosmicTheme.colors.nebula,
+        border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
     ) {
         Row(
-            modifier = Modifier.padding(CosmicTheme.spacing.medium),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = course.maMH, style = CosmicTheme.typography.label, color = CosmicTheme.colors.plasma)
-                Text(text = course.tenMH, style = CosmicTheme.typography.body, color = Color.White)
+                Text(
+                    text = course.maMH,
+                    style = CosmicTheme.typography.label,
+                    color = CosmicTheme.colors.plasma
+                )
+                Text(
+                    text = course.tenMH,
+                    style = CosmicTheme.typography.body,
+                    color = CosmicTheme.colors.textPrimary
+                )
             }
             Text(
                 text = "${course.credits} TC",
-                style = CosmicTheme.typography.command,
-                color = CosmicTheme.colors.textSecondary
+                style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.SemiBold),
+                color = CosmicTheme.colors.textTertiary
             )
         }
     }

@@ -311,7 +311,7 @@ export function extractRepoSignals(repo: RepoSummary): RepoSignals {
   const organizedFolders = hasFileList && countTopLevelFolders(filePaths) >= 3
   const stars = typeof repo.stars === 'number' ? repo.stars : null
   const forks = typeof metadata.forks === 'number' ? metadata.forks : null
-  const updatedAt = cleanText(metadata.updatedAt ?? metadata.lastPushedAt)
+  const updatedAt = formatVietnameseRelativeDate(metadata.updatedAt ?? metadata.lastPushedAt)
   const courseCode = cleanText(repo.courseCode)
   const courseName = cleanText(repo.courseName)
   const evidence = buildEvidence({
@@ -390,6 +390,29 @@ export function extractRepoSignals(repo: RepoSummary): RepoSignals {
     evidence,
     missingSignals,
   }
+}
+
+export function formatVietnameseRelativeDate(value: string | null | undefined, now = new Date()): string | null {
+  if (!value) return null
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return null
+
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+  const startOfDate = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime()
+  const dayDiff = Math.floor((startOfToday - startOfDate) / 86_400_000)
+  if (dayDiff <= 0) return 'Hôm nay'
+  if (dayDiff === 1) return 'Hôm qua'
+  if (dayDiff < 7) return `${dayDiff} ngày trước`
+
+  const monthDiff = (now.getFullYear() - date.getFullYear()) * 12 + now.getMonth() - date.getMonth()
+  if (monthDiff < 1) {
+    const weeks = Math.max(1, Math.floor(dayDiff / 7))
+    return `${weeks} tuần trước`
+  }
+  if (monthDiff < 12) return `${monthDiff} tháng trước`
+
+  const yearDiff = Math.max(1, Math.floor(monthDiff / 12))
+  return `${yearDiff} năm trước`
 }
 
 function detectCourseGroup(signals: RepoSignals): CourseGroup {

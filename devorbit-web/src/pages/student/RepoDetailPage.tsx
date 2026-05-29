@@ -8,6 +8,19 @@ import type { RepoSummary } from '../../types/api'
 import { analyzeRepository, type RepoAnalysisResult } from '../../lib/repoAnalysisService'
 import { ArrowLeft, Code, Star, ArrowSquareOut, WarningCircle, GithubLogo, Bookmark, BookmarkSimple } from '@phosphor-icons/react'
 
+type GithubRepositoryMetadata = {
+  default_branch?: string | null
+  pushed_at?: string | null
+  updated_at?: string | null
+}
+
+type GithubCommitResponse = Array<{
+  commit?: {
+    committer?: { date?: string | null } | null
+    author?: { date?: string | null } | null
+  } | null
+}>
+
 export function RepoDetailPage() {
   const { repoId } = useParams<{ repoId: string }>()
   const navigate = useNavigate()
@@ -52,11 +65,12 @@ export function RepoDetailPage() {
     setAnalysisError(null)
 
     apiGet<RepoSummary>(`/api/repos/${repoId}`)
-      .then((repoData) => {
-        setRepo(repoData)
+      .then(async (repoData) => {
+        const hydratedRepo = await hydrateLastPushedAt(repoData)
+        setRepo(hydratedRepo)
         setLoading(false)
         setAnalysisLoading(true)
-        analyzeRepository(repoData)
+        analyzeRepository(hydratedRepo)
           .then((result) => {
             setAnalysis(result)
             setAnalysisError(result.errorMessage ?? null)
@@ -223,4 +237,49 @@ export function RepoDetailPage() {
       </div>
     </div>
   )
+}
+
+export async function hydrateLastPushedAt(repo: RepoSummary): Promise<RepoSummary> {
+  if (repo.lastPushedAt) return repo
+  const slug = parseGithubSlug(repo.githubUrl)
+  if (!slug) return repo
+
+  try {
+    const metadata = await fetchGithubJson<GithubRepositoryMetadata>(
+      `https://api.github.com/repos/${slug.owner}/${slug.name}`,
+    )
+    const latestCommitDate = await fetchLatestGithubCommitDate(slug.owner, slug.name, metadata.default_branch).catch(() => null)
+    const lastPushedAt = latestCommitDate || metadata.pushed_at || metadata.updated_at || null
+    return lastPushedAt ? { ...repo, lastPushedAt } : repo
+  } catch {
+    return repo
+  }
+}
+
+async function fetchLatestGithubCommitDate(owner: string, name: string, defaultBranch?: string | null): Promise<string | null> {
+  const branchQuery = defaultBranch ? `?sha=${encodeURIComponent(defaultBranch)}&per_page=1` : '?per_page=1'
+  const commits = await fetchGithubJson<GithubCommitResponse>(
+    `https://api.github.com/repos/${owner}/${name}/commits${branchQuery}`,
+  )
+  const commit = commits[0]?.commit
+  return commit?.committer?.date || commit?.author?.date || null
+}
+
+async function fetchGithubJson<T>(url: string): Promise<T> {
+  const response = await fetch(url, {
+    headers: {
+      Accept: 'application/vnd.github+json',
+    },
+  })
+  if (!response.ok) throw new Error(`GitHub request failed: ${response.status}`)
+  return response.json() as Promise<T>
+}
+
+export function parseGithubSlug(url: string): { owner: string; name: string } | null {
+  const match = url.match(/github\.com\/([^/]+)\/([^/?#]+)/i)
+  if (!match) return null
+  return {
+    owner: match[1],
+    name: match[2].replace(/\.git$/i, ''),
+  }
 }

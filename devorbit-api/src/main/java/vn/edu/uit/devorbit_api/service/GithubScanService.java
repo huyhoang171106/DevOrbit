@@ -146,7 +146,7 @@ public class GithubScanService {
                 .topics(readTopics(item.path("topics")))
                 .stars(item.path("stargazers_count").isMissingNode() ? null : item.path("stargazers_count").asInt(0))
                 .forks(item.path("forks_count").isMissingNode() ? null : item.path("forks_count").asInt(0))
-                .lastPushedAt(item.path("pushed_at").asText(null))
+                .lastPushedAt(resolveLatestActivityAt(owner, name, item))
                 .status(RepoCandidateStatus.NEW)
                 .build();
 
@@ -262,6 +262,66 @@ public class GithubScanService {
         String fileTree = fetchFileTree(owner, repo);
         boolean hasReadme = readmeExcerpt != null || containsReadmePath(fileTree);
         return new RepositoryContext(readmeExcerpt, fileTree, hasReadme);
+    }
+
+    public String fetchLatestActivityAt(String owner, String repo) {
+        JsonNode metadata = fetchRepoMetadata(owner, repo);
+        return resolveLatestActivityAt(owner, repo, metadata);
+    }
+
+    public String resolveLatestActivityAt(String owner, String repo, JsonNode repoMetadata) {
+        String defaultBranch = readText(repoMetadata, "default_branch");
+        String latestCommitDate = fetchLatestCommitDate(owner, repo, defaultBranch);
+        if (latestCommitDate != null) return latestCommitDate;
+
+        String pushedAt = readText(repoMetadata, "pushed_at");
+        if (pushedAt != null) return pushedAt;
+
+        return readText(repoMetadata, "updated_at");
+    }
+
+    private JsonNode fetchRepoMetadata(String owner, String repo) {
+        try {
+            return webClient.get()
+                .uri("/repos/{owner}/{repo}", owner, repo)
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block(Duration.ofSeconds(8));
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private String fetchLatestCommitDate(String owner, String repo, String defaultBranch) {
+        try {
+            JsonNode commits = webClient.get()
+                .uri(uriBuilder -> {
+                    var builder = uriBuilder
+                        .path("/repos/{owner}/{repo}/commits")
+                        .queryParam("per_page", 1);
+                    if (defaultBranch != null && !defaultBranch.isBlank()) {
+                        builder.queryParam("sha", defaultBranch);
+                    }
+                    return builder.build(owner, repo);
+                })
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block(Duration.ofSeconds(8));
+
+            if (commits == null || !commits.isArray() || commits.size() == 0) return null;
+            JsonNode commit = commits.get(0).path("commit");
+            String committerDate = readText(commit.path("committer"), "date");
+            if (committerDate != null) return committerDate;
+            return readText(commit.path("author"), "date");
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private String readText(JsonNode node, String fieldName) {
+        if (node == null || node.isMissingNode() || node.isNull()) return null;
+        String value = node.path(fieldName).asText(null);
+        return value == null || value.isBlank() ? null : value;
     }
 
     private String fetchReadmeExcerpt(String owner, String repo) {

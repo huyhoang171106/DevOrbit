@@ -32,7 +32,7 @@ class PublicRepoControllerTest {
     @Test
     void shouldReturnRepoById() throws Exception {
         when(githubRepoService.getApprovedRepoById(1L)).thenReturn(
-            new RepoSummaryResponse(1L, "My Repo", "A test repo", "https://github.com/test/repo", "Java", 10, List.of(), 1L, "SE101", "Intro", null, null, null)
+            new RepoSummaryResponse(1L, "My Repo", "A test repo", "https://github.com/test/repo", "Java", 10, List.of(), 1L, "SE101", "Intro", null, null, null, "2026-05-20T10:00:00Z")
         );
 
         mockMvc.perform(get("/api/repos/1"))
@@ -44,7 +44,7 @@ class PublicRepoControllerTest {
     @Test
     void shouldReturnReposByCourse() throws Exception {
         when(githubRepoService.getApprovedReposByCourse(1L)).thenReturn(List.of(
-            new RepoSummaryResponse(1L, "My Repo", "A test repo", "https://github.com/test/repo", "Java", 10, List.of(), 1L, "SE101", "Intro", null, null, null)
+            new RepoSummaryResponse(1L, "My Repo", "A test repo", "https://github.com/test/repo", "Java", 10, List.of(), 1L, "SE101", "Intro", null, null, null, null)
         ));
 
         mockMvc.perform(get("/api/courses/1/repos"))
@@ -56,7 +56,7 @@ class PublicRepoControllerTest {
     void shouldFilterReposByTechStackQueryParam() throws Exception {
         when(githubRepoService.getApprovedReposByCourseAndTechStack(1L, "java"))
             .thenReturn(List.of(new RepoSummaryResponse(
-                1L, "My Repo", "A Java repo", "https://github.com/test/repo", "Java", 10, List.of(), 1L, "SE101", "Intro", null, null, null
+                1L, "My Repo", "A Java repo", "https://github.com/test/repo", "Java", 10, List.of(), 1L, "SE101", "Intro", null, null, null, null
             )));
 
         mockMvc.perform(get("/api/courses/1/repos").param("techStack", "java"))

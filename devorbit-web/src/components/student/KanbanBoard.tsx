@@ -6,6 +6,7 @@ import {
   closestCorners,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   DragStartEvent,
@@ -208,6 +209,7 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 18 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
     useSensor(KeyboardSensor),
   )
 
@@ -559,15 +561,15 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
       )}
 
       {/* ─── AV + TN selectors ─── */}
-      <div className="shrink-0 px-6 pt-5 pb-3 flex items-end justify-center gap-8">
+      <div className="shrink-0 px-6 pt-5 pb-3 flex flex-col sm:flex-row items-center sm:items-end justify-center gap-6 sm:gap-8">
         {/* English level selector */}
-        <div className="relative">
+        <div className="relative w-full sm:w-auto max-w-md sm:max-w-none">
           <label className="text-[11px] font-semibold text-orbit-text-muted mb-2 block text-center">
             Chọn trình độ anh văn đầu vào
           </label>
           <button
             onClick={() => setShowEnglishMenu(!showEnglishMenu)}
-            className="flex items-center gap-3 px-5 py-3 min-w-[260px] rounded-2xl border border-orbit-border/30 bg-orbit-surface/60 text-[14px] font-medium text-orbit-text hover:border-orbit-accent/40 hover:bg-orbit-accent/[0.02] transition-[border-color,background-color]"
+            className="flex items-center gap-3 px-5 py-3 w-full sm:min-w-[260px] rounded-2xl border border-orbit-border/30 bg-orbit-surface/60 text-[14px] font-medium text-orbit-text hover:border-orbit-accent/40 hover:bg-orbit-accent/[0.02] transition-[border-color,background-color]"
           >
             <span className="flex-1 text-left">
               {ENG_LEVEL_LABELS[englishLevel]}
@@ -606,13 +608,13 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
         </div>
 
         {/* Graduation path selector */}
-        <div className="relative">
+        <div className="relative w-full sm:w-auto max-w-md sm:max-w-none">
           <label className="text-[11px] font-semibold text-orbit-text-muted mb-2 block text-center">
             Chọn hình thức tốt nghiệp
           </label>
           <button
             onClick={() => setShowGradMenu(!showGradMenu)}
-            className="flex items-center gap-3 px-5 py-3 min-w-[260px] rounded-2xl border border-orbit-border/30 bg-orbit-surface/60 text-[14px] font-medium text-orbit-text hover:border-orbit-accent/40 hover:bg-orbit-accent/[0.02] transition-all"
+            className="flex items-center gap-3 px-5 py-3 w-full sm:min-w-[260px] rounded-2xl border border-orbit-border/30 bg-orbit-surface/60 text-[14px] font-medium text-orbit-text hover:border-orbit-accent/40 hover:bg-orbit-accent/[0.02] transition-all"
           >
             <span className="flex-1 text-left">
               {graduationPath ? graduationPath.name : 'Chưa chọn'}
@@ -711,22 +713,22 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
             animate={{ opacity: 1, y: 0 }}
             className="relative flex flex-col items-center gap-1.5 px-5 py-3 rounded-2xl bg-orbit-accent/[0.03] border border-orbit-accent/10"
           >
-            <div className="flex items-center gap-3 text-[12px] text-orbit-text-secondary leading-relaxed">
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[11px] sm:text-[12px] text-orbit-text-secondary leading-relaxed">
               <span className="flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-orbit-accent/60" />
                 Kéo thả môn qua học kỳ
               </span>
-              <span className="text-orbit-border/30">|</span>
+              <span className="hidden sm:inline text-orbit-border/30">|</span>
               <span className="flex items-center gap-1.5">
                 <Compass className="h-3.5 w-3.5 text-orbit-accent/60" weight="regular" />
                 Chọn môn tự chọn theo ý thích
               </span>
-              <span className="text-orbit-border/30">|</span>
+              <span className="hidden sm:inline text-orbit-border/30">|</span>
               <span className="flex items-center gap-1.5">
                 <GraduationCap className="h-3.5 w-3.5 text-orbit-accent/60" weight="regular" />
                 Chọn hình thức tốt nghiệp
               </span>
-              <span className="text-orbit-border/30">|</span>
+              <span className="hidden sm:inline text-orbit-border/30">|</span>
               <span className="flex items-center gap-1.5">
                 <Sparkle className="h-3.5 w-3.5 text-orbit-accent/60" weight="fill" />
                 Tự động sắp xếp lộ trình
@@ -746,7 +748,7 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
       )}
 
       {/* ─── Total credits bar ─── */}
-      <div className="shrink-0 px-6 pb-4 flex items-center gap-4">
+      <div className="shrink-0 px-6 pb-4 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
         <div className="flex items-center gap-3 py-2 px-4 rounded-2xl bg-orbit-surface/60 border border-orbit-border/10">
           <span className="text-[12px] font-bold uppercase tracking-[0.15em] text-orbit-text-muted">
             Tổng TC đã xếp
@@ -840,21 +842,21 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
           }`}
         >
           <FloppyDisk className="h-5 w-5" weight="regular" />
-          Lưu lộ trình
+          <span className="hidden sm:inline">Lưu lộ trình</span>
         </button>
         <button
           onClick={handleLoad}
           className="flex items-center gap-3 px-6 py-3 rounded-2xl border border-orbit-border/40 text-[13px] font-bold uppercase tracking-[0.12em] text-orbit-text-secondary bg-orbit-elevated/60 hover:text-orbit-text hover:border-orbit-border/70 hover:bg-orbit-elevated transition-[color,border-color,background-color] shadow-sm"
         >
           <ClockCounterClockwise className="h-5 w-5" weight="regular" />
-          Khôi phục
+          <span className="hidden sm:inline">Khôi phục</span>
         </button>
         <button
           onClick={handleAutoArrange}
           className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-orbit-accent/10 border border-orbit-accent/30 text-[13px] font-bold uppercase tracking-[0.12em] text-orbit-accent hover:bg-orbit-accent/20 transition-[background-color] shadow-sm"
         >
           <Sparkle className="h-5 w-5" weight="fill" />
-          Tự động sắp xếp
+          <span className="hidden sm:inline">Tự động sắp xếp</span>
         </button>
 
         {saveMessage && (

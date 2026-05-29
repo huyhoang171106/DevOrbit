@@ -21,6 +21,8 @@ This file maps product behavior to proof.
 | US-017 | AI Roadmap Generator | - | pass | pass | no | implemented | [US-017-PLAN-1.1](file:///d:/temp/devorbit/.gsd/plans/US-017-PLAN-1.1.md) |
 | US-018 | Mobile Repo Tech Stack Filter | pass | no | no | Gradle unit test | implemented | `devorbit-mobile`: `.\gradlew.bat :app:testDebugUnitTest` |
 | US-019 | Mobile Course Hub Detail Navigation | pass | no | no | Gradle unit test | implemented | `devorbit-mobile`: `.\gradlew.bat :app:testDebugUnitTest` |
+| US-020 | Web Responsive Mobile/Tablet | - | - | - | Web Build | completed | [Walkthrough](file:///C:/Users/Hoang/.gemini/antigravity-cli/brain/61ffbe2b-83ce-47b5-8d53-c4b8866fe714/walkthrough.md) |
+| US-021 | AI Course Q&A Assistant | pass | pass | no | Web Build | implemented | [Walkthrough](file:///C:/Users/Hoang/.gemini/antigravity-cli/brain/960ddac9-a108-43bc-a70d-7282fe859873/walkthrough.md) |
 
 ## Evidence Rules
 

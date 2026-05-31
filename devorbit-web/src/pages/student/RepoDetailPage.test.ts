@@ -1,3 +1,4 @@
+﻿// @vitest-environment jsdom
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { hydrateLastPushedAt, parseGithubSlug } from './RepoDetailPage'
 import type { RepoSummary } from '../../types/api'
@@ -88,3 +89,4 @@ function response(body: unknown, ok = true): Response {
     json: () => Promise.resolve(body),
   } as Response
 }
+

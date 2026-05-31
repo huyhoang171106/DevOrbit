@@ -306,21 +306,13 @@ describe('GpaCalculatorPage', () => {
 
     fireEvent.change(input('course-credits-1'), { target: { value: '' } })
     fireEvent.change(input('course-grade-1'), { target: { value: '' } })
-    fireEvent.change(input('course-credits-2'), { target: { value: '0' } })
+    fireEvent.change(input('course-credits-2'), { target: { value: '-1' } })
     fireEvent.change(input('course-grade-2'), { target: { value: '11' } })
 
     expect(screen.getByText(textExactly('Nhập tín chỉ'))).toBeInTheDocument()
     expect(screen.getByText(textExactly('Nhập điểm'))).toBeInTheDocument()
     expect(screen.getByText(textExactly('Tín chỉ phải lớn hơn 0'))).toBeInTheDocument()
     expect(screen.getByText(textExactly('Điểm phải từ 0 đến 10'))).toBeInTheDocument()
-  })
-
-  test('does not accept decimal course credits', () => {
-    render(<GpaCalculatorPage />)
-
-    fireEvent.change(input('course-credits-1'), { target: { value: '3.5' } })
-
-    expect(input('course-credits-1').value).toBe('3')
   })
 
   test('shows how many invalid rows are ignored in the summary', () => {

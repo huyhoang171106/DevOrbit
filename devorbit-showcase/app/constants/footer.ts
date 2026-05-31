@@ -4,13 +4,11 @@ export const FOOTER_LINKS: FooterLink[] = [
   {
     name: 'Website',
     hoverText: 'uit.edu.vn',
-    icon: 'icons/globe.svg',
     url: 'https://uit.edu.vn',
   },
   {
     name: 'Facebook',
     hoverText: 'UIT Fanpage',
-    icon: 'icons/facebook.svg',
     url: 'https://facebook.com/UIT.Fanpage',
   },
   {
@@ -22,7 +20,6 @@ export const FOOTER_LINKS: FooterLink[] = [
   {
     name: 'YouTube',
     hoverText: 'UIT Channel',
-    icon: 'icons/youtube.svg',
     url: 'https://youtube.com/user/UITVNU',
   }
 ];

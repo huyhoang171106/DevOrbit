@@ -1,4 +1,3 @@
-'use client'
 
 import { motion, useScroll, useSpring, useTransform } from 'framer-motion'
 import { useReducedMotion } from '../hooks/useReducedMotion'

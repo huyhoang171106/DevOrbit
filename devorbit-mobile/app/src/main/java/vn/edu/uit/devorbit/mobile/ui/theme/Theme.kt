@@ -66,16 +66,6 @@ fun DevOrbitTheme(
             content = content
         )
     }
-}
 
-@Composable
-fun CosmicBackground(content: @Composable () -> Unit) {
-    val gradient = CosmicTheme.gradients.voidDepth
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(gradient)
-    ) {
-        content()
-    }
+
 }

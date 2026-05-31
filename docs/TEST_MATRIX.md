@@ -16,9 +16,9 @@ This file maps product behavior to proof.
 
 | Story | Contract | Unit | Integration | E2E | Platform | Status | Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| US-015 | Simulation Engine | pass | pass | no | no | implemented | [Plan 1.3 Summary](file:///C:/Users/Hoang/.gemini/antigravity/brain/31790508-f06b-45f3-a162-ec4b3b74509b/artifacts/plan_1_3_summary.md) |
+| US-015 | Simulation Engine | pass | pass | no | no | implemented | Plan 1.3 Summary (verified locally) |
 | US-016 | Photobooth Upload | - | - | - | Browser | planned | - |
-| US-017 | AI Roadmap Generator | - | pass | pass | no | implemented | [US-017-PLAN-1.1](file:///d:/temp/devorbit/.gsd/plans/US-017-PLAN-1.1.md) |
+| US-017 | AI Roadmap Generator | - | pass | pass | no | implemented | US-017-PLAN-1.1 (verified locally) |
 | US-018 | Mobile Repo Tech Stack Filter | pass | no | no | Gradle unit test | implemented | `devorbit-mobile`: `.\gradlew.bat :app:testDebugUnitTest` |
 | US-019 | Mobile Course Hub Detail Navigation | pass | no | no | Gradle unit test | implemented | `devorbit-mobile`: `.\gradlew.bat :app:testDebugUnitTest` |
 | US-020 | GPA Calculator + Semester Presets + Preset Stats/Merge + Cumulative Estimate + Goal Planner + Goal What-If + Row UX + Explicit Browser Draft Controls + Background Atmosphere | pass | no | no | Vite build | implemented | `devorbit-web`: `npm test -- GpaCalculatorPage router`; `npm run build` |

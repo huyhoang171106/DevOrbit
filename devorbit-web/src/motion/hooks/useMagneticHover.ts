@@ -1,4 +1,3 @@
-'use client'
 
 import { useRef, useCallback } from 'react'
 import { useMotionValue, useSpring } from 'framer-motion'

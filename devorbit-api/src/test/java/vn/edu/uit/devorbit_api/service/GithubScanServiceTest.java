@@ -4,17 +4,22 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.web.reactive.function.client.ClientResponse;
-import org.springframework.web.reactive.function.client.ExchangeFunction;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import reactor.core.publisher.Mono;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class GithubScanServiceTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private static final ExchangeStrategies JSON_STRATEGIES = ExchangeStrategies.builder()
+        .codecs(configurer -> configurer.defaultCodecs().jackson2JsonDecoder(new Jackson2JsonDecoder()))
+        .build();
 
     @Test
     void usesCommitterDateFromLatestCommit() throws Exception {
@@ -55,7 +60,7 @@ class GithubScanServiceTest {
 
     @Test
     void fallsBackToPushedAtWhenCommitsApiFails() throws Exception {
-        GithubScanService service = serviceWithExchange(request -> {
+        GithubScanService service = serviceWithFilter((request, next) -> {
             if (request.url().getPath().endsWith("/commits")) {
                 return Mono.error(new RuntimeException("rate limited"));
             }
@@ -92,13 +97,13 @@ class GithubScanServiceTest {
     }
 
     private GithubScanService serviceWithCommits(String commitsJson) {
-        return serviceWithExchange(request -> jsonResponse(commitsJson));
+        return serviceWithFilter((request, next) -> jsonResponse(commitsJson));
     }
 
-    private GithubScanService serviceWithExchange(ExchangeFunction exchangeFunction) {
+    private GithubScanService serviceWithFilter(ExchangeFilterFunction filter) {
         WebClient webClient = WebClient.builder()
             .baseUrl("https://api.github.com")
-            .exchangeFunction(exchangeFunction)
+            .filter(filter)
             .build();
         return new GithubScanService(null, null, null, webClient);
     }
@@ -108,7 +113,7 @@ class GithubScanServiceTest {
     }
 
     private Mono<ClientResponse> jsonResponse(String body) {
-        return Mono.just(ClientResponse.create(HttpStatus.OK)
+        return Mono.just(ClientResponse.create(200, JSON_STRATEGIES)
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .body(body)
             .build());

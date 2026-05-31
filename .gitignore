@@ -153,3 +153,10 @@ migration_*.sql
 
 # Root-level artifacts
 devorbit/
+
+# Backup and temp files
+*_old
+*_backup
+*_temp
+*.bak
+*.orig

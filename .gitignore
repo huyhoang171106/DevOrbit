@@ -13,6 +13,7 @@ build/
 .env
 .env.local
 .env.*.local
+scripts/.env
 
 # IDEs
 .idea/
@@ -127,3 +128,28 @@ student.uit.edu.vn_*.md
 
 # Codebase wiki — compiled artifact, regenerated from source
 .codebase-wiki/
+
+# bun lockfile
+bun.lock
+
+# Agent tools
+.antigravitycli/
+
+# Build cache
+graphify-out/
+
+# Scratch / working data
+raw/
+
+# Design docs / specs
+design-system/
+specs/
+plan-tot-nghiep/
+frame ptb/
+
+# SQL dumps (root level)
+data_updated.sql
+migration_*.sql
+
+# Root-level artifacts
+devorbit/

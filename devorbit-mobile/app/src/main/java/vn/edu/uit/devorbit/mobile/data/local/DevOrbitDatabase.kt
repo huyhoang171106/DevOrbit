@@ -11,7 +11,7 @@ import vn.edu.uit.devorbit.mobile.data.local.entity.*
 @Database(
     entities = [CourseEntity::class, RepoEntity::class, CourseRelationshipEntity::class, TaskEntity::class],
     version = 3,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class DevOrbitDatabase : RoomDatabase() {
     abstract fun courseDao(): CourseDao

@@ -1,4 +1,3 @@
-'use client'
 
 import { motion, type Variants } from 'framer-motion'
 import type { HTMLMotionProps } from 'framer-motion'

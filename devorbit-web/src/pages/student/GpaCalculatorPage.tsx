@@ -47,14 +47,6 @@ const semesters = [1, 2, 3, 4, 5, 6, 7, 8]
 const savedRoadmapKey = 'devorbit_kanban_semester_map'
 const draftStorageKey = 'devorbit_gpa_calculator_draft_v1'
 
-function isPositiveInteger(value: number): boolean {
-  return Number.isInteger(value) && value > 0
-}
-
-function isIntegerInput(value: string): boolean {
-  return value === '' || /^\d+$/.test(value)
-}
-
 function isCalculationMode(value: unknown): value is CalculationMode {
   return value === 'semester' || value === 'cumulative' || value === 'goal'
 }
@@ -115,8 +107,6 @@ function validateCourse(course: CourseInput): CourseValidation {
     ? 'Nhập tín chỉ'
     : !Number.isFinite(credits) || credits <= 0
       ? 'Tín chỉ phải lớn hơn 0'
-      : !isPositiveInteger(credits)
-        ? 'Tín chỉ phải là số nguyên'
       : null
   const gradeReason = gradeText === ''
     ? 'Nhập điểm'
@@ -138,7 +128,7 @@ function parseCourse(course: CourseInput): CourseResult | null {
   const grade10 = Number(course.grade10)
 
   if (!Number.isFinite(credits) || !Number.isFinite(grade10)) return null
-  if (!isPositiveInteger(credits) || grade10 < 0 || grade10 > 10) return null
+  if (credits <= 0 || grade10 < 0 || grade10 > 10) return null
 
   return {
     id: course.id,
@@ -460,8 +450,6 @@ export function GpaCalculatorPage() {
   }
 
   const updateCourse = (id: number, field: keyof Omit<CourseInput, 'id'>, value: string) => {
-    if (field === 'credits' && !isIntegerInput(value)) return
-
     markUnsaved()
     setCourses((current) =>
       current.map((course) =>
@@ -823,7 +811,7 @@ export function GpaCalculatorPage() {
                         id={`course-credits-${course.id}`}
                         type="number"
                         min="0"
-                        step="1"
+                        step="0.5"
                         value={course.credits}
                         onChange={(event) => updateCourse(course.id, 'credits', event.target.value)}
                         className={`h-11 w-full rounded-[8px] border px-3 text-[14px] text-orbit-text outline-none transition-colors ${

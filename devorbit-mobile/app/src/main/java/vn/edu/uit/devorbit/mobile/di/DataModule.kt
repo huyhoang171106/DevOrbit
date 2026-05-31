@@ -14,6 +14,7 @@ import vn.edu.uit.devorbit.mobile.BuildConfig
 import vn.edu.uit.devorbit.mobile.network.ApiService
 import vn.edu.uit.devorbit.mobile.data.remote.interceptor.AuthInterceptor
 import vn.edu.uit.devorbit.mobile.data.local.DevOrbitDatabase
+import vn.edu.uit.devorbit.mobile.data.local.DevOrbitMigrations
 import vn.edu.uit.devorbit.mobile.data.local.dao.CourseDao
 import vn.edu.uit.devorbit.mobile.data.local.dao.RepoDao
 import vn.edu.uit.devorbit.mobile.data.local.dao.RelationshipDao
@@ -74,7 +75,7 @@ object DataModule {
             context,
             DevOrbitDatabase::class.java,
             DevOrbitDatabase.DATABASE_NAME
-        ).fallbackToDestructiveMigration().build()
+        ).addMigrations(*DevOrbitMigrations.ALL_MIGRATIONS).build()
     }
 
     @Provides

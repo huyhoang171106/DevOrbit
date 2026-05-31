@@ -139,8 +139,8 @@ private fun KnowledgeTabView(courseViewModel: CourseViewModel = hiltViewModel())
 private fun PlanTabView() {
     StudyPlannerScreen(
         studyPlan = null,
-        onGeneratePlan = { /* TODO: Connect StudyPlannerEngine */ },
-        onToggleItem = { /* TODO */ },
-        onBreakdownTask = { /* TODO */ }
+        onGeneratePlan = { },
+        onToggleItem = { },
+        onBreakdownTask = { }
     )
 }

@@ -28,11 +28,6 @@ public class LearningRoadmapService {
                 .toList();
     }
 
-    public RoadmapResponse getById(Long id) {
-        return roadmapRepo.findById(id)
-                .map(this::toRoadmapResponse)
-                .orElseThrow(() -> new NotFoundException("Roadmap not found: " + id));
-    }
 
     @Transactional
     public RoadmapResponse create(RoadmapRequest request) {

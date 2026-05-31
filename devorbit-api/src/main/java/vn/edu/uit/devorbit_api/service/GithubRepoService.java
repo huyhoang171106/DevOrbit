@@ -31,14 +31,6 @@ public class GithubRepoService {
     private final CourseRepository courseRepository;
     private final GithubScanService githubScanService;
 
-    public List<GithubRepo> getAllGithubRepo() {
-        return githubRepoRepository.findAll();
-    }
-
-    public List<GithubRepo> getReposBySubject(String subjectId) {
-        return githubRepoRepository.findBySubjectId(subjectId);
-    }
-
     @Transactional
     public RepoSummaryResponse getApprovedRepoById(Long repoId) {
         GithubRepo repo = githubRepoRepository.findById(repoId)

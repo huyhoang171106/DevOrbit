@@ -38,7 +38,7 @@ export function HomePage() {
       {/* Scroll progress on non-knowledge-graph pages */}
       <ScrollProgressIndicator position="right" showLabel={false} />
 
-      {/* â”€â”€â”€ HERO: Split-screen asymmetric â”€â”€â”€ */}
+      {/* ─── HERO: Split-screen asymmetric ─── */}
       <SectionTransition atmosphere="glow" className="relative w-full overflow-hidden min-h-[100dvh] flex items-center border-b border-orbit-border gpu">
         {/* Background orbs */}
         <div className="absolute inset-0 pointer-events-none z-0">
@@ -62,7 +62,7 @@ export function HomePage() {
               <motion.div variants={fadeUp} className="mb-8">
                 <span className="section-label">
                   <Sparkle className="h-3 w-3" weight="fill" />
-                  TrÆ°á»ng Äáº¡i há»c CÃ´ng nghá»‡ ThÃ´ng tin
+                  Trường Đại học Công nghệ Thông tin
                 </span>
               </motion.div>
 
@@ -70,14 +70,14 @@ export function HomePage() {
                 variants={fadeUp}
                 className="hero-display mb-8 leading-[1.1]"
               >
-                Káº¿t ná»‘i{' '}
+                Kết nối{' '}
                 <span className="text-orbit-accent relative inline-block">
-                  MÃ´n há»c
+                  Môn học
                   <span className="absolute -bottom-1 left-0 w-full h-1 bg-orbit-accent/30 rounded-full blur-[2px]" />
                 </span>
                 <br />
                 <span className="inline-block mt-1">
-                  Kho MÃ£ nguá»“n
+                  Kho Mã nguồn
                 </span>
               </motion.h1>
 
@@ -85,8 +85,8 @@ export function HomePage() {
                 variants={fadeUp}
                 className="body-lg text-[18px] md:text-[20px] mb-12 max-w-[600px] leading-relaxed"
               >
-                DevOrbit giÃºp sinh&nbsp;viÃªn Khoa CÃ´ng&nbsp;nghá»‡ Pháº§n&nbsp;Má»m - UIT tiáº¿p&nbsp;cáº­n cÃ¡c Ä‘á»“&nbsp;Ã¡n máº«u, dá»±&nbsp;Ã¡n GitHub
-                vÃ  cÃ´ng&nbsp;nghá»‡ lÃµi theo tá»«ng mÃ´n&nbsp;há»c má»™t cÃ¡ch trá»±c&nbsp;quan vÃ  khoa&nbsp;há»c.
+                DevOrbit giúp sinh&nbsp;viên Khoa Công&nbsp;nghệ Phần&nbsp;Mềm - UIT tiếp&nbsp;cận các đồ&nbsp;án mẫu, dự&nbsp;án GitHub
+                và công&nbsp;nghệ lõi theo từng môn&nbsp;học một cách trực&nbsp;quan và khoa&nbsp;học.
               </motion.p>
 
               <motion.div
@@ -95,14 +95,14 @@ export function HomePage() {
               >
                 <Link to="/courses" className="btn-primary text-[13px] px-10 py-5">
                   <Rocket className="h-5 w-5" weight="fill" />
-                  Báº¯t Ä‘áº§u ngay
+                  Bắt đầu ngay
                 </Link>
                 <Link
                   to="/knowledge-graph"
                   className="btn-secondary text-[13px] px-10 py-5 group"
                 >
                   <Graph className="h-5 w-5" weight="regular" />
-                  SÆ¡ Ä‘á»“ kiáº¿n thá»©c
+                  Sơ đồ kiến thức
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" weight="bold" />
                 </Link>
               </motion.div>
@@ -116,7 +116,7 @@ export function HomePage() {
         </div>
       </SectionTransition>
 
-      {/* â”€â”€â”€ HOW IT WORKS: Cinematic Story Section â”€â”€â”€ */}
+      {/* ─── HOW IT WORKS: Cinematic Story Section ─── */}
       <SectionTransition atmosphere="deep" className="relative w-full overflow-hidden py-16 sm:py-36 md:py-48 border-b border-orbit-border/40">
         {/* Background depth */}
         <div className="absolute inset-0 pointer-events-none">
@@ -130,20 +130,20 @@ export function HomePage() {
             <div className="flex items-center gap-3 mb-8">
               <span className="section-label">
                 <Star className="h-3 w-3" weight="fill" />
-                HÃ nh trÃ¬nh há»c táº­p
+                Hành trình học tập
               </span>
             </div>
             <h2 className="display-lg mb-8">
-              KhÃ¡m phÃ¡{' '}
-              <span className="text-orbit-accent">tri thá»©c</span>
-              {' '}theo cÃ¡ch cá»§a báº¡n
+              Khám phá{' '}
+              <span className="text-orbit-accent">tri thức</span>
+              {' '}theo cách của bạn
             </h2>
           </BlurReveal>
 
           <FadeReveal y={20} delay={0.2}>
             <p className="body-lg text-[17px] md:text-[18px] max-w-2xl mb-20 leading-relaxed">
-              DevOrbit biáº¿n viá»‡c há»c láº­p trÃ¬nh thÃ nh má»™t hÃ nh trÃ¬nh khÃ¡m phÃ¡ vÅ© trá»¥ kiáº¿n thá»©c,
-              nÆ¡i má»—i mÃ´n há»c lÃ  má»™t vÃ¬ sao vÃ  má»—i dá»± Ã¡n lÃ  má»™t chÃ²m sao.
+              DevOrbit biến việc học lập trình thành một hành trình khám phá vũ trụ kiến thức,
+              nơi mỗi môn học là một vì sao và mỗi dự án là một chòm sao.
             </p>
           </FadeReveal>
 
@@ -154,13 +154,13 @@ export function HomePage() {
                 <div className="md:col-span-5 order-2 md:order-1">
                   <div className="flex items-center gap-3 mb-4">
                     <span className="h-8 w-8 rounded-xl bg-orbit-accent/10 border border-orbit-accent/20 flex items-center justify-center text-[12px] font-black text-orbit-accent">01</span>
-                    <span className="text-[10px] font-black uppercase tracking-[0.25em] text-orbit-accent">KhÃ¡m phÃ¡</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.25em] text-orbit-accent">Khám phá</span>
                   </div>
-                  <h3 className="heading-2 mb-4">Duyá»‡t qua vÅ© trá»¥ mÃ´n há»c</h3>
+                  <h3 className="heading-2 mb-4">Duyệt qua vũ trụ môn học</h3>
                   <p className="body-lg text-[15px] md:text-[16px] leading-relaxed text-orbit-text-secondary">
-                    KhÃ¡m phÃ¡ hÆ¡n 80+ mÃ´n há»c trong chÆ°Æ¡ng trÃ¬nh CÃ´ng nghá»‡ Pháº§n má»m.
-                    Má»—i mÃ´n há»c Ä‘á»u Ä‘Æ°á»£c phÃ¢n tÃ­ch chi tiáº¿t vá»›i cÃ¡c repository máº«u,
-                    tÃ i nguyÃªn há»c táº­p vÃ  lá»™ trÃ¬nh phÃ¡t triá»ƒn ká»¹ nÄƒng.
+                    Khám phá hơn 80+ môn học trong chương trình Công nghệ Phần mềm.
+                    Mỗi môn học đều được phân tích chi tiết với các repository mẫu,
+                    tài nguyên học tập và lộ trình phát triển kỹ năng.
                   </p>
                 </div>
                 <div className="md:col-span-7 order-1 md:order-2">
@@ -170,14 +170,14 @@ export function HomePage() {
                       <div className="relative">
                         <div className="flex items-center gap-4 text-[15px] font-bold text-orbit-text mb-8">
                           <Globe className="h-6 w-6 text-orbit-accent" weight="duotone" />
-                          Há»‡ thá»‘ng mÃ´n há»c SE-UIT
+                          Hệ thống môn học SE-UIT
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                           {[
-                            'SE104 - Nháº­p mÃ´n CNPM',
-                            'SE100 - PT PM HÄT',
+                            'SE104 - Nhập môn CNPM',
+                            'SE100 - PT PM HĐT',
                             'SE109 - DevOps',
-                            'SE401 - Máº«u thiáº¿t káº¿',
+                            'SE401 - Mẫu thiết kế',
                           ].map((item, i) => (
                             <div key={i} className="px-5 py-4 rounded-2xl bg-orbit-bg border border-orbit-border/50 flex items-center gap-3">
                               <div className="h-2 w-2 rounded-full bg-orbit-accent/60" />
@@ -202,13 +202,13 @@ export function HomePage() {
                       <div className="relative">
                         <div className="flex items-center gap-4 text-[15px] font-bold text-orbit-text mb-8">
                           <Graph className="h-6 w-6 text-indigo-400" weight="duotone" />
-                          Máº¡ng lÆ°á»›i kiáº¿n thá»©c
+                          Mạng lưới kiến thức
                         </div>
                         <div className="space-y-3">
                           {[
-                            { from: 'SE104', to: 'SE100', label: 'MÃ´n há»c trÆ°á»›c' },
-                            { from: 'SE104', to: 'SE109', label: 'MÃ´n há»c trÆ°á»›c' },
-                            { from: 'SE100', to: 'SE401', label: 'MÃ´n há»c trÆ°á»›c' },
+                            { from: 'SE104', to: 'SE100', label: 'Môn học trước' },
+                            { from: 'SE104', to: 'SE109', label: 'Môn học trước' },
+                            { from: 'SE100', to: 'SE401', label: 'Môn học trước' },
                           ].map((item, i) => (
                             <div key={i} className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-orbit-bg border border-orbit-border/50">
                               <span className="text-[12px] font-bold text-emerald-400">{item.from}</span>
@@ -225,13 +225,13 @@ export function HomePage() {
                 <div className="md:col-span-5">
                   <div className="flex items-center gap-3 mb-4">
                     <span className="h-8 w-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-[12px] font-black text-indigo-400">02</span>
-                    <span className="text-[10px] font-black uppercase tracking-[0.25em] text-indigo-400">Káº¿t ná»‘i</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.25em] text-indigo-400">Kết nối</span>
                   </div>
-                  <h3 className="heading-2 mb-4">XÃ¢y dá»±ng lá»™ trÃ¬nh há»c táº­p</h3>
+                  <h3 className="heading-2 mb-4">Xây dựng lộ trình học tập</h3>
                   <p className="body-lg text-[15px] md:text-[16px] leading-relaxed text-orbit-text-secondary">
-                    Hiá»ƒu rÃµ má»‘i quan há»‡ giá»¯a cÃ¡c mÃ´n há»c thÃ´ng qua sÆ¡ Ä‘á»“ kiáº¿n thá»©c trá»±c quan.
-                    Theo dÃµi Ä‘iá»u kiá»‡n tiÃªn quyáº¿t, khá»‘i lÆ°á»£ng tÃ­n chá»‰ vÃ  lá»™ trÃ¬nh tá»‘t nghiá»‡p
-                    phÃ¹ há»£p vá»›i Ä‘á»‹nh hÆ°á»›ng nghá» nghiá»‡p.
+                    Hiểu rõ mối quan hệ giữa các môn học thông qua sơ đồ kiến thức trực quan.
+                    Theo dõi điều kiện tiên quyết, khối lượng tín chỉ và lộ trình tốt nghiệp
+                    phù hợp với định hướng nghề nghiệp.
                   </p>
                 </div>
               </div>
@@ -243,13 +243,13 @@ export function HomePage() {
                 <div className="md:col-span-5 order-2 md:order-1">
                   <div className="flex items-center gap-3 mb-4">
                     <span className="h-8 w-8 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-[12px] font-black text-violet-400">03</span>
-                    <span className="text-[10px] font-black uppercase tracking-[0.25em] text-violet-400">HoÃ n thiá»‡n</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.25em] text-violet-400">Hoàn thiện</span>
                   </div>
-                  <h3 className="heading-2 mb-4">PhÃ¡t triá»ƒn cÃ¹ng AI</h3>
+                  <h3 className="heading-2 mb-4">Phát triển cùng AI</h3>
                   <p className="body-lg text-[15px] md:text-[16px] leading-relaxed text-orbit-text-secondary">
-                    Sá»­ dá»¥ng trÃ­ tuá»‡ nhÃ¢n táº¡o Ä‘á»ƒ phÃ¢n tÃ­ch repository, Ä‘á» xuáº¥t lá»™ trÃ¬nh há»c táº­p
-                    vÃ  nháº­n lá»i khuyÃªn chuyÃªn sÃ¢u tá»« AI Tutor â€” trá»£ lÃ½ há»c táº­p thÃ´ng minh
-                    Ä‘á»“ng hÃ nh cÃ¹ng báº¡n suá»‘t hÃ nh trÃ¬nh.
+                    Sử dụng trí tuệ nhân tạo để phân tích repository, đề xuất lộ trình học tập
+                    và nhận lời khuyên chuyên sâu từ AI Tutor — trợ lý học tập thông minh
+                    đồng hành cùng bạn suốt hành trình.
                   </p>
                 </div>
                 <div className="md:col-span-7 order-1 md:order-2">
@@ -268,13 +268,13 @@ export function HomePage() {
                             </div>
                             <div>
                               <p className="text-[13px] italic text-orbit-text-secondary leading-relaxed">
-                                "Dá»±a trÃªn kiáº¿n trÃºc Spring Boot vÃ  cÃ¡c repository máº«u,
-                                báº¡n cÃ³ thá»ƒ báº¯t Ä‘áº§u vá»›i module IoC Container trÆ°á»›c khi
-                                Ä‘i sÃ¢u vÃ o Spring Security vÃ  JWT Authentication."
+                                "Dựa trên kiến trúc Spring Boot và các repository mẫu,
+                                bạn có thể bắt đầu với module IoC Container trước khi
+                                đi sâu vào Spring Security và JWT Authentication."
                               </p>
                               <div className="flex items-center gap-2 mt-4">
                                 <span className="h-1.5 w-1.5 rounded-full bg-violet-400 animate-breathing" />
-                                <span className="text-[10px] text-orbit-text-muted">AI Tutor Ä‘á» xuáº¥t</span>
+                                <span className="text-[10px] text-orbit-text-muted">AI Tutor đề xuất</span>
                               </div>
                             </div>
                           </div>
@@ -289,7 +289,7 @@ export function HomePage() {
         </div>
       </SectionTransition>
 
-      {/* â”€â”€â”€ AI TUTOR: Bento Section â”€â”€â”€ */}
+      {/* ─── AI TUTOR: Bento Section ─── */}
       <SectionTransition atmosphere="glow" className="relative w-full overflow-hidden pt-28 md:pt-36 pb-16 md:pb-20">
         <div className="w-full max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12">
           <motion.div
@@ -301,15 +301,15 @@ export function HomePage() {
           >
             <span className="section-label mb-6 inline-flex">
               <MagicWand className="h-3 w-3" weight="fill" />
-              Sá»©c&nbsp;máº¡nh trÃ­&nbsp;tuá»‡ nhÃ¢n&nbsp;táº¡o
+              Sức&nbsp;mạnh trí&nbsp;tuệ nhân&nbsp;tạo
             </span>
             <h2 className="display-lg mt-6 mb-6">
-              TÃ³m táº¯t &<br />
-              <span className="text-orbit-accent">Cá»‘ váº¥n há»c táº­p</span>
+              Tóm tắt &<br />
+              <span className="text-orbit-accent">Cố vấn học tập</span>
             </h2>
             <p className="body-lg text-[17px] leading-relaxed">
-               DevOrbit sá»­ dá»¥ng AI Ä‘á»ƒ phÃ¢n&nbsp;tÃ­ch tá»«ng repository. Nháº­n ngay báº£n tÃ³m&nbsp;táº¯t dá»±&nbsp;Ã¡n,
-              lá»™&nbsp;trÃ¬nh há»c&nbsp;táº­p vÃ  lá»i khuyÃªn tá»« AI Tutor Ä‘á»ƒ lÃ m chá»§ kiáº¿n&nbsp;thá»©c.
+               DevOrbit sử dụng AI để phân&nbsp;tích từng repository. Nhận ngay bản tóm&nbsp;tắt dự&nbsp;án,
+              lộ&nbsp;trình học&nbsp;tập và lời khuyên từ AI Tutor để làm chủ kiến&nbsp;thức.
             </p>
           </motion.div>
 
@@ -334,7 +334,7 @@ export function HomePage() {
                   </div>
                   <div>
                     <div className="text-[10px] font-black uppercase tracking-[0.2em] text-orbit-accent mb-1">AI Tutor</div>
-                    <div className="text-[15px] font-bold text-orbit-text">Trá»£ lÃ½ há»c táº­p thÃ´ng minh</div>
+                    <div className="text-[15px] font-bold text-orbit-text">Trợ lý học tập thông minh</div>
                   </div>
                 </div>
                 <div className="p-8 rounded-3xl bg-orbit-bg border border-orbit-border/60">
@@ -345,11 +345,11 @@ export function HomePage() {
                     <div>
                       <div className="flex items-center gap-3 mb-3">
                         <span className="text-[11px] font-bold text-orbit-accent uppercase tracking-wider">AI Tutor</span>
-                        <span className="text-[10px] text-orbit-text-muted">Vá»«a xong</span>
+                        <span className="text-[10px] text-orbit-text-muted">Vừa xong</span>
                       </div>
                       <p className="body-md text-[14px] italic leading-relaxed text-orbit-text-secondary">
-                        "Dá»±a trÃªn kiáº¿n&nbsp;trÃºc Spring Boot nÃ y, báº¡n nÃªn táº­p&nbsp;trung vÃ o SecurityConfig
-                        Ä‘á»ƒ hiá»ƒu cÃ¡ch xá»­&nbsp;lÃ½ JWT..."
+                        "Dựa trên kiến&nbsp;trúc Spring Boot này, bạn nên tập&nbsp;trung vào SecurityConfig
+                        để hiểu cách xử&nbsp;lý JWT..."
                       </p>
                       <div className="mt-4 flex gap-2">
                         <span className="text-[10px] px-3 py-1.5 rounded-full bg-orbit-accent-subtle border border-orbit-accent/20 text-orbit-accent font-semibold">Spring Boot</span>
@@ -362,13 +362,13 @@ export function HomePage() {
                 <div className="flex items-center gap-4 mt-6 text-[12px]">
                   <span className="flex items-center gap-2 text-orbit-text-muted">
                     <span className="h-1.5 w-1.5 rounded-full bg-orbit-accent animate-breathing" />
-                    Äang phÃ¢n&nbsp;tÃ­ch 3 repositories
+                    Đang phân&nbsp;tích 3 repositories
                   </span>
                 </div>
               </div>
             </motion.div>
 
-            {/* TÃ³m táº¯t Card */}
+            {/* Tóm tắt Card */}
             <motion.div
               variants={fadeUp}
               className="orbit-card-glow p-10 md:p-12 flex flex-col items-start justify-between group will-change-transform"
@@ -377,9 +377,9 @@ export function HomePage() {
                 <Code className="h-8 w-8 text-orbit-accent" weight="duotone" />
               </div>
               <div>
-                <h3 className="heading-4 mb-3">TÃ³m&nbsp;táº¯t tá»±&nbsp;Ä‘á»™ng</h3>
+                <h3 className="heading-4 mb-3">Tóm&nbsp;tắt tự&nbsp;động</h3>
                 <p className="body-md text-[14px] leading-relaxed">
-                  Hiá»ƒu cÃ¡c dá»±&nbsp;Ã¡n phá»©c&nbsp;táº¡p trong vÃ i giÃ¢y vá»›i phÃ¢n&nbsp;tÃ­ch AI chuyÃªn&nbsp;sÃ¢u.
+                  Hiểu các dự&nbsp;án phức&nbsp;tạp trong vài giây với phân&nbsp;tích AI chuyên&nbsp;sâu.
                 </p>
               </div>
               <div className="mt-8 flex gap-2">
@@ -389,7 +389,7 @@ export function HomePage() {
               </div>
             </motion.div>
 
-            {/* Lá»™ trÃ¬nh Card */}
+            {/* Lộ trình Card */}
             <motion.div
               variants={fadeUp}
               className="md:col-span-3 orbit-card-glow p-10 md:p-12 flex flex-col will-change-transform md:flex-row items-start md:items-center justify-between gap-8 group"
@@ -399,15 +399,15 @@ export function HomePage() {
                   <Rocket className="h-8 w-8 text-orbit-accent" weight="duotone" />
                 </div>
                 <div>
-                  <h3 className="heading-4 mb-3">Lá»™&nbsp;trÃ¬nh há»c&nbsp;táº­p</h3>
+                  <h3 className="heading-4 mb-3">Lộ&nbsp;trình học&nbsp;tập</h3>
                   <p className="body-md text-[14px] leading-relaxed max-w-xl">
-                    HÆ°á»›ng dáº«n há»c&nbsp;táº­p tá»« mÃ£&nbsp;nguá»“n thá»±c&nbsp;táº¿, Ä‘á»&nbsp;xuáº¥t mÃ´n&nbsp;há»c vÃ  ká»¹&nbsp;nÄƒng
-                    theo Ä‘á»‹nh&nbsp;hÆ°á»›ng nghá»&nbsp;nghiá»‡p cá»§a báº¡n.
+                    Hướng dẫn học&nbsp;tập từ mã&nbsp;nguồn thực&nbsp;tế, đề&nbsp;xuất môn&nbsp;học và kỹ&nbsp;năng
+                    theo định&nbsp;hướng nghề&nbsp;nghiệp của bạn.
                   </p>
                 </div>
               </div>
               <Link to="/courses" className="btn-secondary text-[12px] shrink-0">
-                Xem lá»™ trÃ¬nh
+                Xem lộ trình
                 <ArrowRight className="h-4 w-4" weight="bold" />
               </Link>
             </motion.div>
@@ -415,7 +415,7 @@ export function HomePage() {
         </div>
       </SectionTransition>
 
-      {/* â”€â”€â”€ DISCOVERY FEED â”€â”€â”€ */}
+      {/* ─── DISCOVERY FEED ─── */}
       <SectionTransition atmosphere="deep" className="relative py-16 sm:py-28 md:py-36">
         <div className="w-full max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12">
           <motion.div
@@ -427,11 +427,11 @@ export function HomePage() {
           >
             <span className="section-label-muted mb-6 inline-flex">
               <Compass className="h-3 w-3" weight="regular" />
-              DÃ²ng thá»i&nbsp;gian má»›i&nbsp;nháº¥t
+              Dòng thời&nbsp;gian mới&nbsp;nhất
             </span>
             <h2 className="display-lg mt-6 mb-6">
-              KhÃ¡m phÃ¡{' '}
-              <span className="text-orbit-accent">má»›i nháº¥t</span>
+              Khám phá{' '}
+              <span className="text-orbit-accent">mới nhất</span>
             </h2>
           </motion.div>
 

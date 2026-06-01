@@ -5,6 +5,7 @@ spring:
     password:
     driver-class-name: org.h2.Driver
   jpa:
+    defer-datasource-initialization: true
     hibernate:
       ddl-auto: create-drop
     properties:
@@ -14,6 +15,7 @@ spring:
     init:
       mode: always
       continue-on-error: true
+      schema-locations: []
   h2:
     console:
       enabled: false

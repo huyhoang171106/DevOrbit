@@ -52,7 +52,7 @@ class AcademicRepository @Inject constructor(
             }
             courseDao.upsertCourses(entities)
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e("AcademicRepository", "API error", e)
         }
     }
 
@@ -73,7 +73,7 @@ class AcademicRepository @Inject constructor(
             }
             repoDao.upsertRepos(entities)
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e("AcademicRepository", "API error", e)
         }
     }
 
@@ -129,7 +129,7 @@ class AcademicRepository @Inject constructor(
             }
             relationshipDao.upsertRelationships(entities)
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e("AcademicRepository", "API error", e)
         }
     }
 

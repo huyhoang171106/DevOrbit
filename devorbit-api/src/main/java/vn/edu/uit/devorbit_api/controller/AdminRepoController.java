@@ -4,13 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.uit.devorbit_api.dto.admin.ApprovedRepoUpdateRequest;
 import vn.edu.uit.devorbit_api.dto.publicapi.RepoSummaryResponse;
-import vn.edu.uit.devorbit_api.entity.RepoCandidateStatus;
-import vn.edu.uit.devorbit_api.repository.GithubRepoRepository;
-import vn.edu.uit.devorbit_api.repository.RepoCandidateRepository;
 import vn.edu.uit.devorbit_api.service.GithubRepoService;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * ADMIN REPO CONTROLLER = manage the approved GitHub repos.
@@ -25,8 +21,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AdminRepoController {
     private final GithubRepoService githubRepoService;
-    private final GithubRepoRepository githubRepoRepository;
-    private final RepoCandidateRepository repoCandidateRepository;
 
     /** List ALL approved repos */
     @GetMapping

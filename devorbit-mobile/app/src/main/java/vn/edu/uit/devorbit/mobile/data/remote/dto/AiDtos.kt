@@ -8,13 +8,9 @@ data class SubjectQaRequest(
 data class SubjectQaResponse(
     val answer: String,
     val sessionId: String? = null,
-    val sources: List<SubjectQaSource> = emptyList()
-)
-
-data class SubjectQaSource(
-    val title: String? = null,
-    val url: String? = null,
-    val excerpt: String? = null
+    val relevantNodeIds: List<Long> = emptyList(),
+    val sources: List<String> = emptyList(),
+    val type: String? = null
 )
 
 data class RoadmapGenerationRequest(
@@ -24,18 +20,49 @@ data class RoadmapGenerationRequest(
 
 data class RoadmapRecommendationResponse(
     val summary: String? = null,
-    val phases: List<RoadmapPhaseResponse> = emptyList()
+    val recommendedCourses: List<CourseRecommendationResponse> = emptyList(),
+    val graduationTracks: List<GraduationTrackResponse> = emptyList(),
+    val electivePools: List<ElectivePoolCandidatesResponse> = emptyList()
 )
 
-data class RoadmapPhaseResponse(
-    val title: String,
+data class CourseRecommendationResponse(
+    val courseId: Long? = null,
+    val courseCode: String? = null,
+    val courseName: String? = null,
+    val reasoning: String? = null,
     val description: String? = null,
-    val items: List<RoadmapItemResponse> = emptyList()
+    val isMandatory: Boolean = false,
+    val semester: Int? = null,
+    val credits: Int = 0
 )
 
-data class RoadmapItemResponse(
-    val title: String,
+data class GraduationTrackResponse(
+    val type: String? = null,
+    val name: String? = null,
     val description: String? = null,
-    val targetType: String? = null,
-    val targetId: Long? = null
+    val credits: Int = 0,
+    val requirements: String? = null,
+    val recommendation: String? = null,
+    val recommended: Boolean = false,
+    val courseCodes: List<String> = emptyList()
+)
+
+data class ElectivePoolCandidatesResponse(
+    val poolId: String? = null,
+    val poolName: String? = null,
+    val targetTC: Int = 0,
+    val currentTC: Int = 0,
+    val candidates: List<ElectiveCandidateResponse> = emptyList()
+)
+
+data class ElectiveCandidateResponse(
+    val courseId: Long? = null,
+    val courseCode: String? = null,
+    val courseName: String? = null,
+    val credits: Int = 0,
+    val score: Int = 0,
+    val isSelected: Boolean = false,
+    val description: String? = null,
+    val reasoning: String? = null,
+    val semester: Int? = null
 )

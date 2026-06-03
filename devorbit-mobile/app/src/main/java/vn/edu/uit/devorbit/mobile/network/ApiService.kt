@@ -76,6 +76,9 @@ interface ApiService {
     @GET("/api/discovery/top-stacks")
     suspend fun getTopStacks(): List<String>
 
+    @GET("/api/repos/{repoId}")
+    suspend fun getRepo(@Path("repoId") repoId: Long): RepoSummary
+
     // AI
     @GET("/api/ai/repo/{repoId}/summary")
     suspend fun getRepoSummary(@Path("repoId") repoId: Long): Map<String, Any>

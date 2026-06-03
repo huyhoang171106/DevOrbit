@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import vn.edu.uit.devorbit.mobile.data.local.entity.CourseEntity
@@ -17,13 +18,16 @@ import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseYoutubePlaylist
 import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSummary
 import vn.edu.uit.devorbit.mobile.domain.model.GraphNode
 import vn.edu.uit.devorbit.mobile.domain.model.GraphLink
+import vn.edu.uit.devorbit.mobile.domain.repository.Bookmark
+import vn.edu.uit.devorbit.mobile.domain.repository.BookmarkRepository
 import vn.edu.uit.devorbit.mobile.ui.screen.courses.CourseHubNavigationState
 import vn.edu.uit.devorbit.mobile.ui.screen.courses.CourseSearchFilterState
 import javax.inject.Inject
 
 @HiltViewModel
 class CourseViewModel @Inject constructor(
-    private val repository: AcademicRepository
+    private val repository: AcademicRepository,
+    private val bookmarkRepository: BookmarkRepository
 ) : ViewModel() {
 
     val courses: StateFlow<List<CourseEntity>> = repository.allCourses
@@ -70,6 +74,9 @@ class CourseViewModel @Inject constructor(
 
     private val _detailError = MutableStateFlow<String?>(null)
     val detailError: StateFlow<String?> = _detailError.asStateFlow()
+
+    private val _bookmarkedCourseIds = MutableStateFlow<Set<Long>>(emptySet())
+    val bookmarkedCourseIds: StateFlow<Set<Long>> = _bookmarkedCourseIds.asStateFlow()
 
     init {
         refreshCourses()
@@ -124,6 +131,7 @@ class CourseViewModel @Inject constructor(
         _selectedRepo.value = null
         _courseHubNavigationState.value = _courseHubNavigationState.value.openCourse(course.id)
         loadCourseDetail(course.id)
+        loadCourseBookmarkState(course.id)
     }
 
     fun openRepo(repo: RepoSummary) {
@@ -165,6 +173,38 @@ class CourseViewModel @Inject constructor(
                 _detailArticles.value = emptyList()
             } finally {
                 _detailLoading.value = false
+            }
+        }
+    }
+
+    private fun loadCourseBookmarkState(courseId: Long) {
+        viewModelScope.launch {
+            if (bookmarkRepository.isBookmarked("COURSE", courseId)) {
+                _bookmarkedCourseIds.value = _bookmarkedCourseIds.value + courseId
+            } else {
+                _bookmarkedCourseIds.value = _bookmarkedCourseIds.value - courseId
+            }
+        }
+    }
+
+    fun toggleCourseBookmark(course: CourseEntity) {
+        viewModelScope.launch {
+            val existing = bookmarkRepository.getAllBookmarks().first()
+                .firstOrNull { it.targetType == "COURSE" && it.targetId == course.id }
+
+            if (existing != null) {
+                bookmarkRepository.removeBookmark(existing.id)
+                _bookmarkedCourseIds.value = _bookmarkedCourseIds.value - course.id
+            } else {
+                bookmarkRepository.addBookmark(
+                    Bookmark(
+                        id = 0,
+                        targetType = "COURSE",
+                        targetId = course.id,
+                        title = course.tenMH
+                    )
+                )
+                _bookmarkedCourseIds.value = _bookmarkedCourseIds.value + course.id
             }
         }
     }

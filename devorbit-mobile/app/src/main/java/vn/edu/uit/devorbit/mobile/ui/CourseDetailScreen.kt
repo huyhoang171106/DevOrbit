@@ -7,13 +7,19 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import vn.edu.uit.devorbit.mobile.data.remote.dto.*
+import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseArticle
+import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseTutorial
+import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseYoutubePlaylist
+import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSummary
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 
 @Composable
@@ -23,7 +29,9 @@ fun CourseDetailScreen(
     tutorials: List<CourseTutorial>,
     videos: List<CourseYoutubePlaylist>,
     articles: List<CourseArticle>,
+    bookmarked: Boolean,
     onBack: () -> Unit,
+    onBookmarkClick: () -> Unit,
     onRepoClick: (RepoSummary) -> Unit
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
@@ -35,8 +43,23 @@ fun CourseDetailScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        TextButton(onClick = onBack, modifier = Modifier.padding(start = 8.dp)) {
-            Text("← Môn học", color = CosmicTheme.colors.textSecondary)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 8.dp, end = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            TextButton(onClick = onBack) {
+                Text("< Mon hoc", color = CosmicTheme.colors.textSecondary)
+            }
+            IconButton(onClick = onBookmarkClick) {
+                Icon(
+                    imageVector = Icons.Rounded.Star,
+                    contentDescription = "Luu mon hoc",
+                    tint = if (bookmarked) CosmicTheme.colors.plasma else CosmicTheme.colors.textTertiary
+                )
+            }
         }
 
         Text(
@@ -62,7 +85,9 @@ fun CourseDetailScreen(
                     text = {
                         Text(
                             title,
-                            style = CosmicTheme.typography.label.copy(fontWeight = if (selectedTabIndex == index) FontWeight.Bold else FontWeight.Medium),
+                            style = CosmicTheme.typography.label.copy(
+                                fontWeight = if (selectedTabIndex == index) FontWeight.Bold else FontWeight.Medium
+                            ),
                             color = if (selectedTabIndex == index) CosmicTheme.colors.plasma else CosmicTheme.colors.textTertiary
                         )
                     }
@@ -72,19 +97,17 @@ fun CourseDetailScreen(
 
         Box(modifier = Modifier.weight(1f)) {
             when (selectedTabIndex) {
-                0 -> {
-                    RepoListSection(
-                        repos = repoFilterState.filteredRepos,
-                        resultCount = repoFilterState.filteredRepos.size,
-                        totalCount = repos.size,
-                        availableTechStacks = repoFilterState.availableTechStacks,
-                        selectedTechStack = repoFilterState.selectedTechStack,
-                        onTechStackSelected = { stack ->
-                            selectedTechStack = repoFilterState.selectTechStack(stack).selectedTechStack
-                        },
-                        onRepoClick = onRepoClick
-                    )
-                }
+                0 -> RepoListSection(
+                    repos = repoFilterState.filteredRepos,
+                    resultCount = repoFilterState.filteredRepos.size,
+                    totalCount = repos.size,
+                    availableTechStacks = repoFilterState.availableTechStacks,
+                    selectedTechStack = repoFilterState.selectedTechStack,
+                    onTechStackSelected = { stack ->
+                        selectedTechStack = repoFilterState.selectTechStack(stack).selectedTechStack
+                    },
+                    onRepoClick = onRepoClick
+                )
                 1 -> KnowledgeList(tutorials) {
                     context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it.url)))
                 }
@@ -123,16 +146,24 @@ fun <T> KnowledgeList(items: List<T>, onClick: (T) -> Unit) {
                         else -> ""
                     }
                     val subtitle = when (item) {
-                        is CourseTutorial -> item.description ?: "Bài viết"
+                        is CourseTutorial -> item.description ?: "Bai viet"
                         is CourseYoutubePlaylist -> "YouTube Playlist"
-                        is CourseArticle -> "bởi ${item.author ?: "Không rõ"}"
+                        is CourseArticle -> "boi ${item.author ?: "Khong ro"}"
                         else -> ""
                     }
 
-                    Text(title, style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.SemiBold), color = CosmicTheme.colors.textPrimary)
+                    Text(
+                        title,
+                        style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
+                        color = CosmicTheme.colors.textPrimary
+                    )
                     if (subtitle.isNotBlank()) {
                         Spacer(modifier = Modifier.height(2.dp))
-                        Text(subtitle, style = CosmicTheme.typography.label, color = CosmicTheme.colors.textTertiary)
+                        Text(
+                            subtitle,
+                            style = CosmicTheme.typography.label,
+                            color = CosmicTheme.colors.textTertiary
+                        )
                     }
                 }
             }

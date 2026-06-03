@@ -40,6 +40,7 @@ fun CourseHubScreen(
     val articles by viewModel.detailArticles.collectAsStateWithLifecycle()
     val detailLoading by viewModel.detailLoading.collectAsStateWithLifecycle()
     val detailError by viewModel.detailError.collectAsStateWithLifecycle()
+    val bookmarkedCourseIds by viewModel.bookmarkedCourseIds.collectAsStateWithLifecycle()
 
     when {
         selectedRepo != null -> RepoDetailScreen(
@@ -69,7 +70,9 @@ fun CourseHubScreen(
                         tutorials = tutorials,
                         videos = videos,
                         articles = articles,
+                        bookmarked = selectedCourse!!.id in bookmarkedCourseIds,
                         onBack = { viewModel.closeCourseDetail() },
+                        onBookmarkClick = { viewModel.toggleCourseBookmark(selectedCourse!!) },
                         onRepoClick = { viewModel.openRepo(it) }
                     )
                 }

@@ -29,6 +29,7 @@ import vn.edu.uit.devorbit.mobile.ui.screen.profile.ProfileScreen
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.AcademicViewModel
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.CourseViewModel
+import vn.edu.uit.devorbit.mobile.ui.viewmodel.StudyPlanViewModel
 
 @Composable
 fun MainScreen(
@@ -136,11 +137,17 @@ private fun KnowledgeTabView(courseViewModel: CourseViewModel = hiltViewModel())
 }
 
 @Composable
-private fun PlanTabView() {
+private fun PlanTabView(viewModel: StudyPlanViewModel = hiltViewModel()) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
     StudyPlannerScreen(
-        studyPlan = null,
-        onGeneratePlan = { },
-        onToggleItem = { },
+        studyPlan = state.plan,
+        loading = state.loading,
+        error = state.error,
+        onGeneratePlan = { learningGoals, careerPath ->
+            viewModel.generateRoadmap(learningGoals, careerPath)
+        },
+        onToggleItem = { viewModel.toggleItem(it) },
         onBreakdownTask = { }
     )
 }

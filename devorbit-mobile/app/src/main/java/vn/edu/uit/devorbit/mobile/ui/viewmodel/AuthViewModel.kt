@@ -61,8 +61,6 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    // ─── Login ───
-
     fun updateStudentCode(code: String) {
         _loginState.value = _loginState.value.copy(studentCode = code, error = null)
     }
@@ -74,7 +72,7 @@ class AuthViewModel @Inject constructor(
     fun login() {
         val state = _loginState.value
         if (state.studentCode.isBlank() || state.password.isBlank()) {
-            _loginState.value = _loginState.value.copy(error = "Vui lòng nhập đầy đủ MSSV và mật khẩu")
+            _loginState.value = _loginState.value.copy(error = "Vui long nhap day du MSSV va mat khau")
             return
         }
         viewModelScope.launch {
@@ -84,12 +82,13 @@ class AuthViewModel @Inject constructor(
                     _loginState.value = _loginState.value.copy(isLoading = false, isLoggedIn = true)
                 }
                 .onFailure { e ->
-                    _loginState.value = _loginState.value.copy(isLoading = false, error = e.message ?: "Đăng nhập thất bại")
+                    _loginState.value = _loginState.value.copy(
+                        isLoading = false,
+                        error = e.message ?: "Dang nhap that bai"
+                    )
                 }
         }
     }
-
-    // ─── Register ───
 
     fun updateRegisterField(field: String, value: String) {
         _registerState.value = when (field) {
@@ -104,12 +103,9 @@ class AuthViewModel @Inject constructor(
 
     fun register() {
         val state = _registerState.value
-        if (state.studentCode.isBlank() || state.fullName.isBlank() || state.email.isBlank()) {
-            _registerState.value = _registerState.value.copy(error = "Vui lòng nhập đầy đủ thông tin")
-            return
-        }
-        if (state.password != state.confirmPassword) {
-            _registerState.value = _registerState.value.copy(error = "Mật khẩu xác nhận không khớp")
+        val validationError = AuthValidation.registerError(state)
+        if (validationError != null) {
+            _registerState.value = _registerState.value.copy(error = validationError)
             return
         }
         viewModelScope.launch {
@@ -123,7 +119,10 @@ class AuthViewModel @Inject constructor(
                 _registerState.value = _registerState.value.copy(isLoading = false, isSuccess = true)
                 _loginState.value = _loginState.value.copy(isLoggedIn = true)
             }.onFailure { e ->
-                _registerState.value = _registerState.value.copy(isLoading = false, error = e.message ?: "Đăng ký thất bại")
+                _registerState.value = _registerState.value.copy(
+                    isLoading = false,
+                    error = e.message ?: "Dang ky that bai"
+                )
             }
         }
     }
@@ -134,5 +133,13 @@ class AuthViewModel @Inject constructor(
 
     fun switchToLogin() {
         _loginState.value = _loginState.value.copy(error = null)
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            authRepository.logout()
+            _loginState.value = AuthUiState(isLoggedIn = false)
+            _registerState.value = RegisterUiState()
+        }
     }
 }

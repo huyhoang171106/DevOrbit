@@ -18,24 +18,19 @@ import vn.edu.uit.devorbit.mobile.data.local.entity.CourseEntity
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.CourseViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun CourseListScreen(
     viewModel: CourseViewModel,
     onCourseClick: (CourseEntity) -> Unit
 ) {
     val courses by viewModel.courses.collectAsStateWithLifecycle()
-    var searchQuery by remember { mutableStateOf("") }
-
-    val filteredCourses = courses.filter {
-        it.tenMH.contains(searchQuery, ignoreCase = true) ||
-        it.maMH.contains(searchQuery, ignoreCase = true)
-    }
+    val filterState by viewModel.courseSearchFilterState.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxSize()) {
         OutlinedTextField(
-            value = searchQuery,
-            onValueChange = { searchQuery = it },
+            value = filterState.query,
+            onValueChange = { viewModel.updateCourseSearch(it) },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp),
@@ -52,12 +47,55 @@ fun CourseListScreen(
             singleLine = true
         )
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 100.dp),
+        FlowRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(filteredCourses, key = { it.id }) { course ->
+            CourseSearchFilterState.subjectFilters.forEach { option ->
+                FilterChip(
+                    selected = filterState.subjectType == option.value || (option.value == null && filterState.subjectType == null),
+                    onClick = { viewModel.selectCourseSubjectType(option.value) },
+                    label = { Text(option.label) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = CosmicTheme.colors.plasma.copy(alpha = 0.14f),
+                        selectedLabelColor = CosmicTheme.colors.plasma,
+                        labelColor = CosmicTheme.colors.textSecondary,
+                        containerColor = CosmicTheme.colors.nebula
+                    ),
+                    border = FilterChipDefaults.filterChipBorder(
+                        enabled = true,
+                        selected = filterState.subjectType == option.value || (option.value == null && filterState.subjectType == null),
+                        borderColor = CosmicTheme.colors.glassBorder,
+                        selectedBorderColor = CosmicTheme.colors.plasma
+                    )
+                )
+            }
+        }
+
+        if (courses.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Khong tim thay mon hoc phu hop",
+                    style = CosmicTheme.typography.label,
+                    color = CosmicTheme.colors.textTertiary
+                )
+            }
+        }
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(top = 8.dp, bottom = 100.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(courses, key = { it.id }) { course ->
                 CourseListItem(course = course, onClick = { onCourseClick(course) })
             }
         }

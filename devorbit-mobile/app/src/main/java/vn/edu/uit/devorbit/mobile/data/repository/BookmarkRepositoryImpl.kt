@@ -31,7 +31,7 @@ class BookmarkRepositoryImpl @Inject constructor(
                 targetType = bookmark.targetType,
                 targetId = bookmark.targetId,
                 title = bookmark.title,
-                url = ""
+                url = "devorbit://${bookmark.targetType.lowercase()}/${bookmark.targetId}"
             )
         )
     }

@@ -10,7 +10,15 @@ import vn.edu.uit.devorbit.mobile.data.remote.dto.*
 
 interface ApiService {
     @GET("/api/courses")
-    suspend fun getCourses(): List<CourseSummary>
+    suspend fun getCourses(
+        @Query("q") query: String? = null,
+        @Query("subjectType") subjectType: String? = null,
+        @Query("semester") semester: Int? = null,
+        @Query("managementUnit") managementUnit: String? = null
+    ): List<CourseSummary>
+
+    @GET("/api/courses/{id}")
+    suspend fun getCourseDetail(@Path("id") courseId: Long): CourseSummary
 
     @GET("/api/courses/{courseId}/repos")
     suspend fun getRepos(
@@ -30,6 +38,9 @@ interface ApiService {
     @GET("/api/courses/relationships")
     suspend fun getRelationships(): List<CourseRelationshipResponse>
 
+    @GET("/api/courses/relationships/course/{courseId}")
+    suspend fun getCourseRelationships(@Path("courseId") courseId: Long): List<CourseRelationshipResponse>
+
     @GET("/api/courses/graph")
     suspend fun getKnowledgeGraph(): GraphResponse
 
@@ -43,15 +54,27 @@ interface ApiService {
     @GET("/api/student/me")
     suspend fun getStudentProfile(): Map<String, Any>
 
+    @GET("/api/student/bookmarks")
+    suspend fun getBookmarks(): List<StudentBookmarkResponse>
+
+    @POST("/api/student/bookmarks")
+    suspend fun addBookmark(@Body body: StudentBookmarkRequest): StudentBookmarkResponse
+
+    @DELETE("/api/student/bookmarks/{id}")
+    suspend fun deleteBookmark(@Path("id") id: Long)
+
     // Tech & Discovery
     @GET("/api/tech-stacks")
     suspend fun getTechStacks(): List<Map<String, String>>
 
     @GET("/api/discovery/recent-repos")
-    suspend fun getRecentDiscoveryRepos(): List<Map<String, Any>>
+    suspend fun getRecentDiscoveryRepos(): List<RepoSummary>
+
+    @GET("/api/discovery/repos")
+    suspend fun searchDiscoveryRepos(@Query("q") query: String? = null): List<RepoSummary>
 
     @GET("/api/discovery/top-stacks")
-    suspend fun getTopStacks(): List<Map<String, Any>>
+    suspend fun getTopStacks(): List<String>
 
     // AI
     @GET("/api/ai/repo/{repoId}/summary")
@@ -62,4 +85,10 @@ interface ApiService {
 
     @POST("/api/ai/knowledge-graph/query")
     suspend fun queryKnowledgeGraph(@Body body: Map<String, String>): Map<String, Any>
+
+    @POST("/api/ai/subject-qa/query")
+    suspend fun querySubjectQa(@Body body: SubjectQaRequest): SubjectQaResponse
+
+    @POST("/api/ai/generate-roadmap")
+    suspend fun generateRoadmap(@Body body: RoadmapGenerationRequest): RoadmapRecommendationResponse
 }

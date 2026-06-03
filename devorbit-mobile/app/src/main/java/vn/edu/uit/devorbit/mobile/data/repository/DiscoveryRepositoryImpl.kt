@@ -18,25 +18,16 @@ class DiscoveryRepositoryImpl @Inject constructor(
     } catch (e: Exception) { emptyList() }
 
     override suspend fun getRecentRepos(): List<RecentRepo> = try {
-        apiService.getRecentDiscoveryRepos().map {
-            RecentRepo(
-                id = (it["id"] as? Number)?.toLong() ?: 0,
-                name = it["displayName"] as? String ?: "",
-                description = it["description"] as? String ?: "",
-                githubUrl = it["githubUrl"] as? String ?: "",
-                language = it["primaryLanguage"] as? String ?: "",
-                stars = (it["stars"] as? Number)?.toInt() ?: 0,
-                courseName = it["courseName"] as? String
-            )
-        }
+        apiService.getRecentDiscoveryRepos().map { it.toRecentRepo() }
+    } catch (e: Exception) { emptyList() }
+
+    override suspend fun searchRepos(query: String): List<RecentRepo> = try {
+        apiService.searchDiscoveryRepos(query.takeIf { it.isNotBlank() }).map { it.toRecentRepo() }
     } catch (e: Exception) { emptyList() }
 
     override suspend fun getTopStacks(): List<TopStack> = try {
-        apiService.getTopStacks().map {
-            TopStack(
-                name = it["name"] as? String ?: "",
-                count = (it["count"] as? Number)?.toInt() ?: 0
-            )
+        apiService.getTopStacks().mapIndexed { index, name ->
+            TopStack(name = name, count = index + 1)
         }
     } catch (e: Exception) { emptyList() }
 }

@@ -38,9 +38,14 @@ class AcademicRepository @Inject constructor(
     fun getRecentRepos(): Flow<List<RepoEntity>> = 
         repoDao.getRecentRepos()
 
-    suspend fun refreshCourses() {
+    suspend fun refreshCourses(
+        query: String? = null,
+        subjectType: String? = null,
+        semester: Int? = null,
+        managementUnit: String? = null
+    ) {
         try {
-            val courses = apiService.getCourses()
+            val courses = apiService.getCourses(query, subjectType, semester, managementUnit)
             val entities = courses.map { 
                 CourseEntity(
                     id = it.id,

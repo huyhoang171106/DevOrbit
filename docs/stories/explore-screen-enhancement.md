@@ -1,8 +1,8 @@
-# US-019 Explore Screen Enhancement
+# US-035 Mobile Course Search, Bookmarks, and Explore Enhancement
 
 ## Status
 
-planned
+implemented
 
 ## Lane
 
@@ -10,92 +10,63 @@ normal
 
 ## Product Contract
 
-Nâng cấp màn hình Explore (Khám phá) từ danh sách repo đơn giản thành trung tâm khám phá học thuật với search, bookmark, filter theo tech stack, và các trạng thái UI đầy đủ (loading, error, empty). Thiết kế đồng bộ với Cosmic Design System đã dùng trên Dashboard.
+Mobile Courses supports server-backed search/filtering and course bookmarks. Mobile Explore supports repository search, tech stack filtering, typed tech stack parsing, empty/loading/error states, and navigation into the existing repo detail screen.
 
 ## Relevant Product Docs
 
-- `docs/plans/explore-screen-enhancement.md` (plan chi tiết)
+- `mobile-plan-4screens.md`
 - `docs/ARCHITECTURE.md`
-- `devorbit-mobile` DesignSystem (`ui/theme/DesignSystem.kt`)
+- `devorbit-mobile/AGENTS.md`
 
 ## Acceptance Criteria
 
-- [ ] **Search bar**: Thanh tìm kiếm animated, expand on focus, filter repos local theo query
-- [ ] **Horizontal scroll**: Tech stack chips scroll ngang được (LazyRow), không bị overflow
-- [ ] **Stack filter**: Click chip → filter repos theo stack, click lại → clear filter
-- [ ] **Bookmark toggle**: Mỗi repo card có nút bookmark, state persist qua DataStore
-- [ ] **Pull-to-refresh**: Kéo xuống làm mới tất cả dữ liệu
-- [ ] **Category tabs**: Segmented control (Tất cả / Repository / Tech Stack)
-- [ ] **Loading state**: Shimmer/skeleton trong khi fetch dữ liệu
-- [ ] **Error state**: Message + retry button khi API fail
-- [ ] **Empty state**: Message thân thiện khi không có kết quả
-- [ ] **Repo card**: Glassmorphism card với gradient accent, language badge, star/fork count
-- [ ] **Navigation**: Click repo → mở RepoDetailScreen
-- [ ] **Entrance animation**: Cards xuất hiện với stagger animation
+- [x] Course list search calls `/api/courses?q=...`.
+- [x] Course subject chips call `/api/courses?subjectType=...`.
+- [x] Course detail keeps repo tech stack filtering available.
+- [x] Course detail has a bookmark action backed by `/api/student/bookmarks`.
+- [x] Bookmark repository uses Student Bookmark API instead of in-memory mock data.
+- [x] Explore search calls `/api/discovery/repos?q=...` and resets to recent repos when cleared.
+- [x] Explore tech stack chips filter visible repos by parsed `techStacks`.
+- [x] Explore repo cards display course, language, stars, and tech stacks.
+- [x] Explore repo click opens the existing `RepoDetailScreen`.
+- [x] Explore shows loading, error retry, and empty states.
+- [ ] AI Subject Q&A mobile chat UI is not part of this slice.
+- [ ] Course prerequisite/objective/grading display is not part of this slice.
 
 ## Design Notes
 
-- UI components tách riêng trong `ui/screen/explore/components/`
-- Giữ nguyên theme token từ DesignSystem, không thêm màu mới
-- Entrance animation dùng `animateItemPlacement` + `AnimatedVisibility`
-- Bookmark lưu trong DataStore (key-value), không cần DB
-- Search filter local (client-side) — chỉ `/searchRepos` API khi có backend support
-
-## Data Layer Changes
-
-```kotlin
-// Domain model mở rộng
-data class RecentRepo(
-    val id: Long,
-    val name: String,
-    val description: String,
-    val githubUrl: String,
-    val language: String,
-    val stars: Int,
-    val forks: Int,        // NEW
-    val courseName: String?,
-    val updatedAt: String?  // NEW
-)
-
-// Repository interface mới
-interface DiscoveryRepository {
-    // ... existing methods
-    suspend fun searchRepos(query: String): List<RecentRepo>  // NEW
-}
-```
-
-## New Files
-
-| File | Purpose |
-|------|---------|
-| `ui/screen/explore/components/ExploreSearchBar.kt` | Animated search bar |
-| `ui/screen/explore/components/ExploreRepoCard.kt` | Glassmorphism repo card |
-| `ui/screen/explore/components/TechStackChip.kt` | Selectable tech stack chip |
-| `ui/screen/explore/components/CategoryTabs.kt` | Segmented category control |
+- Reused existing Compose screens and `RepoDetailScreen` instead of introducing a new Explore-specific detail screen.
+- Added typed DTOs for discovery repos, bookmarks, Subject Q&A, and roadmap endpoint coverage.
+- Kept repo filtering client-side after the server search result is loaded.
+- Used API-backed bookmarks; no local bookmark persistence was added.
 
 ## Modified Files
 
 | File | Change |
-|------|--------|
-| `domain/repository/DiscoveryRepository.kt` | Expand RecentRepo model |
-| `data/repository/DiscoveryRepositoryImpl.kt` | Parse new fields + search |
-| `ui/viewmodel/ExploreViewModel.kt` | Add search/filter/bookmark/refresh |
-| `ui/screen/explore/ExploreScreen.kt` | Rewrite with all new components |
-| `ui/MainScreen.kt` | Pass navigation callback |
+| --- | --- |
+| `network/ApiService.kt` | Added query params and missing endpoint declarations. |
+| `data/repository/DiscoveryRepositoryImpl.kt` | Typed repo parsing and repo search. |
+| `data/repository/BookmarkRepositoryImpl.kt` | Switched from mock list to Student Bookmark API. |
+| `ui/viewmodel/CourseViewModel.kt` | Course search/filter and course bookmark toggle state. |
+| `ui/screen/courses/CourseListScreen.kt` | Search bar and subject filter chips. |
+| `ui/CourseDetailScreen.kt` | Course bookmark action. |
+| `ui/viewmodel/ExploreViewModel.kt` | Search, filter, error/loading, repo detail state. |
+| `ui/screen/explore/ExploreScreen.kt` | Search, stack filters, states, repo cards, detail reuse. |
 
 ## Validation
 
 | Layer | Expected proof |
 | --- | --- |
-| Unit | `ExploreViewModel` tests for search, filter, bookmark toggle |
-| Integration | Not required; no API contract change |
-| Platform | `:app:testDebugUnitTest` + Android compile through Gradle |
+| Unit | `CourseSearchFilterStateTest`, `ExploreFilterStateTest`, `DiscoveryMappersTest`, existing mobile tests. |
+| Integration | Not run; API integration depends on live backend/JWT. |
+| E2E | Not available in mobile harness. |
+| Platform | `:app:testDebugUnitTest` through Gradle. |
 
-## Dependencies
+## Evidence
 
-- Bookmark persistence: DataStore Preferences đã setup trong project
-- API `/discovery/search-repos`: Optional fallback về local filter
+- `devorbit-mobile`: `.\gradlew.bat :app:testDebugUnitTest` passed.
+- Commits: `7e01b5d`, `6122db9`, `bbcc294`, `be174b4`.
 
 ## Harness Delta
 
-N/A — sama với harness hiện tại (GitNexus đã active).
+CodeGraph and wiki tools were not exposed in this session. Impact analysis was approximated with local controller/repository/ViewModel inspection and Gradle compile/test proof.

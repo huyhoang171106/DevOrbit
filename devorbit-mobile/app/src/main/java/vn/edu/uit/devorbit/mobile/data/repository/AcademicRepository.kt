@@ -38,10 +38,15 @@ class AcademicRepository @Inject constructor(
     fun getRecentRepos(): Flow<List<RepoEntity>> = 
         repoDao.getRecentRepos()
 
-    suspend fun refreshCourses() {
+    suspend fun refreshCourses(
+        query: String? = null,
+        subjectType: String? = null,
+        semester: Int? = null,
+        managementUnit: String? = null
+    ) {
         try {
-            val courses = apiService.getCourses()
-            val entities = courses.map { 
+            val courses = apiService.getCourses(query, subjectType, semester, managementUnit)
+            val entities = courses.map {
                 CourseEntity(
                     id = it.id,
                     maMH = it.code,
@@ -50,6 +55,7 @@ class AcademicRepository @Inject constructor(
                     description = ""
                 )
             }
+            courseDao.deleteAll()
             courseDao.upsertCourses(entities)
         } catch (e: Exception) {
             android.util.Log.e("AcademicRepository", "API error", e)

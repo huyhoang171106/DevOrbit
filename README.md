@@ -89,7 +89,7 @@ DevOrbit la mot he thong full-stack duoc xay dung nhan dip ky niem 20 nam thanh 
 | Tinh nang | Ghi chu |
 |-----------|---------|
 | Hilt DI | Da co DataModule voi Retrofit, OkHttp, Repository injection |
-| ViewModel | Da co CourseViewModel, AiTutorViewModel, ExploreViewModel |
+| ViewModel | Da co CourseViewModel, ExploreViewModel, StudyPlanViewModel, SubjectQaViewModel |
 | AI Insights | Man hinh RepoDetailScreen co AI summary va tutor advice |
 | Auth + Bookmarks | Da co Auth va Student Bookmark API tren mobile |
 | Gradle wrapper (Linux) | Chi co `gradlew.bat`, thieu `gradlew` cho moi truong Unix |

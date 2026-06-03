@@ -18,14 +18,14 @@
 | GET | `/api/courses/{courseId}/repos?techStack=` | `List<RepoSummaryResponse>` | ✅ |
 | GET | `/api/courses/relationships` | `List<CourseRelationshipResponse>` | ✅ |
 | GET | `/api/courses/relationships/course/{courseId}` | `List<CourseRelationshipResponse>` | ❌ |
-| GET | `/api/repos/{repoId}` | `RepoSummaryResponse` | ✅ (AI summary/advice only) |
+| GET | `/api/repos/{repoId}` | `RepoSummaryResponse` | ✅ Đã có typed endpoint |
 | GET | `/api/discovery/recent-repos` | `List<RepoSummaryResponse>` | ✅ |
 | GET | `/api/discovery/repos?q=` | `List<RepoSummaryResponse>` | ✅ Đã có — search repos |
 | GET | `/api/discovery/top-stacks` | `List<String>` | ✅ |
 | GET | `/api/tech-stacks` | `List<TechStackResponse>` | ✅ |
-| POST | `/api/ai/subject-qa/query` | `SubjectQaResponse` | ❌ NEW |
+| POST | `/api/ai/subject-qa/query` | `SubjectQaResponse` | ✅ Đã có endpoint + ViewModel |
 | POST | `/api/ai/knowledge-graph/query` | `AiQueryResponse` | ✅ |
-| POST | `/api/ai/generate-roadmap` | `RoadmapRecommendationResponse` | ❌ |
+| POST | `/api/ai/generate-roadmap` | `RoadmapRecommendationResponse` | ✅ Đã có endpoint + ViewModel |
 | GET | `/api/ai/repo/{repoId}/summary` | `AiResponse` | ✅ |
 | GET | `/api/ai/repo/{repoId}/advice` | `AiResponse` | ✅ |
 
@@ -69,8 +69,8 @@ POST /api/ai/knowledge-graph/query  → Map<String, Any>
 
 ```kotlin
 GET  /api/courses?q=&subjectType=&semester=&managementUnit=  // ✅ đã có search/filter
-POST /api/ai/subject-qa/query                                 // AI Q&A
-POST /api/ai/generate-roadmap                                 // AI roadmap
+POST /api/ai/subject-qa/query                                 // ✅ đã có AI Q&A
+POST /api/ai/generate-roadmap                                 // ✅ đã có AI roadmap
 GET  /api/discovery/repos?q=                                  // ✅ đã có search repos
 GET  /api/courses/relationships/course/{courseId}             // ✅ đã có endpoint client
 POST /api/student/bookmarks                                   // ✅ đã có add bookmark
@@ -104,8 +104,8 @@ private val bookmarks = mutableListOf<Bookmark>()
 | `CourseViewModel` | `ui/viewmodel/CourseViewModel.kt` | ✅ Working — load courses, graph, detail, repos |
 | `ExploreViewModel` | `ui/viewmodel/ExploreViewModel.kt` | ✅ Working — load recent repos, top stacks |
 | `ProfileViewModel` | `ui/viewmodel/ProfileViewModel.kt` | ✅ Working — profile, bookmarks (mock), dark mode |
-| `StudyPlanViewModel` | ❌ Chưa có | — |
-| `SubjectQaViewModel` | ❌ Chưa có | — |
+| `StudyPlanViewModel` | ✅ Đã có | Generate AI roadmap, toggle progress in memory |
+| `SubjectQaViewModel` | ✅ Đã có | Chat session state + Subject Q&A API |
 
 ---
 
@@ -126,7 +126,7 @@ private val bookmarks = mutableListOf<Bookmark>()
 | C2 | **Filter repos theo tech stack** — ✅ Đã có chip filter trong CourseDetailScreen | `GET /api/courses/{id}/repos?techStack=X` | DONE |
 | C3 | **Course type filter chips** — `loaiMonHoc` (DAI_CUONG/CHUYEN_NGANH/CO_SO) chưa filter được | Response已有 | MEDIUM |
 | C4 | **Prerequisite info** — `prerequisiteMH`, `previousMH` chưa hiển thị | Response已有 | MEDIUM |
-| C5 | **AI Subject Q&A** — Backend có, mobile cần chat UI | `POST /api/ai/subject-qa/query` | MEDIUM |
+| C5 | **AI Subject Q&A** — ✅ Đã có `SubjectQaViewModel` + `SubjectQaScreen` cơ bản | `POST /api/ai/subject-qa/query` | DONE |
 | C6 | **Bookmark môn học** — ✅ Đã có nút bookmark từ CourseDetailScreen, dùng Student Bookmark API | `POST /api/student/bookmarks` | DONE |
 | C7 | **Learning objectives / Grading criteria** — Chưa hiển thị | Response已有 | LOW |
 | C8 | **Course relationship per-course** — Chưa dùng endpoint `/courses/relationships/course/{id}` | `GET /api/courses/relationships/course/{courseId}` | LOW |
@@ -326,11 +326,11 @@ Response: { "id": 1, "targetType": "COURSE", "targetId": 123, ... }
 
 | # | Gap | Backend API | Mức độ |
 |---|-----|-------------|--------|
-| P1 | **Plan chưa connect** — `PlanTabView` truyền `studyPlan = null`, callbacks là TODO | Không có backend endpoint lưu plan | HIGH |
-| P2 | **AI Generate Roadmap** — Backend có endpoint nhưng mobile dùng local engine | `POST /api/ai/generate-roadmap` | HIGH |
+| P1 | **Plan chưa connect** — ✅ `PlanTabView` đã dùng `StudyPlanViewModel` | Không có backend endpoint lưu plan | DONE |
+| P2 | **AI Generate Roadmap** — ✅ Mobile gọi backend AI roadmap endpoint | `POST /api/ai/generate-roadmap` | DONE |
 | P3 | **Persist study plan** — Plan chỉ trong memory, restart mất | Dùng本地DataStore/Room | HIGH |
 | P4 | **Input configuration** — Không cho user set giờ học/ngày, deadline | N/A | MEDIUM |
-| P5 | **Progress tracking** — Toggle item completed nhưng không lưu持久 | N/A | MEDIUM |
+| P5 | **Progress tracking** — ✅ Toggle item completed trong ViewModel, chưa persist | N/A | PARTIAL |
 | P6 | **Breakdown task** — Nút "Phân tích" chưa hoạt động | N/A | LOW |
 
 ### Chi tiết Gap
@@ -486,7 +486,7 @@ Response: { "phases": [...], "summary": "..." }
 2. **E1** Search repos trong explore — ✅ Đã có
 3. **E5** Parse tech stacks properly — ✅ Đã có
 4. **R9** Fix BookmarkRepository — ✅ Đã có
-5. **P1+P2** AI Roadmap generation — `ApiService.kt` + `StudyPlanViewModel.kt`
+5. **P1+P2** AI Roadmap generation — ✅ Đã có
 6. **P3** Persist study plan — `PlanDataStore.kt`
 
 ### Phase 2 — Enhancement (1-2 ngày)
@@ -495,10 +495,10 @@ Response: { "phases": [...], "summary": "..." }
 9. **E2** Repo detail navigation từ explore — ✅ Đã có
 10. **E3** Tech stack filter trong explore — ✅ Đã có
 11. **P4** Input configuration cho plan — `StudyPlannerScreen.kt`
-12. **P5** Progress tracking — `StudyPlanViewModel.kt`
+12. **P5** Progress tracking — ⚠️ Đã có in-memory, chưa persist
 
 ### Phase 3 — Polish (1 ngày)
-13. **C5** AI Subject Q&A — `SubjectQaScreen.kt` + `SubjectQaViewModel.kt`
+13. **C5** AI Subject Q&A — ✅ Đã có basic screen + ViewModel
 14. **R2** Bookmark detail navigation — `ProfileScreen.kt`
 15. **R5** Statistics trong profile — `ProfileScreen.kt`
 16. **R7** Force refresh profile — `ProfileViewModel.kt`

@@ -46,7 +46,7 @@ class AcademicRepository @Inject constructor(
     ) {
         try {
             val courses = apiService.getCourses(query, subjectType, semester, managementUnit)
-            val entities = courses.map { 
+            val entities = courses.map {
                 CourseEntity(
                     id = it.id,
                     maMH = it.code,
@@ -55,6 +55,7 @@ class AcademicRepository @Inject constructor(
                     description = ""
                 )
             }
+            courseDao.deleteAll()
             courseDao.upsertCourses(entities)
         } catch (e: Exception) {
             android.util.Log.e("AcademicRepository", "API error", e)

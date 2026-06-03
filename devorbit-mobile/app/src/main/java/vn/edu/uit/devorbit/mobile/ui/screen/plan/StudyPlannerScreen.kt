@@ -15,41 +15,87 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import vn.edu.uit.devorbit.mobile.domain.model.StudyItem
 import vn.edu.uit.devorbit.mobile.domain.model.StudyPhase
 import vn.edu.uit.devorbit.mobile.domain.model.StudyPlan
-import vn.edu.uit.devorbit.mobile.ui.theme.*
+import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 
 @Composable
 fun StudyPlannerScreen(
     studyPlan: StudyPlan?,
-    onGeneratePlan: () -> Unit,
+    loading: Boolean = false,
+    error: String? = null,
+    onGeneratePlan: (String, String) -> Unit,
     onToggleItem: (String) -> Unit,
     onBreakdownTask: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showGenerateDialog by remember { mutableStateOf(false) }
+    var learningGoals by remember { mutableStateOf("") }
+    var careerPath by remember { mutableStateOf("") }
+
+    if (showGenerateDialog) {
+        AlertDialog(
+            onDismissRequest = { showGenerateDialog = false },
+            title = { Text("Tao lo trinh") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlinedTextField(
+                        value = learningGoals,
+                        onValueChange = { learningGoals = it },
+                        label = { Text("Muc tieu hoc tap") },
+                        minLines = 2
+                    )
+                    OutlinedTextField(
+                        value = careerPath,
+                        onValueChange = { careerPath = it },
+                        label = { Text("Dinh huong nghe nghiep") },
+                        singleLine = true
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = learningGoals.isNotBlank() && careerPath.isNotBlank(),
+                    onClick = {
+                        onGeneratePlan(learningGoals, careerPath)
+                        showGenerateDialog = false
+                    }
+                ) {
+                    Text("Tao")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showGenerateDialog = false }) {
+                    Text("Huy")
+                }
+            }
+        )
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        // Header
         Row(
-            modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Kế hoạch học tập",
+                text = "Ke hoach hoc tap",
                 style = CosmicTheme.typography.display,
                 color = CosmicTheme.colors.textPrimary
             )
             Button(
-                onClick = onGeneratePlan,
+                onClick = { showGenerateDialog = true },
+                enabled = !loading,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = CosmicTheme.colors.plasma,
                     contentColor = CosmicTheme.colors.void
@@ -57,78 +103,22 @@ fun StudyPlannerScreen(
                 shape = RoundedCornerShape(10.dp),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
             ) {
-                Text("Tạo kế hoạch", fontWeight = FontWeight.SemiBold)
+                Text(if (loading) "Dang tao..." else "Tao ke hoach", fontWeight = FontWeight.SemiBold)
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        error?.let {
+            ErrorPanel(it)
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
         if (studyPlan == null) {
-            // Empty state
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    color = CosmicTheme.colors.nebula,
-                    border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(32.dp)
-                    ) {
-                        Text(
-                            text = "Chưa có kế hoạch nào",
-                            style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
-                            color = CosmicTheme.colors.textSecondary
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Nhấn \"Tạo kế hoạch\" để bắt đầu lộ trình học tập của bạn",
-                            style = CosmicTheme.typography.label,
-                            color = CosmicTheme.colors.textTertiary
-                        )
-                    }
-                }
-            }
+            EmptyPlanState()
         } else {
-            // Plan summary
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp),
-                color = CosmicTheme.colors.nebula,
-                border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "${studyPlan.phases.size}",
-                            style = CosmicTheme.typography.metric.copy(fontSize = 28.sp),
-                            color = CosmicTheme.colors.plasma
-                        )
-                        Text("Giai đoạn", style = CosmicTheme.typography.label, color = CosmicTheme.colors.textTertiary)
-                    }
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "${studyPlan.totalHours.toInt()}h",
-                            style = CosmicTheme.typography.metric.copy(fontSize = 28.sp),
-                            color = CosmicTheme.colors.aurora
-                        )
-                        Text("Tổng thời gian", style = CosmicTheme.typography.label, color = CosmicTheme.colors.textTertiary)
-                    }
-                }
-            }
-
+            PlanSummary(studyPlan)
             Spacer(modifier = Modifier.height(16.dp))
-
-            // Phases list
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 contentPadding = PaddingValues(bottom = 16.dp)
@@ -146,6 +136,86 @@ fun StudyPlannerScreen(
 }
 
 @Composable
+private fun ErrorPanel(message: String) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = CosmicTheme.colors.supernova.copy(alpha = 0.12f),
+        border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.supernova.copy(alpha = 0.35f))
+    ) {
+        Text(
+            text = message,
+            modifier = Modifier.padding(14.dp),
+            style = CosmicTheme.typography.label,
+            color = CosmicTheme.colors.textPrimary
+        )
+    }
+}
+
+@Composable
+private fun EmptyPlanState() {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            color = CosmicTheme.colors.nebula,
+            border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(32.dp)
+            ) {
+                Text(
+                    text = "Chua co ke hoach nao",
+                    style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
+                    color = CosmicTheme.colors.textSecondary
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Nhan Tao ke hoach de sinh lo trinh hoc tap bang AI",
+                    style = CosmicTheme.typography.label,
+                    color = CosmicTheme.colors.textTertiary
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PlanSummary(studyPlan: StudyPlan) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        color = CosmicTheme.colors.nebula,
+        border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "${studyPlan.phases.size}",
+                    style = CosmicTheme.typography.metric.copy(fontSize = 28.sp),
+                    color = CosmicTheme.colors.plasma
+                )
+                Text("Giai doan", style = CosmicTheme.typography.label, color = CosmicTheme.colors.textTertiary)
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "${studyPlan.totalHours.toInt()}h",
+                    style = CosmicTheme.typography.metric.copy(fontSize = 28.sp),
+                    color = CosmicTheme.colors.aurora
+                )
+                Text("Tong thoi gian", style = CosmicTheme.typography.label, color = CosmicTheme.colors.textTertiary)
+            }
+        }
+    }
+}
+
+@Composable
 private fun PhaseCard(
     phase: StudyPhase,
     onToggleItem: (String) -> Unit,
@@ -154,7 +224,9 @@ private fun PhaseCard(
     var expanded by remember { mutableStateOf(true) }
 
     Surface(
-        modifier = Modifier.fillMaxWidth().animateContentSize(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .animateContentSize(),
         shape = RoundedCornerShape(14.dp),
         color = CosmicTheme.colors.nebula,
         border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
@@ -174,14 +246,14 @@ private fun PhaseCard(
                         color = CosmicTheme.colors.textPrimary
                     )
                     Text(
-                        text = "Ngày ${phase.startDay} - Ngày ${phase.endDay}",
+                        text = "Ngay ${phase.startDay} - Ngay ${phase.endDay}",
                         style = CosmicTheme.typography.label,
                         color = CosmicTheme.colors.textTertiary
                     )
                 }
                 Icon(
                     imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                    contentDescription = if (expanded) "Thu gọn" else "Mở rộng",
+                    contentDescription = null,
                     tint = CosmicTheme.colors.textTertiary,
                     modifier = Modifier.size(20.dp)
                 )
@@ -189,7 +261,6 @@ private fun PhaseCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Progress bar
             val completedCount = phase.items.count { it.completed }
             val totalCount = phase.items.size
             val progress = if (totalCount > 0) completedCount.toFloat() / totalCount else 0f
@@ -234,7 +305,7 @@ private fun StudyItemRow(
     ) {
         Icon(
             imageVector = Icons.Default.CheckCircle,
-            contentDescription = if (item.completed) "Đã hoàn thành" else "Chưa hoàn thành",
+            contentDescription = null,
             tint = if (item.completed) CosmicTheme.colors.aurora else CosmicTheme.colors.textTertiary.copy(alpha = 0.4f),
             modifier = Modifier.size(20.dp)
         )
@@ -259,11 +330,7 @@ private fun StudyItemRow(
             onClick = onBreakdown,
             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
         ) {
-            Text(
-                "Chi tiết",
-                style = CosmicTheme.typography.label,
-                color = CosmicTheme.colors.plasma
-            )
+            Text("Chi tiet", style = CosmicTheme.typography.label, color = CosmicTheme.colors.plasma)
         }
     }
 }
@@ -271,14 +338,11 @@ private fun StudyItemRow(
 @Composable
 private fun DifficultyBadge(difficulty: String) {
     val (label, color) = when (difficulty.lowercase()) {
-        "easy" -> "Dễ" to CosmicTheme.colors.aurora
-        "hard" -> "Khó" to CosmicTheme.colors.supernova
+        "easy" -> "De" to CosmicTheme.colors.aurora
+        "hard" -> "Kho" to CosmicTheme.colors.supernova
         else -> "TB" to CosmicTheme.colors.plasma
     }
-    Surface(
-        shape = RoundedCornerShape(6.dp),
-        color = color.copy(alpha = 0.12f)
-    ) {
+    Surface(shape = RoundedCornerShape(6.dp), color = color.copy(alpha = 0.12f)) {
         Text(
             text = label,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),

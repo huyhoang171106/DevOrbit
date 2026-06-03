@@ -18,6 +18,7 @@ import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSummary
 import vn.edu.uit.devorbit.mobile.domain.model.GraphNode
 import vn.edu.uit.devorbit.mobile.domain.model.GraphLink
 import vn.edu.uit.devorbit.mobile.ui.screen.courses.CourseHubNavigationState
+import vn.edu.uit.devorbit.mobile.ui.screen.courses.CourseSearchFilterState
 import javax.inject.Inject
 
 @HiltViewModel
@@ -42,6 +43,9 @@ class CourseViewModel @Inject constructor(
 
     private val _courseHubNavigationState = MutableStateFlow(CourseHubNavigationState())
     val courseHubNavigationState: StateFlow<CourseHubNavigationState> = _courseHubNavigationState.asStateFlow()
+
+    private val _courseSearchFilterState = MutableStateFlow(CourseSearchFilterState())
+    val courseSearchFilterState: StateFlow<CourseSearchFilterState> = _courseSearchFilterState.asStateFlow()
 
     private val _selectedCourse = MutableStateFlow<CourseEntity?>(null)
     val selectedCourse: StateFlow<CourseEntity?> = _selectedCourse.asStateFlow()
@@ -74,8 +78,22 @@ class CourseViewModel @Inject constructor(
 
     fun refreshCourses() {
         viewModelScope.launch {
-            repository.refreshCourses()
+            val filter = _courseSearchFilterState.value
+            repository.refreshCourses(
+                query = filter.normalizedQuery,
+                subjectType = filter.subjectType
+            )
         }
+    }
+
+    fun updateCourseSearch(query: String) {
+        _courseSearchFilterState.value = _courseSearchFilterState.value.updateQuery(query)
+        refreshCourses()
+    }
+
+    fun selectCourseSubjectType(subjectType: String?) {
+        _courseSearchFilterState.value = _courseSearchFilterState.value.selectSubjectType(subjectType)
+        refreshCourses()
     }
 
     fun loadGraph() {

@@ -1,0 +1,14 @@
+﻿# Default owner for everything
+* @default_user
+
+# Application modules
+devorbit-api/ @default_user
+devorbit-web/ @default_user
+devorbit-mobile/ @default_user
+devorbit-showcase/ @default_user
+
+# Documentation
+docs/ @default_user
+
+# GitHub configuration
+.github/ @default_user

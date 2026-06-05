@@ -1,6 +1,10 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+// @vitest-environment jsdom
+import "@testing-library/jest-dom/vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
+import { cleanup, render, screen, fireEvent } from "@testing-library/react";
 import { SemesterSelector } from "../shared/SemesterSelector";
+
+afterEach(cleanup);
 
 const semesters = [
   { id: "1", label: "Kỳ 1", year: "2025-2026" },
@@ -58,7 +62,7 @@ describe("SemesterSelector", () => {
     );
     const buttons = screen.getAllByRole("button");
     buttons.forEach((btn) => {
-      expect(btn.hasAttribute("disabled")).toBe(true);
+      expect(btn).toBeDisabled();
     });
   });
 });

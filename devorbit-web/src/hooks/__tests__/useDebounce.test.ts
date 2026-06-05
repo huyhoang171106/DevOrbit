@@ -1,6 +1,10 @@
-import { describe, it, expect, vi } from "vitest";
-import { renderHook, act } from "@testing-library/react";
+// @vitest-environment jsdom
+import "@testing-library/jest-dom/vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
+import { cleanup, renderHook, act } from "@testing-library/react";
 import { useDebounce, useDebouncedCallback } from "../useDebounce";
+
+afterEach(cleanup);
 
 describe("useDebounce", () => {
   it("returns initial value immediately", () => {

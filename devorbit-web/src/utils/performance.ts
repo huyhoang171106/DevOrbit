@@ -1,3 +1,11 @@
+// LayoutShift API — not yet in standard TS DOM lib
+interface LayoutShift extends PerformanceEntry {
+  value: number;
+  hadRecentInput: boolean;
+  lastInputTime: DOMHighResTimeStamp;
+  sources: unknown[];
+}
+
 type MetricName = "TTFB" | "FCP" | "LCP" | "CLS" | "INP" | "navigation";
 
 interface PerformanceMetric {
@@ -98,7 +106,7 @@ export function getMetricsSummary(): Record<string, number> {
 }
 
 export function measureRenderTime(label: string): () => void {
-  if (process.env.NODE_ENV === "production") return () => {};
+  if (import.meta.env.PROD) return () => {};
   const start = performance.now();
   return () => {
     const end = performance.now();

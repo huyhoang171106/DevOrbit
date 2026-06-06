@@ -31,6 +31,8 @@ spring:
         format_sql: ${JPA_FORMAT_SQL:false}
 
 app:
+  otp:
+    expiration-minutes: ${OTP_EXPIRATION_MINUTES:10}
   github:
     api-url: ${GITHUB_API_URL:https://api.github.com}
     user-agent: ${GITHUB_USER_AGENT:DevOrbit/1.0}

@@ -20,7 +20,6 @@ const TextWindow = () => {
   });
 
   const fontProps = {
-    fontSize: 0.8,
     font: "./dancing-script.ttf"
   };
 

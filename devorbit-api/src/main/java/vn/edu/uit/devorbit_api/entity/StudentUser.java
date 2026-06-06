@@ -44,4 +44,9 @@ public class StudentUser {
     @Column(nullable = false)
     @Builder.Default
     private boolean active = true;
+
+    /** Has this student verified their email via OTP? */
+    @Column(name = "email_verified", nullable = false)
+    @Builder.Default
+    private boolean emailVerified = false;
 }

@@ -2,10 +2,12 @@ import { useState, useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence, useScroll, useTransform, LayoutGroup } from 'framer-motion'
 import { ParticleNetwork } from './ParticleNetwork'
-import { Cube, Compass } from '@phosphor-icons/react'
+import { Cube, UserCircle, SignOut, BookmarkSimple, UsersThree, User } from '@phosphor-icons/react'
 import { ScrollProgressIndicator } from '../motion'
 import { navLinks } from './navigation'
 import { AiChatWidget } from './student/AiChatWidget'
+import { ProfileDropdown } from './student/ProfileDropdown'
+import { isStudentAuthenticated, clearStudentToken } from '../lib/auth'
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation()
@@ -92,13 +94,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </LayoutGroup>
 
           <div className="hidden md:flex items-center gap-4">
-            <Link
-              to="/courses"
-              className="btn-primary text-[12px] px-6 py-3"
-            >
-              <Compass className="h-4 w-4" weight="bold" />
-              Khám phá ngay
-            </Link>
+            {isStudentAuthenticated() ? (
+              <ProfileDropdown />
+            ) : (
+              <Link
+                to="/student/login"
+                className="btn-primary text-[12px] px-6 py-3"
+              >
+                <UserCircle className="h-4 w-4" weight="bold" />
+                Đăng nhập
+              </Link>
+            )}
           </div>
 
           {/* Mobile hamburger */}
@@ -145,15 +151,52 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     </Link>
                   )
                 })}
-                <div className="pt-4 mt-4 border-t border-orbit-border">
-                  <Link
-                    to="/courses"
-                    onClick={() => setMobileOpen(false)}
-                    className="btn-primary w-full justify-center py-4"
-                  >
-                    <Compass className="h-4 w-4" weight="bold" />
-                    Khám phá ngay
-                  </Link>
+                <div className="pt-4 mt-4 border-t border-orbit-border space-y-1">
+                  {isStudentAuthenticated() ? (
+                    <>
+                      <Link
+                        to="/student/profile"
+                        onClick={() => setMobileOpen(false)}
+                        className="flex items-center gap-4 px-5 py-4 text-[16px] font-bold rounded-2xl text-orbit-text-secondary hover:text-orbit-text hover:bg-orbit-surface border border-transparent transition-[background-color,color,border-color] duration-200"
+                      >
+                        <User className="h-5 w-5" weight="regular" />
+                        Trang cá nhân
+                      </Link>
+                      <Link
+                        to="/student/bookmarks"
+                        onClick={() => setMobileOpen(false)}
+                        className="flex items-center gap-4 px-5 py-4 text-[16px] font-bold rounded-2xl text-orbit-text-secondary hover:text-orbit-text hover:bg-orbit-surface border border-transparent transition-[background-color,color,border-color] duration-200"
+                      >
+                        <BookmarkSimple className="h-5 w-5" weight="regular" />
+                        Bookmarks
+                      </Link>
+                      <Link
+                        to="/community"
+                        onClick={() => setMobileOpen(false)}
+                        className="flex items-center gap-4 px-5 py-4 text-[16px] font-bold rounded-2xl text-orbit-text-secondary hover:text-orbit-text hover:bg-orbit-surface border border-transparent transition-[background-color,color,border-color] duration-200"
+                      >
+                        <UsersThree className="h-5 w-5" weight="regular" />
+                        Cộng đồng
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => { clearStudentToken(); setMobileOpen(false); }}
+                        className="flex w-full items-center gap-4 px-5 py-4 text-[16px] font-bold rounded-2xl text-red-400 hover:bg-red-500/10 border border-transparent transition-[background-color,color,border-color] duration-200 cursor-pointer"
+                      >
+                        <SignOut className="h-5 w-5" weight="regular" />
+                        Đăng xuất
+                      </button>
+                    </>
+                  ) : (
+                    <Link
+                      to="/student/login"
+                      onClick={() => setMobileOpen(false)}
+                      className="btn-primary w-full justify-center py-4"
+                    >
+                      <UserCircle className="h-4 w-4" weight="bold" />
+                      Đăng nhập
+                    </Link>
+                  )}
                 </div>
               </div>
             </motion.div>

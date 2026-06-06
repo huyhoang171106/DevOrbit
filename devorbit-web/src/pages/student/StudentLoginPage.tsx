@@ -2,16 +2,17 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiPost } from '../../lib/api'
 import { saveStudentToken } from '../../lib/auth'
-import type { StudentAuthResponse } from '../../types/api'
+import type { StudentAuthResponse, OtpVerificationRequest } from '../../types/api'
 
 export function StudentLoginPage() {
   const navigate = useNavigate()
-  const [mode, setMode] = useState<'login' | 'register'>('login')
+  const [mode, setMode] = useState<'login' | 'register' | 'otp'>('login')
   const [studentCode, setStudentCode] = useState('')
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [otpCode, setOtpCode] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -19,21 +20,61 @@ export function StudentLoginPage() {
     e.preventDefault()
     setError('')
     setLoading(true)
-    if (mode === 'register' && password !== confirmPassword) {
-      setError('Mật khẩu nhập lại không khớp.')
-      setLoading(false)
+
+    if (mode === 'register') {
+      if (password !== confirmPassword) {
+        setError('Mật khẩu nhập lại không khớp.')
+        setLoading(false)
+        return
+      }
+      try {
+        const res = await apiPost<{ id: number; studentCode: string; fullName: string; email: string }>(
+          '/api/student/register',
+          { studentCode, fullName, email, password }
+        )
+        setEmail(res.email)
+        setMode('otp')
+      } catch {
+        setError('Đăng ký thất bại. Kiểm tra lại thông tin.')
+      } finally {
+        setLoading(false)
+      }
       return
     }
+
+    if (mode === 'otp') {
+      try {
+        const body: OtpVerificationRequest = { email, otpCode }
+        const res = await apiPost<StudentAuthResponse>('/api/student/verify-otp', body)
+        saveStudentToken(res.token)
+        navigate('/student/bookmarks')
+      } catch {
+        setError('Mã OTP không đúng hoặc đã hết hạn.')
+      } finally {
+        setLoading(false)
+      }
+      return
+    }
+
     try {
-      const path = mode === 'login' ? '/api/student/login' : '/api/student/register'
-      const body = mode === 'login' ? { studentCode, password } : { studentCode, fullName, email, password }
-      const res = await apiPost<StudentAuthResponse>(path, body)
+      const res = await apiPost<StudentAuthResponse>('/api/student/login', { studentCode, password })
       saveStudentToken(res.token)
       navigate('/student/bookmarks')
     } catch {
-      setError(mode === 'login' ? 'Đăng nhập thất bại. Kiểm tra lại thông tin.' : 'Đăng ký thất bại. Kiểm tra lại thông tin.')
+      setError('Đăng nhập thất bại. Kiểm tra lại thông tin.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  function switchMode() {
+    setError('')
+    if (mode === 'login') {
+      setMode('register')
+    } else if (mode === 'register') {
+      setMode('login')
+    } else {
+      setMode('login')
     }
   }
 
@@ -42,14 +83,28 @@ export function StudentLoginPage() {
       <div className="glass-card w-full max-w-md p-[32px] mx-4">
         <div className="mb-[32px] text-center">
           <div className="mx-auto mb-[16px] inline-flex rounded-[8px] bg-emerald-500/10 p-[12px] border border-emerald-500/20">
-            <svg className="h-[24px] w-[24px] text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
+            {mode === 'otp' ? (
+              <svg className="h-[24px] w-[24px] text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <rect x="2" y="4" width="20" height="16" rx="2" />
+                <path d="M6 8h.01M10 8h.01M14 8h.01" />
+                <path d="M6 12h.01M10 12h.01M14 12h.01" />
+                <path d="M6 16h.01M10 16h.01M14 16h.01" />
+              </svg>
+            ) : (
+              <svg className="h-[24px] w-[24px] text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            )}
           </div>
           <h1 className="heading-2 text-ink mb-[8px]">
-            {mode === 'login' ? 'Đăng nhập' : 'Tạo tài khoản'}
+            {mode === 'login' ? 'Đăng nhập' : mode === 'register' ? 'Tạo tài khoản' : 'Xác thực email'}
           </h1>
+          {mode === 'otp' && (
+            <p className="body-sm text-ink/60 mt-[4px]">
+              Mã OTP đã được gửi đến <strong>{email}</strong>
+            </p>
+          )}
         </div>
 
         {error && (
@@ -63,15 +118,17 @@ export function StudentLoginPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-[16px]">
-          <div>
-            <label className="label block mb-[6px]">Tên đăng nhập</label>
-            <input
-              className="input-field"
-              value={studentCode}
-              onChange={(e) => setStudentCode(e.target.value)}
-              required
-            />
-          </div>
+          {mode !== 'otp' && (
+            <div>
+              <label className="label block mb-[6px]">Tên đăng nhập</label>
+              <input
+                className="input-field"
+                value={studentCode}
+                onChange={(e) => setStudentCode(e.target.value)}
+                required
+              />
+            </div>
+          )}
 
           {mode === 'register' && (
             <>
@@ -97,30 +154,47 @@ export function StudentLoginPage() {
             </>
           )}
 
-          <div>
-            <label className="label block mb-[6px]">Mật khẩu</label>
-            <input
-              className="input-field"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-            />
-          </div>
-
-          {mode === 'register' && (
+          {mode === 'otp' ? (
             <div>
-              <label className="label block mb-[6px]">Nhập lại mật khẩu</label>
+              <label className="label block mb-[6px]">Mã OTP</label>
               <input
-                className="input-field"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="input-field text-center text-[24px] tracking-[8px] font-bold"
+                placeholder="000000"
+                value={otpCode}
+                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                 required
-                minLength={6}
+                maxLength={6}
+                autoFocus
               />
             </div>
+          ) : (
+            <>
+              <div>
+                <label className="label block mb-[6px]">Mật khẩu</label>
+                <input
+                  className="input-field"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+              </div>
+
+              {mode === 'register' && (
+                <div>
+                  <label className="label block mb-[6px]">Nhập lại mật khẩu</label>
+                  <input
+                    className="input-field"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                </div>
+              )}
+            </>
           )}
 
           <button className="btn-primary w-full mt-2" type="submit" disabled={loading}>
@@ -134,21 +208,40 @@ export function StudentLoginPage() {
               </span>
             ) : mode === 'login' ? (
               'Đăng nhập'
-            ) : (
+            ) : mode === 'register' ? (
               'Đăng ký'
+            ) : (
+              'Xác thực'
             )}
           </button>
         </form>
 
-        <div className="mt-[24px] pt-[24px] border-t border-glass-border flex items-center justify-center body-sm">
-          <button
-            className="text-emerald-400 hover:text-emerald-400/80 font-medium transition-colors cursor-pointer"
-            type="button"
-            onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
-          >
-            {mode === 'login' ? 'Tạo tài khoản' : 'Đã có tài khoản'}
-          </button>
-        </div>
+        {mode === 'otp' && (
+          <div className="mt-[24px] pt-[24px] border-t border-glass-border flex items-center justify-center body-sm">
+            <button
+              className="text-emerald-400 hover:text-emerald-400/80 font-medium transition-colors cursor-pointer"
+              type="button"
+              onClick={() => {
+                setMode('login')
+                setOtpCode('')
+              }}
+            >
+              Quay lại đăng nhập
+            </button>
+          </div>
+        )}
+
+        {mode !== 'otp' && (
+          <div className="mt-[24px] pt-[24px] border-t border-glass-border flex items-center justify-center body-sm">
+            <button
+              className="text-emerald-400 hover:text-emerald-400/80 font-medium transition-colors cursor-pointer"
+              type="button"
+              onClick={switchMode}
+            >
+              {mode === 'login' ? 'Tạo tài khoản' : 'Đã có tài khoản'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

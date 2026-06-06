@@ -97,6 +97,18 @@ export type StudentAuthResponse = {
   email: string
 }
 
+export type StudentProfileResponse = {
+  id: number
+  studentCode: string
+  fullName: string
+  email: string
+}
+
+export type OtpVerificationRequest = {
+  email: string
+  otpCode: string
+}
+
 
 export type BookmarkTargetType = 'COURSE' | 'REPO'
 

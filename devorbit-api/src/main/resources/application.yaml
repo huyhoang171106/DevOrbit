@@ -31,6 +31,8 @@ spring:
         format_sql: ${JPA_FORMAT_SQL:false}
 
 app:
+  otp:
+    expiration-minutes: ${OTP_EXPIRATION_MINUTES:10}
   github:
     api-url: ${GITHUB_API_URL:https://api.github.com}
     user-agent: ${GITHUB_USER_AGENT:DevOrbit/1.0}
@@ -43,6 +45,10 @@ app:
   openapi:
     local-dev-url: ${OPENAPI_LOCAL_DEV_URL:http://localhost:8080}
     contact-email: ${API_CONTACT_EMAIL:devorbit@uit.edu.vn}
+  opencode:
+    api-url: ${OPENCODE_API_URL:https://opencode.ai/zen/go/v1}
+    api-key: ${OPENCODE_API_KEY:}
+    model: ${OPENCODE_MODEL:deepseek-v4-flash}
 
 server:
   port: ${SERVER_PORT:8080}

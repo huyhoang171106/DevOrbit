@@ -24,7 +24,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173,http://127.0.0.1:5174}")
+    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
     private String allowedOrigins;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
@@ -45,10 +45,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/ai/**").permitAll()
                 .requestMatchers("/api/discovery/**").permitAll()
                 .requestMatchers("/api/tech-stacks/**").permitAll()
-                .requestMatchers("/api/health").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/photobooth/**").permitAll()
                 .requestMatchers("/api/photobooth/**").hasAuthority("ROLE_ADMIN")
-                .requestMatchers("/api/student/send-otp", "/api/student/verify-otp", "/api/student/login", "/api/student/register").permitAll()
+                .requestMatchers("/api/student/login", "/api/student/register", "/api/student/verify-otp").permitAll()
                 .requestMatchers("/api/student/**").authenticated()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")

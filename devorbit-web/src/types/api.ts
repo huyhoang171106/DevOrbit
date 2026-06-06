@@ -67,6 +67,13 @@ export type RepoCandidate = {
   reviewNote: string | null
 }
 
+export type RepoTreeItem = {
+  name: string
+  path: string
+  type: 'blob' | 'tree'
+  size: number | null
+}
+
 export type ReviewerStats = {
   reviewer: string
   remaining: number
@@ -88,6 +95,18 @@ export type StudentAuthResponse = {
   studentCode: string
   fullName: string
   email: string
+}
+
+export type StudentProfileResponse = {
+  id: number
+  studentCode: string
+  fullName: string
+  email: string
+}
+
+export type OtpVerificationRequest = {
+  email: string
+  otpCode: string
 }
 
 

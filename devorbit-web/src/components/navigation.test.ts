@@ -12,4 +12,15 @@ describe('navigation links', () => {
       ]),
     )
   })
+
+  test('includes the community route', () => {
+    expect(navLinks).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: 'Cộng đồng',
+          to: '/community',
+        }),
+      ]),
+    )
+  })
 })

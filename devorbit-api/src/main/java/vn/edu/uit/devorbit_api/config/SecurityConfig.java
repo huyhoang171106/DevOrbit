@@ -47,7 +47,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/tech-stacks/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/photobooth/**").permitAll()
                 .requestMatchers("/api/photobooth/**").hasAuthority("ROLE_ADMIN")
-                .requestMatchers("/api/student/login", "/api/student/register").permitAll()
+                .requestMatchers("/api/student/login", "/api/student/register", "/api/student/verify-otp").permitAll()
                 .requestMatchers("/api/student/**").authenticated()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")

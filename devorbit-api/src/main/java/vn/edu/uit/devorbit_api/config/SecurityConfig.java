@@ -45,6 +45,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/ai/**").permitAll()
                 .requestMatchers("/api/discovery/**").permitAll()
                 .requestMatchers("/api/tech-stacks/**").permitAll()
+                .requestMatchers("/ws/community/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/photobooth/**").permitAll()
                 .requestMatchers("/api/photobooth/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers("/api/student/login", "/api/student/register", "/api/student/verify-otp").permitAll()

@@ -13,10 +13,10 @@ Free-form implementation log. Record meaningful phase changes, successful milest
 - [x] Định nghĩa các Entity Java tương ứng và thiết lập quan hệ JPA `@ManyToOne` thích hợp với `StudentUser`, `Course`, `GithubRepo`.
 - [x] Tạo các interface `Repository` kế thừa `JpaRepository`.
 
-### Mốc 2: Cấu hình WebSocket & Bảo mật STOMP Connection (Dự kiến)
-- [ ] Viết `WebSocketConfig` kích hoạt message broker, định nghĩa endpoint `/ws/community` (hỗ trợ SockJS fallback).
-- [ ] Viết `ChannelInterceptor` trong WebSocketConfig để đón nhận frame `CONNECT`, giải mã JWT từ header `Authorization`, xác thực thông qua `JwtService` và gắn `Principal` vào session.
-- [ ] Cập nhật `SecurityConfig` cho phép tất cả các yêu cầu đến `/ws/community/**` vượt qua HTTP Filter Chain.
+### Mốc 2: Cấu hình WebSocket & Bảo mật STOMP Connection (Hoàn thành 2026-06-07)
+- [x] Viết `WebSocketConfig` kích hoạt message broker, định nghĩa endpoint `/ws/community` (hỗ trợ SockJS fallback).
+- [x] Viết `ChannelInterceptor` trong WebSocketConfig để đón nhận frame `CONNECT`, giải mã JWT từ header `Authorization`, xác thực thông qua `JwtService` và gắn `Principal` vào session.
+- [x] Cập nhật `SecurityConfig` cho phép tất cả các yêu cầu đến `/ws/community/**` vượt qua HTTP Filter Chain.
 
 ### Mốc 3: REST API & WebSocket Message Endpoints (Dự kiến)
 - [ ] Viết endpoints lấy danh sách kênh chat (`/api/student/community/channels`) và lịch sử tin nhắn của kênh có phân trang.

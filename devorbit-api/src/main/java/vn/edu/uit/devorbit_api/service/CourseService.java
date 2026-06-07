@@ -7,6 +7,8 @@ import vn.edu.uit.devorbit_api.dto.publicapi.CourseSummaryResponse;
 import vn.edu.uit.devorbit_api.entity.Course;
 import vn.edu.uit.devorbit_api.exception.NotFoundException;
 import vn.edu.uit.devorbit_api.repository.CourseRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -56,17 +58,38 @@ public class CourseService {
 
     /**
      * Get course summaries for the PUBLIC API (anyone can access).
-     *
-     * Currently calls the SAME query as getAllCourseSummaries().
-     * In the future, this would filter to only "active" courses,
-     * while getAllCourseSummaries() would show ALL courses to admins.
-     *
-     * For now, both methods return the same data because the filtering
-     * logic hasn't been implemented yet. This is intentional — the
-     * method names describe the INTENT, not the current implementation.
+     * Cached for 5 minutes to avoid repeated DB queries.
      */
+    @Cacheable(value = "courses", key = "'all'", unless = "#result.isEmpty()")
     public List<CourseSummaryResponse> getActiveCourseSummaries() {
         return courseRepository.findAllWithRepoCountSortedByRepoCount();
+    }
+
+    /**
+     * Evict course cache when courses are modified.
+     */
+    @CacheEvict(value = "courses", allEntries = true)
+    public void evictCourseCache() {
+        // Called after create/update/delete operations
+    }
+
+    /**
+     * Search/filter course summaries with optional parameters.
+     * All filters are case-insensitive and applied client-side on the full list.
+     * For large datasets, consider adding native SQL query with WHERE clauses.
+     */
+    public List<CourseSummaryResponse> searchCourses(
+            String q, String subjectType, Integer semester, String managementUnit) {
+        return courseRepository.findAllWithRepoCountSortedByRepoCount().stream()
+            .filter(c -> q == null || q.isBlank() ||
+                c.name().toLowerCase().contains(q.toLowerCase()) ||
+                c.code().toLowerCase().contains(q.toLowerCase()))
+            .filter(c -> subjectType == null || subjectType.isBlank() ||
+                subjectType.equalsIgnoreCase(c.loaiMonHoc()))
+            .filter(c -> semester == null || semester.equals(c.semester()))
+            .filter(c -> managementUnit == null || managementUnit.isBlank() ||
+                managementUnit.equalsIgnoreCase(c.managementUnit()))
+            .toList();
     }
 
     /**
@@ -112,6 +135,7 @@ public class CourseService {
      * 3. Convert the saved entity back to a CourseDetailResponse DTO
      * 4. Return the DTO (Spring serializes it to JSON)
      */
+    @CacheEvict(value = "courses", allEntries = true)
     public CourseDetailResponse createCourse(AdminCourseUpsertRequest request) {
         Course course = Course.builder()
                 .maMH(request.code())
@@ -128,6 +152,9 @@ public class CourseService {
                 .equivalentMH(request.equivalentMH())
                 .prerequisiteMH(request.prerequisiteMH())
                 .previousMH(request.previousMH())
+                .learningObjectives(request.learningObjectives())
+                .gradingCriteria(request.gradingCriteria())
+                .topics(request.topics())
                 .build();
         return mapToDetail(courseRepository.save(course));
     }
@@ -142,6 +169,7 @@ public class CourseService {
      * 4. Save the updated entity
      * 5. Return the updated detail DTO
      */
+    @CacheEvict(value = "courses", allEntries = true)
     public CourseDetailResponse updateCourse(Long id, AdminCourseUpsertRequest request) {
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Course not found: " + id));
@@ -154,6 +182,7 @@ public class CourseService {
      * Throws NotFoundException if the course doesn't exist.
      * Returns nothing (void) — the controller returns HTTP 204 No Content.
      */
+    @CacheEvict(value = "courses", allEntries = true)
     public void deleteCourse(Long id) {
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Course not found: " + id));
@@ -201,6 +230,9 @@ public class CourseService {
         course.setEquivalentMH(r.equivalentMH());
         course.setPrerequisiteMH(r.prerequisiteMH());
         course.setPreviousMH(r.previousMH());
+        course.setLearningObjectives(r.learningObjectives());
+        course.setGradingCriteria(r.gradingCriteria());
+        course.setTopics(r.topics());
     }
 
     /**
@@ -225,6 +257,9 @@ public class CourseService {
                 course.getManagementUnit(), course.getMaMH_Old(),
                 course.getEquivalentMH(), course.getPrerequisiteMH(),
                 course.getPreviousMH(),
+                course.getLearningObjectives(),
+                course.getGradingCriteria(),
+                course.getTopics(),
                 githubRepoService.getApprovedReposByCourse(course.getId())
         );
     }

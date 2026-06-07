@@ -4,35 +4,8 @@ import { motion } from 'framer-motion'
 import { BookOpen, GithubLogo, BookmarkSimple, Trash, ArrowSquareOut } from '@phosphor-icons/react'
 import { apiStudentGet, apiStudentDelete } from '../../lib/api'
 import { isStudentAuthenticated } from '../../lib/auth'
+import { Avatar } from '../../components/shared/Avatar'
 import type { StudentProfileResponse, StudentBookmark } from '../../types/api'
-
-const AVATAR_COLORS = [
-  'bg-emerald-500',
-  'bg-sky-500',
-  'bg-violet-500',
-  'bg-rose-500',
-  'bg-amber-500',
-  'bg-cyan-500',
-  'bg-pink-500',
-  'bg-indigo-500',
-]
-
-function hashColor(name: string): string {
-  let hash = 0
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash)
-  }
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]
-}
-
-function initials(name: string): string {
-  return name
-    .split(' ')
-    .map((w) => w.charAt(0))
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
-}
 
 export function StudentProfilePage() {
   const [profile, setProfile] = useState<StudentProfileResponse | null>(null)
@@ -83,9 +56,6 @@ export function StudentProfilePage() {
     )
   }
 
-  const avatarColor = hashColor(profile.fullName)
-  const avatarInitials = initials(profile.fullName)
-
   return (
     <div className="w-full">
       <div className="mx-auto max-w-[1200px] px-6 md:px-10 py-12 md:py-20">
@@ -96,9 +66,7 @@ export function StudentProfilePage() {
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10 pb-10 border-b border-orbit-border mb-10"
         >
-          <div className={`h-24 w-24 md:h-32 md:w-32 rounded-full ${avatarColor} flex items-center justify-center text-[36px] md:text-[48px] font-bold text-white flex-shrink-0 ring-4 ring-orbit-accent/20`}>
-            {avatarInitials}
-          </div>
+          <Avatar name={profile.fullName} size={128} className="ring-4 ring-orbit-accent/20 rounded-full" />
           <div className="text-center md:text-left">
             <h1 className="font-heading text-3xl md:text-4xl font-black text-orbit-text tracking-tight">
               {profile.fullName}

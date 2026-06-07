@@ -13,11 +13,6 @@ Free-form implementation log. Record meaningful phase changes, successful milest
 - [x] Định nghĩa các Entity Java tương ứng và thiết lập quan hệ JPA `@ManyToOne` thích hợp với `StudentUser`, `Course`, `GithubRepo`.
 - [x] Tạo các interface `Repository` kế thừa `JpaRepository`.
 
-Evidence:
-- Commit `2331cf8` thêm migration schema cộng đồng.
-- Commit `f613598` thêm entity/repository persistence layer.
-- Validation: `devorbit-api` focused Maven test `CommunityPersistenceContractTest` passed 3 tests.
-
 ### Mốc 2: Cấu hình WebSocket & Bảo mật STOMP Connection (Dự kiến)
 - [ ] Viết `WebSocketConfig` kích hoạt message broker, định nghĩa endpoint `/ws/community` (hỗ trợ SockJS fallback).
 - [ ] Viết `ChannelInterceptor` trong WebSocketConfig để đón nhận frame `CONNECT`, giải mã JWT từ header `Authorization`, xác thực thông qua `JwtService` và gắn `Principal` vào session.

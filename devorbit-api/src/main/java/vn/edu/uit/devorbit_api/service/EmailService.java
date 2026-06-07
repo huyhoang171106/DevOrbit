@@ -21,7 +21,7 @@ public class EmailService {
         this.username = username;
     }
 
-    public void sendOtp(String to, String otpCode) {
+    public void sendOtp(String to, String otpCode, int expirationMinutes) {
         if (username == null || username.isBlank()) {
             log.warn("Mail not configured — OTP {} for {} would have been sent", otpCode, to);
             return;
@@ -29,22 +29,53 @@ public class EmailService {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(to);
+            message.setFrom(username);
             message.setSubject("DevOrbit — Mã xác thực email");
             message.setText("""
                 Chào bạn,
 
                 Mã xác thực email của bạn là: %s
 
-                Mã có hiệu lực trong 10 phút.
+                Mã có hiệu lực trong %d phút.
 
                 Nếu bạn không yêu cầu mã này, vui lòng bỏ qua email này.
 
                 — DevOrbit Team
-                """.formatted(otpCode));
+                """.formatted(otpCode, expirationMinutes));
             mailSender.send(message);
             log.info("OTP sent to {}", to);
         } catch (Exception e) {
             log.error("Failed to send OTP to {}: {}", to, e.getMessage());
+        }
+    }
+
+    public void sendPasswordResetOtp(String to, String otpCode, int expirationMinutes) {
+        if (username == null || username.isBlank()) {
+            log.warn("Mail not configured — password reset OTP {} for {} would have been sent", otpCode, to);
+            return;
+        }
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(to);
+            message.setFrom(username);
+            message.setSubject("DevOrbit — Đặt lại mật khẩu");
+            message.setText("""
+                Chào bạn,
+
+                Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.
+
+                Mã xác thực của bạn là: %s
+
+                Mã có hiệu lực trong %d phút.
+
+                Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.
+
+                — DevOrbit Team
+                """.formatted(otpCode, expirationMinutes));
+            mailSender.send(message);
+            log.info("Password reset OTP sent to {}", to);
+        } catch (Exception e) {
+            log.error("Failed to send password reset OTP to {}: {}", to, e.getMessage());
         }
     }
 }

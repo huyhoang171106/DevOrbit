@@ -31,6 +31,7 @@ public class AdminAuthService {
                 });
 
         if (!adminUser.isActive()) {
+            loginRateLimitService.recordFailure(request.username(), ip);
             throw new UnauthorizedException("Account is deactivated");
         }
 

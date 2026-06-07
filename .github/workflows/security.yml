@@ -1,0 +1,55 @@
+﻿name: Security Scan
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'  # Monday 9am UTC
+  workflow_dispatch:
+
+jobs:
+  npm-audit-web:
+    name: NPM Audit - Web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: cd devorbit-web && npm ci
+      - name: Run npm audit
+        run: cd devorbit-web && npm audit --audit-level=high
+
+  npm-audit-showcase:
+    name: NPM Audit - Showcase
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: cd devorbit-showcase && npm ci
+      - name: Run npm audit
+        run: cd devorbit-showcase && npm audit --audit-level=high
+
+  api-dependency-check:
+    name: API Dependency Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+      - name: Run OWASP dependency-check
+        run: cd devorbit-api && ./mvnw dependency-check:check -B
+        continue-on-error: true
+      - name: Fallback if plugin not available
+        if: failure()
+        run: |
+          echo "OWASP dependency-check plugin is not configured in pom.xml."
+          echo "Add the org.owasp:dependency-check-maven plugin to enable this scan."

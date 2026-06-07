@@ -1,5 +1,6 @@
 package vn.edu.uit.devorbit_api.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import java.util.Map;
@@ -36,8 +37,9 @@ public class StudentAuthController {
 
     /** Log in with student code + password. Returns JWT token. */
     @PostMapping("/login")
-    public StudentAuthResponse login(@RequestBody @Valid StudentLoginRequest request) {
-        return studentAuthService.login(request);
+    public StudentAuthResponse login(@RequestBody @Valid StudentLoginRequest request,
+                                      HttpServletRequest httpRequest) {
+        return studentAuthService.login(request, httpRequest);
     }
 
     /**
@@ -77,11 +79,12 @@ public class StudentAuthController {
 
     /**
      * Send password reset OTP to the student's email.
+     * Always returns success — no information leak on whether student exists.
      */
     @PostMapping("/forgot-password")
     public Map<String, String> forgotPassword(@RequestBody @Valid ForgotPasswordRequest request) {
-        String email = studentAuthService.forgotPassword(request);
-        return Map.of("email", email);
+        studentAuthService.forgotPassword(request);
+        return Map.of("message", "Nếu tài khoản tồn tại, mã OTP đã được gửi đến email của bạn");
     }
 
     /**
@@ -90,6 +93,17 @@ public class StudentAuthController {
     @PostMapping("/reset-password")
     public StudentAuthResponse resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
         return studentAuthService.resetPassword(request);
+    }
+
+    /**
+     * Logout: revoke the current JWT token.
+     */
+    @PostMapping("/logout")
+    public Map<String, String> logout(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            studentAuthService.logout(authHeader.substring(7));
+        }
+        return Map.of("message", "Logged out");
     }
 
     /**

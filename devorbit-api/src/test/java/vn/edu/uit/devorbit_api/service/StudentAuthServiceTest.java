@@ -21,9 +21,12 @@ import vn.edu.uit.devorbit_api.repository.StudentUserRepository;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -35,6 +38,9 @@ class StudentAuthServiceTest {
     @Mock private JwtService jwtService;
     @Mock private EmailService emailService;
     @Mock private OtpRateLimitService otpRateLimitService;
+    @Mock(lenient = true) private LoginRateLimitService loginRateLimitService;
+    @Mock(lenient = true) private RevokedTokenStore revokedTokenStore;
+    @Mock(lenient = true) private HttpServletRequest httpRequest;
 
     private PasswordEncoder passwordEncoder;
     private StudentAuthService service;
@@ -46,7 +52,9 @@ class StudentAuthServiceTest {
         passwordEncoder = new BCryptPasswordEncoder();
         service = new StudentAuthService(
                 studentUserRepository, otpRepository, jwtService,
-                passwordEncoder, emailService, otpRateLimitService);
+                passwordEncoder, emailService, otpRateLimitService,
+                loginRateLimitService, revokedTokenStore);
+        when(httpRequest.getRemoteAddr()).thenReturn("127.0.0.1");
     }
 
     // ─── REGISTER ─────────────────────────────────────
@@ -202,8 +210,9 @@ class StudentAuthServiceTest {
         when(studentUserRepository.findByStudentCode("24520554")).thenReturn(Optional.of(inactive));
 
         StudentLoginRequest req = new StudentLoginRequest("24520554", "password123");
-        assertThatThrownBy(() -> service.login(req))
+        assertThatThrownBy(() -> service.login(req, httpRequest))
                 .isInstanceOf(UnauthorizedException.class)
                 .hasMessageContaining("chưa được kích hoạt");
+        verify(loginRateLimitService).check("24520554", "127.0.0.1");
     }
 }

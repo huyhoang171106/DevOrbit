@@ -23,7 +23,7 @@ public class EmailService {
 
     public void sendOtp(String to, String otpCode, int expirationMinutes) {
         if (username == null || username.isBlank()) {
-            log.warn("Mail not configured — OTP {} for {} would have been sent", otpCode, to);
+            log.debug("Mail not configured — OTP {} for {} would have been sent", otpCode, to);
             return;
         }
         try {
@@ -51,7 +51,7 @@ public class EmailService {
 
     public void sendPasswordResetOtp(String to, String otpCode, int expirationMinutes) {
         if (username == null || username.isBlank()) {
-            log.warn("Mail not configured — password reset OTP {} for {} would have been sent", otpCode, to);
+            log.debug("Mail not configured — password reset OTP {} for {} would have been sent", otpCode, to);
             return;
         }
         try {

@@ -120,9 +120,11 @@ export function StudentLoginPage() {
         <form onSubmit={handleSubmit} className="space-y-[16px]">
           {mode !== 'otp' && (
             <div>
-              <label className="label block mb-[6px]">Tên đăng nhập</label>
+              <label htmlFor="student-code-input" className="label block mb-[6px]">Mã số sinh viên (MSSV)</label>
               <input
+                id="student-code-input"
                 className="input-field"
+                placeholder="Ví dụ: 24520554"
                 value={studentCode}
                 onChange={(e) => setStudentCode(e.target.value)}
                 required
@@ -133,19 +135,23 @@ export function StudentLoginPage() {
           {mode === 'register' && (
             <>
               <div>
-                <label className="label block mb-[6px]">Họ và tên</label>
+                <label htmlFor="full-name-input" className="label block mb-[6px]">Họ và tên</label>
                 <input
+                  id="full-name-input"
                   className="input-field"
+                  placeholder="Ví dụ: Nguyễn Văn A"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   required
                 />
               </div>
               <div>
-                <label className="label block mb-[6px]">Email</label>
+                <label htmlFor="email-input" className="label block mb-[6px]">Email</label>
                 <input
+                  id="email-input"
                   className="input-field"
                   type="email"
+                  placeholder="Ví dụ: 24520554@gm.uit.edu.vn"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -156,8 +162,9 @@ export function StudentLoginPage() {
 
           {mode === 'otp' ? (
             <div>
-              <label className="label block mb-[6px]">Mã OTP</label>
+              <label htmlFor="otp-code-input" className="label block mb-[6px]">Mã OTP</label>
               <input
+                id="otp-code-input"
                 className="input-field text-center text-[24px] tracking-[8px] font-bold"
                 placeholder="000000"
                 value={otpCode}
@@ -166,14 +173,21 @@ export function StudentLoginPage() {
                 maxLength={6}
                 autoFocus
               />
+              {import.meta.env.DEV && (
+                <p className="text-[12px] text-emerald-400/80 bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3 mt-4 text-center">
+                  💡 <strong>Môi trường Dev:</strong> Kiểm tra logs của API hoặc bảng <code>otp</code> để lấy mã xác thực.
+                </p>
+              )}
             </div>
           ) : (
             <>
               <div>
-                <label className="label block mb-[6px]">Mật khẩu</label>
+                <label htmlFor="password-input" className="label block mb-[6px]">Mật khẩu</label>
                 <input
+                  id="password-input"
                   className="input-field"
                   type="password"
+                  placeholder="Tối thiểu 6 ký tự"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -183,10 +197,12 @@ export function StudentLoginPage() {
 
               {mode === 'register' && (
                 <div>
-                  <label className="label block mb-[6px]">Nhập lại mật khẩu</label>
+                  <label htmlFor="confirm-password-input" className="label block mb-[6px]">Nhập lại mật khẩu</label>
                   <input
+                    id="confirm-password-input"
                     className="input-field"
                     type="password"
+                    placeholder="Xác nhận mật khẩu"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
@@ -197,7 +213,7 @@ export function StudentLoginPage() {
             </>
           )}
 
-          <button className="btn-primary w-full mt-2" type="submit" disabled={loading}>
+          <button id="auth-submit-btn" className="btn-primary w-full mt-2" type="submit" disabled={loading}>
             {loading ? (
               <span className="flex items-center justify-center gap-[8px]">
                 <svg className="h-[16px] w-[16px] animate-spin" viewBox="0 0 24 24" fill="none">
@@ -219,6 +235,7 @@ export function StudentLoginPage() {
         {mode === 'otp' && (
           <div className="mt-[24px] pt-[24px] border-t border-glass-border flex items-center justify-center body-sm">
             <button
+              id="auth-back-to-login-btn"
               className="text-emerald-400 hover:text-emerald-400/80 font-medium transition-colors cursor-pointer"
               type="button"
               onClick={() => {
@@ -232,13 +249,15 @@ export function StudentLoginPage() {
         )}
 
         {mode !== 'otp' && (
-          <div className="mt-[24px] pt-[24px] border-t border-glass-border flex items-center justify-center body-sm">
+          <div className="mt-[24px] pt-[24px] border-t border-glass-border flex items-center justify-center body-sm text-zinc-400">
+            <span>{mode === 'login' ? 'Chưa có tài khoản? ' : 'Đã có tài khoản? '}</span>
             <button
-              className="text-emerald-400 hover:text-emerald-400/80 font-medium transition-colors cursor-pointer"
+              id="auth-toggle-mode-btn"
+              className="text-emerald-400 hover:text-emerald-400/80 font-medium transition-colors cursor-pointer ml-1"
               type="button"
               onClick={switchMode}
             >
-              {mode === 'login' ? 'Tạo tài khoản' : 'Đã có tài khoản'}
+              {mode === 'login' ? 'Đăng ký ngay' : 'Đăng nhập ngay'}
             </button>
           </div>
         )}

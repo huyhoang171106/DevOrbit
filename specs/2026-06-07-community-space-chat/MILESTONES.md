@@ -2,16 +2,21 @@
 
 Free-form implementation log. Record meaningful phase changes, successful milestones, failed attempts, setbacks, fixes, validation notes, and decisions.
 
-**Current Status:** DRAFT — Execution plan formulated
+**Current Status:** IN_PROGRESS — Mốc 1 completed
 
 ---
 
 ## Các mốc phát triển dự kiến (Milestones)
 
-### Mốc 1: Hạ tầng Database & JPA Entities (Dự kiến)
-- [ ] Thiết lập migration script `V006__create_community_features.sql` tạo đầy đủ 5 bảng: `chat_channels`, `community_messages`, `repo_reviews`, `repo_votes`, `course_reviews`.
-- [ ] Định nghĩa các Entity Java tương ứng và thiết lập quan hệ JPA `@ManyToOne` thích hợp với `StudentUser`, `Course`, `GithubRepo`.
-- [ ] Tạo các interface `Repository` kế thừa `JpaRepository`.
+### Mốc 1: Hạ tầng Database & JPA Entities (Hoàn thành 2026-06-07)
+- [x] Thiết lập migration script `V006__create_community_features.sql` tạo đầy đủ 5 bảng: `chat_channels`, `community_messages`, `repo_reviews`, `repo_votes`, `course_reviews`.
+- [x] Định nghĩa các Entity Java tương ứng và thiết lập quan hệ JPA `@ManyToOne` thích hợp với `StudentUser`, `Course`, `GithubRepo`.
+- [x] Tạo các interface `Repository` kế thừa `JpaRepository`.
+
+Evidence:
+- Commit `2331cf8` thêm migration schema cộng đồng.
+- Commit `f613598` thêm entity/repository persistence layer.
+- Validation: `devorbit-api` focused Maven test `CommunityPersistenceContractTest` passed 3 tests.
 
 ### Mốc 2: Cấu hình WebSocket & Bảo mật STOMP Connection (Dự kiến)
 - [ ] Viết `WebSocketConfig` kích hoạt message broker, định nghĩa endpoint `/ws/community` (hỗ trợ SockJS fallback).

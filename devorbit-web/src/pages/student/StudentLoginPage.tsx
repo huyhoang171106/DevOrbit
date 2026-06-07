@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, type FormEvent, type KeyboardEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiPost } from '../../lib/api'
 import { saveStudentToken } from '../../lib/auth'
@@ -52,6 +52,40 @@ function PasswordInput({ id, label, value, onChange, placeholder }: {
   )
 }
 
+// ─── OTP Digit Input ────────────────────────────
+
+function DigitInput({ id, value, onChange, onKeyDown, autoFocus }: {
+  id?: string; value: string; onChange: (v: string) => void; onKeyDown: (e: KeyboardEvent<HTMLInputElement>) => void
+  autoFocus?: boolean
+}) {
+  const ref = useRef<HTMLInputElement>(null)
+  const filled = value !== ''
+
+  useEffect(() => {
+    if (autoFocus && ref.current) ref.current.focus()
+  }, [autoFocus])
+
+  return (
+    <input
+      ref={ref}
+      id={id}
+      inputMode="numeric"
+      autoComplete="one-time-code"
+      className={`w-[44px] h-[52px] text-center text-[20px] font-bold rounded-xl border transition-all duration-200 outline-none bg-white/5
+        ${filled
+          ? 'border-emerald-500/50 bg-emerald-500/5 text-emerald-400 shadow-[0_0_16px_rgba(52,211,153,0.08)]'
+          : 'border-white/10 text-white placeholder:text-white/30'
+        }
+        focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/5`}
+      maxLength={1}
+      value={value}
+      onChange={(e) => { const v = e.target.value.replace(/\D/g, '').slice(0, 1); onChange(v) }}
+      onKeyDown={onKeyDown}
+      required
+    />
+  )
+}
+
 export function StudentLoginPage() {
   const navigate = useNavigate()
   const [mode, setMode] = useState<'login' | 'register' | 'otp' | 'forgot'>('login')
@@ -61,11 +95,13 @@ export function StudentLoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [otpCode, setOtpCode] = useState('')
+  const [otpDigits, setOtpDigits] = useState<string[]>(Array(6).fill(''))
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [countdown, setCountdown] = useState(0)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const otpCode = otpDigits.join('')
 
   function startCountdown() {
     setCountdown(60)
@@ -104,7 +140,7 @@ export function StudentLoginPage() {
       setStudentCode('')
       setPassword('')
       setConfirmPassword('')
-      setOtpCode('')
+      setOtpDigits(Array(6).fill(''))
       setEmail('')
       setFullName('')
       setForgotStep(1)
@@ -114,7 +150,28 @@ export function StudentLoginPage() {
     setMode(newMode)
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  // ─── OTP digit handlers ───────────────────────
+
+  function handleOtpDigitChange(index: number, value: string) {
+    if (value && index < 5) {
+      const next = document.getElementById(`otp-${index + 1}`)
+      next?.focus()
+    }
+    setOtpDigits((prev) => {
+      const next = [...prev]
+      next[index] = value
+      return next
+    })
+  }
+
+  function handleOtpKeyDown(index: number, e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
+      const prev = document.getElementById(`otp-${index - 1}`)
+      prev?.focus()
+    }
+  }
+
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError('')
     setLoading(true)
@@ -301,11 +358,19 @@ export function StudentLoginPage() {
           {mode === 'otp' && (
             <>
               <div>
-                <label htmlFor="otp-code-input" className="label block mb-[6px]">Mã OTP</label>
-                <input id="otp-code-input" className="input-field text-center text-[24px] tracking-[8px] font-bold"
-                  placeholder="000000" value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  required maxLength={6} autoFocus />
+                <label className="label block mb-[10px] text-center">Mã xác thực OTP</label>
+                <div className="flex justify-center gap-[8px]">
+                  {otpDigits.map((d, i) => (
+                    <DigitInput
+                      key={i}
+                      id={`otp-${i}`}
+                      value={d}
+                      onChange={(v) => handleOtpDigitChange(i, v)}
+                      onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                      autoFocus={i === 0}
+                    />
+                  ))}
+                </div>
               </div>
               {countdown > 0 ? (
                 <p className="body-sm text-ink/60 text-center">
@@ -319,13 +384,13 @@ export function StudentLoginPage() {
                   </button>
                 </div>
               )}
-              <button id="auth-submit-btn" className="btn-primary w-full" type="submit" disabled={loading}>
+              <button id="auth-submit-btn" className="btn-primary w-full" type="submit" disabled={loading || otpCode.length < 6}>
                 {loading ? <span className="flex items-center justify-center gap-[8px]"><svg className="h-[16px] w-[16px] animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>Vui lòng đợi...</span> : 'Xác thực'}
               </button>
             </>
           )}
 
-          {/* ─── FORGOT (merged) ───────────────────── */}
+          {/* ─── FORGOT MODE ────────────────────────── */}
           {mode === 'forgot' && (
             <>
               <div>
@@ -341,11 +406,19 @@ export function StudentLoginPage() {
               ) : (
                 <>
                   <div>
-                    <label htmlFor="reset-otp-input" className="label block mb-[6px]">Mã OTP</label>
-                    <input id="reset-otp-input" className="input-field text-center text-[24px] tracking-[8px] font-bold"
-                      placeholder="000000" value={otpCode}
-                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                      required maxLength={6} autoFocus />
+                    <label className="label block mb-[10px] text-center">Mã OTP đặt lại mật khẩu</label>
+                    <div className="flex justify-center gap-[8px]">
+                      {otpDigits.map((d, i) => (
+                        <DigitInput
+                          key={i}
+                          id={`otp-${i}`}
+                          value={d}
+                          onChange={(v) => handleOtpDigitChange(i, v)}
+                          onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                          autoFocus={i === 0}
+                        />
+                      ))}
+                    </div>
                   </div>
                   {countdown > 0 ? (
                     <p className="body-sm text-ink/60 text-center">
@@ -363,7 +436,7 @@ export function StudentLoginPage() {
                     value={password} onChange={setPassword} />
                   <PasswordInput id="reset-confirm-password-input" label="Nhập lại mật khẩu" placeholder="Xác nhận mật khẩu"
                     value={confirmPassword} onChange={setConfirmPassword} />
-                  <button id="auth-submit-btn" className="btn-primary w-full" type="submit" disabled={loading}>
+                  <button id="auth-submit-btn" className="btn-primary w-full" type="submit" disabled={loading || otpCode.length < 6}>
                     {loading ? <span className="flex items-center justify-center gap-[8px]"><svg className="h-[16px] w-[16px] animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>Vui lòng đợi...</span> : 'Đặt lại mật khẩu'}
                   </button>
                 </>

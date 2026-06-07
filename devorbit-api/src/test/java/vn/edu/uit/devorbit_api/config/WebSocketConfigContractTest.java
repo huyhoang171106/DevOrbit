@@ -75,6 +75,7 @@ class WebSocketConfigContractTest {
         if (authorizationHeader != null) {
             accessor.setNativeHeader("Authorization", authorizationHeader);
         }
+        accessor.setLeaveMutable(true);
         return MessageBuilder.createMessage(new byte[0], accessor.getMessageHeaders());
     }
 }

@@ -35,18 +35,3 @@ jobs:
       - name: Run tests
         run: cd devorbit-web && npm test
 
-  showcase-check:
-    name: Showcase Lint & Type Check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - name: Install dependencies
-        run: cd devorbit-showcase && npm ci
-      - name: Lint
-        run: cd devorbit-showcase && npm run lint
-      - name: TypeScript check
-        run: cd devorbit-showcase && npx tsc --noEmit

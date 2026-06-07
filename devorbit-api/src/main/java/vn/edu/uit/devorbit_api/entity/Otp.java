@@ -19,6 +19,10 @@ public class Otp {
     @Column(nullable = false)
     private String email;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "purpose", nullable = false, length = 30)
+    private OtpPurpose purpose;
+
     @Column(name = "otp_code", nullable = false, length = 6)
     private String otpCode;
 

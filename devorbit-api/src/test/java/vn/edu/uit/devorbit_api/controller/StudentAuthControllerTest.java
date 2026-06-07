@@ -84,4 +84,77 @@ class StudentAuthControllerTest {
                 .andExpect(jsonPath("$.token").value("student-jwt-token"))
                 .andExpect(jsonPath("$.studentCode").value("24520554"));
     }
+
+    @Test
+    void shouldForgotPasswordSuccessfully() throws Exception {
+        when(studentAuthService.forgotPassword(any())).thenReturn("24520554@gm.uit.edu.vn");
+
+        mockMvc.perform(post("/api/student/forgot-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "studentCode": "24520554"
+                            }
+                        """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("24520554@gm.uit.edu.vn"));
+    }
+
+    @Test
+    void shouldResetPasswordSuccessfully() throws Exception {
+        StudentAuthResponse response = new StudentAuthResponse("student-jwt-token", 1L, "24520554", "Nguyen Van A", "24520554@gm.uit.edu.vn");
+        when(studentAuthService.resetPassword(any())).thenReturn(response);
+
+        mockMvc.perform(post("/api/student/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "email": "24520554@gm.uit.edu.vn",
+                                "otpCode": "123456",
+                                "newPassword": "newPassword123"
+                            }
+                        """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value("student-jwt-token"));
+    }
+
+    @Test
+    void shouldResendOtpSuccessfully() throws Exception {
+        mockMvc.perform(post("/api/student/resend-otp")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "email": "24520554@gm.uit.edu.vn"
+                            }
+                        """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("OTP resent"));
+    }
+
+    @Test
+    void shouldResendOtpWithPurpose() throws Exception {
+        mockMvc.perform(post("/api/student/resend-otp")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "email": "24520554@gm.uit.edu.vn",
+                                "purpose": "PASSWORD_RESET"
+                            }
+                        """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("OTP resent"));
+    }
+
+    @Test
+    void shouldRejectInvalidPurpose() throws Exception {
+        mockMvc.perform(post("/api/student/resend-otp")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "email": "24520554@gm.uit.edu.vn",
+                                "purpose": "INVALID"
+                            }
+                        """))
+                .andExpect(status().isBadRequest());
+    }
 }

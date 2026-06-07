@@ -11,6 +11,7 @@ import vn.edu.uit.devorbit_api.dto.admin.AdminCourseUpsertRequest;
 import vn.edu.uit.devorbit_api.dto.publicapi.CourseDetailResponse;
 import vn.edu.uit.devorbit_api.service.CourseService;
 import vn.edu.uit.devorbit_api.service.JwtService;
+import vn.edu.uit.devorbit_api.service.RevokedTokenStore;
 
 import java.util.List;
 
@@ -31,6 +32,9 @@ class AdminCourseControllerTest {
 
     @MockitoBean
     private JwtService jwtService;
+
+    @MockitoBean
+    private RevokedTokenStore revokedTokenStore;
 
     @Test
     void shouldCreateCourse() throws Exception {

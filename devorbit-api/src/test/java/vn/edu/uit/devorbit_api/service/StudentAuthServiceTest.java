@@ -123,6 +123,7 @@ class StudentAuthServiceTest {
 
         service.forgotPassword(new ForgotPasswordRequest("24520554"));
 
+        verify(otpRateLimitService).check("FORGOT_PASSWORD:24520554");
         verify(otpRateLimitService).check("PASSWORD_RESET:24520554@gm.uit.edu.vn");
         verify(otpRepository).deleteByEmailAndPurpose("24520554@gm.uit.edu.vn", OtpPurpose.PASSWORD_RESET);
         verify(otpRepository).save(otpCaptor.capture());
@@ -214,5 +215,74 @@ class StudentAuthServiceTest {
                 .isInstanceOf(UnauthorizedException.class)
                 .hasMessageContaining("chưa được kích hoạt");
         verify(loginRateLimitService).check("24520554", "127.0.0.1");
+    }
+
+    @Test
+    void login_recordsFailureForInactiveAccount() {
+        StudentUser inactive = StudentUser.builder()
+                .id(1L).studentCode("24520554").fullName("Nguyen Van A")
+                .email("24520554@gm.uit.edu.vn").passwordHash(passwordEncoder.encode("password123"))
+                .active(false).build();
+
+        when(studentUserRepository.findByStudentCode("24520554")).thenReturn(Optional.of(inactive));
+
+        StudentLoginRequest req = new StudentLoginRequest("24520554", "password123");
+        assertThatThrownBy(() -> service.login(req, httpRequest))
+                .isInstanceOf(UnauthorizedException.class);
+        verify(loginRateLimitService).recordFailure("24520554", "127.0.0.1");
+    }
+
+    @Test
+    void login_recordsFailureForWrongPassword() {
+        StudentUser student = StudentUser.builder()
+                .id(1L).studentCode("24520554").fullName("Nguyen Van A")
+                .email("24520554@gm.uit.edu.vn").passwordHash(passwordEncoder.encode("correct"))
+                .active(true).build();
+
+        when(studentUserRepository.findByStudentCode("24520554")).thenReturn(Optional.of(student));
+
+        StudentLoginRequest req = new StudentLoginRequest("24520554", "wrong");
+        assertThatThrownBy(() -> service.login(req, httpRequest))
+                .isInstanceOf(UnauthorizedException.class);
+        verify(loginRateLimitService).recordFailure("24520554", "127.0.0.1");
+    }
+
+    @Test
+    void login_successClearsRateLimit() {
+        StudentUser student = StudentUser.builder()
+                .id(1L).studentCode("24520554").fullName("Nguyen Van A")
+                .email("24520554@gm.uit.edu.vn").passwordHash(passwordEncoder.encode("password123"))
+                .active(true).build();
+
+        when(studentUserRepository.findByStudentCode("24520554")).thenReturn(Optional.of(student));
+        when(jwtService.generateToken("24520554", "STUDENT")).thenReturn("token");
+
+        StudentLoginRequest req = new StudentLoginRequest("24520554", "password123");
+        service.login(req, httpRequest);
+        verify(loginRateLimitService).onSuccess("24520554", "127.0.0.1");
+    }
+
+    // ─── FORGOT PASSWORD RATE LIMITING ─────────────────
+
+    @Test
+    void forgotPassword_rateLimitsNonExistentStudent() {
+        when(studentUserRepository.findByStudentCode("nonexistent")).thenReturn(Optional.empty());
+
+        service.forgotPassword(new ForgotPasswordRequest("nonexistent"));
+
+        verify(otpRateLimitService).check("FORGOT_PASSWORD:nonexistent");
+        verifyNoInteractions(otpRepository);
+        verifyNoInteractions(emailService);
+    }
+
+    // ─── RESEND OTP RATE LIMITING ─────────────────────
+
+    @Test
+    void resendOtp_rateLimitsNonExistentEmail() {
+        when(studentUserRepository.findByEmail("nobody@example.com")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.resendOtp("nobody@example.com", OtpPurpose.EMAIL_VERIFICATION))
+                .isInstanceOf(BadRequestException.class);
+        verify(otpRateLimitService).check("RESEND_OTP:nobody@example.com");
     }
 }

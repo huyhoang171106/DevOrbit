@@ -12,6 +12,7 @@ import vn.edu.uit.devorbit_api.config.JwtProperties;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.UUID;
 
 @Service
 public class JwtService {
@@ -47,12 +48,17 @@ public class JwtService {
     public String generateToken(String username, String tokenType) {
         long now = System.currentTimeMillis();
         return Jwts.builder()
+                .id(UUID.randomUUID().toString())
                 .subject(username)
                 .claim("type", tokenType)
                 .issuedAt(new Date(now))
                 .expiration(new Date(now + jwtProperties.expirationMinutes() * 60 * 1000))
                 .signWith(secretKey)
                 .compact();
+    }
+
+    public String extractJti(String token) {
+        return parseToken(token).getId();
     }
 
     public String extractUsername(String token) {

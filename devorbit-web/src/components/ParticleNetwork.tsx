@@ -162,8 +162,11 @@ export function ParticleNetwork() {
       requestAnimationFrame(animate)
     }
 
-    // Pause when tab hidden
-    function onVisibility() { running = !document.hidden }
+    // Pause/resume when tab hidden/visible
+    function onVisibility() {
+      running = !document.hidden
+      if (running) requestAnimationFrame(animate)
+    }
     document.addEventListener('visibilitychange', onVisibility)
 
     requestAnimationFrame(animate)

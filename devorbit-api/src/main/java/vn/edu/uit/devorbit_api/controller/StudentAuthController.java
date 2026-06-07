@@ -12,6 +12,8 @@ import vn.edu.uit.devorbit_api.dto.student.StudentAuthResponse;
 import vn.edu.uit.devorbit_api.dto.student.StudentLoginRequest;
 import vn.edu.uit.devorbit_api.dto.student.StudentProfileResponse;
 import vn.edu.uit.devorbit_api.dto.student.StudentRegisterRequest;
+import vn.edu.uit.devorbit_api.entity.OtpPurpose;
+import vn.edu.uit.devorbit_api.exception.BadRequestException;
 import vn.edu.uit.devorbit_api.service.StudentAuthService;
 
 /**
@@ -56,11 +58,20 @@ public class StudentAuthController {
     }
 
     /**
-     * Resend OTP to the student's email (overwrites previous OTP).
+     * Resend OTP to the student's email (overwrites previous OTP for given purpose).
+     * Body: { email, purpose? } — purpose defaults to EMAIL_VERIFICATION.
      */
     @PostMapping("/resend-otp")
     public Map<String, String> resendOtp(@RequestBody Map<String, String> body) {
-        studentAuthService.resendOtp(body.get("email"));
+        String email = body.get("email");
+        String purposeStr = body.getOrDefault("purpose", "EMAIL_VERIFICATION");
+        OtpPurpose purpose;
+        try {
+            purpose = OtpPurpose.valueOf(purposeStr);
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Purpose không hợp lệ: " + purposeStr);
+        }
+        studentAuthService.resendOtp(email, purpose);
         return Map.of("message", "OTP resent");
     }
 

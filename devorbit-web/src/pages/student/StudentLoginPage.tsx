@@ -1,0 +1,267 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { apiPost } from '../../lib/api'
+import { saveStudentToken } from '../../lib/auth'
+import type { StudentAuthResponse, OtpVerificationRequest } from '../../types/api'
+
+export function StudentLoginPage() {
+  const navigate = useNavigate()
+  const [mode, setMode] = useState<'login' | 'register' | 'otp'>('login')
+  const [studentCode, setStudentCode] = useState('')
+  const [fullName, setFullName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [otpCode, setOtpCode] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+
+    if (mode === 'register') {
+      if (password !== confirmPassword) {
+        setError('Mật khẩu nhập lại không khớp.')
+        setLoading(false)
+        return
+      }
+      try {
+        const res = await apiPost<{ id: number; studentCode: string; fullName: string; email: string }>(
+          '/api/student/register',
+          { studentCode, fullName, email, password }
+        )
+        setEmail(res.email)
+        setMode('otp')
+      } catch {
+        setError('Đăng ký thất bại. Kiểm tra lại thông tin.')
+      } finally {
+        setLoading(false)
+      }
+      return
+    }
+
+    if (mode === 'otp') {
+      try {
+        const body: OtpVerificationRequest = { email, otpCode }
+        const res = await apiPost<StudentAuthResponse>('/api/student/verify-otp', body)
+        saveStudentToken(res.token)
+        navigate('/student/bookmarks')
+      } catch {
+        setError('Mã OTP không đúng hoặc đã hết hạn.')
+      } finally {
+        setLoading(false)
+      }
+      return
+    }
+
+    try {
+      const res = await apiPost<StudentAuthResponse>('/api/student/login', { studentCode, password })
+      saveStudentToken(res.token)
+      navigate('/student/bookmarks')
+    } catch {
+      setError('Đăng nhập thất bại. Kiểm tra lại thông tin.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function switchMode() {
+    setError('')
+    if (mode === 'login') {
+      setMode('register')
+    } else if (mode === 'register') {
+      setMode('login')
+    } else {
+      setMode('login')
+    }
+  }
+
+  return (
+    <div className="flex min-h-[65vh] items-center justify-center py-[64px]">
+      <div className="glass-card w-full max-w-md p-[32px] mx-4">
+        <div className="mb-[32px] text-center">
+          <div className="mx-auto mb-[16px] inline-flex rounded-[8px] bg-emerald-500/10 p-[12px] border border-emerald-500/20">
+            {mode === 'otp' ? (
+              <svg className="h-[24px] w-[24px] text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <rect x="2" y="4" width="20" height="16" rx="2" />
+                <path d="M6 8h.01M10 8h.01M14 8h.01" />
+                <path d="M6 12h.01M10 12h.01M14 12h.01" />
+                <path d="M6 16h.01M10 16h.01M14 16h.01" />
+              </svg>
+            ) : (
+              <svg className="h-[24px] w-[24px] text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            )}
+          </div>
+          <h1 className="heading-2 text-ink mb-[8px]">
+            {mode === 'login' ? 'Đăng nhập' : mode === 'register' ? 'Tạo tài khoản' : 'Xác thực email'}
+          </h1>
+          {mode === 'otp' && (
+            <p className="body-sm text-ink/60 mt-[4px]">
+              Mã OTP đã được gửi đến <strong>{email}</strong>
+            </p>
+          )}
+        </div>
+
+        {error && (
+          <div className="mb-[24px] flex items-center gap-[8px] rounded-md bg-red-500/10 border border-red-500/20 px-4 py-3 body-sm text-red-600 dark:text-red-400">
+            <svg className="h-[16px] w-[16px] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 8v4M12 16h.01" />
+            </svg>
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-[16px]">
+          {mode !== 'otp' && (
+            <div>
+              <label htmlFor="student-code-input" className="label block mb-[6px]">Mã số sinh viên (MSSV)</label>
+              <input
+                id="student-code-input"
+                className="input-field"
+                placeholder="Ví dụ: 24520554"
+                value={studentCode}
+                onChange={(e) => setStudentCode(e.target.value)}
+                required
+              />
+            </div>
+          )}
+
+          {mode === 'register' && (
+            <>
+              <div>
+                <label htmlFor="full-name-input" className="label block mb-[6px]">Họ và tên</label>
+                <input
+                  id="full-name-input"
+                  className="input-field"
+                  placeholder="Ví dụ: Nguyễn Văn A"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="email-input" className="label block mb-[6px]">Email</label>
+                <input
+                  id="email-input"
+                  className="input-field"
+                  type="email"
+                  placeholder="Ví dụ: 24520554@gm.uit.edu.vn"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+            </>
+          )}
+
+          {mode === 'otp' ? (
+            <div>
+              <label htmlFor="otp-code-input" className="label block mb-[6px]">Mã OTP</label>
+              <input
+                id="otp-code-input"
+                className="input-field text-center text-[24px] tracking-[8px] font-bold"
+                placeholder="000000"
+                value={otpCode}
+                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                required
+                maxLength={6}
+                autoFocus
+              />
+              {import.meta.env.DEV && (
+                <p className="text-[12px] text-emerald-400/80 bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3 mt-4 text-center">
+                  💡 <strong>Môi trường Dev:</strong> Kiểm tra logs của API hoặc bảng <code>otp</code> để lấy mã xác thực.
+                </p>
+              )}
+            </div>
+          ) : (
+            <>
+              <div>
+                <label htmlFor="password-input" className="label block mb-[6px]">Mật khẩu</label>
+                <input
+                  id="password-input"
+                  className="input-field"
+                  type="password"
+                  placeholder="Tối thiểu 6 ký tự"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+              </div>
+
+              {mode === 'register' && (
+                <div>
+                  <label htmlFor="confirm-password-input" className="label block mb-[6px]">Nhập lại mật khẩu</label>
+                  <input
+                    id="confirm-password-input"
+                    className="input-field"
+                    type="password"
+                    placeholder="Xác nhận mật khẩu"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                </div>
+              )}
+            </>
+          )}
+
+          <button id="auth-submit-btn" className="btn-primary w-full mt-2" type="submit" disabled={loading}>
+            {loading ? (
+              <span className="flex items-center justify-center gap-[8px]">
+                <svg className="h-[16px] w-[16px] animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Vui lòng đợi...
+              </span>
+            ) : mode === 'login' ? (
+              'Đăng nhập'
+            ) : mode === 'register' ? (
+              'Đăng ký'
+            ) : (
+              'Xác thực'
+            )}
+          </button>
+        </form>
+
+        {mode === 'otp' && (
+          <div className="mt-[24px] pt-[24px] border-t border-glass-border flex items-center justify-center body-sm">
+            <button
+              id="auth-back-to-login-btn"
+              className="text-emerald-400 hover:text-emerald-400/80 font-medium transition-colors cursor-pointer"
+              type="button"
+              onClick={() => {
+                setMode('login')
+                setOtpCode('')
+              }}
+            >
+              Quay lại đăng nhập
+            </button>
+          </div>
+        )}
+
+        {mode !== 'otp' && (
+          <div className="mt-[24px] pt-[24px] border-t border-glass-border flex items-center justify-center body-sm text-zinc-400">
+            <span>{mode === 'login' ? 'Chưa có tài khoản? ' : 'Đã có tài khoản? '}</span>
+            <button
+              id="auth-toggle-mode-btn"
+              className="text-emerald-400 hover:text-emerald-400/80 font-medium transition-colors cursor-pointer ml-1"
+              type="button"
+              onClick={switchMode}
+            >
+              {mode === 'login' ? 'Đăng ký ngay' : 'Đăng nhập ngay'}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

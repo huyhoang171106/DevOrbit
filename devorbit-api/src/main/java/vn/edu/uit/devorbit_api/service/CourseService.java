@@ -7,6 +7,8 @@ import vn.edu.uit.devorbit_api.dto.publicapi.CourseSummaryResponse;
 import vn.edu.uit.devorbit_api.entity.Course;
 import vn.edu.uit.devorbit_api.exception.NotFoundException;
 import vn.edu.uit.devorbit_api.repository.CourseRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -56,9 +58,19 @@ public class CourseService {
 
     /**
      * Get course summaries for the PUBLIC API (anyone can access).
+     * Cached for 5 minutes to avoid repeated DB queries.
      */
+    @Cacheable(value = "courses", key = "'all'", unless = "#result.isEmpty()")
     public List<CourseSummaryResponse> getActiveCourseSummaries() {
         return courseRepository.findAllWithRepoCountSortedByRepoCount();
+    }
+
+    /**
+     * Evict course cache when courses are modified.
+     */
+    @CacheEvict(value = "courses", allEntries = true)
+    public void evictCourseCache() {
+        // Called after create/update/delete operations
     }
 
     /**
@@ -123,6 +135,7 @@ public class CourseService {
      * 3. Convert the saved entity back to a CourseDetailResponse DTO
      * 4. Return the DTO (Spring serializes it to JSON)
      */
+    @CacheEvict(value = "courses", allEntries = true)
     public CourseDetailResponse createCourse(AdminCourseUpsertRequest request) {
         Course course = Course.builder()
                 .maMH(request.code())
@@ -156,6 +169,7 @@ public class CourseService {
      * 4. Save the updated entity
      * 5. Return the updated detail DTO
      */
+    @CacheEvict(value = "courses", allEntries = true)
     public CourseDetailResponse updateCourse(Long id, AdminCourseUpsertRequest request) {
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Course not found: " + id));
@@ -168,6 +182,7 @@ public class CourseService {
      * Throws NotFoundException if the course doesn't exist.
      * Returns nothing (void) — the controller returns HTTP 204 No Content.
      */
+    @CacheEvict(value = "courses", allEntries = true)
     public void deleteCourse(Long id) {
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Course not found: " + id));

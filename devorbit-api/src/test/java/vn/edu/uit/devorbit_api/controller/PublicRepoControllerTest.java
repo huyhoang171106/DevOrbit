@@ -9,6 +9,7 @@ import vn.edu.uit.devorbit_api.dto.publicapi.RepoSummaryResponse;
 import vn.edu.uit.devorbit_api.dto.publicapi.TechStackResponse;
 import vn.edu.uit.devorbit_api.service.GithubRepoService;
 import vn.edu.uit.devorbit_api.service.JwtService;
+import vn.edu.uit.devorbit_api.service.RevokedTokenStore;
 
 import java.util.List;
 
@@ -28,6 +29,9 @@ class PublicRepoControllerTest {
 
     @MockitoBean
     private JwtService jwtService;
+
+    @MockitoBean
+    private RevokedTokenStore revokedTokenStore;
 
     @Test
     void shouldReturnRepoById() throws Exception {

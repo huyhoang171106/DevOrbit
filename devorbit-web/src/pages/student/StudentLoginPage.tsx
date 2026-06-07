@@ -54,9 +54,9 @@ function PasswordInput({ id, label, value, onChange, placeholder }: {
 
 // ─── OTP Digit Input ────────────────────────────
 
-function DigitInput({ id, value, onChange, onKeyDown, autoFocus }: {
+function DigitInput({ id, value, onChange, onKeyDown, onPaste, autoFocus }: {
   id?: string; value: string; onChange: (v: string) => void; onKeyDown: (e: KeyboardEvent<HTMLInputElement>) => void
-  autoFocus?: boolean
+  onPaste?: (e: React.ClipboardEvent) => void; autoFocus?: boolean
 }) {
   const ref = useRef<HTMLInputElement>(null)
   const filled = value !== ''
@@ -81,6 +81,7 @@ function DigitInput({ id, value, onChange, onKeyDown, autoFocus }: {
       value={value}
       onChange={(e) => { const v = e.target.value.replace(/\D/g, '').slice(0, 1); onChange(v) }}
       onKeyDown={onKeyDown}
+      onPaste={onPaste}
       required
     />
   )
@@ -151,6 +152,24 @@ export function StudentLoginPage() {
   }
 
   // ─── OTP digit handlers ───────────────────────
+
+  function handleOtpPaste(e: React.ClipboardEvent) {
+    e.preventDefault()
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
+    if (!pasted) return
+    const digits = pasted.split('')
+    setOtpDigits((prev) => {
+      const next = [...prev]
+      for (let i = 0; i < 6; i++) {
+        next[i] = digits[i] || ''
+      }
+      return next
+    })
+    // Focus last filled or last input
+    const focusIndex = Math.min(digits.length, 5)
+    const target = document.getElementById(`otp-${focusIndex}`)
+    target?.focus()
+  }
 
   function handleOtpDigitChange(index: number, value: string) {
     if (value && index < 5) {
@@ -359,7 +378,7 @@ export function StudentLoginPage() {
             <>
               <div>
                 <label className="label block mb-[10px] text-center">Mã xác thực OTP</label>
-                <div className="flex justify-center gap-[8px]">
+                <div className="flex justify-center gap-[8px]" onPaste={handleOtpPaste}>
                   {otpDigits.map((d, i) => (
                     <DigitInput
                       key={i}
@@ -407,7 +426,7 @@ export function StudentLoginPage() {
                 <>
                   <div>
                     <label className="label block mb-[10px] text-center">Mã OTP đặt lại mật khẩu</label>
-                    <div className="flex justify-center gap-[8px]">
+                    <div className="flex justify-center gap-[8px]" onPaste={handleOtpPaste}>
                       {otpDigits.map((d, i) => (
                         <DigitInput
                           key={i}

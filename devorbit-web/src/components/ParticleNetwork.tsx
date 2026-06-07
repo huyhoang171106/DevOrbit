@@ -159,21 +159,21 @@ export function ParticleNetwork() {
         ctx!.fill()
       }
 
-      requestAnimationFrame(animate)
+      rafId = requestAnimationFrame(animate)
     }
 
     // Pause/resume when tab hidden/visible
     function onVisibility() {
       running = !document.hidden
-      if (running) requestAnimationFrame(animate)
+      if (running) rafId = requestAnimationFrame(animate)
     }
     document.addEventListener('visibilitychange', onVisibility)
 
-    requestAnimationFrame(animate)
+    rafId = requestAnimationFrame(animate)
 
     return () => {
       running = false
-      cancelAnimationFrame(0) // cancel last pending
+      cancelAnimationFrame(rafId)
       window.removeEventListener('resize', resize)
       window.removeEventListener('mousemove', onMouse)
       document.removeEventListener('visibilitychange', onVisibility)

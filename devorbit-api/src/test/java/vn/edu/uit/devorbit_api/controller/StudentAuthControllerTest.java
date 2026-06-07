@@ -9,9 +9,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import vn.edu.uit.devorbit_api.dto.student.StudentAuthResponse;
 import vn.edu.uit.devorbit_api.dto.student.StudentProfileResponse;
 import vn.edu.uit.devorbit_api.service.JwtService;
+import vn.edu.uit.devorbit_api.service.RevokedTokenStore;
 import vn.edu.uit.devorbit_api.service.StudentAuthService;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -29,10 +31,13 @@ class StudentAuthControllerTest {
     @MockitoBean
     private JwtService jwtService;
 
+    @MockitoBean
+    private RevokedTokenStore revokedTokenStore;
+
     @Test
     void shouldLoginSuccessfully() throws Exception {
         StudentAuthResponse response = new StudentAuthResponse("student-jwt-token", 1L, "24520554", "Nguyen Van A", "24520554@gm.uit.edu.vn");
-        when(studentAuthService.login(any())).thenReturn(response);
+        when(studentAuthService.login(any(), any())).thenReturn(response);
 
         mockMvc.perform(post("/api/student/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -87,7 +92,7 @@ class StudentAuthControllerTest {
 
     @Test
     void shouldForgotPasswordSuccessfully() throws Exception {
-        when(studentAuthService.forgotPassword(any())).thenReturn("24520554@gm.uit.edu.vn");
+        doNothing().when(studentAuthService).forgotPassword(any());
 
         mockMvc.perform(post("/api/student/forgot-password")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -97,7 +102,7 @@ class StudentAuthControllerTest {
                             }
                         """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value("24520554@gm.uit.edu.vn"));
+                .andExpect(jsonPath("$.message").value("Nếu tài khoản tồn tại, mã OTP đã được gửi đến email của bạn"));
     }
 
     @Test

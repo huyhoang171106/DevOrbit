@@ -23,6 +23,7 @@ This file maps product behavior to proof.
 | US-019 | Mobile Course Hub Detail Navigation | pass | no | no | Gradle unit test | implemented | `devorbit-mobile`: `.\gradlew.bat :app:testDebugUnitTest` |
 | US-035 | Mobile Course Search, Bookmarks, and Explore Search/Filter | pass | no | no | Gradle unit test | implemented | `devorbit-mobile`: `.\gradlew.bat :app:testDebugUnitTest`; commits `7e01b5d`, `6122db9`, `bbcc294`, `be174b4` |
 | US-036 | Mobile AI Roadmap and Subject Q&A ViewModels | pass | no | no | Gradle unit test | implemented | `devorbit-mobile`: `.\gradlew.bat :app:testDebugUnitTest` |
+| US-037 | Community Data Model: chat channels, messages, repo reviews, repo votes, course reviews | pass | no | no | Maven test suite | implemented | `devorbit-api`: `mvn.cmd -Dtest=CommunityPersistenceContractTest test` passed 3 tests; `mvn.cmd test` passed 29 tests; commits `2331cf8`, `f613598` |
 | US-020 | GPA Calculator + Semester Presets + Preset Stats/Merge + Cumulative Estimate + Goal Planner + Goal What-If + Row UX + Explicit Browser Draft Controls + Background Atmosphere | pass | no | no | Vite build | implemented | `devorbit-web`: `npm test -- GpaCalculatorPage router`; `npm run build` |
 | US-021 | Repo AI Analysis Structure | pass | no | no | Vite build | implemented | `devorbit-web`: `npm run test -- repoAiAnalysis`; `npm run build` |
 | US-022 | Repo Rule-Based Analysis | pass | no | no | Vite build | implemented | `devorbit-web`: `npm run test -- repoAiAnalysis`; `npm run build` |

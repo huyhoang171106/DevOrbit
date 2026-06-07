@@ -4,35 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { BookmarkSimple, UsersThree, SignOut, User } from '@phosphor-icons/react'
 import { apiStudentGet } from '../../lib/api'
 import { isStudentAuthenticated, clearStudentToken } from '../../lib/auth'
+import { Avatar } from '../shared/Avatar'
 import type { StudentProfileResponse } from '../../types/api'
-
-const AVATAR_COLORS = [
-  'bg-emerald-500',
-  'bg-sky-500',
-  'bg-violet-500',
-  'bg-rose-500',
-  'bg-amber-500',
-  'bg-cyan-500',
-  'bg-pink-500',
-  'bg-indigo-500',
-]
-
-function hashColor(name: string): string {
-  let hash = 0
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash)
-  }
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]
-}
-
-function initials(name: string): string {
-  return name
-    .split(' ')
-    .map((w) => w.charAt(0))
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
-}
 
 export function ProfileDropdown() {
   const navigate = useNavigate()
@@ -81,18 +54,15 @@ export function ProfileDropdown() {
     )
   }
 
-  const avatarColor = hashColor(profile.fullName)
-  const avatarInitials = initials(profile.fullName)
-
   return (
     <div ref={ref} className="relative">
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className={`h-10 w-10 rounded-full ${avatarColor} flex items-center justify-center text-[14px] font-bold text-white ring-2 ring-transparent hover:ring-white/20 transition-[ring] duration-200 cursor-pointer`}
+        className="outline-none cursor-pointer rounded-full ring-2 ring-transparent hover:ring-white/20 transition-[ring] duration-200"
         title={profile.fullName}
       >
-        {avatarInitials}
+        <Avatar name={profile.fullName} size={40} />
       </button>
 
       <AnimatePresence>
@@ -106,9 +76,7 @@ export function ProfileDropdown() {
           >
             <div className="p-5 pb-3 border-b border-orbit-border">
               <div className="flex items-center gap-4">
-                <div className={`h-12 w-12 rounded-full ${avatarColor} flex items-center justify-center text-[18px] font-bold text-white flex-shrink-0`}>
-                  {avatarInitials}
-                </div>
+                <Avatar name={profile.fullName} size={48} />
                 <div className="min-w-0">
                   <p className="text-[15px] font-bold text-orbit-text truncate">
                     {profile.fullName}

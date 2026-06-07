@@ -76,6 +76,7 @@ export function ParticleNetwork() {
 
     let running = true
     let lastFrame = 0
+    let rafId: number
     const interval = profile.canvasUpdateInterval
 
     function animate(timestamp: number) {
@@ -159,18 +160,21 @@ export function ParticleNetwork() {
         ctx!.fill()
       }
 
-      requestAnimationFrame(animate)
+      rafId = requestAnimationFrame(animate)
     }
 
-    // Pause when tab hidden
-    function onVisibility() { running = !document.hidden }
+    // Pause/resume when tab hidden/visible
+    function onVisibility() {
+      running = !document.hidden
+      if (running) rafId = requestAnimationFrame(animate)
+    }
     document.addEventListener('visibilitychange', onVisibility)
 
-    requestAnimationFrame(animate)
+    rafId = requestAnimationFrame(animate)
 
     return () => {
       running = false
-      cancelAnimationFrame(0) // cancel last pending
+      cancelAnimationFrame(rafId)
       window.removeEventListener('resize', resize)
       window.removeEventListener('mousemove', onMouse)
       document.removeEventListener('visibilitychange', onVisibility)

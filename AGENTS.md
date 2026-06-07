@@ -125,6 +125,38 @@ A task is done only when:
 - Missing harness capabilities were added to `docs/HARNESS_BACKLOG.md`.
 - The final response says what changed and what was not attempted.
 
+## CI/CD Pre-Push Gate
+
+**NEVER push without passing all CI/CD checks locally first.**
+
+Before any `git push`, run ALL of these locally and verify they pass:
+
+```bash
+# 1. API compile check
+cd devorbit-api && ./mvnw compile -B
+
+# 2. Web TypeScript check + tests
+cd devorbit-web && npx tsc --noEmit && npm test
+
+# 3. Verify workflow file is valid YAML (no syntax errors)
+yq . .github/workflows/ci.yml > /dev/null 2>&1 || echo "Invalid YAML"
+```
+
+If any check fails:
+- Fix the issue before pushing.
+- Never push with the intention of "CI will tell me what's wrong."
+- CI failures waste runner time and block other PRs.
+
+**After pushing**, verify CI passes:
+```bash
+gh run watch --repo huyhoang171106/DevOrbit --exit-status
+```
+
+If CI fails after a local pass:
+- Check for environment differences (Node version, OS, cached deps).
+- Fix and push again.
+- Never merge a failing PR.
+
 <!-- codegraph:start -->
 # CodeGraph — Code Intelligence
 

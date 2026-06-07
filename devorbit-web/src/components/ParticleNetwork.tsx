@@ -76,6 +76,7 @@ export function ParticleNetwork() {
 
     let running = true
     let lastFrame = 0
+    let rafId: number
     const interval = profile.canvasUpdateInterval
 
     function animate(timestamp: number) {

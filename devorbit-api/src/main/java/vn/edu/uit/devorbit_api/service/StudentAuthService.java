@@ -54,6 +54,7 @@ public class StudentAuthService {
                 });
 
         if (!student.isActive()) {
+            loginRateLimitService.recordFailure(request.studentCode(), ip);
             throw new UnauthorizedException("Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email.");
         }
         if (!passwordEncoder.matches(request.password(), student.getPasswordHash())) {
@@ -150,6 +151,8 @@ public class StudentAuthService {
 
     @Transactional
     public void resendOtp(String email, OtpPurpose purpose) {
+        otpRateLimitService.check("RESEND_OTP:" + email.trim().toLowerCase());
+
         StudentUser student = studentUserRepository.findByEmail(email.trim().toLowerCase())
                 .orElseThrow(() -> new BadRequestException("Không thể gửi lại mã OTP. Vui lòng thử lại."));
 
@@ -176,6 +179,8 @@ public class StudentAuthService {
 
     @Transactional
     public void forgotPassword(ForgotPasswordRequest request) {
+        otpRateLimitService.check("FORGOT_PASSWORD:" + request.studentCode().trim());
+
         var studentOpt = studentUserRepository.findByStudentCode(request.studentCode().trim());
         if (studentOpt.isPresent()) {
             StudentUser student = studentOpt.get();

@@ -36,4 +36,9 @@ public interface GithubRepoRepository extends JpaRepository<GithubRepo, Long> {
 
     @EntityGraph(attributePaths = {"techStacks", "course"})
     List<GithubRepo> findTop10ByActiveTrueOrderByIdDesc();
+
+    @EntityGraph(attributePaths = {"techStacks"})
+    @Query("SELECT r FROM GithubRepo r")
+    List<GithubRepo> findAllWithTechStacks();
 }
+

@@ -4,6 +4,9 @@ import { motion } from 'framer-motion'
 import { apiGet, apiStudentPost } from '../../lib/api'
 import { isStudentAuthenticated } from '../../lib/auth'
 import { RepoAiAnalysisSection } from '../../components/student/RepoAiAnalysisSection'
+import { ReviewSection } from '../../components/student/ReviewSection'
+import { VoteButtons } from '../../components/student/VoteButtons'
+import { useRepoSocialInfo } from '../../hooks/useCommunity'
 import type { RepoSummary } from '../../types/api'
 import { analyzeRepository, type RepoAnalysisResult } from '../../lib/repoAnalysisService'
 import { ArrowLeft, Code, Star, ArrowSquareOut, WarningCircle, GithubLogo, Bookmark, BookmarkSimple } from '@phosphor-icons/react'
@@ -59,6 +62,8 @@ export function RepoDetailPage() {
       setBookmarking(false)
     }
   }
+
+  const { data: socialInfo, refetch: refetchSocial } = useRepoSocialInfo(Number(repoId))
 
   useEffect(() => {
     if (!repoId) return
@@ -233,6 +238,28 @@ export function RepoDetailPage() {
               </button>
             </div>
           </div>
+
+          {/* Social: Vote + Reviews */}
+          {socialInfo && (
+            <div className="orbit-card p-6 md:p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-[13px] font-bold text-orbit-text">Bình chọn & Đánh giá</h3>
+                <VoteButtons
+                  repoId={Number(repoId)}
+                  initialScore={socialInfo.voteScore}
+                  initialVote={0}
+                  onVoteChanged={() => refetchSocial()}
+                />
+              </div>
+              <ReviewSection
+                averageRating={socialInfo.averageRating}
+                reviews={socialInfo.reviews}
+                targetType="REPO"
+                targetId={Number(repoId)}
+                onReviewChanged={() => refetchSocial()}
+              />
+            </div>
+          )}
 
           <RepoAiAnalysisSection repo={repo} analysis={analysis} loading={analysisLoading} error={analysisError} />
         </motion.div>

@@ -429,11 +429,15 @@ export function CommunityPage() {
   const { data: fetchedPage, isLoading: messagesLoading, isFetching: messagesFetching } =
     useChannelMessages(activeChannel?.id ?? null, page)
 
+  const activeChannelRef = useRef(activeChannel)
+  activeChannelRef.current = activeChannel
+
   const handleRealtimeMessage = useCallback((msg: ChatMessageResponse) => {
-    if (activeChannel && msg.channelId === activeChannel.id) {
+    const current = activeChannelRef.current
+    if (current && msg.channelId === current.id) {
       setAllMessages((prev) => [...prev, msg])
     }
-  }, [activeChannel])
+  }, [])
 
   const { sendMessage } = useCommunitySocket({
     channelId: activeChannel?.id ?? null,

@@ -20,9 +20,11 @@ import java.util.stream.Collectors;
 public class GraphQueryEngine {
 
     private final OpenCodeAiService openCodeAiService;
+    private final LlmContextBuilder contextBuilder;
 
-    public GraphQueryEngine(OpenCodeAiService openCodeAiService) {
+    public GraphQueryEngine(OpenCodeAiService openCodeAiService, LlmContextBuilder contextBuilder) {
         this.openCodeAiService = openCodeAiService;
+        this.contextBuilder = contextBuilder;
     }
 
     private static final List<QueryPattern> PATTERNS = List.of(
@@ -83,16 +85,16 @@ public class GraphQueryEngine {
      * Use LLM to classify query intent and extract course code.
      */
     private AiQueryResponse classifyWithLLM(String question, KnowledgeGraphResponse graph) {
-        // Build list of available course codes for context
-        String courseCodes = graph.nodes().stream()
-            .map(KnowledgeGraphResponse.GraphNode::code)
-            .collect(Collectors.joining(", "));
+        // Build rich context from graph
+        String ragContext = contextBuilder.buildQueryContext(question, graph);
         
         String context = String.format(
-            "Câu hỏi: %s\nMã môn có sẵn: %s\n" +
+            "%s\n\nCâu hỏi: %s\n" +
             "Phân loại: PREREQUISITE_OF, PREREQUISITES_FOR, DOWNSTREAM, IMPACT, SEMESTER, COURSE_INFO, STATS, UNKNOWN",
-            question, courseCodes
+            ragContext, question
         );
+        
+        log.debug("GraphQuery RAG context length: {} chars", ragContext.length());
         
         String response = openCodeAiService.generateCompletion(
             PromptTemplates.KNOWLEDGE_QUERY, context

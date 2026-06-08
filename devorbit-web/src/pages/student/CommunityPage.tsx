@@ -1,23 +1,14 @@
-import { useState, useRef, useEffect } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import {
   ChatCircleDots,
   Hash,
-  BookOpen,
-  Code,
   UsersThree,
   PaperPlaneRight,
-  MagnifyingGlass,
-  DotsThree,
   Spinner,
-  CheckCircle,
-  XCircle,
 } from '@phosphor-icons/react'
-import { FadeReveal } from '../../motion'
 import { useChannels, useChannelMessages } from '../../hooks/useCommunity'
-import { isStudentAuthenticated, getStudentToken } from '../../lib/auth'
-import { apiStudentPost, apiStudentDelete } from '../../lib/api'
-import { useNavigate } from 'react-router-dom'
+import { useCommunitySocket } from '../../hooks/useCommunitySocket'
+import { isStudentAuthenticated } from '../../lib/auth'
 import type { ChatChannelResponse, ChatMessageResponse } from '../../types/api'
 
 const CHANNEL_GROUP_LABELS: Record<string, string> = {
@@ -143,7 +134,7 @@ function ChatArea({
     setInput('')
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSend()
@@ -223,12 +214,13 @@ function ChatArea({
         {authenticated ? (
           <div className="flex items-end gap-2">
             <div className="flex-1 relative">
-              <input
+              <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={`Gửi tin nhắn trong #${channel.name}`}
-                className="w-full bg-orbit-surface border border-orbit-border rounded-xl px-4 py-2.5 text-sm text-orbit-text placeholder:text-orbit-text-muted outline-none focus:border-orbit-accent/40 transition-colors"
+                rows={1}
+                className="w-full bg-orbit-surface border border-orbit-border rounded-xl px-4 py-2.5 text-sm text-orbit-text placeholder:text-orbit-text-muted outline-none focus:border-orbit-accent/40 transition-colors resize-none"
                 maxLength={1000}
               />
             </div>
@@ -270,8 +262,6 @@ function OnlineMembers() {
 }
 
 export function CommunityPage() {
-  const navigate = useNavigate()
-  const queryClient = useQueryClient()
   const authenticated = isStudentAuthenticated()
 
   const { data: channels = [], isLoading: channelsLoading } = useChannels()
@@ -280,8 +270,20 @@ export function CommunityPage() {
   const [allMessages, setAllMessages] = useState<ChatMessageResponse[]>([])
   const [totalPages, setTotalPages] = useState(1)
 
-  const { data: fetchedMessages, isLoading: messagesLoading, isFetching: messagesFetching } =
+  const { data: fetchedPage, isLoading: messagesLoading, isFetching: messagesFetching } =
     useChannelMessages(activeChannel?.id ?? null, page)
+
+  const handleRealtimeMessage = useCallback((msg: ChatMessageResponse) => {
+    if (activeChannel && msg.channelId === activeChannel.id) {
+      setAllMessages((prev) => [...prev, msg])
+    }
+  }, [activeChannel])
+
+  const { sendMessage } = useCommunitySocket({
+    channelId: activeChannel?.id ?? null,
+    enabled: authenticated,
+    onMessage: handleRealtimeMessage,
+  })
 
   useEffect(() => {
     if (channels.length > 0 && !activeChannel) {
@@ -290,19 +292,17 @@ export function CommunityPage() {
   }, [channels, activeChannel])
 
   useEffect(() => {
-    if (fetchedMessages) {
+    if (fetchedPage) {
+      const { content, totalPages } = fetchedPage
+      const ordered = [...content].reverse()
       if (page === 0) {
-        setAllMessages(fetchedMessages)
+        setAllMessages(ordered)
       } else {
-        setAllMessages((prev) => [...fetchedMessages, ...prev])
+        setAllMessages((prev) => [...ordered, ...prev])
       }
-
-      const totalItems = fetchedMessages.length === 0 && page > 0
-        ? page * 50
-        : (page + 1) * 50 + (fetchedMessages.length < 50 ? 0 : 50)
-      setTotalPages(Math.ceil(totalItems / 50))
+      setTotalPages(totalPages)
     }
-  }, [fetchedMessages, page])
+  }, [fetchedPage, page])
 
   const handleChannelSelect = (ch: ChatChannelResponse) => {
     if (ch.id !== activeChannel?.id) {
@@ -321,19 +321,7 @@ export function CommunityPage() {
 
   const handleSendMessage = (content: string) => {
     if (!activeChannel) return
-    const currentChannel = activeChannel
-
-    apiStudentPost(`/api/student/community/channels/${currentChannel.channelId}/messages`, { content })
-      .then(() => {
-        setPage(0)
-        setAllMessages([])
-        queryClient.invalidateQueries({ queryKey: ['community', 'messages', currentChannel.id, 0] })
-      })
-      .catch(() => {})
-  }
-
-  const handleLoginClick = () => {
-    navigate('/student/login')
+    sendMessage(activeChannel.id, content)
   }
 
   return (

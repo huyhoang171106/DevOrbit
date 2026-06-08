@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { apiStudentGet, apiGet } from '../lib/api'
 import type {
   ChatChannelResponse,
-  ChatMessageResponse,
+  PaginatedMessagesResponse,
   RepoSocialInfoResponse,
   ReviewSummaryResponse,
 } from '../types/api'
@@ -17,10 +17,10 @@ export function useChannels() {
 }
 
 export function useChannelMessages(channelId: number | null, page: number, size: number = 50) {
-  return useQuery<ChatMessageResponse[]>({
+  return useQuery<PaginatedMessagesResponse>({
     queryKey: ['community', 'messages', channelId, page],
     queryFn: () =>
-      apiStudentGet<ChatMessageResponse[]>(
+      apiStudentGet<PaginatedMessagesResponse>(
         `/api/student/community/channels/${channelId}/messages?page=${page}&size=${size}`,
       ),
     enabled: channelId !== null,

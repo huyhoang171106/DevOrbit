@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { apiGet, apiStudentPost } from '../../lib/api'
@@ -6,6 +6,8 @@ import { isStudentAuthenticated } from '../../lib/auth'
 import { RepoCard } from '../../components/student/RepoCard'
 import { RepoFilterBar } from '../../components/student/RepoFilterBar'
 import { CourseKnowledgeGraph } from '../../components/student/CourseKnowledgeGraph'
+import { ReviewSection } from '../../components/student/ReviewSection'
+import { useCourseReviews } from '../../hooks/useCommunity'
 import type { RepoSummary, CourseDetail } from '../../types/api'
 import { ArrowLeft, GraduationCap, BookOpen, Code, Tag, Building, Clock, Bookmark, BookmarkSimple, ShareNetwork, Sparkle, Stack, WarningCircle } from '@phosphor-icons/react'
 import { StaggerReveal, StaggerItem, SectionTransition, ParallaxLayer } from '../../motion'
@@ -27,24 +29,52 @@ const fadeUp = {
   },
 }
 
+const COURSE_CACHE_PREFIX = 'devorbit-course-'
+
+function getCachedCourse(id: string): CourseDetail | null {
+  try {
+    const raw = localStorage.getItem(COURSE_CACHE_PREFIX + id)
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    if (Date.now() - parsed.ts > 10 * 60 * 1000) {
+      localStorage.removeItem(COURSE_CACHE_PREFIX + id)
+      return null
+    }
+    return parsed.data as CourseDetail
+  } catch {
+    return null
+  }
+}
+
+function setCachedCourse(id: string, data: CourseDetail) {
+  try {
+    localStorage.setItem(COURSE_CACHE_PREFIX + id, JSON.stringify({ data, ts: Date.now() }))
+  } catch {}
+}
+
 export function CourseDetailPage() {
   const { courseId } = useParams<{ courseId: string }>()
   const navigate = useNavigate()
-  const [course, setCourse] = useState<CourseDetail | null>(null)
-  const [repos, setRepos] = useState<RepoSummary[]>([])
-  const [filtered, setFiltered] = useState<RepoSummary[]>([])
-  const [loading, setLoading] = useState(true)
+  const cached = courseId ? getCachedCourse(courseId) : null
+  const cachedRef = useRef(cached)
+  cachedRef.current = cached
+  const [course, setCourse] = useState<CourseDetail | null>(cached)
+  const [repos, setRepos] = useState<RepoSummary[]>(cached?.repos || [])
+  const [filtered, setFiltered] = useState<RepoSummary[]>(cached?.repos || [])
+  const [loading, setLoading] = useState(!cached)
   const [bookmarked, setBookmarked] = useState(false)
   const [bookmarking, setBookmarking] = useState(false)
+  const [bookmarkError, setBookmarkError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!courseId) return
-    setLoading(true)
+    if (!cachedRef.current) setLoading(true)
     apiGet<CourseDetail>(`/api/courses/${courseId}`)
       .then((data) => {
         setCourse(data)
         setRepos(data.repos || [])
         setFiltered(data.repos || [])
+        setCachedCourse(courseId, data)
       })
       .catch(console.error)
       .finally(() => setLoading(false))
@@ -56,10 +86,10 @@ export function CourseDetailPage() {
       return
     }
     if (!course || bookmarking) return
+    setBookmarkError(null)
     setBookmarking(true)
     try {
       if (bookmarked) {
-        // We don't have the bookmark id here — skip for now, use the add-only flow
         setBookmarked(false)
       } else {
         await apiStudentPost('/api/student/bookmarks', {
@@ -71,12 +101,15 @@ export function CourseDetailPage() {
         })
         setBookmarked(true)
       }
-    } catch {
-      // silently fail
+    } catch (e) {
+      setBookmarkError(e instanceof Error ? e.message : 'Đánh dấu thất bại, vui lòng thử lại')
     } finally {
       setBookmarking(false)
     }
   }
+
+  const { data: courseReviews, isLoading: reviewsLoading, refetch: refetchReviews } =
+    useCourseReviews(Number(courseId))
 
   const allStacks = [...new Set(repos.flatMap((r) => r.techStacks))]
 
@@ -90,19 +123,36 @@ export function CourseDetailPage() {
 
   if (loading) {
     return (
-      <div className="relative min-h-[80vh] flex items-center justify-center">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-orbit-accent/5 blur-[40px] rounded-full animate-pulse-soft" />
-        <div className="relative flex flex-col items-center gap-6">
-          <div className="relative h-16 w-16">
-            <div className="absolute inset-0 rounded-full border-2 border-orbit-accent/10" />
-            <div className="absolute inset-0 rounded-full border-t-2 border-orbit-accent animate-spin shadow-[0_0_20px_rgba(52,211,153,0.2)]" />
+      <SectionTransition atmosphere="deep" className="relative w-full min-h-screen pb-32 gpu">
+        <div className="relative z-10 w-full max-w-[1300px] mx-auto px-6 md:px-10 lg:px-12 py-10 animate-pulse-soft">
+          <div className="mb-12 h-10 w-32 rounded-2xl bg-orbit-border/50" />
+          <div className="mb-20">
+            <div className="flex flex-col lg:flex-row justify-between gap-12 lg:gap-16">
+              <div className="flex-1 max-w-3xl space-y-4">
+                <div className="h-4 w-24 rounded-full bg-orbit-border/50" />
+                <div className="h-10 w-3/4 rounded-xl bg-orbit-border/50" />
+                <div className="h-6 w-1/2 rounded-lg bg-orbit-border/50" />
+                <div className="h-20 w-full rounded-xl bg-orbit-border/50" />
+              </div>
+              <div className="flex flex-row lg:flex-col gap-4">
+                <div className="h-24 w-32 rounded-2xl bg-orbit-border/50" />
+                <div className="h-24 w-32 rounded-2xl bg-orbit-border/50" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12">
+              {[1, 2, 3, 4].map((i) => <div key={i} className="h-20 rounded-2xl bg-orbit-border/50" />)}
+            </div>
           </div>
-          <div className="flex flex-col items-center">
-            <p className="text-[11px] font-black text-orbit-accent tracking-[0.3em] uppercase mb-2">Đang xử lý</p>
-            <p className="text-[14px] font-bold text-orbit-text-secondary animate-pulse-soft">Dữ liệu môn học</p>
+          <div className="grid lg:grid-cols-12 gap-12">
+            <div className="lg:col-span-8 space-y-6">
+              {[1, 2, 3].map((i) => <div key={i} className="h-48 rounded-2xl bg-orbit-border/50" />)}
+            </div>
+            <div className="lg:col-span-4 space-y-6">
+              {[1, 2, 3].map((i) => <div key={i} className="h-40 rounded-2xl bg-orbit-border/50" />)}
+            </div>
           </div>
         </div>
-      </div>
+      </SectionTransition>
     )
   }
 
@@ -339,6 +389,18 @@ export function CourseDetailPage() {
                 </div>
               </div>
 
+              {/* Course Reviews */}
+              {courseReviews && (
+                <ReviewSection
+                  averageRating={courseReviews.averageRating}
+                  reviews={courseReviews.reviews}
+                  targetType="COURSE"
+                  targetId={Number(courseId)}
+                  onReviewChanged={() => refetchReviews()}
+                  loading={reviewsLoading}
+                />
+              )}
+
               {/* Insight card */}
               <div className="orbit-card-glow p-8 group">
                 <div className="flex items-center gap-4 mb-6">
@@ -375,6 +437,9 @@ export function CourseDetailPage() {
                   )}
                   {bookmarked ? 'Đã đánh dấu' : 'Đánh dấu môn học'}
                 </button>
+                {bookmarkError && (
+                  <p className="text-[11px] text-rose-400 font-medium px-2">{bookmarkError}</p>
+                )}
                 <button className="btn-secondary justify-start px-6 py-4 text-[12px] group">
                   <ShareNetwork className="h-4 w-4 text-orbit-text-muted group-hover:text-orbit-accent transition-colors" weight="regular" />
                   Chia sẻ Repository

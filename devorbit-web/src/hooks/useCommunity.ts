@@ -30,6 +30,12 @@ function setCachedChannels(data: ChatChannelResponse[]) {
   } catch {}
 }
 
+const FALLBACK_CHANNELS: ChatChannelResponse[] = [
+  { id: -1, channelId: 'general', name: 'General', type: 'GENERAL', referenceId: null },
+  { id: -2, channelId: 'study', name: 'Học tập', type: 'GENERAL', referenceId: null },
+  { id: -3, channelId: 'relax', name: 'Thư giãn', type: 'GENERAL', referenceId: null },
+]
+
 export function useChannels() {
   return useQuery<ChatChannelResponse[]>({
     queryKey: ['community', 'channels'],
@@ -38,7 +44,7 @@ export function useChannels() {
       setCachedChannels(data)
       return data
     },
-    placeholderData: getCachedChannels(),
+    placeholderData: getCachedChannels() ?? FALLBACK_CHANNELS,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   })

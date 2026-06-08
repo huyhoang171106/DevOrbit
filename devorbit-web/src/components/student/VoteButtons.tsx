@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { CaretUp, CaretDown, Spinner } from '@phosphor-icons/react'
 import { isStudentAuthenticated } from '../../lib/auth'
 import { apiStudentPost } from '../../lib/api'
@@ -17,6 +17,9 @@ export function VoteButtons({ repoId, initialScore, initialVote, onVoteChanged }
   const [score, setScore] = useState(initialScore)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => { setScore(initialScore) }, [initialScore])
+  useEffect(() => { setVote(initialVote) }, [initialVote])
 
   const handleVote = async (value: number) => {
     if (!isStudentAuthenticated()) {

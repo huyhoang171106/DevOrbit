@@ -6,6 +6,8 @@ import { isStudentAuthenticated } from '../../lib/auth'
 import { RepoCard } from '../../components/student/RepoCard'
 import { RepoFilterBar } from '../../components/student/RepoFilterBar'
 import { CourseKnowledgeGraph } from '../../components/student/CourseKnowledgeGraph'
+import { ReviewSection } from '../../components/student/ReviewSection'
+import { useCourseReviews } from '../../hooks/useCommunity'
 import type { RepoSummary, CourseDetail } from '../../types/api'
 import { ArrowLeft, GraduationCap, BookOpen, Code, Tag, Building, Clock, Bookmark, BookmarkSimple, ShareNetwork, Sparkle, Stack, WarningCircle } from '@phosphor-icons/react'
 import { StaggerReveal, StaggerItem, SectionTransition, ParallaxLayer } from '../../motion'
@@ -77,6 +79,9 @@ export function CourseDetailPage() {
       setBookmarking(false)
     }
   }
+
+  const { data: courseReviews, isLoading: reviewsLoading, refetch: refetchReviews } =
+    useCourseReviews(Number(courseId))
 
   const allStacks = [...new Set(repos.flatMap((r) => r.techStacks))]
 
@@ -338,6 +343,18 @@ export function CourseDetailPage() {
                   <CourseKnowledgeGraph courseId={Number(courseId)} />
                 </div>
               </div>
+
+              {/* Course Reviews */}
+              {courseReviews && (
+                <ReviewSection
+                  averageRating={courseReviews.averageRating}
+                  reviews={courseReviews.reviews}
+                  targetType="COURSE"
+                  targetId={Number(courseId)}
+                  onReviewChanged={() => refetchReviews()}
+                  loading={reviewsLoading}
+                />
+              )}
 
               {/* Insight card */}
               <div className="orbit-card-glow p-8 group">

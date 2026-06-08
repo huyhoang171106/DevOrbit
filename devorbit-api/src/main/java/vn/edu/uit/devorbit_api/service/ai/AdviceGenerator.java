@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 public class AdviceGenerator {
 
     private final OpenCodeAiService openCodeAiService;
+    private final LlmContextBuilder contextBuilder;
 
     public AiResponse generateAdvice(GithubRepo repo, double impactScore, int downstreamCount) {
         Course course = repo.getCourse();
@@ -28,11 +29,15 @@ public class AdviceGenerator {
         // Try LLM first if enabled
         if (openCodeAiService.isLlmEnabled()) {
             try {
+                // Build rich context from DB
+                String ragContext = contextBuilder.buildRepoContext(repo);
                 String context = String.format(
-                    "Repository: %s, Môn: %s, Ngôn ngữ: %s, Điểm ảnh hưởng: %.1f, Số môn downstream: %d, Stars: %d",
-                    repo.getDisplayName(), courseName, lang, impactScore, downstreamCount,
+                    "%s\n\nRepository: %s, Điểm ảnh hưởng: %.1f, Số môn downstream: %d, Stars: %d",
+                    ragContext, repo.getDisplayName(), impactScore, downstreamCount,
                     repo.getStars() != null ? repo.getStars() : 0
                 );
+                
+                log.debug("RAG context length: {} chars", ragContext.length());
                 
                 String llmResponse = openCodeAiService.generateCompletion(
                     PromptTemplates.TUTOR_ADVICE, context

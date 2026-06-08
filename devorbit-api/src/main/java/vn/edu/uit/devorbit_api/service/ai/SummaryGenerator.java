@@ -22,6 +22,7 @@ public class SummaryGenerator {
 
     private final CourseRepository courseRepository;
     private final OpenCodeAiService openCodeAiService;
+    private final LlmContextBuilder contextBuilder;
 
     public AiResponse generateSummary(GithubRepo repo) {
         Course course = repo.getCourse();
@@ -36,11 +37,15 @@ public class SummaryGenerator {
         // Try LLM first if enabled
         if (openCodeAiService.isLlmEnabled()) {
             try {
+                // Build rich context from DB
+                String ragContext = contextBuilder.buildRepoContext(repo);
                 String context = String.format(
-                    "Repository: %s, Môn: %s (%s), Ngôn ngữ: %s, Tech stacks: %s, Stars: %d",
-                    repo.getDisplayName(), courseName, courseCode, language, techStacks,
+                    "%s\n\nRepository: %s, Ngôn ngữ: %s, Stars: %d",
+                    ragContext, repo.getDisplayName(), language,
                     repo.getStars() != null ? repo.getStars() : 0
                 );
+                
+                log.debug("RAG context length: {} chars", ragContext.length());
                 
                 String llmResponse = openCodeAiService.generateCompletion(
                     PromptTemplates.REPO_SUMMARY, context

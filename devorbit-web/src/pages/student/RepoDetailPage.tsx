@@ -37,6 +37,7 @@ export function RepoDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [bookmarked, setBookmarked] = useState(false)
   const [bookmarking, setBookmarking] = useState(false)
+  const [bookmarkError, setBookmarkError] = useState<string | null>(null)
 
   async function toggleBookmark() {
     if (!isStudentAuthenticated()) {
@@ -44,6 +45,7 @@ export function RepoDetailPage() {
       return
     }
     if (!repo || bookmarking) return
+    setBookmarkError(null)
     setBookmarking(true)
     try {
       if (!bookmarked) {
@@ -56,8 +58,8 @@ export function RepoDetailPage() {
         })
         setBookmarked(true)
       }
-    } catch {
-      // silently fail
+    } catch (e) {
+      setBookmarkError(e instanceof Error ? e.message : 'Đánh dấu thất bại, vui lòng thử lại')
     } finally {
       setBookmarking(false)
     }
@@ -236,6 +238,9 @@ export function RepoDetailPage() {
                 )}
                 {bookmarked ? 'Đã đánh dấu' : 'Đánh dấu'}
               </button>
+              {bookmarkError && (
+                <p className="text-[11px] text-rose-400 font-medium">{bookmarkError}</p>
+              )}
             </div>
           </div>
 

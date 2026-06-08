@@ -64,6 +64,7 @@ export function CourseDetailPage() {
   const [loading, setLoading] = useState(!cached)
   const [bookmarked, setBookmarked] = useState(false)
   const [bookmarking, setBookmarking] = useState(false)
+  const [bookmarkError, setBookmarkError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!courseId) return
@@ -85,10 +86,10 @@ export function CourseDetailPage() {
       return
     }
     if (!course || bookmarking) return
+    setBookmarkError(null)
     setBookmarking(true)
     try {
       if (bookmarked) {
-        // We don't have the bookmark id here — skip for now, use the add-only flow
         setBookmarked(false)
       } else {
         await apiStudentPost('/api/student/bookmarks', {
@@ -100,8 +101,8 @@ export function CourseDetailPage() {
         })
         setBookmarked(true)
       }
-    } catch {
-      // silently fail
+    } catch (e) {
+      setBookmarkError(e instanceof Error ? e.message : 'Đánh dấu thất bại, vui lòng thử lại')
     } finally {
       setBookmarking(false)
     }
@@ -436,6 +437,9 @@ export function CourseDetailPage() {
                   )}
                   {bookmarked ? 'Đã đánh dấu' : 'Đánh dấu môn học'}
                 </button>
+                {bookmarkError && (
+                  <p className="text-[11px] text-rose-400 font-medium px-2">{bookmarkError}</p>
+                )}
                 <button className="btn-secondary justify-start px-6 py-4 text-[12px] group">
                   <ShareNetwork className="h-4 w-4 text-orbit-text-muted group-hover:text-orbit-accent transition-colors" weight="regular" />
                   Chia sẻ Repository

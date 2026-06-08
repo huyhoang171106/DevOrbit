@@ -7,10 +7,12 @@ import {
   Spinner,
   MagnifyingGlass,
   CaretDown,
+  SignIn,
 } from '@phosphor-icons/react'
 import { useChannels, useChannelMessages } from '../../hooks/useCommunity'
 import { useCommunitySocket } from '../../hooks/useCommunitySocket'
 import { isStudentAuthenticated } from '../../lib/auth'
+import { useNavigate } from 'react-router-dom'
 import type { ChatChannelResponse, ChatMessageResponse } from '../../types/api'
 
 const CHANNEL_GROUP_LABELS: Record<string, string> = {
@@ -31,6 +33,24 @@ const CHANNEL_INITIAL_LIMIT: Record<string, number> = {
   TECH_STACK: 0,
 }
 
+function ConfirmDialog({ show, title, message, onConfirm, onCancel }: {
+  show: boolean; title: string; message: string; onConfirm: () => void; onCancel: () => void
+}) {
+  if (!show) return null
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onCancel}>
+      <div className="bg-orbit-surface border border-orbit-border rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <h3 className="font-heading text-sm font-bold text-orbit-text mb-2">{title}</h3>
+        <p className="text-[13px] text-orbit-text-secondary mb-6 leading-relaxed">{message}</p>
+        <div className="flex gap-3 justify-end">
+          <button onClick={onCancel} className="px-4 py-2 rounded-xl text-[12px] font-bold text-orbit-text-muted hover:text-orbit-text border border-orbit-border hover:border-orbit-accent/30 transition-colors">Hủy</button>
+          <button onClick={onConfirm} className="px-4 py-2 rounded-xl text-[12px] font-bold text-white bg-rose-500/80 hover:bg-rose-500 transition-colors">Xác nhận</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const SUBSCRIBED_KEY = 'devorbit-subscribed-channels'
 
 function getSubscribedIds(): Set<number> {
@@ -48,10 +68,17 @@ function addSubscribedId(id: number) {
   localStorage.setItem(SUBSCRIBED_KEY, JSON.stringify([...ids]))
 }
 
+function removeSubscribedId(id: number) {
+  const ids = getSubscribedIds()
+  ids.delete(id)
+  localStorage.setItem(SUBSCRIBED_KEY, JSON.stringify([...ids]))
+}
+
 function ChannelList({
   channels,
   activeId,
   onSelect,
+  onUnsubscribe,
   loading,
   search,
   onSearchChange,
@@ -60,6 +87,7 @@ function ChannelList({
   channels: ChatChannelResponse[]
   activeId: number | null
   onSelect: (ch: ChatChannelResponse) => void
+  onUnsubscribe: (id: number, name: string) => void
   loading: boolean
   search: string
   onSearchChange: (v: string) => void
@@ -116,13 +144,24 @@ function ChannelList({
               return list.map((ch) => {
                 const isActive = ch.id === activeId
                 return (
-                  <button key={ch.id} onClick={() => onSelect(ch)}
-                    className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-left text-sm transition-all duration-200 ${isActive ? 'bg-orbit-accent/10 text-orbit-accent shadow-[inset_2px_0_0_rgba(52,211,153,0.5)]' : 'text-orbit-text-secondary hover:text-orbit-text hover:bg-orbit-surface-hover'}`}
-                  >
-                    <Hash className="h-4 w-4 shrink-0 opacity-60" weight="bold" />
-                    <span className="truncate font-medium">{ch.name}</span>
-                    <span className={`ml-auto text-[9px] font-bold ${CHANNEL_GROUP_COLORS[type]}`}>{CHANNEL_GROUP_LABELS[type]}</span>
-                  </button>
+                  <div key={ch.id} className="group relative flex items-center">
+                    <button onClick={() => onSelect(ch)}
+                      className={`flex-1 flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-left text-sm transition-all duration-200 ${isActive ? 'bg-orbit-accent/10 text-orbit-accent shadow-[inset_2px_0_0_rgba(52,211,153,0.5)]' : 'text-orbit-text-secondary hover:text-orbit-text hover:bg-orbit-surface-hover'}`}
+                    >
+                      <Hash className="h-4 w-4 shrink-0 opacity-60" weight="bold" />
+                      <span className="font-medium min-w-0">{ch.name}</span>
+                      <span className={`shrink-0 ml-auto text-[9px] font-bold ${CHANNEL_GROUP_COLORS[type]}`}>{CHANNEL_GROUP_LABELS[type]}</span>
+                    </button>
+                    {subscribedIds.has(ch.id) && ch.type !== 'GENERAL' && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onUnsubscribe(ch.id, ch.name) }}
+                        className="shrink-0 mr-1 h-5 w-5 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-rose-500/20 transition-opacity"
+                        title="Bỏ khỏi danh sách"
+                      >
+                        <span className="text-[10px] font-bold text-rose-400 leading-none">✕</span>
+                      </button>
+                    )}
+                  </div>
                 )
               })
             })}
@@ -159,13 +198,25 @@ function ChannelList({
                   <div className="space-y-0.5">
                     {visible.map((ch) => {
                       const isActive = ch.id === activeId
+                      const isSubscribed = subscribedIds.has(ch.id)
                       return (
-                        <button key={ch.id} onClick={() => onSelect(ch)}
-                          className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-left text-sm transition-all duration-200 ${isActive ? 'bg-orbit-accent/10 text-orbit-accent shadow-[inset_2px_0_0_rgba(52,211,153,0.5)]' : 'text-orbit-text-secondary hover:text-orbit-text hover:bg-orbit-surface-hover'}`}
-                        >
-                          <Hash className="h-4 w-4 shrink-0 opacity-60" weight="bold" />
-                          <span className="truncate font-medium">{ch.name}</span>
-                        </button>
+                        <div key={ch.id} className="group relative flex items-center">
+                          <button onClick={() => onSelect(ch)}
+                            className={`flex-1 flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-left text-sm transition-all duration-200 ${isActive ? 'bg-orbit-accent/10 text-orbit-accent shadow-[inset_2px_0_0_rgba(52,211,153,0.5)]' : 'text-orbit-text-secondary hover:text-orbit-text hover:bg-orbit-surface-hover'}`}
+                          >
+                            <Hash className="h-4 w-4 shrink-0 opacity-60" weight="bold" />
+                            <span className="font-medium min-w-0">{ch.name}</span>
+                          </button>
+                          {isSubscribed && ch.type !== 'GENERAL' && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); onUnsubscribe(ch.id, ch.name) }}
+                              className="shrink-0 mr-1 h-5 w-5 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-rose-500/20 transition-opacity"
+                              title="Bỏ khỏi danh sách"
+                            >
+                              <span className="text-[10px] font-bold text-rose-400 leading-none">✕</span>
+                            </button>
+                          )}
+                        </div>
                       )
                     })}
                     {hiddenCount > 0 && !isCollapsed && (
@@ -362,6 +413,7 @@ function OnlineMembers() {
 }
 
 export function CommunityPage() {
+  const navigate = useNavigate()
   const authenticated = isStudentAuthenticated()
 
   const { data: channels = [], isLoading: channelsLoading } = useChannels()
@@ -372,6 +424,7 @@ export function CommunityPage() {
 
   const [search, setSearch] = useState('')
   const [subscribedIds, setSubscribedIds] = useState<Set<number>>(() => getSubscribedIds())
+  const [confirm, setConfirm] = useState<{ id: number; name: string } | null>(null)
 
   const { data: fetchedPage, isLoading: messagesLoading, isFetching: messagesFetching } =
     useChannelMessages(activeChannel?.id ?? null, page)
@@ -393,6 +446,9 @@ export function CommunityPage() {
       if (!activeChannel) {
         const general = channels.find((ch) => ch.type === 'GENERAL') || channels[0]
         setActiveChannel(general)
+      } else if (activeChannel.id < 0) {
+        const real = channels.find((ch) => ch.channelId === activeChannel.channelId)
+        if (real) setActiveChannel(real)
       }
     }
   }, [channels, activeChannel])
@@ -425,6 +481,24 @@ export function CommunityPage() {
     }
   }
 
+  const handleUnsubscribe = (id: number, name: string) => {
+    setConfirm({ id, name })
+  }
+
+  const confirmUnsubscribe = () => {
+    if (!confirm) return
+    removeSubscribedId(confirm.id)
+    setSubscribedIds(getSubscribedIds())
+    if (activeChannel?.id === confirm.id) {
+      const general = channels.find((ch) => ch.type === 'GENERAL') || channels[0]
+      setActiveChannel(general)
+      setPage(0)
+      setAllMessages([])
+      setTotalPages(1)
+    }
+    setConfirm(null)
+  }
+
   const handleSendMessage = (content: string) => {
     if (!activeChannel) return
     sendMessage(activeChannel.id, content)
@@ -434,37 +508,68 @@ export function CommunityPage() {
   }
 
   return (
-    <div className="w-full h-[calc(100vh-73px)] min-h-0">
-      <div className="h-full min-h-0 max-w-[1440px] mx-auto flex border border-orbit-border rounded-2xl overflow-hidden bg-orbit-surface/80 backdrop-blur-sm">
-        <div className="w-[260px] shrink-0 border-r border-orbit-border hidden md:block min-h-0">
-          <ChannelList
-            channels={channels}
-            activeId={activeChannel?.id ?? null}
-            onSelect={handleChannelSelect}
-            loading={channelsLoading}
-            search={search}
-            onSearchChange={setSearch}
-            subscribedIds={subscribedIds}
-          />
+    <>
+      <ConfirmDialog
+        show={confirm !== null}
+        title="Bỏ kênh"
+        message={confirm ? `Bỏ "${confirm.name}" khỏi danh sách? Bạn vẫn có thể tìm lại qua ô tìm kiếm.` : ''}
+        onConfirm={confirmUnsubscribe}
+        onCancel={() => setConfirm(null)}
+      />
+      {!authenticated ? (
+        <div className="w-full h-[calc(100vh-73px)] min-h-0 flex items-center justify-center">
+          <div className="flex flex-col items-center text-center max-w-md px-6">
+            <div className="h-16 w-16 rounded-2xl bg-orbit-accent/10 border border-orbit-accent/20 flex items-center justify-center mb-6">
+              <UsersThree className="h-8 w-8 text-orbit-accent" weight="duotone" />
+            </div>
+            <h1 className="font-heading text-2xl font-black text-orbit-text tracking-tight mb-3">Cộng đồng</h1>
+            <p className="text-[14px] text-orbit-text-secondary mb-8 leading-relaxed">
+              Đăng nhập để tham gia thảo luận, đánh giá môn học và kết nối với sinh viên UIT.
+            </p>
+            <button
+              onClick={() => navigate('/student/login')}
+              className="btn-primary text-[12px] px-8 py-3 flex items-center gap-2"
+            >
+              <SignIn className="h-4 w-4" weight="bold" />
+              Đăng nhập
+            </button>
+          </div>
         </div>
+      ) : (
+        <div className="w-full h-[calc(100vh-73px)] min-h-0">
+          <div className="h-full min-h-0 max-w-[1440px] mx-auto flex border border-orbit-border rounded-2xl overflow-hidden bg-orbit-surface/80 backdrop-blur-sm">
+            <div className="w-[260px] shrink-0 border-r border-orbit-border hidden md:block min-h-0">
+              <ChannelList
+                channels={channels}
+                activeId={activeChannel?.id ?? null}
+                onSelect={handleChannelSelect}
+                onUnsubscribe={handleUnsubscribe}
+                loading={channelsLoading}
+                search={search}
+                onSearchChange={setSearch}
+                subscribedIds={subscribedIds}
+              />
+            </div>
 
-        <div className="flex-1 min-w-0 min-h-0">
-          <ChatArea
-            channel={activeChannel}
-            messages={allMessages}
-            loadingMessages={messagesLoading || messagesFetching}
-            page={page}
-            totalPages={totalPages}
-            onLoadMore={handleLoadMore}
-            onSend={handleSendMessage}
-            authenticated={authenticated}
-          />
-        </div>
+            <div className="flex-1 min-w-0 min-h-0">
+              <ChatArea
+                channel={activeChannel}
+                messages={allMessages}
+                loadingMessages={messagesLoading || messagesFetching}
+                page={page}
+                totalPages={totalPages}
+                onLoadMore={handleLoadMore}
+                onSend={handleSendMessage}
+                authenticated={authenticated}
+              />
+            </div>
 
-        <div className="w-[260px] shrink-0 border-l border-orbit-border hidden xl:block min-h-0">
-          <OnlineMembers />
+            <div className="w-[260px] shrink-0 border-l border-orbit-border hidden xl:block min-h-0">
+              <OnlineMembers />
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   )
 }

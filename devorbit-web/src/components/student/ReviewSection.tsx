@@ -114,6 +114,9 @@ export function ReviewSection({ averageRating, reviews, targetType, targetId, on
   const authenticated = isStudentAuthenticated()
   const navigate = useNavigate()
   const [showForm, setShowForm] = useState(false)
+  // TODO: Add hasReviewed check — fetch current user's studentId (e.g. from /api/student/me)
+  // and compare with review.studentId to disable form if user already reviewed.
+  // Until then, backend handles upsert (create-or-update) correctly via unique constraint.
 
   return (
     <div className="orbit-card p-6">

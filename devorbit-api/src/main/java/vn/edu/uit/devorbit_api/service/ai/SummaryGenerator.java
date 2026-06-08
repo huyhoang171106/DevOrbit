@@ -1,5 +1,7 @@
 package vn.edu.uit.devorbit_api.service.ai;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import vn.edu.uit.devorbit_api.dto.publicapi.AiResponse;
 import vn.edu.uit.devorbit_api.entity.Course;
@@ -11,25 +13,54 @@ import java.util.stream.Collectors;
 
 /**
  * Generates repo summaries using repo metadata + course context.
- * No LLM required — all data comes from the database and knowledge graph.
+ * Uses LLM when available, falls back to rule-based generation.
  */
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class SummaryGenerator {
 
     private final CourseRepository courseRepository;
-
-    public SummaryGenerator(CourseRepository courseRepository) {
-        this.courseRepository = courseRepository;
-    }
+    private final OpenCodeAiService openCodeAiService;
 
     public AiResponse generateSummary(GithubRepo repo) {
         Course course = repo.getCourse();
 
         String courseName = course != null ? course.getTenMH() : "môn học";
         String courseCode = course != null ? course.getMaMH() : "";
-        Integer semester = course != null ? course.getSemester() : null;
-        int credits = course != null ? course.getSoTC() : 0;
+        String language = repo.getPrimaryLanguage() != null ? repo.getPrimaryLanguage() : "Chưa xác định";
+        String techStacks = repo.getTechStacks() != null 
+            ? repo.getTechStacks().stream().map(ts -> ts.getName()).collect(Collectors.joining(", "))
+            : "";
 
+        // Try LLM first if enabled
+        if (openCodeAiService.isLlmEnabled()) {
+            try {
+                String context = String.format(
+                    "Repository: %s, Môn: %s (%s), Ngôn ngữ: %s, Tech stacks: %s, Stars: %d",
+                    repo.getDisplayName(), courseName, courseCode, language, techStacks,
+                    repo.getStars() != null ? repo.getStars() : 0
+                );
+                
+                String llmResponse = openCodeAiService.generateCompletion(
+                    PromptTemplates.REPO_SUMMARY, context
+                );
+                
+                if (llmResponse != null && !llmResponse.isBlank()) {
+                    log.debug("LLM summary generated for repo: {}", repo.getDisplayName());
+                    return new AiResponse(llmResponse, "LLM_SUMMARY");
+                }
+            } catch (Exception e) {
+                log.warn("LLM summary failed, falling back to rule-based: {}", e.getMessage());
+            }
+        }
+
+        // Fallback to rule-based generation
+        return generateRuleBasedSummary(repo, course, courseName, courseCode, language, techStacks);
+    }
+
+    private AiResponse generateRuleBasedSummary(GithubRepo repo, Course course, 
+            String courseName, String courseCode, String language, String techStacks) {
         StringBuilder sb = new StringBuilder();
 
         // ============ HEADER ============
@@ -38,30 +69,22 @@ public class SummaryGenerator {
             "Repository **%s** thuộc môn **%s** (%s)",
             repo.getDisplayName(), courseName, courseCode
         ));
-        if (semester != null) {
-            sb.append(String.format(" — học kỳ **HK%d**", semester));
+        if (course != null && course.getSemester() != null) {
+            sb.append(String.format(" — học kỳ **HK%d**", course.getSemester()));
         }
-        if (credits > 0) {
-            sb.append(String.format(" (%d tín chỉ)", credits));
+        if (course != null && course.getSoTC() > 0) {
+            sb.append(String.format(" (%d tín chỉ)", course.getSoTC()));
         }
         sb.append(".\n\n");
 
         // ============ TECH STACK & STATS ============
         sb.append("⚙️ **Thông số kỹ thuật**\n\n");
+        sb.append(String.format("- **Ngôn ngữ chính:** %s\n", language));
 
-        // Ngôn ngữ chính
-        String lang = repo.getPrimaryLanguage() != null ? repo.getPrimaryLanguage() : "Chưa xác định";
-        sb.append(String.format("- **Ngôn ngữ chính:** %s\n", lang));
-
-        // Tech stacks
-        String techStacks = repo.getTechStacks().stream()
-            .map(ts -> ts.getName())
-            .collect(Collectors.joining(", "));
         if (!techStacks.isEmpty()) {
             sb.append(String.format("- **Công nghệ sử dụng:** %s\n", techStacks));
         }
 
-        // Stars
         int stars = repo.getStars() != null ? repo.getStars() : 0;
         if (stars > 0) {
             sb.append(String.format("- **Đánh giá:** ⭐ %d sao trên GitHub\n", stars));
@@ -69,41 +92,33 @@ public class SummaryGenerator {
             sb.append("- **Đánh giá:** Repository mới, chưa có sao\n");
         }
 
-        // Ngôn ngữ bổ sung từ tech stacks
-        List<String> nonPrimaryStacks = repo.getTechStacks().stream()
-            .map(ts -> ts.getName())
-            .filter(name -> !name.equalsIgnoreCase(lang))
-            .collect(Collectors.toList());
-        if (!nonPrimaryStacks.isEmpty()) {
-            sb.append(String.format(
-                "- **Kỹ thuật liên quan:** %s\n",
-                String.join(", ", nonPrimaryStacks)
-            ));
-        }
+        // ============ CATEGORY ============
+        sb.append("\n📂 **Phân loại:** ");
+        sb.append(determineCategory(repo));
+        sb.append("\n\n");
 
-        sb.append("\n");
-
-        // ============ MÔ TẢ CHI TIẾT ============
-        sb.append("📝 **Mô tả**\n\n");
-        String description = repo.getDescription();
-        if (description != null && !description.isBlank()) {
-            // Làm giàu mô tả
-            sb.append(description.trim());
-            sb.append("\n\n");
-        } else {
-            sb.append("Repository chứa mã nguồn tham khảo cho môn học này.\n\n");
-        }
-
-        // ============ PHÂN TÍCH GIÁ TRỊ HỌC THUẬT ============
-        sb.append("🎓 **Phân tích giá trị học thuật**\n\n");
-
+        // ============ LEARNING VALUE ============
+        sb.append("📚 **Giá trị học tập**\n\n");
         String category = determineCategory(repo);
-        String techLevel = determineTechLevel(stars);
+        if (category.contains("Backend")) {
+            sb.append("Repository này tập trung vào kiến thức **phát triển phía server**. ");
+            sb.append("Sinh viên nên chú ý cách tổ chức API, xử lý business logic, và quản lý dữ liệu.\n\n");
+        } else if (category.contains("Frontend")) {
+            sb.append("Repository này tập trung vào **giao diện người dùng**. ");
+            sb.append("Sinh viên nên chú ý cách tổ chức component, quản lý state, và UX patterns.\n\n");
+        } else if (category.contains("Mobile")) {
+            sb.append("Repository này liên quan đến **phát triển ứng dụng di động**. ");
+            sb.append("Sinh viên nên chú ý kiến trúc MVVM/MVI, lifecycle management, và responsive design.\n\n");
+        } else {
+            sb.append("Repository này minh họa các khái niệm **phát triển phần mềm** tổng quát. ");
+            sb.append("Sinh viên nên chú ý cách tổ chức code, design patterns, và best practices.\n\n");
+        }
 
-        sb.append(String.format(
-            "Đây là một dự án **%s** %s. ",
-            category, techLevel
-        ));
+        // ============ TECH LEVEL ============
+        sb.append("📊 **Đánh giá kỹ thuật:** ");
+        String techLevel = determineTechLevel(stars);
+        sb.append(techLevel);
+        sb.append(". ");
 
         if (stars > 5) {
             sb.append("Số lượng sao cao cho thấy cộng đồng đánh giá cao chất lượng mã nguồn. ");
@@ -135,7 +150,6 @@ public class SummaryGenerator {
         String desc = repo.getDescription() != null ? repo.getDescription().toLowerCase() : "";
         String name = repo.getDisplayName() != null ? repo.getDisplayName().toLowerCase() : "";
 
-        // Kiểm tra từ tên + desc
         boolean hasWeb = lang.contains("html") || lang.contains("css") || name.contains("web") || desc.contains("web");
         boolean hasBackend = lang.contains("java") || lang.contains("python") || lang.contains("go")
             || lang.contains("node") || lang.contains("c#") || desc.contains("api") || desc.contains("server");
@@ -160,7 +174,7 @@ public class SummaryGenerator {
     private String determineTechLevel(int stars) {
         if (stars >= 50) return "có độ phổ biến cao";
         if (stars >= 10) return "được cộng đồng quan tâm";
-        if (stars >= 1) return "có chất lượng tham khảo tốt";
-        return "quy mô nhỏ, phù hợp để thực hành";
+        if (stars >= 1) return "mới nhưng có tiềm năng";
+        return "mới, chưa có đánh giá";
     }
 }

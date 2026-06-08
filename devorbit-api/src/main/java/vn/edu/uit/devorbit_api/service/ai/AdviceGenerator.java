@@ -1,21 +1,58 @@
 package vn.edu.uit.devorbit_api.service.ai;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import vn.edu.uit.devorbit_api.dto.publicapi.AiResponse;
 import vn.edu.uit.devorbit_api.entity.Course;
 import vn.edu.uit.devorbit_api.entity.GithubRepo;
 
+import java.util.stream.Collectors;
+
 /**
  * Generates tutor advice using impact scores, language specifics, and course context.
- * No LLM required — leverages precomputed knowledge graph analytics and repo metadata.
+ * Uses LLM when available, falls back to rule-based generation.
  */
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class AdviceGenerator {
+
+    private final OpenCodeAiService openCodeAiService;
 
     public AiResponse generateAdvice(GithubRepo repo, double impactScore, int downstreamCount) {
         Course course = repo.getCourse();
         String courseName = course != null ? course.getTenMH() : "môn học";
         String lang = repo.getPrimaryLanguage() != null ? repo.getPrimaryLanguage() : "ngôn ngữ lập trình";
+
+        // Try LLM first if enabled
+        if (openCodeAiService.isLlmEnabled()) {
+            try {
+                String context = String.format(
+                    "Repository: %s, Môn: %s, Ngôn ngữ: %s, Điểm ảnh hưởng: %.1f, Số môn downstream: %d, Stars: %d",
+                    repo.getDisplayName(), courseName, lang, impactScore, downstreamCount,
+                    repo.getStars() != null ? repo.getStars() : 0
+                );
+                
+                String llmResponse = openCodeAiService.generateCompletion(
+                    PromptTemplates.TUTOR_ADVICE, context
+                );
+                
+                if (llmResponse != null && !llmResponse.isBlank()) {
+                    log.debug("LLM advice generated for repo: {}", repo.getDisplayName());
+                    return new AiResponse(llmResponse, "LLM_TUTOR_ADVICE");
+                }
+            } catch (Exception e) {
+                log.warn("LLM advice failed, falling back to rule-based: {}", e.getMessage());
+            }
+        }
+
+        // Fallback to rule-based generation
+        return generateRuleBasedAdvice(repo, courseName, lang, impactScore, downstreamCount);
+    }
+
+    private AiResponse generateRuleBasedAdvice(GithubRepo repo, String courseName, 
+            String lang, double impactScore, int downstreamCount) {
         String langLower = lang.toLowerCase();
         int stars = repo.getStars() != null ? repo.getStars() : 0;
 
@@ -44,7 +81,7 @@ public class AdviceGenerator {
         // ============ LỘ TRÌNH HỌC ============
         sb.append("📋 **Lộ trình học với repository này**\n\n");
 
-        // Bước 1 luôn là clone/đọc tổng quan
+        // Bước 1
         sb.append("**Bước 1 — Tiếp cận:**\n");
         sb.append("- Clone hoặc fork repository về máy\n");
         sb.append("- Đọc file README.md (nếu có) để hiểu tổng quan project\n");
@@ -61,14 +98,12 @@ public class AdviceGenerator {
             sb.append("- Tìm hiểu cách tổ chức module và hàm\n");
             sb.append("- Chú ý các cấu trúc dữ liệu được định nghĩa (struct, typedef)\n");
         } else if (langLower.contains("java")) {
-            sb.append(String.format(
-                "- Repository viết bằng **Java**. Chú ý cách tổ chức package theo MVC hoặc layered architecture\n", lang));
+            sb.append("- Repository viết bằng **Java**. Chú ý cách tổ chức package theo MVC hoặc layered architecture\n");
             sb.append("- Xem cách sử dụng OOP: kế thừa, interface, abstract class\n");
             sb.append("- Tìm hiểu dependency injection và design pattern được áp dụng\n");
             sb.append("- Nếu có Spring: chú ý annotation, bean configuration\n");
         } else if (langLower.contains("python")) {
-            sb.append(String.format(
-                "- Repository viết bằng **Python**. Chú ý cấu trúc module và import\n", lang));
+            sb.append("- Repository viết bằng **Python**. Chú ý cấu trúc module và import\n");
             sb.append("- Xem cách tổ chức project: có dùng virtual environment không?\n");
             sb.append("- Tìm hiểu cách viết test (pytest/unittest) nếu có\n");
             sb.append("- Chú ý docstring và type hint để hiểu rõ API\n");
@@ -79,8 +114,7 @@ public class AdviceGenerator {
             sb.append("- Tìm hiểu các thư viện/framework được sử dụng (React, Vue, Express...)\n");
             sb.append("- Nếu có TypeScript: chú ý type definition và interface\n");
         } else if (langLower.contains("kotlin")) {
-            sb.append(String.format(
-                "- Repository viết bằng **Kotlin**. Chú ý cú pháp hiện đại so với Java\n", lang));
+            sb.append("- Repository viết bằng **Kotlin**. Chú ý cú pháp hiện đại so với Java\n");
             sb.append("- Xem cách sử dụng coroutine cho bất đồng bộ\n");
             sb.append("- Tìm hiểu Android architecture components (ViewModel, LiveData/Flow)\n");
         } else if (langLower.contains("sql") || langLower.contains("r") || langLower.contains("data")) {
@@ -98,41 +132,19 @@ public class AdviceGenerator {
 
         // Bước 3 — thực hành
         sb.append("**Bước 3 — Thực hành:**\n");
-        if (stars > 0) {
-            sb.append("- Đọc issues và pull requests để học cách đóng góp\n");
-        } else {
-            sb.append("- Fork và thử thêm một tính năng nhỏ\n");
+        if (stars >= 10) {
+            sb.append("- Repository có cộng đồng active, hãy xem issues và discussions\n");
         }
-        sb.append("- Viết lại một module để kiểm tra mức độ hiểu\n");
-        sb.append("- So sánh cách code trong repository với bài tập của bạn\n");
-        sb.append("- Ghi chú lại các pattern hay để áp dụng cho đồ án cá nhân\n\n");
-
-        // ============ TÀI NGUYÊN BỔ TRỢ ============
-        if (course != null) {
-            sb.append("📖 **Gợi ý học tập theo môn ").append(courseName).append("**\n\n");
-
-            if (langLower.contains("c") || langLower.contains("assembly") || langLower.contains("c++")) {
-                sb.append("- Ôn lại **con trỏ, cấp phát bộ nhớ, stack/heap** trước khi đọc code\n");
-                sb.append("- Xem lại bài giảng về **cấu trúc dữ liệu và giải thuật**\n");
-                sb.append("- Thực hành viết các chương trình nhỏ trước khi đọc project lớn\n");
-            } else if (langLower.contains("java") || langLower.contains("python")) {
-                sb.append("- Ôn lại **OOP và design pattern** trước khi phân tích codebase\n");
-                sb.append("- Đọc hiểu luồng xử lý chính (main → service → data)\n");
-                sb.append("- Vẽ sơ đồ lớp để hình dung kiến trúc tổng thể\n");
-            } else {
-                sb.append("- Hoàn thành bài tập đầy đủ trước khi đọc repository\n");
-                sb.append("- So sánh code trong repository với kiến thức đã học\n");
-                sb.append("- Ghi chú lại những pattern hay để áp dụng cho dự án cá nhân\n");
-            }
-            sb.append("\n");
-        }
+        sb.append("- Thử chạy các test cases (nếu có)\n");
+        sb.append("- Tự viết thêm chức năng mới để thực hành\n");
+        sb.append("- Ghi chú lại các pattern hay để áp dụng cho dự án cá nhân\n\n");
 
         // ============ TIPS RIÊNG ============
         sb.append("💡 **Mẹo nhỏ**\n\n");
         if (repo.getTechStacks() != null && !repo.getTechStacks().isEmpty()) {
             String stacks = repo.getTechStacks().stream()
                 .map(ts -> "`" + ts.getName() + "`")
-                .collect(java.util.stream.Collectors.joining(", "));
+                .collect(Collectors.joining(", "));
             sb.append(String.format(
                 "Repository này sử dụng các công nghệ: %s. " +
                 "Hãy tìm hiểu sơ qua từng công nghệ trước khi đọc sâu.\n", stacks));

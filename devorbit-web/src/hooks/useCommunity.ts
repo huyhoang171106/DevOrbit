@@ -63,10 +63,11 @@ export function useChannelMessages(channelId: number | null, page: number, size:
   })
 }
 
-export function useRepoSocialInfo(repoId: number) {
+export function useRepoSocialInfo(repoId: number | undefined) {
   return useQuery<RepoSocialInfoResponse>({
     queryKey: ['repos', repoId, 'social-info'],
     queryFn: () => apiGet<RepoSocialInfoResponse>(`/api/repos/${repoId}/social-info`),
+    enabled: repoId !== undefined && !Number.isNaN(repoId),
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
   })

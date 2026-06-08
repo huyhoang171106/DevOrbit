@@ -446,16 +446,18 @@ export function CommunityPage() {
   })
 
   useEffect(() => {
-    if (channels.length > 0) {
-      if (!activeChannel) {
-        const general = channels.find((ch) => ch.type === 'GENERAL') || channels[0]
-        setActiveChannel(general)
-      } else if (activeChannel.id < 0) {
-        const real = channels.find((ch) => ch.channelId === activeChannel.channelId)
-        if (real) setActiveChannel(real)
+    if (channels.length === 0) return
+    setActiveChannel((prev) => {
+      if (prev === null) {
+        return channels.find((ch) => ch.type === 'GENERAL') || channels[0]
       }
-    }
-  }, [channels, activeChannel])
+      if (prev.id < 0) {
+        const real = channels.find((ch) => ch.channelId === prev.channelId)
+        return real || prev
+      }
+      return prev
+    })
+  }, [channels])
 
   useEffect(() => {
     if (fetchedPage) {

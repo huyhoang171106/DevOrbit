@@ -25,6 +25,9 @@ data class RegisterUiState(
     val email: String = "",
     val password: String = "",
     val confirmPassword: String = "",
+    val otpCode: String = "",
+    val registeredEmail: String = "",
+    val isAwaitingOtp: Boolean = false,
     val isSuccess: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null
@@ -97,6 +100,7 @@ class AuthViewModel @Inject constructor(
             "email" -> _registerState.value.copy(email = value, error = null)
             "password" -> _registerState.value.copy(password = value, error = null)
             "confirmPassword" -> _registerState.value.copy(confirmPassword = value, error = null)
+            "otpCode" -> _registerState.value.copy(otpCode = value, error = null)
             else -> _registerState.value
         }
     }
@@ -116,14 +120,47 @@ class AuthViewModel @Inject constructor(
                 email = state.email,
                 password = state.password
             ).onSuccess {
-                _registerState.value = _registerState.value.copy(isLoading = false, isSuccess = true)
-                _loginState.value = _loginState.value.copy(isLoggedIn = true)
+                _registerState.value = _registerState.value.copy(
+                    isLoading = false,
+                    isAwaitingOtp = true,
+                    registeredEmail = it.email,
+                    isSuccess = true
+                )
+                _loginState.value = _loginState.value.copy(
+                    isLoggedIn = AuthSessionPolicy.isAuthenticatedAfterRegister()
+                )
             }.onFailure { e ->
                 _registerState.value = _registerState.value.copy(
                     isLoading = false,
                     error = e.message ?: "Dang ky that bai"
                 )
             }
+        }
+    }
+
+    fun verifyOtp() {
+        val state = _registerState.value
+        val email = state.registeredEmail.ifBlank { state.email }
+        if (email.isBlank() || state.otpCode.isBlank()) {
+            _registerState.value = state.copy(error = "Vui long nhap ma OTP")
+            return
+        }
+        viewModelScope.launch {
+            _registerState.value = state.copy(isLoading = true, error = null)
+            authRepository.verifyOtp(email, state.otpCode)
+                .onSuccess { result ->
+                    _registerState.value = _registerState.value.copy(isLoading = false)
+                    _loginState.value = _loginState.value.copy(
+                        isLoading = false,
+                        isLoggedIn = AuthSessionPolicy.isAuthenticatedWithToken(result.token)
+                    )
+                }
+                .onFailure { e ->
+                    _registerState.value = _registerState.value.copy(
+                        isLoading = false,
+                        error = e.message ?: "Xac thuc OTP that bai"
+                    )
+                }
         }
     }
 

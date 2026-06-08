@@ -244,6 +244,7 @@ export function RepoDetailPage() {
             <div className="orbit-card p-6 md:p-8">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-[13px] font-bold text-orbit-text">Bình chọn & Đánh giá</h3>
+                {/* TODO: Use socialInfo.userVote for initialVote when backend supports it */}
                 <VoteButtons
                   repoId={Number(repoId)}
                   initialScore={socialInfo.voteScore}

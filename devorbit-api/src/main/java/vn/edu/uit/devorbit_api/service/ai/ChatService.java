@@ -30,6 +30,7 @@ public class ChatService {
     private final ChatSessionRepository sessionRepository;
     private final ChatMessageRepository messageRepository;
     private final ObjectMapper objectMapper;
+    private final LlmContextBuilder contextBuilder;
 
     private static final int MAX_HISTORY_MESSAGES = 10;
 
@@ -56,9 +57,19 @@ public class ChatService {
         // Generate AI response
         String aiResponse;
         if (openCodeAiService.isLlmEnabled()) {
+            // Try to extract course code from message for context
+            String courseCode = extractCourseCode(request.message());
+            String courseContext = contextBuilder.buildCourseContext(courseCode);
+            
+            log.debug("Chat RAG context length: {} chars, course: {}", courseContext.length(), courseCode);
+            
+            String fullContext = String.format(
+                "%s\n\nLịch sử:\n%s\n\nCâu hỏi mới: %s",
+                courseContext, history, request.message()
+            );
+            
             aiResponse = openCodeAiService.generateCompletion(
-                PromptTemplates.CHAT_TUTOR,
-                "Lịch sử:\n" + history + "\n\nCâu hỏi mới: " + request.message()
+                PromptTemplates.CHAT_TUTOR, fullContext
             );
         } else {
             aiResponse = generateOfflineResponse(request.message());
@@ -131,6 +142,17 @@ public class ChatService {
             sb.append(role).append(": ").append(msg.getContent()).append("\n");
         }
         return sb.toString();
+    }
+
+    /**
+     * Extract course code from user message (e.g., "SE104", "SE101").
+     */
+    private String extractCourseCode(String message) {
+        if (message == null) return null;
+        java.util.regex.Matcher matcher = java.util.regex.Pattern
+                .compile("\b([A-Z]{2}[0-9]{3})\b")
+                .matcher(message);
+        return matcher.find() ? matcher.group(1) : null;
     }
 
     private String generateOfflineResponse(String message) {

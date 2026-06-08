@@ -62,8 +62,10 @@ function ReviewForm({
   const [rating, setRating] = useState(5)
   const [comment, setComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const handleSubmit = async () => {
+    setSubmitError(null)
     setSubmitting(true)
     try {
       const endpoint = targetType === 'COURSE'
@@ -72,7 +74,8 @@ function ReviewForm({
       await apiStudentPost(endpoint, { rating, comment })
       onSubmitDone()
       setComment('')
-    } catch {
+    } catch (e) {
+      setSubmitError(e instanceof Error ? e.message : 'Gửi đánh giá thất bại, vui lòng thử lại')
     } finally {
       setSubmitting(false)
     }
@@ -92,6 +95,9 @@ function ReviewForm({
         maxLength={5000}
         className="w-full bg-orbit-surface border border-orbit-border rounded-xl px-3 py-2 text-[13px] text-orbit-text placeholder:text-orbit-text-muted outline-none focus:border-orbit-accent/40 transition-colors resize-none"
       />
+      {submitError && (
+        <p className="text-[11px] text-rose-400 font-medium">{submitError}</p>
+      )}
       <button
         onClick={handleSubmit}
         disabled={submitting}

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import { Client, type IMessage } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
 import { getStudentToken } from '../lib/auth'
@@ -14,7 +14,10 @@ export function useCommunitySocket({ channelId, enabled, onMessage }: UseCommuni
   const clientRef = useRef<Client | null>(null)
   const subscriptionRef = useRef<{ id: string; channelId: number } | null>(null)
   const onMessageRef = useRef(onMessage)
+  const channelIdRef = useRef(channelId)
+  channelIdRef.current = channelId
   onMessageRef.current = onMessage
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!enabled) return
@@ -32,16 +35,22 @@ export function useCommunitySocket({ channelId, enabled, onMessage }: UseCommuni
       heartbeatOutgoing: 10000,
       onConnect: () => {
         clientRef.current = client
-        if (channelId !== null) {
-          doSubscribe(client, channelId)
+        setError(null)
+        const cid = channelIdRef.current
+        if (cid !== null) {
+          doSubscribe(client, cid)
         }
       },
       onDisconnect: () => {
         subscriptionRef.current = null
       },
-      onStompError: () => {},
+      onStompError: (frame) => {
+        console.error('[STOMP Error]', frame)
+        setError('Kết nối thất bại')
+      },
     })
 
+    clientRef.current = client
     client.activate()
 
     return () => {
@@ -57,7 +66,9 @@ export function useCommunitySocket({ channelId, enabled, onMessage }: UseCommuni
       if (prev.channelId === cid) return
       try {
         client.unsubscribe(prev.id)
-      } catch {}
+      } catch (e) {
+        console.error('[WS] unsubscribe error', e)
+      }
       subscriptionRef.current = null
     }
 
@@ -65,7 +76,9 @@ export function useCommunitySocket({ channelId, enabled, onMessage }: UseCommuni
       try {
         const data: ChatMessageResponse = JSON.parse(message.body)
         onMessageRef.current(data)
-      } catch {}
+      } catch (e) {
+        console.error('[WS] parse message error', e)
+      }
     })
 
     subscriptionRef.current = { id: sub.id, channelId: cid }
@@ -78,14 +91,22 @@ export function useCommunitySocket({ channelId, enabled, onMessage }: UseCommuni
 
   const sendMessage = useCallback((channelId: number, content: string) => {
     const client = clientRef.current
-    if (!client || !client.connected) return false
+    if (!client || !client.connected) {
+      console.error('[WS] cannot send — client not connected')
+      return false
+    }
 
-    client.publish({
-      destination: `/app/chat.send/${channelId}`,
-      body: JSON.stringify({ content }),
-    })
-    return true
+    try {
+      client.publish({
+        destination: `/app/chat.send/${channelId}`,
+        body: JSON.stringify({ content }),
+      })
+      return true
+    } catch (e) {
+      console.error('[WS] publish error', e)
+      return false
+    }
   }, [])
 
-  return { sendMessage }
+  return { sendMessage, error }
 }

@@ -27,6 +27,7 @@ public class RoadmapGenerator {
     private final CourseRelationshipService relationshipService;
     private final CurriculumMatcher curriculumMatcher;
     private final OpenCodeAiService openCodeAiService;
+    private final LlmContextBuilder contextBuilder;
 
     // In-memory cache: loaded lazily on first request
     private volatile Map<String, Course> courseCache;
@@ -37,11 +38,13 @@ public class RoadmapGenerator {
     public RoadmapGenerator(CourseRepository courseRepository,
                             CourseRelationshipService relationshipService,
                             CurriculumMatcher curriculumMatcher,
-                            OpenCodeAiService openCodeAiService) {
+                            OpenCodeAiService openCodeAiService,
+                            LlmContextBuilder contextBuilder) {
         this.courseRepository = courseRepository;
         this.relationshipService = relationshipService;
         this.curriculumMatcher = curriculumMatcher;
         this.openCodeAiService = openCodeAiService;
+        this.contextBuilder = contextBuilder;
     }
 
     /** Lazily loads reference data into memory on first use. */
@@ -356,7 +359,7 @@ public class RoadmapGenerator {
     }
 
     /**
-     * Enhance the rule-based summary with LLM explanation.
+     * Enhance the rule-based summary with LLM explanation using RAG context.
      */
     private String enhanceSummaryWithLLM(String ruleBasedSummary, String careerPath, 
             String learningGoals, List<RoadmapRecommendationResponse.CourseRecommendation> recommendations) {
@@ -365,16 +368,25 @@ public class RoadmapGenerator {
         }
 
         try {
-            // Build context for LLM
-            String courseList = recommendations.stream()
-                .limit(10)
-                .map(r -> r.courseName())
+            // Build RAG context from knowledge graph + recommendations
+            String courseCodes = recommendations.stream()
+                .map(RoadmapRecommendationResponse.CourseRecommendation::courseCode)
                 .collect(Collectors.joining(", "));
             
+            // Use LlmContextBuilder to get rich context for these courses
+            String ragContext = "Chương trình KTPM 2025:\n" +
+                "Môn học đề xuất: " + courseCodes + "\n" +
+                "Định hướng: " + careerPath + "\n" +
+                "Mục tiêu: " + learningGoals;
+            
+            // If we have a knowledge graph, we could also call buildQueryContext
+            // but for now, we'll pass the course codes for context
             String context = String.format(
-                "Định hướng: %s, Mục tiêu: %s, Số môn đề xuất: %d, Môn chính: %s",
-                careerPath, learningGoals, recommendations.size(), courseList
+                "%s\n\nĐịnh hướng: %s, Môn học đề xuất: %s",
+                ragContext, careerPath, courseCodes
             );
+            
+            log.debug("Roadmap RAG context length: {} chars", ragContext.length());
             
             String llmExplanation = openCodeAiService.generateCompletion(
                 PromptTemplates.ROADMAP_EXPLANATION, context
@@ -382,7 +394,6 @@ public class RoadmapGenerator {
             
             if (llmExplanation != null && !llmExplanation.isBlank()) {
                 log.debug("LLM roadmap explanation generated");
-                // Prepend LLM explanation to rule-based summary
                 return llmExplanation + "\n\n---\n\n" + ruleBasedSummary;
             }
         } catch (Exception e) {

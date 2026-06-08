@@ -1,0 +1,37 @@
+﻿name: CI
+
+on:
+  pull_request:
+    branches: [master]
+
+jobs:
+  api-check:
+    name: API Compile Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+      - name: Compile API
+        run: cd devorbit-api && ./mvnw compile -B
+
+  web-check:
+    name: Web Type Check & Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: cd devorbit-web && npm ci
+      - name: TypeScript check
+        run: cd devorbit-web && npx tsc --noEmit
+      - name: Run tests
+        run: cd devorbit-web && npm test
+

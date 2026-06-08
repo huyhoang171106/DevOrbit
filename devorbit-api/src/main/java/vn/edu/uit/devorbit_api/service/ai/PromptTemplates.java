@@ -46,11 +46,12 @@ public final class PromptTemplates {
 
     /**
      * System prompt for knowledge graph queries.
-     * Context: user question, available courses
+     * Context: rich context from graph, user question
      */
     public static final String KNOWLEDGE_QUERY = 
-        "Bạn là tư vấn viên khóa học tại UIT. Trả lời câu hỏi về chương trình đào tạo. " +
-        "Hãy chính xác và hữu ích. Trả lời bằng tiếng Việt. " +
+        "Bạn là tư vấn viên khóa học tại UIT. Dữ liệu chương trình:\n{{context}}\n\n" +
+        "Trả lời câu hỏi về chương trình đào tạo. Hãy chính xác và hữu ích. " +
+        "Dựa trên dữ liệu thực tế. Trả lời bằng tiếng Việt. " +
         "Câu hỏi: {{question}}";
 
     /**

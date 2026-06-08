@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { apiGet, apiStudentPost } from '../../lib/api'
@@ -56,6 +56,8 @@ export function CourseDetailPage() {
   const { courseId } = useParams<{ courseId: string }>()
   const navigate = useNavigate()
   const cached = courseId ? getCachedCourse(courseId) : null
+  const cachedRef = useRef(cached)
+  cachedRef.current = cached
   const [course, setCourse] = useState<CourseDetail | null>(cached)
   const [repos, setRepos] = useState<RepoSummary[]>(cached?.repos || [])
   const [filtered, setFiltered] = useState<RepoSummary[]>(cached?.repos || [])
@@ -65,7 +67,7 @@ export function CourseDetailPage() {
 
   useEffect(() => {
     if (!courseId) return
-    if (!cached) setLoading(true)
+    if (!cachedRef.current) setLoading(true)
     apiGet<CourseDetail>(`/api/courses/${courseId}`)
       .then((data) => {
         setCourse(data)

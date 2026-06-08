@@ -2,7 +2,7 @@
 
 Free-form implementation log. Record meaningful phase changes, successful milestones, failed attempts, setbacks, fixes, validation notes, and decisions.
 
-**Current Status:** IN_PROGRESS — Mốc 3 completed
+**Current Status:** COMPLETED — Mốc 4 và 5 đã hoàn thành
 
 ---
 
@@ -27,15 +27,15 @@ Free-form implementation log. Record meaningful phase changes, successful milest
   - Thực hiện Upvote/Downvote repository (`/api/student/repos/{repoId}/vote`).
 - [x] Viết `@MessageMapping` controller đón nhận tin nhắn gửi lên từ WebSocket client, lưu trữ vào cơ sở dữ liệu, và broadcast tin nhắn đến kênh chat.
 
-### Mốc 4: Giao diện Chat Cộng đồng thời gian thực (Dự kiến)
-- [ ] Cài đặt gói thư viện `@stomp/stompjs` và `sockjs-client` trên `devorbit-web`.
-- [ ] Hoàn thiện `CommunityPage.tsx` với cấu trúc layout 3 cột:
+### Mốc 4: Giao diện Chat Cộng đồng thời gian thực (Hoàn thành 2026-06-08)
+- [x] Cài đặt gói thư viện `@stomp/stompjs` và `sockjs-client` trên `devorbit-web`.
+- [x] Hoàn thiện `CommunityPage.tsx` với cấu trúc layout 3 cột:
   - Cột 1: Danh sách kênh (General, Môn học, Tech Stack).
   - Cột 2: Nội dung tin nhắn chat cuộn mượt mà + Infinite Scroll khi cuộn lên trên đầu + Ô nhập tin nhắn.
   - Cột 3: Danh sách các thành viên online hiện tại.
-- [ ] Thiết lập logic kết nối tự động, gửi JWT Token qua header, đăng ký nhận tin nhắn thời gian thực và tự động scroll xuống dưới khi có tin nhắn mới.
+- [x] Thiết lập logic kết nối tự động, gửi JWT Token qua header, đăng ký nhận tin nhắn thời gian thực và tự động scroll xuống dưới khi có tin nhắn mới.
 
-### Mốc 5: Tương tác Đánh giá & Bình chọn trên Web (Dự kiến)
-- [ ] Thiết kế và nhúng component viết đánh giá sao & nhận xét vào `CourseDetailPage.tsx`.
-- [ ] Thiết kế và tích hợp component đánh giá sao, bình luận cùng cụm Upvote/Downvote trực quan vào `RepoDetailPage.tsx`.
-- [ ] Ràng buộc kiểm tra xác thực ở frontend: Nếu là Guest, ẩn ô nhập bình luận/chat/vote và thay thế bằng nút "Đăng nhập để tương tác".
+### Mốc 5: Tương tác Đánh giá & Bình chọn trên Web (Hoàn thành 2026-06-08)
+- [x] Thiết kế và nhúng component viết đánh giá sao & nhận xét vào `CourseDetailPage.tsx`.
+- [x] Thiết kế và tích hợp component đánh giá sao, bình luận cùng cụm Upvote/Downvote trực quan vào `RepoDetailPage.tsx`.
+- [x] Ràng buộc kiểm tra xác thực ở frontend: Nếu là Guest, ẩn ô nhập bình luận/chat/vote và thay thế bằng nút "Đăng nhập để tương tác".

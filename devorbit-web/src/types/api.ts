@@ -345,6 +345,17 @@ export type ChatMessageResponse = {
   createdAt: string
 }
 
+export type PaginatedMessagesResponse = {
+  content: ChatMessageResponse[]
+  totalPages: number
+  totalElements: number
+  number: number
+  size: number
+  first: boolean
+  last: boolean
+  empty: boolean
+}
+
 export type ReviewRequest = {
   rating: number
   comment: string

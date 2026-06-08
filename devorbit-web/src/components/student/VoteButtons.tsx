@@ -16,12 +16,14 @@ export function VoteButtons({ repoId, initialScore, initialVote, onVoteChanged }
   const [vote, setVote] = useState(initialVote)
   const [score, setScore] = useState(initialScore)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleVote = async (value: number) => {
     if (!isStudentAuthenticated()) {
       navigate('/student/login')
       return
     }
+    setError(null)
     const newVote = vote === value ? 0 : value
     setLoading(true)
     try {
@@ -31,13 +33,15 @@ export function VoteButtons({ repoId, initialScore, initialVote, onVoteChanged }
       setVote(res.voteValue)
       setScore(res.voteScore)
       onVoteChanged()
-    } catch {
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Bình chọn thất bại, vui lòng thử lại')
     } finally {
       setLoading(false)
     }
   }
 
   return (
+    <div className="flex flex-col items-center gap-1">
     <div className="flex items-center gap-1">
       <button
         onClick={() => handleVote(1)}
@@ -57,5 +61,7 @@ export function VoteButtons({ repoId, initialScore, initialVote, onVoteChanged }
         <CaretDown className="h-5 w-5" weight={vote === -1 ? 'fill' : 'regular'} />
       </button>
     </div>
+    {error && <p className="text-[10px] text-rose-400 font-medium text-center">{error}</p>}
+  </div>
   )
 }

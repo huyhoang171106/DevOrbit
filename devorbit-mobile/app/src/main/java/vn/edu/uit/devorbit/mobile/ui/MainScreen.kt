@@ -23,6 +23,7 @@ import vn.edu.uit.devorbit.mobile.ui.navigation.Screen
 import vn.edu.uit.devorbit.mobile.ui.screen.dashboard.DashboardScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.knowledge.KnowledgeGraphScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.explore.ExploreScreen
+import vn.edu.uit.devorbit.mobile.ui.screen.gpa.GpaScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.plan.StudyPlannerScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.profile.ProfileScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.repos.ReposByCourseScreen
@@ -92,23 +93,12 @@ fun MainScreen(
                         Screen.Repos -> ReposByCourseScreen()
                         Screen.Explore -> ExploreScreen()
                         Screen.Plan -> PlanTabView()
-                        Screen.Gpa -> GpaPlaceholderScreen()
+                        Screen.Gpa -> GpaScreen()
                         Screen.Profile -> ProfileScreen()
                     }
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun GpaPlaceholderScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text(
-            text = "GPA",
-            style = CosmicTheme.typography.display,
-            color = CosmicTheme.colors.textPrimary
-        )
     }
 }
 

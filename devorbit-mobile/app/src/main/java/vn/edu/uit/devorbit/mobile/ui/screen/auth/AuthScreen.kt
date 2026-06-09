@@ -226,7 +226,7 @@ private fun RegisterContent(
 
         Button(
             onClick = onVerifyOtp,
-            enabled = !state.isLoading,
+            enabled = !state.isLoading && state.otpCode.length == 6,
             modifier = Modifier.fillMaxWidth().height(50.dp),
             colors = ButtonDefaults.buttonColors(containerColor = CosmicTheme.colors.plasma)
         ) {

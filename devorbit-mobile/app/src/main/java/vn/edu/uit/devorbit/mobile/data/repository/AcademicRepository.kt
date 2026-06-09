@@ -71,9 +71,9 @@ class AcademicRepository @Inject constructor(
                     id = it.id,
                     courseId = courseId,
                     displayName = it.displayName,
-                    description = it.description,
-                    githubUrl = it.githubUrl,
-                    primaryLanguage = it.primaryLanguage,
+                    description = it.safeDescription,
+                    githubUrl = it.safeGithubUrl,
+                    primaryLanguage = it.safePrimaryLanguage,
                     stars = it.stars ?: 0,
                     aiClassification = null
                 )
@@ -92,9 +92,9 @@ class AcademicRepository @Inject constructor(
                     id = it.id,
                     courseId = courseId,
                     displayName = it.displayName,
-                    description = it.description,
-                    githubUrl = it.githubUrl,
-                    primaryLanguage = it.primaryLanguage,
+                    description = it.safeDescription,
+                    githubUrl = it.safeGithubUrl,
+                    primaryLanguage = it.safePrimaryLanguage,
                     stars = it.stars ?: 0,
                     aiClassification = null
                 )

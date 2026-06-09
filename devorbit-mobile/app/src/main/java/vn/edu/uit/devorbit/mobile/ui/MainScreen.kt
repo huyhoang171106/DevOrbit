@@ -21,11 +21,11 @@ import vn.edu.uit.devorbit.mobile.domain.model.*
 import vn.edu.uit.devorbit.mobile.ui.components.CosmicBackground
 import vn.edu.uit.devorbit.mobile.ui.navigation.Screen
 import vn.edu.uit.devorbit.mobile.ui.screen.dashboard.DashboardScreen
-import vn.edu.uit.devorbit.mobile.ui.screen.courses.CourseHubScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.knowledge.KnowledgeGraphScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.explore.ExploreScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.plan.StudyPlannerScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.profile.ProfileScreen
+import vn.edu.uit.devorbit.mobile.ui.screen.repos.ReposByCourseScreen
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.AcademicViewModel
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.CourseViewModel
@@ -89,7 +89,7 @@ fun MainScreen(
                             onCompleteTask = { academicVm.toggleTaskComplete(it.id) },
                             onBreakdownGoal = { currentScreen = Screen.Plan }
                         )
-                        Screen.Repos -> CourseHubScreen()
+                        Screen.Repos -> ReposByCourseScreen()
                         Screen.Explore -> ExploreScreen()
                         Screen.Plan -> PlanTabView()
                         Screen.Gpa -> GpaPlaceholderScreen()

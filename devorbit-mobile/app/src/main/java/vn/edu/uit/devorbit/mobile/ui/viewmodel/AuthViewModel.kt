@@ -101,7 +101,10 @@ class AuthViewModel @Inject constructor(
             "email" -> _registerState.value.copy(email = value, error = null, message = null)
             "password" -> _registerState.value.copy(password = value, error = null, message = null)
             "confirmPassword" -> _registerState.value.copy(confirmPassword = value, error = null, message = null)
-            "otpCode" -> _registerState.value.copy(otpCode = value, error = null)
+            "otpCode" -> _registerState.value.copy(
+                otpCode = AuthValidation.sanitizeOtp(value),
+                error = null
+            )
             else -> _registerState.value
         }
     }
@@ -143,8 +146,9 @@ class AuthViewModel @Inject constructor(
     fun verifyOtp() {
         val state = _registerState.value
         val email = state.registeredEmail.ifBlank { state.email }
-        if (email.isBlank() || state.otpCode.isBlank()) {
-            _registerState.value = state.copy(error = "Vui long nhap ma OTP")
+        val otpError = AuthValidation.otpError(state.otpCode)
+        if (email.isBlank() || otpError != null) {
+            _registerState.value = state.copy(error = otpError ?: "Vui long nhap ma OTP")
             return
         }
         viewModelScope.launch {

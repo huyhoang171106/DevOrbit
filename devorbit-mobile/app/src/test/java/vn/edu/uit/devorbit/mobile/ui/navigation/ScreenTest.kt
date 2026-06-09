@@ -8,11 +8,11 @@ import org.junit.Test
 class ScreenTest {
 
     @Test
-    fun `bottom navigation replaces course and knowledge with repos and gpa`() {
+    fun `bottom navigation replaces course and knowledge with subjects and gpa`() {
         val labels = Screen.navItems.map { it.label }
 
         assertEquals(
-            listOf("Tổng quan", "Repos", "Khám phá", "Kế hoạch", "GPA", "Cá nhân"),
+            listOf("Tổng quan", "Môn học", "Khám phá", "Kế hoạch", "GPA", "Cá nhân"),
             labels
         )
         assertTrue(Screen.navItems.any { it.route == "repos" })

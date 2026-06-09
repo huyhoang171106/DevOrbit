@@ -23,6 +23,14 @@ import vn.edu.uit.devorbit.mobile.ui.screen.courses.CourseSearchFilterState
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.CourseViewModel
 
+object ReposCourseCatalog {
+    fun visibleCourses(courses: List<CourseEntity>): List<CourseEntity> {
+        return courses
+            .filter { it.repoCount > 0 }
+            .sortedWith(compareByDescending<CourseEntity> { it.repoCount }.thenBy { it.maMH })
+    }
+}
+
 data class ReposCourseRowModel(
     val code: String,
     val name: String,
@@ -30,10 +38,14 @@ data class ReposCourseRowModel(
 ) {
     companion object {
         fun fromCourse(course: CourseEntity): ReposCourseRowModel {
+            val parts = buildList {
+                if (course.repoCount > 0) add("${course.repoCount} repo")
+                if (course.credits > 0) add("${course.credits} TC")
+            }
             return ReposCourseRowModel(
                 code = course.maMH,
                 name = course.tenMH,
-                meta = if (course.credits > 0) "${course.credits} TC" else ""
+                meta = parts.joinToString(" · ")
             )
         }
     }
@@ -51,6 +63,7 @@ fun ReposByCourseScreen(
     val repos by viewModel.detailRepos.collectAsStateWithLifecycle()
     val detailLoading by viewModel.detailLoading.collectAsStateWithLifecycle()
     val detailError by viewModel.detailError.collectAsStateWithLifecycle()
+    val visibleCourses = remember(courses) { ReposCourseCatalog.visibleCourses(courses) }
 
     when {
         selectedRepo != null -> RepoDetailScreen(
@@ -69,13 +82,13 @@ fun ReposByCourseScreen(
 
         else -> Column(modifier = Modifier.fillMaxSize()) {
             Text(
-                text = "Repos",
+                text = "Môn học",
                 style = CosmicTheme.typography.display,
                 color = CosmicTheme.colors.textPrimary,
                 modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 24.dp)
             )
             Text(
-                text = "Chon mon hoc de xem repo lien quan",
+                text = "Chọn môn học để xem repo liên quan",
                 style = CosmicTheme.typography.label,
                 color = CosmicTheme.colors.textTertiary,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
@@ -87,7 +100,7 @@ fun ReposByCourseScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                placeholder = { Text("Tim ma hoac ten mon hoc...", color = CosmicTheme.colors.textTertiary) },
+                placeholder = { Text("Tìm mã hoặc tên môn học...", color = CosmicTheme.colors.textTertiary) },
                 leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null, tint = CosmicTheme.colors.textTertiary) },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = CosmicTheme.colors.plasma,
@@ -128,7 +141,7 @@ fun ReposByCourseScreen(
                 }
             }
 
-            if (courses.isEmpty()) {
+            if (visibleCourses.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -136,7 +149,7 @@ fun ReposByCourseScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Khong tim thay mon hoc phu hop",
+                        text = "Không tìm thấy môn học có repo phù hợp",
                         style = CosmicTheme.typography.label,
                         color = CosmicTheme.colors.textTertiary
                     )
@@ -148,7 +161,7 @@ fun ReposByCourseScreen(
                 contentPadding = PaddingValues(top = 8.dp, bottom = 100.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(courses, key = { it.id }) { course ->
+                items(visibleCourses, key = { it.id }) { course ->
                     ReposCourseRow(
                         model = ReposCourseRowModel.fromCourse(course),
                         onClick = { viewModel.openCourse(course) }
@@ -218,7 +231,7 @@ private fun RepoCourseDetail(
 
     Column(modifier = Modifier.fillMaxSize()) {
         TextButton(onClick = onBack, modifier = Modifier.padding(start = 8.dp, top = 8.dp)) {
-            Text("< Repos", color = CosmicTheme.colors.textSecondary)
+            Text("< Môn học", color = CosmicTheme.colors.textSecondary)
         }
         Text(
             text = course.tenMH,
@@ -245,7 +258,7 @@ private fun RepoCourseDetail(
             )
             repos.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(
-                    text = "Mon hoc nay chua co repo",
+                    text = "Môn học này chưa có repo",
                     style = CosmicTheme.typography.label,
                     color = CosmicTheme.colors.textTertiary
                 )

@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -64,7 +65,14 @@ fun MainScreen(
                         selected = currentScreen == screen,
                         onClick = { currentScreen = screen },
                         icon = { Icon(screenIcon, contentDescription = screenLabel) },
-                        label = { Text(screenLabel) },
+                        label = {
+                            Text(
+                                text = screenLabel,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        },
                         colors = navItemColors
                     )
                 }

@@ -125,7 +125,8 @@ class AuthViewModel @Inject constructor(
                     isLoading = false,
                     isAwaitingOtp = true,
                     registeredEmail = it.email,
-                    isSuccess = true
+                    isSuccess = false,
+                    message = "Da gui ma OTP den email"
                 )
                 _loginState.value = _loginState.value.copy(
                     isLoggedIn = AuthSessionPolicy.isAuthenticatedAfterRegister()

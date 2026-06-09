@@ -13,13 +13,14 @@ sealed class Screen(val route: String, val label: String, val icon: ImageVector)
     object Profile : Screen("profile", "Cá nhân", Icons.Rounded.Person)
 
     companion object {
-        val navItems: List<Screen> = listOf(
-            Dashboard,
-            Repos,
-            Explore,
-            Plan,
-            Gpa,
-            Profile
-        )
+        val navItems: List<Screen>
+            get() = listOf(
+                Dashboard,
+                Repos,
+                Explore,
+                Plan,
+                Gpa,
+                Profile
+            )
     }
 }

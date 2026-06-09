@@ -87,7 +87,13 @@ public class GraphQueryEngine {
     private AiQueryResponse classifyWithLLM(String question, KnowledgeGraphResponse graph) {
         // Build rich context from graph
         String ragContext = contextBuilder.buildQueryContext(question, graph);
-        
+
+        // Extract course code from question to enrich with syllabus facts
+        java.util.regex.Matcher enrichMatcher = Pattern.compile("\\b([A-Z]{2}[0-9]{3})\\b").matcher(question);
+        if (enrichMatcher.find()) {
+            ragContext = contextBuilder.enrichWithSyllabusFacts(enrichMatcher.group(1), ragContext);
+        }
+
         String context = String.format(
             "%s\n\nCâu hỏi: %s\n" +
             "Phân loại: PREREQUISITE_OF, PREREQUISITES_FOR, DOWNSTREAM, IMPACT, SEMESTER, COURSE_INFO, STATS, UNKNOWN",

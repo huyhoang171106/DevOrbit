@@ -31,6 +31,12 @@ public class AdviceGenerator {
             try {
                 // Build rich context from DB
                 String ragContext = contextBuilder.buildRepoContext(repo);
+
+                // Enrich with syllabus facts from knowledge ingestion
+                if (repo.getSubjectId() != null) {
+                    ragContext = contextBuilder.enrichWithSyllabusFacts(repo.getSubjectId(), ragContext);
+                }
+
                 String context = String.format(
                     "%s\n\nRepository: %s, Điểm ảnh hưởng: %.1f, Số môn downstream: %d, Stars: %d",
                     ragContext, repo.getDisplayName(), impactScore, downstreamCount,

@@ -1,7 +1,7 @@
 spring:
   application:
     name: devorbit-api
-  
+
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
@@ -13,7 +13,7 @@ spring:
           auth: true
           starttls:
             enable: true
-  
+
   sql:
     init:
       mode: ${SQL_INIT_MODE:never}
@@ -21,6 +21,7 @@ spring:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/devorbit_db}
     username: ${DATABASE_USERNAME:postgres}
     password: ${DATABASE_PASSWORD:}
+
   jpa:
     open-in-view: false
     defer-datasource-initialization: true
@@ -34,14 +35,18 @@ spring:
           batch_size: 50
         order_inserts: true
         order_updates: true
+
   data:
     web:
       pageable:
         page-serialization-mode: VIA_DTO
 
+server:
+  port: ${SERVER_PORT:8080}
+
 app:
-  otp:
-    expiration-minutes: ${OTP_EXPIRATION_MINUTES:5}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
   github:
     api-url: ${GITHUB_API_URL:https://api.github.com}
     user-agent: ${GITHUB_USER_AGENT:DevOrbit/1.0}
@@ -49,8 +54,6 @@ app:
   jwt:
     secret: ${JWT_SECRET}
     expiration-minutes: ${JWT_EXPIRATION_MINUTES:120}
-  cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
   openapi:
     local-dev-url: ${OPENAPI_LOCAL_DEV_URL:http://localhost:8080}
     contact-email: ${API_CONTACT_EMAIL:devorbit@uit.edu.vn}
@@ -58,9 +61,18 @@ app:
     api-url: ${OPENCODE_API_URL:https://opencode.ai/zen/go/v1}
     api-key: ${OPENCODE_API_KEY:}
     model: ${OPENCODE_MODEL:deepseek-v4-flash}
+  embedding:
+    offline: ${EMBEDDING_OFFLINE:true}
+    model: ${EMBEDDING_MODEL:text-embedding-3-small}
+    dimensions: ${EMBEDDING_DIMENSIONS:1536}
+  otp:
+    expiration-minutes: ${OTP_EXPIRATION_MINUTES:5}
 
-server:
-  port: ${SERVER_PORT:8080}
+devorbit:
+  knowledge:
+    marker-md-dir: ${KNOWLEDGE_MARKER_MD_DIR:./data/processed/marker-md}
+    ingestion:
+      enabled: ${KNOWLEDGE_INGESTION_ENABLED:true}
 
 supabase:
   url: ${SUPABASE_URL:}

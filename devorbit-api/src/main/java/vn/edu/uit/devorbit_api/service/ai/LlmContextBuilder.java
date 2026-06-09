@@ -11,6 +11,7 @@ import vn.edu.uit.devorbit_api.entity.CourseRelationType;
 import vn.edu.uit.devorbit_api.entity.GithubRepo;
 import vn.edu.uit.devorbit_api.repository.CourseRepository;
 import vn.edu.uit.devorbit_api.service.CourseRelationshipService;
+import vn.edu.uit.devorbit_api.service.knowledge.CourseFactQueryService;
 
 import java.util.List;
 import java.util.Set;
@@ -27,6 +28,7 @@ public class LlmContextBuilder {
 
     private final CourseRepository courseRepository;
     private final CourseRelationshipService relationshipService;
+    private final CourseFactQueryService courseFactQueryService;
 
     private static final int MAX_CONTEXT_LENGTH = 2000;
 
@@ -123,6 +125,30 @@ public class LlmContextBuilder {
         if (!prerequisites.isBlank()) {
             sb.append(String.format("Tiên quyết: %s\n", prerequisites));
         }
+
+        return truncate(sb.toString(), MAX_CONTEXT_LENGTH);
+    }
+
+    /**
+     * Enrich a context string with structured syllabus facts from PostgreSQL.
+     * Appends assessment, outcomes, sessions info when available.
+     */
+    public String enrichWithSyllabusFacts(String courseCode, String baseContext) {
+        if (courseCode == null || courseCode.isBlank()) return baseContext;
+
+        StringBuilder sb = new StringBuilder(baseContext != null ? baseContext : "");
+
+        courseFactQueryService.getFact(courseCode, "assessments")
+            .ifPresent(facts -> sb.append("\nĐánh giá chi tiết:\n").append(facts).append("\n"));
+
+        courseFactQueryService.getFact(courseCode, "outcomes")
+            .ifPresent(facts -> sb.append("\nKết quả học tập:\n").append(facts).append("\n"));
+
+        courseFactQueryService.getFact(courseCode, "sessions")
+            .ifPresent(facts -> sb.append("\nChương trình học:\n").append(facts).append("\n"));
+
+        courseFactQueryService.getFact(courseCode, "prerequisite")
+            .ifPresent(facts -> sb.append("\n").append(facts).append("\n"));
 
         return truncate(sb.toString(), MAX_CONTEXT_LENGTH);
     }

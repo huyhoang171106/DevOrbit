@@ -378,12 +378,20 @@ public class RoadmapGenerator {
                 "Môn học đề xuất: " + courseCodes + "\n" +
                 "Định hướng: " + careerPath + "\n" +
                 "Mục tiêu: " + learningGoals;
-            
-            // If we have a knowledge graph, we could also call buildQueryContext
-            // but for now, we'll pass the course codes for context
+
+            // Enrich with syllabus facts from DB for top recommended courses
+            String enrichedContext = ragContext;
+            List<String> topCodes = recommendations.stream()
+                .limit(5)
+                .map(RoadmapRecommendationResponse.CourseRecommendation::courseCode)
+                .toList();
+            for (String code : topCodes) {
+                enrichedContext = contextBuilder.enrichWithSyllabusFacts(code, enrichedContext);
+            }
+
             String context = String.format(
                 "%s\n\nĐịnh hướng: %s, Môn học đề xuất: %s",
-                ragContext, careerPath, courseCodes
+                enrichedContext, careerPath, courseCodes
             );
             
             log.debug("Roadmap RAG context length: {} chars", ragContext.length());

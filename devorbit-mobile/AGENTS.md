@@ -20,6 +20,9 @@ Kotlin Android application for the DevOrbit platform, providing mobile access fo
 | `app/src/main/java/vn/edu/uit/devorbit/mobile/ui/DevOrbitApp.kt` | Root composable with NavHost routing |
 | `app/src/main/java/vn/edu/uit/devorbit/mobile/ui/MainScreen.kt` | Main scaffold with bottom navigation bar |
 | `app/src/main/java/vn/edu/uit/devorbit/mobile/ui/navigation/Screen.kt` | Route definitions for all screens |
+| `app/src/main/java/vn/edu/uit/devorbit/mobile/ui/screen/repos/ReposByCourseScreen.kt` | Mobile repo browser organized by course catalogue |
+| `app/src/main/java/vn/edu/uit/devorbit/mobile/ui/screen/gpa/GpaScreen.kt` | Local GPA calculator UI |
+| `app/src/main/java/vn/edu/uit/devorbit/mobile/domain/gpa/GpaCalculator.kt` | Pure Kotlin GPA calculation logic |
 
 ## Subdirectories
 | Directory | Purpose |
@@ -32,6 +35,7 @@ Kotlin Android application for the DevOrbit platform, providing mobile access fo
 | `data/repository/` | Repository implementations (AcademicRepository, AuthRepositoryImpl, DiscoveryRepositoryImpl, ResourceRepositoryImpl, BookmarkRepositoryImpl, AiRepositoryImpl) |
 | `data/datastore/` | DataStore preferences (SettingsDataStore) |
 | `data/di/` | DI modules (RepositoryModule) |
+| `domain/gpa/` | GPA calculator domain models and pure calculation logic |
 | `domain/engine/` | Business logic engines (BurnoutEngine, GpaEngine, KnowledgeGraphEngine, RecommendationEngine, RiskEngine, SimulationEngine, StudyPlannerEngine, TaskBreakdownEngine, WorkloadEngine) |
 | `domain/model/` | Domain models (AcademicHealth, Analytics, BurnoutStatus, Flashcard, GpaImpact, KnowledgeGraph, LearningTask, Recommendation, RiskProfile, SemesterTimeline, SimulationResult, StudyPlan, SubjectNote, TaskBreakdown, Workload) |
 | `domain/repository/` | Repository interfaces (AuthRepository, BookmarkRepository, DiscoveryRepository, ResourceRepository, AiRepository) |
@@ -39,9 +43,11 @@ Kotlin Android application for the DevOrbit platform, providing mobile access fo
 | `ui/screen/courses/` | Course hub screens (CourseHubScreen, CourseListScreen, CourseHubNavigationState) |
 | `ui/screen/dashboard/` | Dashboard screens (DashboardScreen, FocusModeScreen) |
 | `ui/screen/explore/` | Explore screen (ExploreScreen) |
+| `ui/screen/gpa/` | GPA calculator screen and UI state |
 | `ui/screen/knowledge/` | Knowledge graph screens (KnowledgeHubScreen, KnowledgeGraphScreen, KnowledgeDetailScreen) |
 | `ui/screen/plan/` | Study planner screens (StudyPlannerScreen, SyllabusParserScreen, TaskBreakdownScreen) |
 | `ui/screen/profile/` | Profile screen (ProfileScreen) |
+| `ui/screen/repos/` | Repos-by-course screen |
 | `ui/components/` | Reusable UI components (CosmicBackground, GalaxyGraphCanvas, GlassCard) |
 | `ui/navigation/` | Navigation routing (Screen.kt) |
 | `ui/theme/` | Cosmic/galaxy theme (Color.kt, DesignSystem.kt, Theme.kt) |
@@ -64,7 +70,8 @@ Kotlin Android application for the DevOrbit platform, providing mobile access fo
 - Unit tests in `app/src/test/java/vn/edu/uit/devorbit/mobile/`
 - Engine tests: BurnoutEngineTest, GpaEngineTest, KnowledgeGraphEngineTest, RecommendationEngineTest, RiskEngineTest, SimulationEngineTest, StudyPlannerEngineTest, TaskBreakdownEngineTest, WorkloadEngineTest
 - Model tests: DeserializationTest (API response parsing)
-- UI state tests: RepoFilterStateTest, CourseHubNavigationStateTest
+- UI state tests: RepoFilterStateTest, CourseHubNavigationStateTest, ScreenTest, ReposCourseRowModelTest, GpaScreenStateTest
+- GPA tests: GpaCalculatorTest
 - Test on multiple Android versions
 - Verify offline functionality (Room + DataStore)
 - Test API integration and error handling

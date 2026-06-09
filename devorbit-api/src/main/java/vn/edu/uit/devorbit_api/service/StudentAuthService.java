@@ -1,16 +1,20 @@
 package vn.edu.uit.devorbit_api.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.edu.uit.devorbit_api.dto.student.ForgotPasswordRequest;
 import vn.edu.uit.devorbit_api.dto.student.OtpVerificationRequest;
+import vn.edu.uit.devorbit_api.dto.student.ResetPasswordRequest;
 import vn.edu.uit.devorbit_api.dto.student.StudentAuthResponse;
 import vn.edu.uit.devorbit_api.dto.student.StudentLoginRequest;
 import vn.edu.uit.devorbit_api.dto.student.StudentProfileResponse;
 import vn.edu.uit.devorbit_api.dto.student.StudentRegisterRequest;
 import vn.edu.uit.devorbit_api.entity.Otp;
+import vn.edu.uit.devorbit_api.entity.OtpPurpose;
 import vn.edu.uit.devorbit_api.entity.StudentUser;
 import vn.edu.uit.devorbit_api.exception.BadRequestException;
 import vn.edu.uit.devorbit_api.exception.UnauthorizedException;
@@ -28,31 +32,69 @@ public class StudentAuthService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final OtpRateLimitService otpRateLimitService;
+    private final LoginRateLimitService loginRateLimitService;
+    private final RevokedTokenStore revokedTokenStore;
 
     @Value("${app.otp.expiration-minutes:10}")
     private int otpExpirationMinutes;
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    public StudentAuthResponse login(StudentLoginRequest request) {
-        StudentUser student = studentUserRepository.findByStudentCode(request.studentCode())
-                .orElseThrow(() -> new UnauthorizedException("Invalid student code or password"));
+    // ───────── AUTH ─────────
 
-        if (!student.isActive() || !passwordEncoder.matches(request.password(), student.getPasswordHash())) {
-            throw new UnauthorizedException("Invalid student code or password");
+    public StudentAuthResponse login(StudentLoginRequest request, HttpServletRequest httpRequest) {
+        String ip = extractClientIp(httpRequest);
+        loginRateLimitService.check(request.studentCode(), ip);
+
+        StudentUser student = studentUserRepository.findByStudentCode(request.studentCode())
+                .orElseThrow(() -> {
+                    loginRateLimitService.recordFailure(request.studentCode(), ip);
+                    return new UnauthorizedException("Tên đăng nhập hoặc mật khẩu không đúng");
+                });
+
+        if (!student.isActive()) {
+            loginRateLimitService.recordFailure(request.studentCode(), ip);
+            throw new UnauthorizedException("Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email.");
+        }
+        if (!passwordEncoder.matches(request.password(), student.getPasswordHash())) {
+            loginRateLimitService.recordFailure(request.studentCode(), ip);
+            throw new UnauthorizedException("Tên đăng nhập hoặc mật khẩu không đúng");
         }
 
+        loginRateLimitService.onSuccess(request.studentCode(), ip);
         String token = jwtService.generateToken(student.getStudentCode(), "STUDENT");
         return new StudentAuthResponse(token, student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail());
     }
 
+    public StudentProfileResponse me(String studentCode) {
+        StudentUser student = studentUserRepository.findByStudentCode(studentCode)
+                .orElseThrow(() -> new UnauthorizedException("Student not found"));
+        return new StudentProfileResponse(student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail());
+    }
+
+    // ───────── REGISTER & VERIFY ─────────
+
     @Transactional
     public StudentProfileResponse register(StudentRegisterRequest request) {
-        if (studentUserRepository.findByStudentCode(request.studentCode()).isPresent()) {
-            throw new BadRequestException("Student code already exists");
+        var existingByCode = studentUserRepository.findByStudentCode(request.studentCode());
+        if (existingByCode.isPresent()) {
+            if (existingByCode.get().isActive()) {
+                throw new BadRequestException("Student code already exists");
+            }
+            otpRepository.deleteByEmailAndPurpose(existingByCode.get().getEmail(), OtpPurpose.EMAIL_VERIFICATION);
+            studentUserRepository.delete(existingByCode.get());
+            studentUserRepository.flush();
         }
-        if (studentUserRepository.findByEmail(request.email()).isPresent()) {
-            throw new BadRequestException("Email already exists");
+
+        var existingByEmail = studentUserRepository.findByEmail(request.email());
+        if (existingByEmail.isPresent()) {
+            if (existingByEmail.get().isActive()) {
+                throw new BadRequestException("Email already exists");
+            }
+            otpRepository.deleteByEmailAndPurpose(existingByEmail.get().getEmail(), OtpPurpose.EMAIL_VERIFICATION);
+            studentUserRepository.delete(existingByEmail.get());
+            studentUserRepository.flush();
         }
 
         StudentUser student = studentUserRepository.save(StudentUser.builder()
@@ -64,13 +106,16 @@ public class StudentAuthService {
                 .emailVerified(false)
                 .build());
 
+        otpRateLimitService.check("EMAIL_VERIFICATION:" + student.getEmail());
+
         String otpCode = generateOtp();
         otpRepository.save(Otp.builder()
                 .email(student.getEmail())
+                .purpose(OtpPurpose.EMAIL_VERIFICATION)
                 .otpCode(otpCode)
                 .expiresAt(LocalDateTime.now().plusMinutes(otpExpirationMinutes))
                 .build());
-        emailService.sendOtp(student.getEmail(), otpCode);
+        emailService.sendOtp(student.getEmail(), otpCode, otpExpirationMinutes);
 
         return new StudentProfileResponse(student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail());
     }
@@ -78,19 +123,19 @@ public class StudentAuthService {
     @Transactional
     public StudentAuthResponse verifyOtp(OtpVerificationRequest request) {
         String email = request.email().trim().toLowerCase();
-        Otp otp = otpRepository.findTopByEmailOrderByCreatedAtDesc(email)
-                .orElseThrow(() -> new BadRequestException("No OTP found for this email. Please register again."));
+        Otp otp = otpRepository.findTopByEmailAndPurposeOrderByCreatedAtDesc(email, OtpPurpose.EMAIL_VERIFICATION)
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy mã OTP xác thực email. Vui lòng đăng ký lại."));
 
         if (otp.getExpiresAt().isBefore(LocalDateTime.now())) {
             otpRepository.delete(otp);
-            throw new BadRequestException("OTP has expired. Please register again.");
+            throw new BadRequestException("Mã OTP đã hết hạn. Vui lòng đăng ký lại.");
         }
         if (!otp.getOtpCode().equals(request.otpCode().trim())) {
-            throw new BadRequestException("Invalid OTP code.");
+            throw new BadRequestException("Mã OTP không đúng.");
         }
 
         StudentUser student = studentUserRepository.findByEmail(email)
-                .orElseThrow(() -> new BadRequestException("Student not found."));
+                .orElseThrow(() -> new BadRequestException("Người dùng không tồn tại."));
 
         student.setActive(true);
         student.setEmailVerified(true);
@@ -101,10 +146,115 @@ public class StudentAuthService {
         return new StudentAuthResponse(token, student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail());
     }
 
-    public StudentProfileResponse me(String studentCode) {
-        StudentUser student = studentUserRepository.findByStudentCode(studentCode)
-                .orElseThrow(() -> new UnauthorizedException("Student not found"));
-        return new StudentProfileResponse(student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail());
+    // ───────── RESEND OTP ─────────
+
+    @Transactional
+    public void resendOtp(String email, OtpPurpose purpose) {
+        if (email == null || email.isBlank()) {
+            throw new BadRequestException("Email không được để trống");
+        }
+        otpRateLimitService.check("RESEND_OTP:" + email.trim().toLowerCase());
+
+        StudentUser student = studentUserRepository.findByEmail(email.trim().toLowerCase())
+                .orElseThrow(() -> new BadRequestException("Không thể gửi lại mã OTP. Vui lòng thử lại."));
+
+        otpRateLimitService.check(purpose + ":" + student.getEmail());
+
+        otpRepository.deleteByEmailAndPurpose(student.getEmail(), purpose);
+
+        String otpCode = generateOtp();
+        otpRepository.save(Otp.builder()
+                .email(student.getEmail())
+                .purpose(purpose)
+                .otpCode(otpCode)
+                .expiresAt(LocalDateTime.now().plusMinutes(otpExpirationMinutes))
+                .build());
+
+        if (purpose == OtpPurpose.PASSWORD_RESET) {
+            emailService.sendPasswordResetOtp(student.getEmail(), otpCode, otpExpirationMinutes);
+        } else {
+            emailService.sendOtp(student.getEmail(), otpCode, otpExpirationMinutes);
+        }
+    }
+
+    // ───────── FORGOT / RESET PASSWORD ─────────
+
+    @Transactional
+    public String forgotPassword(ForgotPasswordRequest request) {
+        otpRateLimitService.check("FORGOT_PASSWORD:" + request.studentCode().trim());
+
+        var studentOpt = studentUserRepository.findByStudentCode(request.studentCode().trim());
+        if (studentOpt.isPresent()) {
+            StudentUser student = studentOpt.get();
+            otpRateLimitService.check("PASSWORD_RESET:" + student.getEmail());
+
+            otpRepository.deleteByEmailAndPurpose(student.getEmail(), OtpPurpose.PASSWORD_RESET);
+
+            String otpCode = generateOtp();
+            otpRepository.save(Otp.builder()
+                    .email(student.getEmail())
+                    .purpose(OtpPurpose.PASSWORD_RESET)
+                    .otpCode(otpCode)
+                    .expiresAt(LocalDateTime.now().plusMinutes(otpExpirationMinutes))
+                    .build());
+            emailService.sendPasswordResetOtp(student.getEmail(), otpCode, otpExpirationMinutes);
+            return student.getEmail();
+        }
+        return null;
+    }
+
+    @Transactional
+    public StudentAuthResponse resetPassword(ResetPasswordRequest request) {
+        String email = request.email().trim().toLowerCase();
+        Otp otp = otpRepository.findTopByEmailAndPurposeOrderByCreatedAtDesc(email, OtpPurpose.PASSWORD_RESET)
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy mã OTP đặt lại mật khẩu. Vui lòng yêu cầu lại."));
+
+        if (otp.getExpiresAt().isBefore(LocalDateTime.now())) {
+            otpRepository.delete(otp);
+            throw new BadRequestException("Mã OTP đã hết hạn. Vui lòng yêu cầu lại.");
+        }
+        if (!otp.getOtpCode().equals(request.otpCode().trim())) {
+            throw new BadRequestException("Mã OTP không đúng.");
+        }
+
+        StudentUser student = studentUserRepository.findByEmail(email)
+                .orElseThrow(() -> new BadRequestException("Người dùng không tồn tại."));
+
+        if (passwordEncoder.matches(request.newPassword(), student.getPasswordHash())) {
+            throw new BadRequestException("Mật khẩu mới không được giống mật khẩu cũ");
+        }
+
+        student.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        studentUserRepository.save(student);
+        otpRepository.delete(otp);
+
+        String token = jwtService.generateToken(student.getStudentCode(), "STUDENT");
+        return new StudentAuthResponse(token, student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail());
+    }
+
+    // ───────── LOGOUT ─────────
+
+    public void logout(String token) {
+        if (token != null && !token.isEmpty()) {
+            try {
+                String jti = jwtService.extractJti(token);
+                revokedTokenStore.revoke(jti);
+            } catch (Exception ignored) {}
+        }
+    }
+
+    // ───────── UTILITY ─────────
+
+    private String extractClientIp(HttpServletRequest request) {
+        String xf = request.getHeader("X-Forwarded-For");
+        if (xf != null && !xf.isEmpty() && !"unknown".equalsIgnoreCase(xf)) {
+            return xf.split(",")[0].trim();
+        }
+        String xri = request.getHeader("X-Real-IP");
+        if (xri != null && !xri.isEmpty() && !"unknown".equalsIgnoreCase(xri)) {
+            return xri.trim();
+        }
+        return request.getRemoteAddr();
     }
 
     private String generateOtp() {

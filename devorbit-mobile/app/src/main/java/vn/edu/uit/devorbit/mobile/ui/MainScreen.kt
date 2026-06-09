@@ -55,14 +55,7 @@ fun MainScreen(
     CosmicBackground {
         NavigationSuiteScaffold(
             navigationSuiteItems = {
-                val items = listOf(
-                    Screen.Dashboard,
-                    Screen.Courses,
-                    Screen.Knowledge,
-                    Screen.Explore,
-                    Screen.Plan,
-                    Screen.Profile
-                )
+                val items = Screen.navItems
                 items.forEach { screen ->
                     item(
                         selected = currentScreen == screen,
@@ -96,15 +89,26 @@ fun MainScreen(
                             onCompleteTask = { academicVm.toggleTaskComplete(it.id) },
                             onBreakdownGoal = { currentScreen = Screen.Plan }
                         )
-                        Screen.Courses -> CourseHubScreen()
-                        Screen.Knowledge -> KnowledgeTabView()
+                        Screen.Repos -> CourseHubScreen()
                         Screen.Explore -> ExploreScreen()
                         Screen.Plan -> PlanTabView()
+                        Screen.Gpa -> GpaPlaceholderScreen()
                         Screen.Profile -> ProfileScreen()
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun GpaPlaceholderScreen() {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text(
+            text = "GPA",
+            style = CosmicTheme.typography.display,
+            color = CosmicTheme.colors.textPrimary
+        )
     }
 }
 

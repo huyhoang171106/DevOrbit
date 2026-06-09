@@ -58,11 +58,13 @@ fun MainScreen(
             navigationSuiteItems = {
                 val items = Screen.navItems
                 items.forEach { screen ->
+                    val screenIcon = screen.icon
+                    val screenLabel = screen.label
                     item(
                         selected = currentScreen == screen,
                         onClick = { currentScreen = screen },
-                        icon = { Icon(screen.icon, contentDescription = screen.label) },
-                        label = { Text(screen.label) },
+                        icon = { Icon(screenIcon, contentDescription = screenLabel) },
+                        label = { Text(screenLabel) },
                         colors = navItemColors
                     )
                 }

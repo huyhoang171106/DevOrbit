@@ -51,7 +51,8 @@ class AcademicRepository @Inject constructor(
                     id = it.id,
                     maMH = it.code,
                     tenMH = it.name,
-                    credits = 0,
+                    credits = it.credits ?: 0,
+                    repoCount = it.repoCount,
                     description = ""
                 )
             }

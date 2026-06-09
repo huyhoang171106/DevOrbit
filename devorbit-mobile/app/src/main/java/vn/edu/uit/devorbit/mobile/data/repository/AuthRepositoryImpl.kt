@@ -45,6 +45,11 @@ class AuthRepositoryImpl @Inject constructor(
         AuthResult(token, studentCode, fullName, verifiedEmail)
     }
 
+    override suspend fun resendOtp(email: String): Result<Unit> = runCatching {
+        apiService.resendOtp(mapOf("email" to email))
+        Unit
+    }
+
     override suspend fun login(studentCode: String, password: String): Result<AuthResult> = runCatching {
         val response = apiService.login(mapOf("studentCode" to studentCode, "password" to password))
         val token = response["token"] as? String ?: throw Exception("Login failed")

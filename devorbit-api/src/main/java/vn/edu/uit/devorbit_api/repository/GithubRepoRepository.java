@@ -13,12 +13,12 @@ import java.util.List;
 public interface GithubRepoRepository extends JpaRepository<GithubRepo, Long> {
     List<GithubRepo> findBySubjectId(String subjectId);
 
-    @EntityGraph(attributePaths = {"techStacks"})
+    @EntityGraph(attributePaths = {"techStacks", "course"})
     List<GithubRepo> findByActiveTrue();
 
     long countByActiveTrue();
 
-    @EntityGraph(attributePaths = {"techStacks"})
+    @EntityGraph(attributePaths = {"techStacks", "course"})
     List<GithubRepo> findByCourseIdAndActiveTrue(Long courseId);
 
     Optional<GithubRepo> findByGithubUrlAndCourseId(String githubUrl, Long courseId);
@@ -40,5 +40,8 @@ public interface GithubRepoRepository extends JpaRepository<GithubRepo, Long> {
     @EntityGraph(attributePaths = {"techStacks"})
     @Query("SELECT r FROM GithubRepo r")
     List<GithubRepo> findAllWithTechStacks();
+
+    @Query("SELECT r FROM GithubRepo r WHERE r.active = true AND (r.lastPushedAt IS NULL OR r.lastPushedAt = '')")
+    List<GithubRepo> findStaleActiveRepos();
 }
 

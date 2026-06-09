@@ -23,7 +23,7 @@ public class EmailService {
 
     public void sendOtp(String to, String otpCode, int expirationMinutes) {
         if (username == null || username.isBlank()) {
-            log.debug("Mail not configured — OTP {} for {} would have been sent", otpCode, to);
+            log.info("Mail not configured — OTP {} for {} would have been sent", otpCode, to);
             return;
         }
         try {

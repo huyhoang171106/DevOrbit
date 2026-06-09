@@ -4,6 +4,9 @@ import { motion } from 'framer-motion'
 import { apiGet, apiStudentPost } from '../../lib/api'
 import { isStudentAuthenticated } from '../../lib/auth'
 import { RepoAiAnalysisSection } from '../../components/student/RepoAiAnalysisSection'
+import { ReviewSection } from '../../components/student/ReviewSection'
+import { VoteButtons } from '../../components/student/VoteButtons'
+import { useRepoSocialInfo } from '../../hooks/useCommunity'
 import type { RepoSummary } from '../../types/api'
 import { analyzeRepository, type RepoAnalysisResult } from '../../lib/repoAnalysisService'
 import { ArrowLeft, Code, Star, ArrowSquareOut, WarningCircle, GithubLogo, Bookmark, BookmarkSimple } from '@phosphor-icons/react'
@@ -34,6 +37,7 @@ export function RepoDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [bookmarked, setBookmarked] = useState(false)
   const [bookmarking, setBookmarking] = useState(false)
+  const [bookmarkError, setBookmarkError] = useState<string | null>(null)
 
   async function toggleBookmark() {
     if (!isStudentAuthenticated()) {
@@ -41,6 +45,7 @@ export function RepoDetailPage() {
       return
     }
     if (!repo || bookmarking) return
+    setBookmarkError(null)
     setBookmarking(true)
     try {
       if (!bookmarked) {
@@ -53,12 +58,14 @@ export function RepoDetailPage() {
         })
         setBookmarked(true)
       }
-    } catch {
-      // silently fail
+    } catch (e) {
+      setBookmarkError(e instanceof Error ? e.message : 'Đánh dấu thất bại, vui lòng thử lại')
     } finally {
       setBookmarking(false)
     }
   }
+
+  const { data: socialInfo, refetch: refetchSocial } = useRepoSocialInfo(Number(repoId))
 
   useEffect(() => {
     if (!repoId) return
@@ -231,8 +238,34 @@ export function RepoDetailPage() {
                 )}
                 {bookmarked ? 'Đã đánh dấu' : 'Đánh dấu'}
               </button>
+              {bookmarkError && (
+                <p className="text-[11px] text-rose-400 font-medium">{bookmarkError}</p>
+              )}
             </div>
           </div>
+
+          {/* Social: Vote + Reviews */}
+          {socialInfo && (
+            <div className="orbit-card p-6 md:p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-[13px] font-bold text-orbit-text">Bình chọn & Đánh giá</h3>
+                {/* TODO: Use socialInfo.userVote for initialVote when backend supports it */}
+                <VoteButtons
+                  repoId={Number(repoId)}
+                  initialScore={socialInfo.voteScore}
+                  initialVote={0}
+                  onVoteChanged={() => refetchSocial()}
+                />
+              </div>
+              <ReviewSection
+                averageRating={socialInfo.averageRating}
+                reviews={socialInfo.reviews}
+                targetType="REPO"
+                targetId={Number(repoId)}
+                onReviewChanged={() => refetchSocial()}
+              />
+            </div>
+          )}
 
           <RepoAiAnalysisSection repo={repo} analysis={analysis} loading={analysisLoading} error={analysisError} />
         </motion.div>

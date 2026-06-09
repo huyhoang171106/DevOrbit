@@ -100,7 +100,7 @@ fun GpaScreen() {
                 color = CosmicTheme.colors.textPrimary
             )
             Text(
-                text = "Tinh GPA hoc ky va uoc luong GPA tich luy",
+                text = "Tính GPA học kỳ và ước lượng GPA tích lũy",
                 style = CosmicTheme.typography.label,
                 color = CosmicTheme.colors.textTertiary
             )
@@ -133,17 +133,17 @@ fun GpaScreen() {
             ) {
                 Icon(Icons.Rounded.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
-                Text("Them mon")
+                Text("Thêm môn")
             }
         }
 
         item {
             SummarySection(
-                title = "GPA hoc ky",
+                title = "GPA học kỳ",
                 rows = listOf(
                     "GPA" to if (semester.valid) formatGpa(semester.gpa) else "--",
-                    "Tin chi hop le" to semester.totalCredits.toString(),
-                    "Dong bo qua" to semester.ignoredRows.toString()
+                    "Tín chỉ hợp lệ" to semester.totalCredits.toString(),
+                    "Dòng bỏ qua" to semester.ignoredRows.toString()
                 )
             )
         }
@@ -161,24 +161,24 @@ fun GpaScreen() {
 
         item {
             SummarySection(
-                title = "Uoc luong tich luy",
+                title = "Ước lượng tích lũy",
                 rows = listOf(
-                    "GPA sau ky nay" to if (cumulative.valid) formatGpa(cumulative.projectedGpa) else "--",
-                    "Tong tin chi" to if (cumulative.valid) cumulative.totalCredits.toString() else "--"
+                    "GPA sau kỳ này" to if (cumulative.valid) formatGpa(cumulative.projectedGpa) else "--",
+                    "Tổng tín chỉ" to if (cumulative.valid) cumulative.totalCredits.toString() else "--"
                 )
             )
         }
 
         item {
             SummarySection(
-                title = "Muc tieu GPA",
+                title = "Mục tiêu GPA",
                 rows = listOf(
-                    "GPA ky nay can dat" to if (target.valid) formatGpa(target.requiredGpa) else "--",
-                    "Trang thai" to when {
+                    "GPA kỳ này cần đạt" to if (target.valid) formatGpa(target.requiredGpa) else "--",
+                    "Trạng thái" to when {
                         !target.valid -> "--"
-                        target.infeasible -> "Vuot qua 10.0"
-                        target.requiredGpa < 0.0 -> "Da dat muc tieu"
-                        else -> "Co the dat"
+                        target.infeasible -> "Vượt quá 10.0"
+                        target.requiredGpa < 0.0 -> "Đã đạt mục tiêu"
+                        else -> "Có thể đạt"
                     }
                 )
             )
@@ -203,7 +203,7 @@ private fun GpaCourseRow(
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = "Mon ${row.id}",
+                    text = "Môn ${row.id}",
                     style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold),
                     color = CosmicTheme.colors.textPrimary,
                     modifier = Modifier.weight(1f)
@@ -211,7 +211,7 @@ private fun GpaCourseRow(
                 IconButton(onClick = onRemove, enabled = canRemove) {
                     Icon(
                         Icons.Rounded.Delete,
-                        contentDescription = "Xoa mon",
+                        contentDescription = "Xóa môn",
                         tint = if (canRemove) CosmicTheme.colors.supernova else CosmicTheme.colors.textTertiary
                     )
                 }
@@ -220,7 +220,7 @@ private fun GpaCourseRow(
             OutlinedTextField(
                 value = row.name,
                 onValueChange = onNameChange,
-                label = { Text("Ten mon") },
+                label = { Text("Tên môn") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 colors = gpaFieldColors()
@@ -230,7 +230,7 @@ private fun GpaCourseRow(
                 OutlinedTextField(
                     value = row.credits,
                     onValueChange = onCreditsChange,
-                    label = { Text("Tin chi") },
+                    label = { Text("Tín chỉ") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.weight(1f),
@@ -239,7 +239,7 @@ private fun GpaCourseRow(
                 OutlinedTextField(
                     value = row.grade,
                     onValueChange = onGradeChange,
-                    label = { Text("Diem 10") },
+                    label = { Text("Điểm 10") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.weight(1f),
@@ -266,7 +266,7 @@ private fun ProjectionInputs(
     ) {
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(
-                text = "GPA tich luy",
+                text = "GPA tích lũy",
                 style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold),
                 color = CosmicTheme.colors.textPrimary
             )
@@ -274,7 +274,7 @@ private fun ProjectionInputs(
                 OutlinedTextField(
                     value = currentGpa,
                     onValueChange = onCurrentGpaChange,
-                    label = { Text("GPA hien tai") },
+                    label = { Text("GPA hiện tại") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.weight(1f),
@@ -283,7 +283,7 @@ private fun ProjectionInputs(
                 OutlinedTextField(
                     value = completedCredits,
                     onValueChange = onCompletedCreditsChange,
-                    label = { Text("Tin chi da co") },
+                    label = { Text("Tín chỉ đã có") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.weight(1f),
@@ -293,7 +293,7 @@ private fun ProjectionInputs(
             OutlinedTextField(
                 value = targetGpa,
                 onValueChange = onTargetGpaChange,
-                label = { Text("GPA muc tieu") },
+                label = { Text("GPA mục tiêu") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.fillMaxWidth(),

@@ -13,13 +13,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  */
 object DevOrbitMigrations {
 
-    /**
-     * Placeholder migration from version 3 to 4.
-     * When the next schema change is made, replace this with actual ALTER TABLE / CREATE TABLE statements.
-     */
     val MIGRATION_3_4 = object : Migration(3, 4) {
         override fun migrate(db: SupportSQLiteDatabase) {
-            // No-op placeholder - add DDL here when version 4 schema changes are defined.
+            db.execSQL("ALTER TABLE courses ADD COLUMN repoCount INTEGER NOT NULL DEFAULT 0")
         }
     }
 

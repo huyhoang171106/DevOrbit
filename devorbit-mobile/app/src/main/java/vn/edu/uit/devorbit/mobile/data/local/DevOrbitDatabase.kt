@@ -10,7 +10,7 @@ import vn.edu.uit.devorbit.mobile.data.local.entity.*
 
 @Database(
     entities = [CourseEntity::class, RepoEntity::class, CourseRelationshipEntity::class, TaskEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = true
 )
 abstract class DevOrbitDatabase : RoomDatabase() {

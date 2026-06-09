@@ -33,12 +33,14 @@ public class CourseRelationshipService {
         this.knowledgeGraphService = knowledgeGraphService;
     }
 
+    @Transactional(readOnly = true)
     public List<CourseRelationshipResponse> getByCourse(Long courseId) {
         return repository.findByCourseIdOrRelatedCourseIdOrderByCreatedAtAsc(courseId, courseId).stream()
                 .map(this::toResponse)
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<CourseRelationshipResponse> getAll() {
         return repository.findAll().stream()
                 .map(this::toResponse)

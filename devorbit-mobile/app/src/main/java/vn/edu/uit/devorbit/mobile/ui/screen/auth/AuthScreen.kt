@@ -62,6 +62,7 @@ fun AuthScreen(
                 onFieldChange = viewModel::updateRegisterField,
                 onRegister = viewModel::register,
                 onVerifyOtp = viewModel::verifyOtp,
+                onResendOtp = viewModel::resendOtp,
                 onSwitchToLogin = { showRegister = false; viewModel.switchToLogin() }
             )
         } else {
@@ -180,6 +181,7 @@ private fun RegisterContent(
     onFieldChange: (String, String) -> Unit,
     onRegister: () -> Unit,
     onVerifyOtp: () -> Unit,
+    onResendOtp: () -> Unit,
     onSwitchToLogin: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
@@ -215,6 +217,10 @@ private fun RegisterContent(
             Spacer(modifier = Modifier.height(12.dp))
             Text(state.error, color = CosmicTheme.colors.supernova, style = CosmicTheme.typography.label)
         }
+        if (state.message != null) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(state.message, color = CosmicTheme.colors.nebula, style = CosmicTheme.typography.label)
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -233,6 +239,14 @@ private fun RegisterContent(
             } else {
                 Text("Xac thuc", style = CosmicTheme.typography.body, fontWeight = FontWeight.Bold)
             }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+        TextButton(
+            onClick = onResendOtp,
+            enabled = !state.isLoading
+        ) {
+            Text("Gui lai ma OTP", color = CosmicTheme.colors.plasma)
         }
 
         Spacer(modifier = Modifier.height(16.dp))

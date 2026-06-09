@@ -36,8 +36,15 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   })
 
   if (!response.ok) {
-    const body = await response.text().catch(() => '')
-    throw new Error(body || `Request failed: ${response.status}`)
+    const rawBody = await response.text().catch(() => '')
+    let message: string
+    try {
+      const parsed = JSON.parse(rawBody)
+      message = parsed.error || parsed.message || rawBody
+    } catch {
+      message = rawBody || `Request failed: ${response.status}`
+    }
+    throw new Error(message)
   }
 
   // DELETE returns 204 No Content — no body to parse

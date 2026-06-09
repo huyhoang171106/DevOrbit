@@ -201,6 +201,7 @@ class AuthViewModel @Inject constructor(
 
     fun switchToLogin() {
         _loginState.value = _loginState.value.copy(error = null)
+        _registerState.value = AuthStateTransitions.registerStateAfterSwitchToLogin(_registerState.value)
     }
 
     fun logout() {

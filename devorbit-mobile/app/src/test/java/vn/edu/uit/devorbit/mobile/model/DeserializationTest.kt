@@ -42,11 +42,10 @@ class DeserializationTest {
         assertEquals("Test Repo", result.displayName)
         assertEquals("Kotlin", result.primaryLanguage)
         assertEquals(42, result.stars)
-        assertNotNull(result.techStacks)
-        assertEquals(3, result.techStacks.size)
-        assertEquals("Kotlin", result.techStacks[0].name)
-        assertEquals("Android", result.techStacks[1].name)
-        assertEquals("Compose", result.techStacks[2].name)
+        assertEquals(3, result.safeTechStacks.size)
+        assertEquals("Kotlin", result.safeTechStacks[0].name)
+        assertEquals("Android", result.safeTechStacks[1].name)
+        assertEquals("Compose", result.safeTechStacks[2].name)
     }
 
     @Test
@@ -65,8 +64,7 @@ class DeserializationTest {
 
         val result = gson.fromJson(json, RepoSummary::class.java)
 
-        assertNotNull(result.techStacks)
-        assertTrue(result.techStacks.isEmpty())
+        assertTrue(result.safeTechStacks.isEmpty())
     }
 
     @Test
@@ -92,8 +90,7 @@ class DeserializationTest {
         val result = gson.fromJson(json, RepoSummary::class.java)
 
         assertNull(result.stars)
-        assertNotNull(result.techStacks)
-        assertTrue(result.techStacks.isEmpty())
+        assertTrue(result.safeTechStacks.isEmpty())
     }
 
     @Test
@@ -127,8 +124,8 @@ class DeserializationTest {
         assertEquals(2, results.size)
         assertEquals("Repo One", results[0].displayName)
         assertEquals("Repo Two", results[1].displayName)
-        assertEquals(2, results[0].techStacks.size)
-        assertEquals(1, results[1].techStacks.size)
+        assertEquals(2, results[0].safeTechStacks.size)
+        assertEquals(1, results[1].safeTechStacks.size)
     }
 
     @Test
@@ -156,10 +153,9 @@ class DeserializationTest {
         assertEquals(original.githubUrl, restored.githubUrl)
         assertEquals(original.primaryLanguage, restored.primaryLanguage)
         assertEquals(original.stars, restored.stars)
-        assertNotNull(restored.techStacks)
-        assertEquals(original.techStacks.size, restored.techStacks.size)
-        assertEquals(original.techStacks[0].name, restored.techStacks[0].name)
-        assertEquals(original.techStacks[1].name, restored.techStacks[1].name)
+        assertEquals(original.safeTechStacks.size, restored.safeTechStacks.size)
+        assertEquals(original.safeTechStacks[0].name, restored.safeTechStacks[0].name)
+        assertEquals(original.safeTechStacks[1].name, restored.safeTechStacks[1].name)
     }
 
     @Test

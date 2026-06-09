@@ -23,7 +23,6 @@ import vn.edu.uit.devorbit.mobile.ui.components.CosmicBackground
 import vn.edu.uit.devorbit.mobile.ui.navigation.Screen
 import vn.edu.uit.devorbit.mobile.ui.screen.dashboard.DashboardScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.knowledge.KnowledgeGraphScreen
-import vn.edu.uit.devorbit.mobile.ui.screen.explore.ExploreScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.gpa.GpaScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.plan.StudyPlannerScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.profile.ProfileScreen
@@ -101,7 +100,6 @@ fun MainScreen(
                             onBreakdownGoal = { currentScreen = Screen.Plan }
                         )
                         Screen.Repos -> ReposByCourseScreen()
-                        Screen.Explore -> ExploreScreen()
                         Screen.Plan -> PlanTabView()
                         Screen.Gpa -> GpaScreen()
                         Screen.Profile -> ProfileScreen()

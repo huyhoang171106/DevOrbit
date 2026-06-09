@@ -1,17 +1,17 @@
 package vn.edu.uit.devorbit.mobile.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.graphics.Color
 import vn.edu.uit.devorbit.mobile.data.remote.dto.*
-
-import vn.edu.uit.devorbit.mobile.ui.components.GlassCard
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 
 @Composable
@@ -26,7 +26,7 @@ fun RepoListSection(
 ) {
     LazyColumn(
         contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         item {
             RepoFilterHeader(
@@ -40,18 +40,23 @@ fun RepoListSection(
 
         if (repos.isEmpty()) {
             item {
-                GlassCard(modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.padding(vertical = 12.dp)) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(14.dp),
+                    color = CosmicTheme.colors.nebula,
+                    border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+                ) {
+                    Column(modifier = Modifier.padding(20.dp)) {
                         Text(
-                            text = "No repositories found",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = Color.White
+                            text = "Không tìm thấy repository",
+                            style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
+                            color = CosmicTheme.colors.textPrimary
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = "Try another tech stack filter.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White.copy(alpha = 0.65f)
+                            text = "Thử bộ lọc tech stack khác.",
+                            style = CosmicTheme.typography.label,
+                            color = CosmicTheme.colors.textTertiary
                         )
                     }
                 }
@@ -59,47 +64,61 @@ fun RepoListSection(
         }
 
         items(repos) { repo ->
-            GlassCard(
+            Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onRepoClick(repo) }
+                    .clickable { onRepoClick(repo) },
+                shape = RoundedCornerShape(14.dp),
+                color = CosmicTheme.colors.nebula,
+                border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
             ) {
-                Column {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    val description = repo.safeDescription
+                    val primaryLanguage = repo.safePrimaryLanguage
                     Text(
                         text = repo.displayName,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = Color.White
+                        style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
+                        color = CosmicTheme.colors.textPrimary
                     )
-                    if (repo.description.isNotBlank()) {
+                    if (description.isNotBlank()) {
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = repo.description,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White.copy(alpha = 0.7f),
+                            text = description,
+                            style = CosmicTheme.typography.label,
+                            color = CosmicTheme.colors.textSecondary,
                             maxLines = 2
                         )
                     }
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.padding(top = 12.dp)
+                        modifier = Modifier.padding(top = 10.dp)
                     ) {
-                        if (repo.primaryLanguage.isNotBlank()) {
-                            SuggestionChip(
-                                onClick = {},
-                                label = { Text(repo.primaryLanguage) },
-                                colors = SuggestionChipDefaults.suggestionChipColors(
-                                    labelColor = Color.White
+                        if (primaryLanguage.isNotBlank()) {
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = CosmicTheme.colors.plasma.copy(alpha = 0.12f)
+                            ) {
+                                Text(
+                                    text = primaryLanguage,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                    style = CosmicTheme.typography.label,
+                                    color = CosmicTheme.colors.plasma
                                 )
-                            )
+                            }
                         }
-                        repo.techStacks.take(2).forEach { stack ->
-                            AssistChip(
-                                onClick = {},
-                                label = { Text(stack.name) },
-                                colors = AssistChipDefaults.assistChipColors(
-                                    labelColor = Color.White
+                        repo.safeTechStacks.take(2).forEach { stack ->
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = CosmicTheme.colors.nebula,
+                                border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+                            ) {
+                                Text(
+                                    text = stack.name,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                    style = CosmicTheme.typography.label,
+                                    color = CosmicTheme.colors.textSecondary
                                 )
-                            )
+                            }
                         }
                     }
                 }
@@ -123,13 +142,13 @@ private fun RepoFilterHeader(
         ) {
             Text(
                 text = "Repositories",
-                style = MaterialTheme.typography.titleMedium,
-                color = Color.White
+                style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
+                color = CosmicTheme.colors.textPrimary
             )
             Text(
                 text = "$resultCount/$totalCount",
-                style = MaterialTheme.typography.labelLarge,
-                color = CosmicTheme.colors.textSecondary
+                style = CosmicTheme.typography.label,
+                color = CosmicTheme.colors.textTertiary
             )
         }
 

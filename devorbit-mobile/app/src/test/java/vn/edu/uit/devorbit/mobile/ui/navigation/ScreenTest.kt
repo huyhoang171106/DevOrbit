@@ -8,15 +8,16 @@ import org.junit.Test
 class ScreenTest {
 
     @Test
-    fun `bottom navigation replaces course and knowledge with subjects and gpa`() {
+    fun `bottom navigation uses subjects gpa and profile without explore`() {
         val labels = Screen.navItems.map { it.label }
 
         assertEquals(
-            listOf("Tổng quan", "Môn học", "Khám phá", "Kế hoạch", "GPA", "Cá nhân"),
+            listOf("Tổng quan", "Môn học", "Kế hoạch", "GPA", "Cá nhân"),
             labels
         )
         assertTrue(Screen.navItems.any { it.route == "repos" })
         assertTrue(Screen.navItems.any { it.route == "gpa" })
+        assertFalse(Screen.navItems.any { it.route == "explore" })
         assertFalse(Screen.navItems.any { it.route == "courses" })
         assertFalse(Screen.navItems.any { it.route == "knowledge" })
     }

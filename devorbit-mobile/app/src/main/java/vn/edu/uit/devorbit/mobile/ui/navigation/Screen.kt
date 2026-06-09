@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class Screen(val route: String, val label: String, val icon: ImageVector) {
     object Dashboard : Screen("dashboard", "Tổng quan", Icons.Rounded.Home)
-    object Repos : Screen("repos", "Repos", Icons.Rounded.List)
+    object Repos : Screen("repos", "Môn học", Icons.Rounded.List)
     object Explore : Screen("explore", "Khám phá", Icons.Rounded.Search)
     object Plan : Screen("plan", "Kế hoạch", Icons.Rounded.DateRange)
     object Gpa : Screen("gpa", "GPA", Icons.Rounded.Star)

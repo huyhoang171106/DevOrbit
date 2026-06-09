@@ -22,6 +22,7 @@ spring:
     username: ${DATABASE_USERNAME:postgres}
     password: ${DATABASE_PASSWORD:}
   jpa:
+    open-in-view: false
     defer-datasource-initialization: true
     hibernate:
       ddl-auto: ${JPA_DDL_AUTO:none}
@@ -33,6 +34,10 @@ spring:
           batch_size: 50
         order_inserts: true
         order_updates: true
+  data:
+    web:
+      pageable:
+        page-serialization-mode: VIA_DTO
 
 app:
   otp:

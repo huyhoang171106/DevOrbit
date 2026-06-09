@@ -207,7 +207,7 @@ Spec directories include a free-form `MILESTONES.md` implementation log for mile
 
 ## Codebase Wiki
 
-This project has an auto-maintained knowledge base at `.codebase-wiki/`.
+This project has an auto-maintained knowledge base at `.codebase-wiki/` (run `/wiki-init` to initialize if not present).
 
 ### Keeping the Wiki Updated
 

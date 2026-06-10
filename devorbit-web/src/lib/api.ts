@@ -1,3 +1,5 @@
+import { getStudentToken } from './auth'
+
 export const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? ''
 
 export function buildApiUrl(baseUrl: string, path: string): string {
@@ -36,15 +38,8 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   })
 
   if (!response.ok) {
-    const rawBody = await response.text().catch(() => '')
-    let message: string
-    try {
-      const parsed = JSON.parse(rawBody)
-      message = parsed.error || parsed.message || rawBody
-    } catch {
-      message = rawBody || `Request failed: ${response.status}`
-    }
-    throw new Error(message)
+    const body = await response.text().catch(() => '')
+    throw new Error(body || `Request failed: ${response.status}`)
   }
 
   // DELETE returns 204 No Content — no body to parse
@@ -82,14 +77,6 @@ export const apiUpload = <T>(path: string, formData: FormData): Promise<T> => {
     if (!res.ok) throw new Error(`Upload failed: ${res.status}`)
     return (await res.json()) as T
   })
-}
-
-function getStudentToken(): string | null {
-  try {
-    return localStorage.getItem('devorbit-student-token')
-  } catch {
-    return null
-  }
 }
 
 // --- Student API (authenticated) ---

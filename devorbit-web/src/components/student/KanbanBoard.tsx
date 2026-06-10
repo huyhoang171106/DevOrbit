@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback, useEffect, useRef, forwardRef } from 'react'
 import { motion } from 'framer-motion'
 import {
   DndContext,
@@ -6,6 +6,7 @@ import {
   closestCorners,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   DragStartEvent,
@@ -116,6 +117,7 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
   const [graduationPath, setGraduationPath] = useState<GraduationPath | null>(null)
   const [showGradMenu, setShowGradMenu] = useState(false)
   const [specialtyChoice, setSpecialtyChoice] = useState<string | null>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   // Load saved assignments from localStorage on mount
   useEffect(() => {
@@ -206,7 +208,8 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
   }, [columns, nodes, semesterMap, creditMap, englishLevel])
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 18 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
     useSensor(KeyboardSensor),
   )
 
@@ -558,15 +561,15 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
       )}
 
       {/* ─── AV + TN selectors ─── */}
-      <div className="shrink-0 px-6 pt-5 pb-3 flex items-end justify-center gap-8">
+      <div className="shrink-0 px-6 pt-5 pb-3 flex flex-col sm:flex-row items-center sm:items-end justify-center gap-6 sm:gap-8">
         {/* English level selector */}
-        <div className="relative">
+        <div className="relative w-full sm:w-auto max-w-md sm:max-w-none">
           <label className="text-[11px] font-semibold text-orbit-text-muted mb-2 block text-center">
             Chọn trình độ anh văn đầu vào
           </label>
           <button
             onClick={() => setShowEnglishMenu(!showEnglishMenu)}
-            className="flex items-center gap-3 px-5 py-3 min-w-[260px] rounded-2xl border border-orbit-border/30 bg-orbit-surface/60 text-[14px] font-medium text-orbit-text hover:border-orbit-accent/40 hover:bg-orbit-accent/[0.02] transition-[border-color,background-color]"
+            className="flex items-center gap-3 px-5 py-3 w-full sm:min-w-[260px] rounded-2xl border border-orbit-border/30 bg-orbit-surface/60 text-[14px] font-medium text-orbit-text hover:border-orbit-accent/40 hover:bg-orbit-accent/[0.02] transition-[border-color,background-color]"
           >
             <span className="flex-1 text-left">
               {ENG_LEVEL_LABELS[englishLevel]}
@@ -605,13 +608,13 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
         </div>
 
         {/* Graduation path selector */}
-        <div className="relative">
+        <div className="relative w-full sm:w-auto max-w-md sm:max-w-none">
           <label className="text-[11px] font-semibold text-orbit-text-muted mb-2 block text-center">
             Chọn hình thức tốt nghiệp
           </label>
           <button
             onClick={() => setShowGradMenu(!showGradMenu)}
-            className="flex items-center gap-3 px-5 py-3 min-w-[260px] rounded-2xl border border-orbit-border/30 bg-orbit-surface/60 text-[14px] font-medium text-orbit-text hover:border-orbit-accent/40 hover:bg-orbit-accent/[0.02] transition-all"
+            className="flex items-center gap-3 px-5 py-3 w-full sm:min-w-[260px] rounded-2xl border border-orbit-border/30 bg-orbit-surface/60 text-[14px] font-medium text-orbit-text hover:border-orbit-accent/40 hover:bg-orbit-accent/[0.02] transition-all"
           >
             <span className="flex-1 text-left">
               {graduationPath ? graduationPath.name : 'Chưa chọn'}
@@ -710,22 +713,22 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
             animate={{ opacity: 1, y: 0 }}
             className="relative flex flex-col items-center gap-1.5 px-5 py-3 rounded-2xl bg-orbit-accent/[0.03] border border-orbit-accent/10"
           >
-            <div className="flex items-center gap-3 text-[12px] text-orbit-text-secondary leading-relaxed">
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-[11px] sm:text-[12px] text-orbit-text-secondary leading-relaxed">
               <span className="flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-orbit-accent/60" />
                 Kéo thả môn qua học kỳ
               </span>
-              <span className="text-orbit-border/30">|</span>
+              <span className="hidden sm:inline text-orbit-border/30">|</span>
               <span className="flex items-center gap-1.5">
                 <Compass className="h-3.5 w-3.5 text-orbit-accent/60" weight="regular" />
                 Chọn môn tự chọn theo ý thích
               </span>
-              <span className="text-orbit-border/30">|</span>
+              <span className="hidden sm:inline text-orbit-border/30">|</span>
               <span className="flex items-center gap-1.5">
                 <GraduationCap className="h-3.5 w-3.5 text-orbit-accent/60" weight="regular" />
                 Chọn hình thức tốt nghiệp
               </span>
-              <span className="text-orbit-border/30">|</span>
+              <span className="hidden sm:inline text-orbit-border/30">|</span>
               <span className="flex items-center gap-1.5">
                 <Sparkle className="h-3.5 w-3.5 text-orbit-accent/60" weight="fill" />
                 Tự động sắp xếp lộ trình
@@ -745,7 +748,7 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
       )}
 
       {/* ─── Total credits bar ─── */}
-      <div className="shrink-0 px-6 pb-4 flex items-center gap-4">
+      <div className="shrink-0 px-6 pb-4 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
         <div className="flex items-center gap-3 py-2 px-4 rounded-2xl bg-orbit-surface/60 border border-orbit-border/10">
           <span className="text-[12px] font-bold uppercase tracking-[0.15em] text-orbit-text-muted">
             Tổng TC đã xếp
@@ -772,54 +775,60 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
         )}
       </div>
 
-      {/* ─── Kanban scrollable area ─── */}
-      <div className="flex-1 overflow-x-auto px-6 py-3 pb-24">
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCorners}
-          onDragStart={handleDragStart}
-          onDragOver={handleDragOver}
-          onDragEnd={handleDragEnd}
-        >
-          <div className="flex gap-5 h-full min-w-max pb-4">
-            {columns.map((col) => (
-              <KanbanColumn
-                key={col.semester === null ? 'unassigned' : `sem-${col.semester}`}
-                semester={col.semester}
-                label={
-                  col.semester !== null
-                    ? SEMESTER_LABELS[col.semester] ?? `Kỳ ${col.semester}`
-                    : 'Chưa xếp'
-                }
-                color={col.semester !== null ? SEMESTER_COLORS[col.semester] : '#71717a'}
-                nodes={col.nodes}
-                prereqMap={prereqMap}
-                recommendedIds={recommendedIds}
-                semesterMap={semesterMap}
-                nodeMap={nodeMap}
-                creditMap={creditMap}
-                onCardClick={(id) => navigate(`/courses/${id}`)}
-              />
-            ))}
-          </div>
+      {/* ─── Kanban scrollable area with drag bar ─── */}
+      <div className="flex-1 relative flex flex-col">
+        <ScrollDragBar scrollRef={scrollRef} />
+        <div className="flex-1 min-h-0">
+          <GrabScroll ref={scrollRef} className="px-6 py-3 pb-24">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCorners}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragEnd={handleDragEnd}
+          >
+            <div className="flex gap-3 h-full min-w-max">
+              {columns.map((col) => (
+                <div key={col.semester === null ? 'unassigned' : `sem-${col.semester}`}>
+                  <KanbanColumn
+                    semester={col.semester}
+                    label={
+                      col.semester !== null
+                        ? SEMESTER_LABELS[col.semester] ?? `Kỳ ${col.semester}`
+                        : 'Chưa xếp'
+                    }
+                    color={col.semester !== null ? SEMESTER_COLORS[col.semester] : '#71717a'}
+                    nodes={col.nodes}
+                    prereqMap={prereqMap}
+                    recommendedIds={recommendedIds}
+                    semesterMap={semesterMap}
+                    nodeMap={nodeMap}
+                    creditMap={creditMap}
+                    onCardClick={(id) => navigate(`/courses/${id}`)}
+                  />
+                </div>
+              ))}
+            </div>
 
-          <DragOverlay>
-            {activeNode && (
-              <div className="opacity-90 rotate-[2deg]">
-                <KanbanCard
-                  node={activeNode}
-                  isRecommended={recommendedIds.has(activeNode.id)}
-                  prerequisites={prereqMap.get(activeNode.id) ?? []}
-                  semesterMap={semesterMap}
-                  color={activeColumn !== null ? SEMESTER_COLORS[activeColumn] ?? '#71717a' : '#71717a'}
-                  nodeMap={nodeMap}
-                  creditMap={creditMap}
-                  maxSemesterCredits={MAX_CREDITS_PER_SEMESTER}
-                />
-              </div>
-            )}
-          </DragOverlay>
-        </DndContext>
+            <DragOverlay>
+              {activeNode && (
+                <div className="opacity-90 rotate-[2deg]">
+                  <KanbanCard
+                    node={activeNode}
+                    isRecommended={recommendedIds.has(activeNode.id)}
+                    prerequisites={prereqMap.get(activeNode.id) ?? []}
+                    semesterMap={semesterMap}
+                    color={activeColumn !== null ? SEMESTER_COLORS[activeColumn] ?? '#71717a' : '#71717a'}
+                    nodeMap={nodeMap}
+                    creditMap={creditMap}
+                    maxSemesterCredits={MAX_CREDITS_PER_SEMESTER}
+                  />
+                </div>
+              )}
+            </DragOverlay>
+          </DndContext>
+        </GrabScroll>
+        </div>
       </div>
 
       {/* ─── Bottom bar: Save / Restore / Auto-arrange ─── */}
@@ -833,21 +842,21 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
           }`}
         >
           <FloppyDisk className="h-5 w-5" weight="regular" />
-          Lưu lộ trình
+          <span className="hidden sm:inline">Lưu lộ trình</span>
         </button>
         <button
           onClick={handleLoad}
           className="flex items-center gap-3 px-6 py-3 rounded-2xl border border-orbit-border/40 text-[13px] font-bold uppercase tracking-[0.12em] text-orbit-text-secondary bg-orbit-elevated/60 hover:text-orbit-text hover:border-orbit-border/70 hover:bg-orbit-elevated transition-[color,border-color,background-color] shadow-sm"
         >
           <ClockCounterClockwise className="h-5 w-5" weight="regular" />
-          Khôi phục
+          <span className="hidden sm:inline">Khôi phục</span>
         </button>
         <button
           onClick={handleAutoArrange}
           className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-orbit-accent/10 border border-orbit-accent/30 text-[13px] font-bold uppercase tracking-[0.12em] text-orbit-accent hover:bg-orbit-accent/20 transition-[background-color] shadow-sm"
         >
           <Sparkle className="h-5 w-5" weight="fill" />
-          Tự động sắp xếp
+          <span className="hidden sm:inline">Tự động sắp xếp</span>
         </button>
 
         {saveMessage && (
@@ -872,5 +881,155 @@ function hashSemesterMap(map: SemesterMap): string {
     h = ((h << 5) - h + Number(k) * 31 + (map[Number(k)] ?? -1)) | 0
   }
   return h.toString(36)
+}
+
+/**
+ * Wraps the Kanban scroll area with grab-to-scroll behavior.
+ * Left-click + drag horizontally to scroll.
+ * Does NOT intercept clicks on card elements (dnd-kit handles those).
+ */
+const GrabScroll = forwardRef<HTMLDivElement, { children: React.ReactNode; className?: string }>(
+  function GrabScroll({ children, className }, forwardedRef) {
+    const innerRef = useRef<HTMLDivElement>(null)
+    const state = useRef({ isDown: false, startX: 0, scrollLeft: 0 })
+
+    // Combine refs: keep innerRef for internal use, also forward to parent
+    const setRefs = useCallback((el: HTMLDivElement | null) => {
+      (innerRef as React.MutableRefObject<HTMLDivElement | null>).current = el
+      if (typeof forwardedRef === 'function') forwardedRef(el)
+      else if (forwardedRef) (forwardedRef as React.MutableRefObject<HTMLDivElement | null>).current = el
+    }, [forwardedRef])
+
+    useEffect(() => {
+      const el = innerRef.current
+      if (!el) return
+
+      const onPointerDown = (e: PointerEvent) => {
+        // Don't intercept if starting on a draggable card (let dnd-kit handle)
+        const card = (e.target as HTMLElement).closest('[role="button"]')
+        if (card || e.button !== 0) return
+
+        state.current.isDown = true
+        state.current.startX = e.pageX - el.offsetLeft
+        state.current.scrollLeft = el.scrollLeft
+        el.setPointerCapture(e.pointerId)
+        el.style.cursor = 'grabbing'
+        el.style.userSelect = 'none'
+      }
+
+      const onPointerMove = (e: PointerEvent) => {
+        if (!state.current.isDown) return
+        e.preventDefault()
+        const x = e.pageX - el.offsetLeft
+        const walk = (x - state.current.startX) * 1.2
+        el.scrollLeft = state.current.scrollLeft - walk
+      }
+
+      const onPointerUp = () => {
+        if (!state.current.isDown) return
+        state.current.isDown = false
+        el.style.cursor = 'grab'
+        el.style.userSelect = ''
+      }
+
+      el.addEventListener('pointerdown', onPointerDown)
+      el.addEventListener('pointermove', onPointerMove)
+      el.addEventListener('pointerup', onPointerUp)
+      el.addEventListener('pointerleave', onPointerUp)
+      el.style.cursor = 'grab'
+
+      return () => {
+        el.removeEventListener('pointerdown', onPointerDown)
+        el.removeEventListener('pointermove', onPointerMove)
+        el.removeEventListener('pointerup', onPointerUp)
+        el.removeEventListener('pointerleave', onPointerUp)
+      }
+    }, [])
+
+    return (
+      <div ref={setRefs} className={`h-full overflow-x-auto overflow-y-visible no-scrollbar select-none ${className ?? ''}`}>
+        {children}
+      </div>
+    )
+  },
+)
+
+/** Custom horizontal drag scrollbar above the Kanban board */
+function ScrollDragBar({ scrollRef }: { scrollRef: React.RefObject<HTMLDivElement | null> }) {
+  const thumbRef = useRef<HTMLDivElement>(null)
+  const [scrollState, setScrollState] = useState({ left: 0, max: 0 })
+
+  // Sync scroll state from the Kanban container
+  useEffect(() => {
+    const el = scrollRef.current
+    if (!el) return
+
+    const update = () => {
+      setScrollState({
+        left: el.scrollLeft,
+        max: el.scrollWidth - el.clientWidth,
+      })
+    }
+
+    update()
+    el.addEventListener('scroll', update, { passive: true })
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+
+    return () => {
+      el.removeEventListener('scroll', update)
+      ro.disconnect()
+    }
+  }, [scrollRef])
+
+  const hasOverflow = scrollState.max > 0
+
+  // Absolute-position drag: pointer position on track → scroll ratio
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    e.preventDefault()
+    const el = scrollRef.current
+    if (!el) return
+
+    const bar = e.currentTarget as HTMLElement
+    const barRect = bar.getBoundingClientRect()
+    const maxScroll = el.scrollWidth - el.clientWidth
+
+    const moveTo = (clientX: number) => {
+      const ratio = Math.max(0, Math.min(1, (clientX - barRect.left) / barRect.width))
+      el.scrollLeft = ratio * maxScroll
+    }
+
+    moveTo(e.clientX) // jump on first click
+
+    const onMove = (ev: PointerEvent) => moveTo(ev.clientX)
+    const onUp = () => {
+      document.removeEventListener('pointermove', onMove)
+      document.removeEventListener('pointerup', onUp)
+    }
+
+    document.addEventListener('pointermove', onMove)
+    document.addEventListener('pointerup', onUp)
+  }, [scrollRef])
+
+  if (!hasOverflow) return null
+
+  return (
+    <div className="shrink-0 px-6 pt-3 pb-1">
+      <div
+        ref={thumbRef}
+        className="relative h-2 rounded-full bg-zinc-800/40 cursor-pointer hover:bg-zinc-700/50 transition-colors group"
+        onPointerDown={handlePointerDown}
+      >
+        {/* Thumb */}
+        <div
+          className="absolute top-1/2 -translate-y-1/2 h-3 w-8 rounded-full bg-zinc-500/70 group-hover:bg-zinc-400/70 group-hover:scale-110 transition-all"
+          style={{
+            left: `${(scrollState.left / scrollState.max) * 100}%`,
+            marginLeft: '-16px', // center the 32px thumb on the percentage point
+          }}
+        />
+      </div>
+    </div>
+  )
 }
 

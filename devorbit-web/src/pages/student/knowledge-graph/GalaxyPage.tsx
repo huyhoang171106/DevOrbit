@@ -342,10 +342,10 @@ export default function GalaxyPage() {
           </div>
 
           {/* Credit total */}
-          <div className="flex items-center justify-center gap-6 py-3 px-5 rounded-2xl border border-orbit-border/20 bg-orbit-elevated/30">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 py-4 sm:py-3 px-5 rounded-2xl border border-orbit-border/20 bg-orbit-elevated/30">
             <div className="flex items-center gap-2">
-              <span className="text-[14px] text-orbit-text-muted">Cơ sở ngành</span>
-              <span className={`text-[16px] font-black tabular-nums ${
+              <span className="text-[13px] sm:text-[14px] text-orbit-text-muted">Cơ sở ngành</span>
+              <span className={`text-[15px] sm:text-[16px] font-black tabular-nums ${
                 getCsnCredits(selectedElectiveCodes) >= CO_SO_NGANH_MIN_TC
                   ? 'text-emerald-400'
                   : 'text-amber-400'
@@ -353,10 +353,10 @@ export default function GalaxyPage() {
                 {getCsnCredits(selectedElectiveCodes)} / {CO_SO_NGANH_MIN_TC} TC
               </span>
             </div>
-            <span className="text-orbit-border/30">|</span>
+            <span className="hidden sm:inline text-orbit-border/30">|</span>
             <div className="flex items-center gap-2">
-              <span className="text-[14px] text-orbit-text-muted">Chuyên ngành</span>
-              <span className={`text-[16px] font-black tabular-nums ${
+              <span className="text-[13px] sm:text-[14px] text-orbit-text-muted">Chuyên ngành</span>
+              <span className={`text-[15px] sm:text-[16px] font-black tabular-nums ${
                 getCnCredits(selectedElectiveCodes) >= CHUYEN_NGANH_MIN_TC
                   ? 'text-emerald-400'
                   : 'text-amber-400'
@@ -364,10 +364,10 @@ export default function GalaxyPage() {
                 {getCnCredits(selectedElectiveCodes)} / {CHUYEN_NGANH_MIN_TC} TC
               </span>
             </div>
-            <span className="text-orbit-border/30">|</span>
+            <span className="hidden sm:inline text-orbit-border/30">|</span>
             <div className="flex items-center gap-2">
-              <span className="text-[14px] font-bold text-orbit-text">Tổng</span>
-              <span className="text-[18px] font-black tabular-nums text-orbit-accent">
+              <span className="text-[13px] sm:text-[14px] font-bold text-orbit-text">Tổng</span>
+              <span className="text-[16px] sm:text-[18px] font-black tabular-nums text-orbit-accent">
                 {getSelectedCredits(selectedElectiveCodes)} TC
               </span>
             </div>
@@ -386,7 +386,7 @@ export default function GalaxyPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.92 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                className="pointer-events-auto w-[420px]"
+                className="pointer-events-auto w-full max-w-[420px] px-4"
               >
               <div className="orbit-glass-strong p-6 rounded-[2.5rem]">
                 {/* Icon */}

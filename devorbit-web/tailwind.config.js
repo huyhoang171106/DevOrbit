@@ -56,12 +56,38 @@ export default {
           '0%, 100%': { transform: 'scale(1)', opacity: 0.5 },
           '50%': { transform: 'scale(1.05)', opacity: 0.8 },
         },
+        'glow-pulse': {
+          '0%, 100%': { boxShadow: '0 0 20px rgba(52, 211, 153, 0.1), 0 0 40px rgba(52, 211, 153, 0.05)' },
+          '50%': { boxShadow: '0 0 30px rgba(52, 211, 153, 0.2), 0 0 60px rgba(52, 211, 153, 0.1)' },
+        },
+        'aurora': {
+          '0%': { transform: 'translateX(-10%) translateY(-10%) scale(1)' },
+          '25%': { transform: 'translateX(5%) translateY(-5%) scale(1.05)' },
+          '50%': { transform: 'translateX(10%) translateY(5%) scale(0.95)' },
+          '75%': { transform: 'translateX(0%) translateY(10%) scale(1.02)' },
+          '100%': { transform: 'translateX(-10%) translateY(-10%) scale(1)' },
+        },
+        'lens-blur': {
+          '0%': { backdropFilter: 'blur(0px)', WebkitBackdropFilter: 'blur(0px)' },
+          '100%': { backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' },
+        },
       },
       animation: {
         'shimmer': 'shimmer 3s ease-in-out infinite',
         'float': 'float 4s ease-in-out infinite',
         'pulse-soft': 'pulse-soft 3s ease-in-out infinite',
         'breathing': 'breathing 3s ease-in-out infinite',
+        'glow-pulse': 'glow-pulse 4s ease-in-out infinite',
+        'aurora': 'aurora 20s ease-in-out infinite',
+        'lens-blur': 'lens-blur 0.8s ease-out forwards',
+      },
+      transitionTimingFunction: {
+        'cinematic': 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+        'spring': 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+      },
+      backgroundImage: {
+        'orbit-gradient': 'linear-gradient(135deg, rgba(52, 211, 153, 0.15), rgba(129, 140, 248, 0.15))',
+        'orbit-glow': 'radial-gradient(circle at 50% 50%, rgba(52, 211, 153, 0.1), transparent 70%)',
       },
     },
   },

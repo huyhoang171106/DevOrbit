@@ -47,9 +47,9 @@ public class KnowledgeChunk {
     @Column(name = "page_to")
     private Integer pageTo;
 
-    @JdbcTypeCode(SqlTypes.VECTOR)
-    @Array(length = 1536)
-    @Column(name = "embedding", columnDefinition = "bytea")
+    @JdbcTypeCode(SqlTypes.VECTOR_FLOAT32)
+    @Array(length = 4096)
+    @Column(name = "embedding", columnDefinition = "vector(4096)")
     private float[] embedding;
 
     @Column(name = "created_at", nullable = false, updatable = false)

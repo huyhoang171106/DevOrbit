@@ -61,7 +61,7 @@ class KnowledgeEmbeddingServiceTest {
         int embedded = service.embedChunksForSource(chunk.getSource().getId(), true);
 
         assertThat(embedded).isEqualTo(1);
-        verify(knowledgeChunkRepository).saveAll(anyList());
+        verify(knowledgeChunkRepository).updateEmbeddingVector(eq(chunk.getId()), anyString());
     }
 
     @Test
@@ -77,7 +77,7 @@ class KnowledgeEmbeddingServiceTest {
         int embedded = service.embedChunksForSource(c1.getSource().getId(), false);
 
         assertThat(embedded).isEqualTo(2);
-        verify(knowledgeChunkRepository).saveAll(anyList());
+        verify(knowledgeChunkRepository, times(2)).updateEmbeddingVector(any(UUID.class), anyString());
     }
 
     @Test
@@ -93,7 +93,7 @@ class KnowledgeEmbeddingServiceTest {
         int embedded = service.embedChunksForCourse("IT001", false);
 
         assertThat(embedded).isEqualTo(1);
-        verify(knowledgeChunkRepository).saveAll(anyList());
+        verify(knowledgeChunkRepository).updateEmbeddingVector(eq(c1.getId()), anyString());
     }
 
     @Test

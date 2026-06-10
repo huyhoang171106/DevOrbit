@@ -19,6 +19,7 @@ This file maps product behavior to proof.
 | US-015 | Simulation Engine | pass | pass | no | no | implemented | Plan 1.3 Summary (verified locally) |
 | US-016 | Photobooth Upload | - | - | - | Browser | planned | - |
 | US-017 | AI Roadmap Generator | - | pass | pass | no | implemented | US-017-PLAN-1.1 (verified locally) |
+| US-021A | Web AI Course Q&A Assistant | pass | pass | runtime smoke | Maven + run.bat API + JDBC proof | implemented | `devorbit-api`: `./mvnw.cmd test -B` passed 142 tests; `devorbit-api/run.bat` smoke on `localhost:8080` verified OpenCode, Firecrawl, Fireworks embedding, Knowledge RAG schema readiness, grounded greetings/resource requests, non-offline SE104/MA006 answers, lazy DevOrbit DB knowledge indexing, semantic retrieval returning 1 chunk for SE104 and MA006, and PostgreSQL `knowledge_chunks` rows embedded with 4096 dimensions |
 | US-018 | Mobile Repo Tech Stack Filter | pass | no | no | Gradle unit test | implemented | `devorbit-mobile`: `.\gradlew.bat :app:testDebugUnitTest` |
 | US-019 | Mobile Course Hub Detail Navigation | pass | no | no | Gradle unit test | implemented | `devorbit-mobile`: `.\gradlew.bat :app:testDebugUnitTest` |
 | US-035 | Mobile Course Search, Bookmarks, and Explore Search/Filter | pass | no | no | Gradle unit test | implemented | `devorbit-mobile`: `.\gradlew.bat :app:testDebugUnitTest`; commits `7e01b5d`, `6122db9`, `bbcc294`, `be174b4` |

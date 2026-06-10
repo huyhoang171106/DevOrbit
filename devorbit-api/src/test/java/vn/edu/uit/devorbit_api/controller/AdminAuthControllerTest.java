@@ -9,6 +9,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import vn.edu.uit.devorbit_api.dto.admin.LoginResponse;
 import vn.edu.uit.devorbit_api.service.AdminAuthService;
 import vn.edu.uit.devorbit_api.service.JwtService;
+import vn.edu.uit.devorbit_api.service.RevokedTokenStore;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -28,9 +29,12 @@ class AdminAuthControllerTest {
     @MockitoBean
     private JwtService jwtService;
 
+    @MockitoBean
+    private RevokedTokenStore revokedTokenStore;
+
     @Test
     void shouldReturnJwtForValidAdmin() throws Exception {
-        when(adminAuthService.login(any())).thenReturn(new LoginResponse("token-value"));
+        when(adminAuthService.login(any(), any())).thenReturn(new LoginResponse("token-value"));
 
         mockMvc.perform(post("/api/admin/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)

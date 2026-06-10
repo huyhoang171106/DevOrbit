@@ -125,50 +125,116 @@ A task is done only when:
 - Missing harness capabilities were added to `docs/HARNESS_BACKLOG.md`.
 - The final response says what changed and what was not attempted.
 
-<!-- gitnexus:start -->
-# GitNexus — Code Intelligence
+## CI/CD Pre-Push Gate
 
-This project is indexed by GitNexus as **DevOrbit** (33240 symbols, 47366 relationships, 300 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+**NEVER push without passing all CI/CD checks locally first.**
 
-> If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
+Before any `git push`, run ALL of these locally and verify they pass:
+
+```bash
+# 1. API compile check
+cd devorbit-api && ./mvnw compile -B
+
+# 2. Web TypeScript check + tests
+cd devorbit-web && npx tsc --noEmit && npm test
+
+# 3. Verify workflow file is valid YAML (no syntax errors)
+yq . .github/workflows/ci.yml > /dev/null 2>&1 || echo "Invalid YAML"
+```
+
+If any check fails:
+- Fix the issue before pushing.
+- Never push with the intention of "CI will tell me what's wrong."
+- CI failures waste runner time and block other PRs.
+
+**After pushing**, verify CI passes:
+```bash
+gh run watch --repo huyhoang171106/DevOrbit --exit-status
+```
+
+If CI fails after a local pass:
+- Check for environment differences (Node version, OS, cached deps).
+- Fix and push again.
+- Never merge a failing PR.
+
+<!-- codegraph:start -->
+# CodeGraph — Code Intelligence
+
+This project is indexed by CodeGraph (v0.9.4) as **DevOrbit** (4,651 nodes, 8,131 edges across 454 files). Use CodeGraph pi tools to understand code, assess impact, and navigate safely.
+
+> If `codegraph_status` warns the index is stale, run `codegraph_sync` first.
 
 ## Always Do
 
-- **MUST run impact analysis before editing any symbol.** Before modifying a function, class, or method, run `gitnexus_impact({target: "symbolName", direction: "upstream"})` and report the blast radius (direct callers, affected processes, risk level) to the user.
-- **MUST run `gitnexus_detect_changes()` before committing** to verify your changes only affect expected symbols and execution flows.
+- **MUST run impact analysis before editing any symbol.** Before modifying a function, class, or method, run `codegraph_impact({symbol: "symbolName"})` and report the blast radius (direct callers, affected files, risk level) to the user.
+- **MUST run `codegraph_sync` after editing and before querying** to keep the index in sync with file changes.
 - **MUST warn the user** if impact analysis returns HIGH or CRITICAL risk before proceeding with edits.
-- When exploring unfamiliar code, use `gitnexus_query({query: "concept"})` to find execution flows instead of grepping. It returns process-grouped results ranked by relevance.
-- When you need full context on a specific symbol — callers, callees, which execution flows it participates in — use `gitnexus_context({name: "symbolName"})`.
+- When exploring unfamiliar code, use `codegraph_query({search: "concept"})` to find symbols instead of grepping. It returns ranked results by relevance.
+- When you need full context on a specific symbol — callers, callees, related files — use `codegraph_context({task: "symbolName"})`.
 
 ## Never Do
 
-- NEVER edit a function, class, or method without first running `gitnexus_impact` on it.
+- NEVER edit a function, class, or method without first running `codegraph_impact` on it.
 - NEVER ignore HIGH or CRITICAL risk warnings from impact analysis.
-- NEVER rename symbols with find-and-replace — use `gitnexus_rename` which understands the call graph.
-- NEVER commit changes without running `gitnexus_detect_changes()` to check affected scope.
+- NEVER rename symbols with find-and-replace — trace the call graph first.
+- NEVER commit changes without running `codegraph_sync` to verify clean state.
 
 ## Resources
 
 | Resource | Use for |
 |----------|---------|
-| `gitnexus://repo/DevOrbit/context` | Codebase overview, check index freshness |
-| `gitnexus://repo/DevOrbit/clusters` | All functional areas |
-| `gitnexus://repo/DevOrbit/processes` | All execution flows |
-| `gitnexus://repo/DevOrbit/process/{name}` | Step-by-step execution trace |
+| `codegraph_status` | Codebase overview, check index freshness |
+| `codegraph_query` | Find symbols and declarations |
+| `codegraph_context` | Build task-focused context |
+| `codegraph_impact` | Multi-level blast radius analysis |
 
-## CLI
+## Skills
 
 | Task | Read this skill file |
 |------|---------------------|
-| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md` |
-| Blast radius / "What breaks if I change X?" | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
-| Trace bugs / "Why is X failing?" | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md` |
-| Rename / extract / split / refactor | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
-| Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
-| Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
+| Understand architecture / "How does X work?" | `.agents/skills/codegraph-exploring/SKILL.md` |
+| Blast radius / "What breaks if I change X?" | `.agents/skills/codegraph-impact-analysis/SKILL.md` |
+| Trace bugs / "Why is X failing?" | `.agents/skills/codegraph-debugging/SKILL.md` |
+| Rename / extract / split / refactor | `.agents/skills/codegraph-refactoring/SKILL.md` |
+| Tools, resources, schema reference | `.agents/skills/codegraph-guide/SKILL.md` |
+| Index, status, clean, CLI commands | `.agents/skills/codegraph-cli/SKILL.md` |
 
-<!-- gitnexus:end -->
+<!-- codegraph:end -->
 
-Spec directories live under `GitNexus\docs\superpowers\specs` unless a nested AGENTS.md documents a more specific convention.
+Spec directories live under `docs/superpowers/specs` unless a nested AGENTS.md documents a more specific convention.
 Spec directory names use `YYYY-MM-DD-kebab-feature`, for example `2026-05-01-spec-lifecycle-audit`.
 Spec directories include a free-form `MILESTONES.md` implementation log for milestones, setbacks, fixes, validation notes, and decisions.
+
+## Codebase Wiki
+
+This project has an auto-maintained knowledge base at `.codebase-wiki/` (run `/wiki-init` to initialize if not present).
+
+### Keeping the Wiki Updated
+
+- **After making code changes**, run `wiki_ingest` with source `commits` or `smart` to update affected pages.
+- **After refactoring or adding modules**, run `wiki_ingest` with source `tree` to sync the file tree.
+- **Periodically run `wiki_lint`** to catch contradictions, orphans, and stale pages.
+- **When you create an ADR or major design decision**, use `wiki_decision` to record it.
+- **When you add a cross-cutting pattern**, use `wiki_concept` to document it.
+- **When you need context**, use `wiki_query` instead of grepping source files.
+
+### Wiki Page Types
+
+| Type | Directory | Purpose |
+|------|-----------|---------|
+| entity | `entities/` | Code modules, services, and components |
+| concept | `concepts/` | Cross-cutting patterns and architectural themes |
+| decision | `decisions/` | Architecture Decision Records (ADRs) |
+| evolution | `evolution/` | Feature change history traced from git |
+| query | `queries/` | Filed search queries for cross-referencing |
+
+### Workflow
+
+1. **Initialize**: `/wiki-init` creates `.codebase-wiki/` with SCHEMA.md, templates, and INDEX.md.
+2. **Populate**: `wiki_ingest` with `tree` (initial), `commits` (incremental), `smart` (enrich), or `llm` (agent-written).
+3. **Query**: `wiki_query` searches pages and files good queries back as new wiki pages.
+4. **Lint**: `wiki_lint` checks for contradictions, orphans, stale pages, broken links.
+5. **Evolve**: `wiki_evolve` traces how a feature changed over time from git history.
+
+Pages are tracked in SQLite (`.codebase-wiki/meta/wiki.db`) and versioned in git.
+Edit pages by hand or via tools — the wiki respects hand-edited content and won't overwrite it with stubs.

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
+import { usePerformanceProfile } from '../performance'
 
-const PARTICLE_COUNT = 80
 const CONNECTION_DIST = 140
 const MOUSE_RADIUS = 180
 const MOUSE_FORCE = 0.6
@@ -12,10 +12,21 @@ interface Particle {
   baseX: number; baseY: number
 }
 
+/**
+ * Canvas 2D particle network.
+ * - Profile-driven particle count and update rate
+ * - No triangle mesh rendering (was O(n³) — major perf win)
+ * - DPR-capped canvas resolution
+ * - Respects prefers-reduced-motion
+ * - Pauses when tab is hidden
+ */
 export function ParticleNetwork() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const profile = usePerformanceProfile()
 
   useEffect(() => {
+    if (!profile.enableParticleNetwork) return
+
     const canvas = canvasRef.current
     if (!canvas) return
 
@@ -23,10 +34,19 @@ export function ParticleNetwork() {
     if (!ctx) return
 
     const mouse = { x: -1000, y: -1000 }
+    const dpr = Math.min(window.devicePixelRatio || 1, profile.maxDpr)
+
+    // Dynamic particle count
+    const particleCount = Math.max(12, Math.floor(80 * profile.particleMultiplier))
 
     function resize() {
-      canvas!.width = window.innerWidth
-      canvas!.height = window.innerHeight
+      const w = window.innerWidth
+      const h = window.innerHeight
+      canvas!.width = w * dpr
+      canvas!.height = h * dpr
+      canvas!.style.width = w + 'px'
+      canvas!.style.height = h + 'px'
+      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0)
     }
     resize()
     window.addEventListener('resize', resize)
@@ -38,11 +58,13 @@ export function ParticleNetwork() {
     window.addEventListener('mousemove', onMouse, { passive: true })
     window.addEventListener('mouseleave', () => { mouse.x = -1000; mouse.y = -1000 })
 
-    // Init particles
+    // Init particles (GPU-friendly Float32 for positions)
     const particles: Particle[] = []
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      const x = Math.random() * canvas.width
-      const y = Math.random() * canvas.height
+    const w = canvas.width / dpr
+    const h = canvas.height / dpr
+    for (let i = 0; i < particleCount; i++) {
+      const x = Math.random() * w
+      const y = Math.random() * h
       particles.push({
         x, y,
         vx: (Math.random() - 0.5) * PARTICLE_SPEED,
@@ -52,12 +74,23 @@ export function ParticleNetwork() {
       })
     }
 
-    let animId = 0
     let running = true
+    let lastFrame = 0
+    let rafId: number
+    const interval = profile.canvasUpdateInterval
 
-    function animate() {
-      if (!canvas || !running) { animId = requestAnimationFrame(animate); return }
-      ctx!.clearRect(0, 0, canvas.width, canvas.height)
+    function animate(timestamp: number) {
+      if (!running) return
+
+      // Throttle on mobile/low-end
+      if (interval > 0 && timestamp - lastFrame < interval) {
+        requestAnimationFrame(animate)
+        return
+      }
+      lastFrame = timestamp
+
+      if (!canvas) return
+      ctx!.clearRect(0, 0, w, h)
 
       // Update particles
       for (const p of particles) {
@@ -71,125 +104,90 @@ export function ParticleNetwork() {
           p.vy += (dy / dist) * force
         }
 
-        // Return to base (gentle pull)
         p.vx += (p.baseX - p.x) * 0.001
         p.vy += (p.baseY - p.y) * 0.001
-
-        // Damping
         p.vx *= 0.98
         p.vy *= 0.98
 
         p.x += p.vx
         p.y += p.vy
 
-        // Wrap
-        if (p.x < 0) p.x = canvas.width
-        if (p.x > canvas.width) p.x = 0
-        if (p.y < 0) p.y = canvas.height
-        if (p.y > canvas.height) p.y = 0
+        if (p.x < 0) p.x = w
+        if (p.x > w) p.x = 0
+        if (p.y < 0) p.y = h
+        if (p.y > h) p.y = 0
       }
 
-      // Build connections and triangles (greedy: sort by dist, connect closest)
-      const lines: [Particle, Particle][] = []
-      const candidates: Particle[] = [...particles]
-      for (const p of particles) {
-        const neighbors = candidates
-          .filter(n => n !== p)
-          .map(n => ({ n, dist: Math.hypot(n.x - p.x, n.y - p.y) }))
-          .filter(({ dist }) => dist < CONNECTION_DIST)
-          .sort((a, b) => a.dist - b.dist)
-          .slice(0, 3)
-
-        for (const { n } of neighbors) {
-          // Avoid duplicate lines
-          if (!lines.some(l => (l[0] === p && l[1] === n) || (l[0] === n && l[1] === p))) {
-            lines.push([p, n])
-          }
-        }
-      }
-
-      // Draw triangles (mesh fill)
-      const triangles: [Particle, Particle, Particle][] = []
+      // Lines: each particle connects to nearest 2 neighbors within range
+      // O(n * k) instead of O(n²)
       for (let i = 0; i < particles.length; i++) {
+        const p = particles[i]
+        const neighbors: { n: Particle; dist: number }[] = []
+
         for (let j = i + 1; j < particles.length; j++) {
-          for (let k = j + 1; k < particles.length; k++) {
-            const a = particles[i], b = particles[j], c = particles[k]
-            // Check if all 3 sides are connected
-            const ab = lines.some(l => (l[0] === a && l[1] === b) || (l[0] === b && l[1] === a))
-            const bc = lines.some(l => (l[0] === b && l[1] === c) || (l[0] === c && l[1] === b))
-            const ca = lines.some(l => (l[0] === c && l[1] === a) || (l[0] === a && l[1] === c))
-            if (ab && bc && ca) {
-              triangles.push([a, b, c])
-            }
+          const q = particles[j]
+          const d = Math.hypot(q.x - p.x, q.y - p.y)
+          if (d < CONNECTION_DIST) {
+            neighbors.push({ n: q, dist: d })
           }
+        }
+
+        // Connect to nearest 2
+        neighbors.sort((a, b) => a.dist - b.dist)
+        const maxLines = Math.min(neighbors.length, 2)
+        for (let k = 0; k < maxLines; k++) {
+          const q = neighbors[k].n
+          const alpha = Math.max(0, 1 - neighbors[k].dist / CONNECTION_DIST) * 0.4
+          ctx!.beginPath()
+          ctx!.moveTo(p.x, p.y)
+          ctx!.lineTo(q.x, q.y)
+          ctx!.strokeStyle = `rgba(52, 211, 153, ${alpha})`
+          ctx!.lineWidth = 1.0
+          ctx!.stroke()
         }
       }
 
-      // Draw triangle fills (glow)
-      for (const tri of triangles) {
-        const avgDist =
-          (Math.hypot(tri[0].x - mouse.x, tri[0].y - mouse.y) +
-           Math.hypot(tri[1].x - mouse.x, tri[1].y - mouse.y) +
-           Math.hypot(tri[2].x - mouse.x, tri[2].y - mouse.y)) / 3
-
-        const nearFactor = Math.max(0, 1 - avgDist / 500)
-        const alpha = Math.min(0.04 + nearFactor * 0.08, 0.12)
-
-        ctx!.beginPath()
-        ctx!.moveTo(tri[0].x, tri[0].y)
-        ctx!.lineTo(tri[1].x, tri[1].y)
-        ctx!.lineTo(tri[2].x, tri[2].y)
-        ctx!.closePath()
-        ctx!.fillStyle = `rgba(52, 211, 153, ${alpha})`
-        ctx!.fill()
-      }
-
-      // Draw lines
-      for (const [a, b] of lines) {
-        const dist = Math.hypot(a.x - b.x, a.y - b.y)
-        const alpha = Math.max(0, 1 - dist / CONNECTION_DIST) * 0.3
-
-        ctx!.beginPath()
-        ctx!.moveTo(a.x, a.y)
-        ctx!.lineTo(b.x, b.y)
-        ctx!.strokeStyle = `rgba(52, 211, 153, ${alpha})`
-        ctx!.lineWidth = 0.8
-        ctx!.stroke()
-      }
-
-      // Draw particles
+      // Particles as dots
       for (const p of particles) {
-        const dist = Math.hypot(p.x - mouse.x, p.y - mouse.y)
+        const dx = mouse.x - p.x
+        const dy = mouse.y - p.y
+        const dist = Math.hypot(dx, dy)
         const nearGlow = Math.max(0, 1 - dist / MOUSE_RADIUS) * 0.7
 
         ctx!.beginPath()
-        ctx!.arc(p.x, p.y, 2 + nearGlow * 1.5, 0, Math.PI * 2)
-        ctx!.fillStyle = `rgba(52, 211, 153, ${0.5 + nearGlow * 0.5})`
+        ctx!.arc(p.x, p.y, 2 + nearGlow, 0, Math.PI * 2)
+        ctx!.fillStyle = `rgba(52, 211, 153, ${0.55 + nearGlow * 0.35})`
         ctx!.fill()
       }
 
-      animId = requestAnimationFrame(animate)
+      rafId = requestAnimationFrame(animate)
     }
 
-    // Pause when tab hidden
-    function onVisibility() { running = !document.hidden }
+    // Pause/resume when tab hidden/visible
+    function onVisibility() {
+      running = !document.hidden
+      if (running) rafId = requestAnimationFrame(animate)
+    }
     document.addEventListener('visibilitychange', onVisibility)
 
-    animate()
+    rafId = requestAnimationFrame(animate)
 
     return () => {
-      cancelAnimationFrame(animId)
+      running = false
+      cancelAnimationFrame(rafId)
       window.removeEventListener('resize', resize)
       window.removeEventListener('mousemove', onMouse)
       document.removeEventListener('visibilitychange', onVisibility)
     }
-  }, [])
+  }, [profile.enableParticleNetwork, profile.particleMultiplier, profile.maxDpr, profile.canvasUpdateInterval])
+
+  if (!profile.enableParticleNetwork) return null
 
   return (
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none z-0"
-      style={{ opacity: 0.6 }}
+      style={{ opacity: 0.85 }}
     />
   )
 }

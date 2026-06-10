@@ -34,8 +34,7 @@ public class KnowledgeEmbeddingService {
         }
 
         float[] embedding = embeddingService.embed(chunk.getChunkText());
-        chunk.setEmbedding(embedding);
-        knowledgeChunkRepository.save(chunk);
+        knowledgeChunkRepository.updateEmbeddingVector(chunk.getId(), vectorToPgString(embedding));
 
         log.info("Embedded chunk {} for course {}", chunk.getId(), chunk.getCourseCode());
         return true;
@@ -85,11 +84,23 @@ public class KnowledgeEmbeddingService {
 
         for (int i = 0; i < toEmbed.size(); i++) {
             KnowledgeChunk chunk = toEmbed.get(i);
-            chunk.setEmbedding(embeddings.get(i));
+            float[] embedding = embeddings.get(i);
+            knowledgeChunkRepository.updateEmbeddingVector(chunk.getId(), vectorToPgString(embedding));
         }
 
-        knowledgeChunkRepository.saveAll(toEmbed);
         log.info("Successfully embedded {} chunks", toEmbed.size());
         return toEmbed.size();
+    }
+
+    private String vectorToPgString(float[] vector) {
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < vector.length; i++) {
+            if (i > 0) {
+                sb.append(",");
+            }
+            sb.append(vector[i]);
+        }
+        sb.append("]");
+        return sb.toString();
     }
 }

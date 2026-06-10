@@ -12,6 +12,7 @@ import vn.edu.uit.devorbit_api.repository.KnowledgeChunkRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -74,9 +75,20 @@ public class CourseKnowledgeIndexer {
             if (info.pageTo != null) {
                 builder.pageTo(info.pageTo);
             }
-            saved.add(builder.build());
+            KnowledgeChunk chunk = builder.id(UUID.randomUUID()).build();
+            knowledgeChunkRepository.insertChunkWithoutEmbedding(
+                chunk.getId(),
+                source.getId(),
+                chunk.getCourseCode(),
+                chunk.getChunkIndex(),
+                chunk.getSectionTitle(),
+                chunk.getChunkText(),
+                metadataJson(chunk),
+                chunk.getPageFrom(),
+                chunk.getPageTo()
+            );
+            saved.add(chunk);
         }
-        knowledgeChunkRepository.saveAll(saved);
 
         log.info("Indexed {} chunks for course {} from source {}", saved.size(), courseCode, source.getId());
         return saved;
@@ -228,6 +240,14 @@ public class CourseKnowledgeIndexer {
         }
 
         return chunks;
+    }
+
+    private String metadataJson(KnowledgeChunk chunk) {
+        try {
+            return objectMapper.writeValueAsString(chunk.getMetadataJson());
+        } catch (Exception e) {
+            throw new IllegalStateException("Could not serialize knowledge chunk metadata", e);
+        }
     }
 
     record ChunkInfo(String sectionTitle, String text, Integer pageFrom, Integer pageTo) {}

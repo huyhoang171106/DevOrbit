@@ -164,6 +164,9 @@ devorbit/
 # Candidate review logs
 scripts/review_audit.jsonl
 
+# Course syllabus PDF data (not source code)
+decuongmh/
+
 # Tool understanding indexes
 .understand-anything/
 devorbit-api/.understand-anything/

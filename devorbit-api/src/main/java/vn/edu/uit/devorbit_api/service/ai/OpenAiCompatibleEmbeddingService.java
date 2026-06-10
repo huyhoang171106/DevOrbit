@@ -2,7 +2,7 @@ package vn.edu.uit.devorbit_api.service.ai;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import vn.edu.uit.devorbit_api.config.AiConfig;
@@ -17,7 +17,7 @@ import java.util.Map;
  */
 @Slf4j
 @Service
-@ConditionalOnProperty(name = "app.embedding.offline", havingValue = "false", matchIfMissing = true)
+@ConditionalOnExpression("'${app.embedding.offline:false}' == 'false' && '${app.embedding.provider:fireworks}' != 'fireworks'")
 public class OpenAiCompatibleEmbeddingService implements EmbeddingService {
 
     private final WebClient webClient;

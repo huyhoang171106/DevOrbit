@@ -69,15 +69,8 @@ export function useAiRoadmap() {
             })
 
             if (!response.ok) {
-                const rawBody = await response.text().catch(() => '')
-                let message: string
-                try {
-                    const parsed = JSON.parse(rawBody)
-                    message = parsed.error || parsed.message || rawBody
-                } catch {
-                    message = rawBody || `Request failed: ${response.status}`
-                }
-                throw new Error(message)
+                const errorText = await response.text().catch(() => 'Unknown error')
+                throw new Error(`Lỗi từ máy chủ: ${response.status}. ${errorText}`)
             }
 
             return response.json()

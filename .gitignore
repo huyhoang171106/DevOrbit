@@ -160,3 +160,11 @@ devorbit/
 *_temp
 *.bak
 *.orig
+
+# Candidate review logs
+scripts/review_audit.jsonl
+
+# Tool understanding indexes
+.understand-anything/
+devorbit-api/.understand-anything/
+

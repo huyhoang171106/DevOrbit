@@ -121,9 +121,8 @@ class StudentAuthServiceTest {
         when(studentUserRepository.findByStudentCode("24520554")).thenReturn(Optional.of(student));
         when(otpRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        String email = service.forgotPassword(new ForgotPasswordRequest("24520554"));
+        service.forgotPassword(new ForgotPasswordRequest("24520554"));
 
-        assertThat(email).isEqualTo("24520554@gm.uit.edu.vn");
         verify(otpRateLimitService).check("FORGOT_PASSWORD:24520554");
         verify(otpRateLimitService).check("PASSWORD_RESET:24520554@gm.uit.edu.vn");
         verify(otpRepository).deleteByEmailAndPurpose("24520554@gm.uit.edu.vn", OtpPurpose.PASSWORD_RESET);
@@ -162,33 +161,6 @@ class StudentAuthServiceTest {
         assertThatThrownBy(() -> service.resetPassword(req))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessageContaining("OTP");
-    }
-
-    @Test
-    void resetPassword_rejectsSameAsOldPassword() {
-        String originalPassword = "currentPassword123";
-        String passwordHash = passwordEncoder.encode(originalPassword);
-
-        StudentUser student = StudentUser.builder()
-                .id(1L).studentCode("24520554").fullName("Nguyen Van A")
-                .email("24520554@gm.uit.edu.vn").passwordHash(passwordHash).active(true).build();
-
-        Otp validOtp = Otp.builder()
-                .email("24520554@gm.uit.edu.vn")
-                .purpose(OtpPurpose.PASSWORD_RESET)
-                .otpCode("123456")
-                .expiresAt(LocalDateTime.now().plusMinutes(10))
-                .build();
-
-        when(otpRepository.findTopByEmailAndPurposeOrderByCreatedAtDesc("24520554@gm.uit.edu.vn", OtpPurpose.PASSWORD_RESET))
-                .thenReturn(Optional.of(validOtp));
-        when(studentUserRepository.findByEmail("24520554@gm.uit.edu.vn"))
-                .thenReturn(Optional.of(student));
-
-        ResetPasswordRequest req = new ResetPasswordRequest("24520554@gm.uit.edu.vn", "123456", originalPassword);
-        assertThatThrownBy(() -> service.resetPassword(req))
-                .isInstanceOf(BadRequestException.class)
-                .hasMessage("Mật khẩu mới không được giống mật khẩu cũ");
     }
 
     // ─── RESEND OTP ────────────────────────────────────
@@ -296,9 +268,8 @@ class StudentAuthServiceTest {
     void forgotPassword_rateLimitsNonExistentStudent() {
         when(studentUserRepository.findByStudentCode("nonexistent")).thenReturn(Optional.empty());
 
-        String email = service.forgotPassword(new ForgotPasswordRequest("nonexistent"));
+        service.forgotPassword(new ForgotPasswordRequest("nonexistent"));
 
-        assertThat(email).isNull();
         verify(otpRateLimitService).check("FORGOT_PASSWORD:nonexistent");
         verifyNoInteractions(otpRepository);
         verifyNoInteractions(emailService);

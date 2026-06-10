@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
+@EnableCaching
 public class CacheConfig {
 
     @Bean

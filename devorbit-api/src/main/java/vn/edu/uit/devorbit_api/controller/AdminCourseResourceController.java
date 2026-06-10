@@ -11,6 +11,19 @@ import vn.edu.uit.devorbit_api.service.CourseYoutubePlaylistService;
 
 import java.util.List;
 
+/**
+ * ADMIN COURSE RESOURCE CONTROLLER = manage learning materials for courses.
+ *
+ * Each course can have these resources:
+ * - YouTube playlists (video lectures)
+ * - Articles (reference links, papers)
+ * - Tutorials (step-by-step guides)
+ *
+ * This is the admin CRUD for those resources.
+ * Public GET endpoints are in PublicCourseController.
+ *
+ * All endpoints require ROLE_ADMIN.
+ */
 @RestController
 @RequestMapping("/api/admin/courses/{courseId}/resources")
 @RequiredArgsConstructor
@@ -19,6 +32,8 @@ public class AdminCourseResourceController {
     private final CourseYoutubePlaylistService youtubePlaylistService;
     private final CourseArticleService articleService;
     private final CourseTutorialService tutorialService;
+
+    // ===== YOUTUBE PLAYLISTS =====
 
     @GetMapping("/youtube-playlists")
     public List<YoutubePlaylistResponse> getYoutubePlaylists(@PathVariable Long courseId) {
@@ -45,6 +60,8 @@ public class AdminCourseResourceController {
         return ResponseEntity.noContent().build();
     }
 
+    // ===== ARTICLES =====
+
     @GetMapping("/articles")
     public List<ArticleResponse> getArticles(@PathVariable Long courseId) {
         return articleService.getByCourse(courseId);
@@ -69,6 +86,8 @@ public class AdminCourseResourceController {
         articleService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    // ===== TUTORIALS =====
 
     @GetMapping("/tutorials")
     public List<TutorialResponse> getTutorials(@PathVariable Long courseId) {

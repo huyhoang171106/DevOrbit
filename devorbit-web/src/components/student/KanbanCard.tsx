@@ -68,7 +68,7 @@ export function KanbanCard({
       {...attributes}
       {...listeners}
       onClick={onClick}
-      className={`relative group rounded-2xl p-3.5 transition-all duration-200 border ${
+      className={`relative group rounded-xl p-2.5 transition-all duration-200 border ${
         hasWarning
           ? 'border-rose-500/60 bg-rose-500/5'
           : isRecommended
@@ -88,16 +88,16 @@ export function KanbanCard({
       )}
 
       {/* Top row: code + credits */}
-      <div className="flex items-center justify-between gap-2 mb-1.5">
+      <div className="flex items-center justify-between gap-1.5 mb-1">
         <span
-          className={`text-[13px] font-black uppercase tracking-wider ${
+          className={`text-[11px] font-black uppercase tracking-wider ${
             isRecommended ? cc.textLight : hasWarning ? 'text-rose-300' : 'text-zinc-400'
           }`}
         >
           {node.code}
         </span>
         <span
-          className={`px-2 py-0.5 rounded-md text-[12px] font-bold tabular-nums ${
+          className={`px-1.5 py-0.5 rounded-md text-[11px] font-bold tabular-nums ${
             isOverloaded
               ? 'bg-amber-500/15 text-amber-400'
               : 'bg-zinc-800 text-zinc-400'
@@ -109,7 +109,7 @@ export function KanbanCard({
 
       {/* Course name */}
       <p
-        className={`text-[15px] font-semibold leading-snug tracking-tight mb-1.5 ${
+        className={`text-[13px] font-semibold leading-snug tracking-tight mb-1 ${
           isRecommended ? 'text-orbit-text' : hasWarning ? 'text-rose-200' : 'text-zinc-300'
         } line-clamp-2`}
       >
@@ -118,7 +118,7 @@ export function KanbanCard({
 
       {/* Prerequisite display */}
       {prereqNames.length > 0 && (
-        <div className="flex flex-wrap gap-1 mb-2">
+        <div className="flex flex-wrap gap-1 mb-1.5">
           {prereqNames.map(p => (
             <span
               key={p.id}
@@ -137,7 +137,7 @@ export function KanbanCard({
       )}
 
       {/* Bottom row */}
-      <div className="flex items-center justify-between pt-2 border-t border-white/5">
+      <div className="flex items-center justify-between pt-1.5 border-t border-white/5">
         {isRecommended && (
           <span
             className="text-[11px] font-black uppercase tracking-[0.15em]"
@@ -165,7 +165,7 @@ export function KanbanCard({
       </div>
 
       {/* Drag handle */}
-      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
         <div className="flex flex-col gap-0.5 p-1">
           <div className="flex gap-0.5">
             <div className="h-0.5 w-0.5 rounded-full bg-zinc-500" />

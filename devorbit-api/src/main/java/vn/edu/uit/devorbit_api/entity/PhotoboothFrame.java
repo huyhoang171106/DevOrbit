@@ -7,37 +7,59 @@ import org.hibernate.type.SqlTypes;
 import java.time.Instant;
 import java.util.UUID;
 
+/**
+ * PHOTOBOOTH FRAME = a template for the AI photobooth feature.
+ *
+ * Maps to the "photobooth_frames" table.
+ * Each frame defines how a photobooth photo looks:
+ * - Position of photo slots (where images go)
+ * - Overlay image (decorative elements)
+ * - Filter and background color
+ * - How many photos the frame holds
+ *
+ * Used by the AI Photobooth feature where students take themed photos.
+ */
 @Entity
 @Table(name = "photobooth_frames")
 public class PhotoboothFrame {
 
+    /** UUID primary key (auto-generated if null) */
     @Id
     private UUID id;
 
+    /** Human-readable unique identifier (e.g., "graduation-2024") */
     @Column(name = "frame_id", nullable = false, unique = true)
     private String frameId;
 
+    /** Internal name */
     @Column(nullable = false)
     private String name;
 
+    /** Display name shown to users */
     @Column(name = "display_name", nullable = false)
     private String displayName;
 
+    /** How many photos this frame can hold */
     @Column(name = "photo_count", nullable = false)
     private Integer photoCount;
 
+    /** Description of the frame */
     @Column(columnDefinition = "text default ''")
     private String description;
 
+    /** JSON array defining photo slot positions */
     @JdbcTypeCode(SqlTypes.JSON)
     private JsonNode slots;
 
+    /** URL to the overlay image (PNG with transparency) */
     @Column(name = "overlay_image_url", columnDefinition = "TEXT")
     private String overlayImageUrl;
 
+    /** CSS filter to apply */
     @Column(columnDefinition = "text default 'normal'")
     private String filter;
 
+    /** Background color (hex, default #ffffff) */
     @Column(name = "background_color", columnDefinition = "text default '#ffffff'")
     private String backgroundColor;
 
@@ -61,7 +83,13 @@ public class PhotoboothFrame {
         updatedAt = Instant.now();
     }
 
-    // Getters & Setters
+    // =====================================================================
+    // GETTERS & SETTERS
+    // =====================================================================
+    // Note: This entity uses manual getters/setters instead of Lombok
+    // because it has custom @PrePersist/@PreUpdate lifecycle methods.
+    // =====================================================================
+
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
 

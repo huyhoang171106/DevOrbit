@@ -1,8 +1,9 @@
 import { useEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { apiGet } from '../../lib/api'
+import { useCourseList } from '../../hooks/useCourseList'
 import { CourseCard } from '../../components/student/CourseCard'
 import { Link } from 'react-router-dom'
-import type { CourseSummary, RepoSummary } from '../../types/api'
+import type { RepoSummary } from '../../types/api'
 import { searchCourses, searchRepos } from '../../lib/repoSearch'
 import { MagnifyingGlass, Graph, Funnel, X, GraduationCap, BookOpen, CaretLeft, CaretRight, Code } from '@phosphor-icons/react'
 import { BlurReveal, FadeReveal, StaggerReveal, StaggerItem, SectionTransition, ParallaxLayer } from '../../motion'
@@ -11,9 +12,8 @@ const PAGE_SIZE = 30
 const MAX_REPO_RESULTS = 12
 
 export function CourseListPage() {
-  const [courses, setCourses] = useState<CourseSummary[]>([])
+  const { data: courses = [], isLoading: loading, error: queryError } = useCourseList()
   const [allRepos, setAllRepos] = useState<RepoSummary[]>([])
-  const [loading, setLoading] = useState(true)
   const [reposLoading, setReposLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
@@ -29,18 +29,7 @@ export function CourseListPage() {
   }, [])
 
   useEffect(() => () => { if (searchTimer.current) clearTimeout(searchTimer.current) }, [])
-  const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(0)
-
-  useEffect(() => {
-    apiGet<CourseSummary[]>('/api/courses')
-      .then(setCourses)
-      .catch((err) => {
-        console.error(err)
-        setError('Không thể tải danh sách môn học. Vui lòng thử lại sau.')
-      })
-      .finally(() => setLoading(false))
-  }, [])
 
   // Fetch all repos lazily when user first searches
   useEffect(() => {
@@ -99,7 +88,7 @@ export function CourseListPage() {
     )
   }
 
-  if (error) {
+  if (queryError) {
     return (
       <div className="relative min-h-[70vh] flex items-center justify-center px-6">
         <div className="orbit-card p-12 md:p-16 max-w-lg text-center">
@@ -107,7 +96,7 @@ export function CourseListPage() {
             <X className="h-8 w-8 text-rose-500" weight="duotone" />
           </div>
           <h2 className="heading-4 mb-4 text-orbit-text">Không thể tải dữ liệu</h2>
-          <p className="body-md mb-8">{error}</p>
+          <p className="body-md mb-8">{queryError instanceof Error ? queryError.message : 'Lỗi không xác định'}</p>
           <button onClick={() => window.location.reload()} className="btn-primary">
             Thử lại
           </button>

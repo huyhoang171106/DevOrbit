@@ -1,5 +1,6 @@
 package vn.edu.uit.devorbit_api.service.ai;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import vn.edu.uit.devorbit_api.dto.publicapi.AiQueryResponse;
 import vn.edu.uit.devorbit_api.dto.publicapi.KnowledgeGraphResponse;
@@ -12,11 +13,19 @@ import java.util.stream.Collectors;
 
 /**
  * Answers natural-language questions about the knowledge graph.
- * Uses pattern matching against known question structures.
- * No LLM required — all answers derived from graph data.
+ * Uses pattern matching and LLM for intent classification.
  */
+@Slf4j
 @Component
 public class GraphQueryEngine {
+
+    private final OpenCodeAiService openCodeAiService;
+    private final LlmContextBuilder contextBuilder;
+
+    public GraphQueryEngine(OpenCodeAiService openCodeAiService, LlmContextBuilder contextBuilder) {
+        this.openCodeAiService = openCodeAiService;
+        this.contextBuilder = contextBuilder;
+    }
 
     private static final List<QueryPattern> PATTERNS = List.of(
         // "Môn nào tiên quyết cho SE104?"
@@ -46,7 +55,20 @@ public class GraphQueryEngine {
     public AiQueryResponse query(String question, KnowledgeGraphResponse graph) {
         String normalized = question.toLowerCase().trim();
 
-        // Try each pattern
+        // Try LLM intent classification first if enabled
+        if (openCodeAiService.isLlmEnabled()) {
+            try {
+                AiQueryResponse llmResult = classifyWithLLM(question, graph);
+                if (llmResult != null) {
+                    log.debug("LLM classified query intent successfully");
+                    return llmResult;
+                }
+            } catch (Exception e) {
+                log.warn("LLM classification failed, falling back to patterns: {}", e.getMessage());
+            }
+        }
+
+        // Fallback: Try each pattern
         for (QueryPattern qp : PATTERNS) {
             Matcher m = qp.pattern().matcher(normalized);
             if (m.find()) {
@@ -57,6 +79,57 @@ public class GraphQueryEngine {
 
         // Fallback: search course names for keywords
         return fallbackSearch(normalized, graph);
+    }
+
+    /**
+     * Use LLM to classify query intent and extract course code.
+     */
+    private AiQueryResponse classifyWithLLM(String question, KnowledgeGraphResponse graph) {
+        // Build rich context from graph
+        String ragContext = contextBuilder.buildQueryContext(question, graph);
+        
+        String context = String.format(
+            "%s\n\nCâu hỏi: %s\n" +
+            "Phân loại: PREREQUISITE_OF, PREREQUISITES_FOR, DOWNSTREAM, IMPACT, SEMESTER, COURSE_INFO, STATS, UNKNOWN",
+            ragContext, question
+        );
+        
+        log.debug("GraphQuery RAG context length: {} chars", ragContext.length());
+        
+        String response = openCodeAiService.generateCompletion(
+            PromptTemplates.KNOWLEDGE_QUERY, context
+        );
+        
+        if (response == null || response.isBlank()) {
+            return null;
+        }
+        
+        // Parse LLM response to determine intent
+        String upperResponse = response.toUpperCase();
+        
+        // Try to extract course code from response
+        Matcher codeMatcher = Pattern.compile("([A-Z]{2}[0-9]{3})").matcher(response);
+        String extractedCode = codeMatcher.find() ? codeMatcher.group(1) : null;
+        
+        // Determine intent from response
+        if (upperResponse.contains("PREREQUISITE_OF") || upperResponse.contains("TIÊN QUYẾT CHO")) {
+            return extractedCode != null ? answerPrerequisiteOf(extractedCode, graph) : null;
+        } else if (upperResponse.contains("PREREQUISITES_FOR") || upperResponse.contains("CẦN TIÊN QUYẾT")) {
+            return extractedCode != null ? answerPrerequisitesFor(extractedCode, graph) : null;
+        } else if (upperResponse.contains("DOWNSTREAM") || upperResponse.contains("HỌC SAU")) {
+            return extractedCode != null ? answerDownstreamOf(extractedCode, graph) : null;
+        } else if (upperResponse.contains("IMPACT") || upperResponse.contains("ẢNH HƯỞNG")) {
+            return extractedCode != null ? answerImpactIfFail(extractedCode, graph) : null;
+        } else if (upperResponse.contains("SEMESTER") || upperResponse.contains("HỌC KỲ")) {
+            return extractedCode != null ? answerSemesterOf(extractedCode, graph) : null;
+        } else if (upperResponse.contains("COURSE_INFO") || upperResponse.contains("LÀ GÌ")) {
+            return extractedCode != null ? answerCourseInfo(extractedCode, graph) : null;
+        } else if (upperResponse.contains("STATS") || upperResponse.contains("TỔNG")) {
+            return answerTotalStats(graph);
+        }
+        
+        // If LLM provided a direct answer, use it
+        return new AiQueryResponse(response, List.of(), "LLM_ANSWER");
     }
 
     private AiQueryResponse handleQuery(QueryType type, String code, KnowledgeGraphResponse graph) {

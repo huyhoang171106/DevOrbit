@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import { buildRepoAiAnalysisSections } from './repoAiAnalysis'
 import type { RepoSummary } from '../types/api'
 
@@ -67,6 +67,9 @@ describe('buildRepoAiAnalysisSections', () => {
   })
 
   test('prefers lastPushedAt over invalid updatedAt for activity signals', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-05-20T10:00:00Z'))
+
     const sections = buildRepoAiAnalysisSections(repo({
       updatedAt: 'not-a-date',
       lastPushedAt: '2026-04-20T10:00:00Z',
@@ -78,6 +81,8 @@ describe('buildRepoAiAnalysisSections', () => {
     expect(sections.find((section) => section.key === 'warnings')?.items ?? []).not.toContain(
       'Chưa có updatedAt/lastPushedAt nên chưa biết repo còn được duy trì gần đây hay không.',
     )
+
+    vi.useRealTimers()
   })
 
   test('warns clearly when repository data is sparse', () => {

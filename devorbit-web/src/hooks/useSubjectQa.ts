@@ -1,4 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
+import { apiPost } from '../lib/api'
 
 export interface SubjectQaRequest {
     message: string
@@ -19,18 +20,7 @@ export interface SubjectQaResponse {
 export function useSubjectQa() {
     return useMutation<SubjectQaResponse, Error, SubjectQaRequest>({
         mutationFn: async (payload: SubjectQaRequest) => {
-            const response = await fetch('/api/ai/subject-qa/query', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            })
-
-            if (!response.ok) {
-                const errorText = await response.text().catch(() => 'Unknown error')
-                throw new Error(`Lỗi từ máy chủ: ${response.status}. ${errorText}`)
-            }
-
-            return response.json()
+            return apiPost<SubjectQaResponse>('/api/ai/subject-qa/query', payload)
         }
     })
 }

@@ -42,6 +42,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/admin/auth/**").permitAll()
                 .requestMatchers("/api/courses/**").permitAll()
                 .requestMatchers("/api/repos/**").permitAll()
+                .requestMatchers("/api/ai/subject-qa/**").permitAll()
                 .requestMatchers("/api/ai/**").authenticated()
                 .requestMatchers("/api/discovery/**").permitAll()
                 .requestMatchers("/api/tech-stacks/**").permitAll()

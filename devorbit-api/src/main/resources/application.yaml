@@ -3,8 +3,8 @@ spring:
     name: devorbit-api
   
   mail:
-    host: smtp.gmail.com
-    port: 587
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
     username: ${MAIL_USERNAME:}
     password: ${MAIL_PASSWORD:}
     properties:
@@ -20,8 +20,9 @@ spring:
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/devorbit_db}
     username: ${DATABASE_USERNAME:postgres}
-    password: ${DATABASE_PASSWORD:huyhoang}
+    password: ${DATABASE_PASSWORD:}
   jpa:
+    open-in-view: false
     defer-datasource-initialization: true
     hibernate:
       ddl-auto: ${JPA_DDL_AUTO:none}
@@ -29,15 +30,34 @@ spring:
     properties:
       hibernate:
         format_sql: ${JPA_FORMAT_SQL:false}
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+  data:
+    web:
+      pageable:
+        page-serialization-mode: VIA_DTO
 
 app:
+  otp:
+    expiration-minutes: ${OTP_EXPIRATION_MINUTES:5}
   github:
+    api-url: ${GITHUB_API_URL:https://api.github.com}
+    user-agent: ${GITHUB_USER_AGENT:DevOrbit/1.0}
     token: ${GITHUB_TOKEN:}
   jwt:
     secret: ${JWT_SECRET}
     expiration-minutes: ${JWT_EXPIRATION_MINUTES:120}
   cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173,http://127.0.0.1:5174,http://104.214.179.110,http://104.214.179.110:5173,https://provide-significance-consumer-guys.trycloudflare.com}
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+  openapi:
+    local-dev-url: ${OPENAPI_LOCAL_DEV_URL:http://localhost:8080}
+    contact-email: ${API_CONTACT_EMAIL:devorbit@uit.edu.vn}
+  opencode:
+    api-url: ${OPENCODE_API_URL:https://opencode.ai/zen/go/v1}
+    api-key: ${OPENCODE_API_KEY:}
+    model: ${OPENCODE_MODEL:deepseek-v4-flash}
 
 server:
   port: ${SERVER_PORT:8080}

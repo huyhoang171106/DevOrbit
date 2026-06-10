@@ -6,6 +6,12 @@
 @import '@fontsource/inter/600.css';
 @import '@fontsource/inter/700.css';
 @import '@fontsource/geist-mono/400.css';
+@import 'lenis/dist/lenis.css';
+
+/* ── Lenis: ensure no CSS scroll-behavior conflicts ── */
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -21,10 +27,6 @@
     --orbit-text: #fafafa;
     --orbit-text-secondary: #a1a1aa;
     --orbit-text-muted: #52525b;
-  }
-
-  html {
-    @apply scroll-smooth;
   }
 
   body {
@@ -77,6 +79,10 @@
   /* Force GPU compositing for animated elements */
   .gpu { transform: translateZ(0); }
   .gpu-3d { transform: translate3d(0, 0, 0); }
+
+  /* Hide scrollbar for horizontal Kanban scroll */
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
 }
 
 @layer components {
@@ -269,4 +275,206 @@
     background-size: 200% 100%;
     animation: shimmer 2s ease-in-out infinite;
   }
+
+  /* ─── Cinematic Text ─── */
+  .cinematic-text {
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
+  }
+
+  .cinematic-text-wide {
+    letter-spacing: 0.15em;
+    font-feature-settings: 'kern' 1, 'liga' 1;
+  }
+
+  /* ─── Glass ─── */
+  .glass-deep {
+    @apply bg-orbit-elevated/80;
+    backdrop-filter: blur(40px) saturate(1.4);
+    -webkit-backdrop-filter: blur(40px) saturate(1.4);
+  }
+
+  .glass-cinematic {
+    @apply bg-orbit-elevated/70 border border-orbit-border/50;
+    backdrop-filter: blur(24px) saturate(1.2);
+    -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  }
+
+  /* ─── Gradient Text ─── */
+  .text-gradient-orbit {
+    background: linear-gradient(135deg, #34d399, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-subtle {
+    background: linear-gradient(135deg, #fafafa 40%, #a1a1aa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ─── Glow Border ─── */
+  .glow-border {
+    position: relative;
+  }
+
+  .glow-border::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(52, 211, 153, 0.3), rgba(129, 140, 248, 0.2), transparent 60%);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: xor;
+    pointer-events: none;
+  }
+
+  /* ─── Scroll Indicator ─── */
+  .scroll-indicator {
+    @apply flex flex-col items-center gap-2;
+  }
+
+  .scroll-indicator .mouse {
+    width: 24px;
+    height: 36px;
+    border-radius: 12px;
+    border: 2px solid rgba(82, 82, 91, 0.5);
+    position: relative;
+  }
+
+  .scroll-indicator .mouse::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3px;
+    height: 8px;
+    border-radius: 2px;
+    background: #34d399;
+    animation: scrollWheel 2s ease-in-out infinite;
+  }
+
+  @keyframes scrollWheel {
+    0%, 100% { transform: translateX(-50%) translateY(0); opacity: 1; }
+    50% { transform: translateX(-50%) translateY(8px); opacity: 0.3; }
+  }
+
+  /* ─── Perspective Grid ─── */
+  .perspective-grid {
+    background-image:
+      linear-gradient(rgba(39, 39, 42, 0.3) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(39, 39, 42, 0.3) 1px, transparent 1px);
+    background-size: 40px 40px;
+    perspective: 800px;
+    transform: rotateX(60deg);
+    transform-origin: center top;
+  }
+
+  /* ─── Atmosphere transitions ─── */
+  [data-atmosphere="light"] {
+    transition: background-color 1.5s ease, box-shadow 1.5s ease;
+  }
+
+  [data-atmosphere="deep"] {
+    transition: background-color 2s ease, box-shadow 2s ease;
+  }
+
+  [data-atmosphere="glow"] {
+    transition: background-color 1s ease, box-shadow 1s ease;
+  }
+
+  /* ─── Hardware acceleration ─── */
+  .hw-accelerate {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+
+  .hw-layer {
+    will-change: transform, opacity;
+  }
+
+  /* ─── Splash cursor ─── */
+  .cursor-glow {
+    position: fixed;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(52, 211, 153, 0.03), transparent 70%);
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.3s ease;
+  }
+
+  @media (hover: none) {
+    .cursor-glow { display: none; }
+  }
+
+  /* ─── Mobile: reduce blur cost ─── */
+  @media (max-width: 768px) {
+    .glass-deep {
+      backdrop-filter: blur(16px) saturate(1.2);
+      -webkit-backdrop-filter: blur(16px) saturate(1.2);
+    }
+
+    .glass-cinematic {
+      backdrop-filter: blur(12px) saturate(1.1);
+      -webkit-backdrop-filter: blur(12px) saturate(1.1);
+    }
+
+    .orbit-glass {
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .orbit-glass-strong {
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+  }
+
+  /* ─── Reduced motion: kill all animations ─── */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.001ms !important;
+    }
+
+    .status-dot, .status-dot-warning {
+      animation: none !important;
+    }
+
+    .shimmer-line {
+      animation: none !important;
+      background: #27272a;
+    }
+
+    .scroll-indicator .mouse::after {
+      animation: none !important;
+    }
+
+    .btn-primary:hover, .btn-secondary:hover, .btn-ghost:hover,
+    .orbit-card:hover, .orbit-card-interactive:hover, .orbit-card-glow:hover {
+      transform: none !important;
+    }
+  }
+}
+
+/* ─── Hide native password toggle icons ─── */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-textfield-decoration-container {
+  display: none !important;
 }

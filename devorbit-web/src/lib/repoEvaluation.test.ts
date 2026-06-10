@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import { evaluateRepository, extractRepoSignals, formatVietnameseRelativeDate } from './repoEvaluation'
 import type { RepoSummary } from '../types/api'
 
@@ -162,12 +162,17 @@ describe('evaluateRepository', () => {
   })
 
   test('prefers lastPushedAt when updatedAt is invalid', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-05-20T10:00:00Z'))
+
     const signals = extractRepoSignals(repo({
       updatedAt: 'not-a-date',
       lastPushedAt: '2026-04-20T10:00:00Z',
     }))
 
     expect(signals.updatedAt).toBe('1 tháng trước')
+
+    vi.useRealTimers()
   })
 
   test('returns insufficient data when metadata is too sparse', () => {

@@ -1,8 +1,12 @@
 package vn.edu.uit.devorbit_api.service.ai;
 
-import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
@@ -10,34 +14,34 @@ import java.util.Map;
  * Service to connect to OpenCode Go API for chat completions.
  * Employs standard OpenAI API format and provides offline fallbacks.
  */
+@Slf4j
 @Service
 public class OpenCodeAiService {
 
-    @Value("${app.opencode.api-url}")
-    private String apiUrl;
-
-    @Value("${app.opencode.api-key:}")
-    private String apiKey;
-
-    @Value("${app.opencode.model:deepseek-v4-flash}")
-    private String model;
-
     private final WebClient webClient;
+    private final vn.edu.uit.devorbit_api.config.AiConfig aiConfig;
 
-    public OpenCodeAiService() {
-        this.webClient = WebClient.builder().build();
+    public OpenCodeAiService(
+            @Qualifier("aiWebClient") WebClient webClient,
+            vn.edu.uit.devorbit_api.config.AiConfig aiConfig) {
+        this.webClient = webClient;
+        this.aiConfig = aiConfig;
     }
 
+    /**
+     * Generate completion synchronously with timeout.
+     * Falls back to offline stub if LLM unavailable or fails.
+     */
     @SuppressWarnings("unchecked")
     public String generateCompletion(String systemPrompt, String userMessage) {
-        if (apiKey == null || apiKey.trim().isEmpty()) {
+        if (!aiConfig.isLlmEnabled()) {
+            log.debug("LLM not enabled, using offline fallback");
             return generateOfflineFallback(userMessage);
         }
 
         try {
-            // Build OpenAI compatible request payload
             Map<String, Object> requestBody = Map.of(
-                "model", model,
+                "model", aiConfig.getModel(),
                 "messages", List.of(
                     Map.of("role", "system", "content", systemPrompt),
                     Map.of("role", "user", "content", userMessage)
@@ -46,12 +50,12 @@ public class OpenCodeAiService {
             );
 
             Map<String, Object> response = webClient.post()
-                .uri(apiUrl + "/chat/completions")
-                .header("Authorization", "Bearer " + apiKey)
-                .header("Content-Type", "application/json")
+                .uri(aiConfig.getApiUrl() + "/chat/completions")
+                .header("Authorization", "Bearer " + aiConfig.getApiKey())
                 .bodyValue(requestBody)
                 .retrieve()
                 .bodyToMono(Map.class)
+                .timeout(Duration.ofSeconds(30))
                 .block();
 
             if (response != null && response.containsKey("choices")) {
@@ -60,15 +64,69 @@ public class OpenCodeAiService {
                     Map<String, Object> firstChoice = choices.get(0);
                     if (firstChoice.containsKey("message")) {
                         Map<String, Object> message = (Map<String, Object>) firstChoice.get("message");
-                        return (String) message.get("content");
+                        String content = (String) message.get("content");
+                        log.debug("LLM response received, length: {}", content != null ? content.length() : 0);
+                        return content;
                     }
                 }
             }
         } catch (Exception e) {
-            // Graceful degradation: fall back to offline stub
+            log.warn("LLM call failed, falling back to offline stub: {}", e.getMessage());
         }
 
         return generateOfflineFallback(userMessage);
+    }
+
+    /**
+     * Generate completion asynchronously.
+     * Returns Mono<String> for reactive use.
+     */
+    @SuppressWarnings("unchecked")
+    public Mono<String> generateCompletionAsync(String systemPrompt, String userMessage) {
+        if (!aiConfig.isLlmEnabled()) {
+            return Mono.just(generateOfflineFallback(userMessage));
+        }
+
+        Map<String, Object> requestBody = Map.of(
+            "model", aiConfig.getModel(),
+            "messages", List.of(
+                Map.of("role", "system", "content", systemPrompt),
+                Map.of("role", "user", "content", userMessage)
+            ),
+            "temperature", 0.3
+        );
+
+        return webClient.post()
+            .uri(aiConfig.getApiUrl() + "/chat/completions")
+            .header("Authorization", "Bearer " + aiConfig.getApiKey())
+            .bodyValue(requestBody)
+            .retrieve()
+            .bodyToMono(Map.class)
+            .timeout(Duration.ofSeconds(30))
+            .map(response -> {
+                if (response != null && response.containsKey("choices")) {
+                    List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
+                    if (!choices.isEmpty()) {
+                        Map<String, Object> firstChoice = choices.get(0);
+                        if (firstChoice.containsKey("message")) {
+                            Map<String, Object> message = (Map<String, Object>) firstChoice.get("message");
+                            return (String) message.get("content");
+                        }
+                    }
+                }
+                return generateOfflineFallback(userMessage);
+            })
+            .onErrorResume(e -> {
+                log.warn("Async LLM call failed: {}", e.getMessage());
+                return Mono.just(generateOfflineFallback(userMessage));
+            });
+    }
+
+    /**
+     * Check if LLM is enabled.
+     */
+    public boolean isLlmEnabled() {
+        return aiConfig.isLlmEnabled();
     }
 
     private String generateOfflineFallback(String userMessage) {

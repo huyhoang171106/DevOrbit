@@ -68,7 +68,7 @@ REST API controllers handling HTTP requests and responses for the DevOrbit backe
 ## Dependencies
 
 ### Internal
-- `../service/` — Business logic services (~22 services)
+- `../service/` — Business logic services (~25 services)
 - `../repository/` — Data access layer (~18 repositories)
 - `../dto/` — Request/response models (~30+ DTOs)
 - `../config/` — Security configuration (JWT filter)

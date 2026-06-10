@@ -52,6 +52,8 @@ function PasswordInput({ id, label, value, onChange, placeholder }: {
   )
 }
 
+// ─── OTP Digit Input ────────────────────────────
+
 function DigitInput({ id, value, onChange, onKeyDown, onPaste, autoFocus }: {
   id?: string; value: string; onChange: (v: string) => void; onKeyDown: (e: KeyboardEvent<HTMLInputElement>) => void
   onPaste?: (e: React.ClipboardEvent) => void; autoFocus?: boolean
@@ -124,8 +126,7 @@ export function StudentLoginPage() {
     setError('')
     setLoading(true)
     try {
-      const purpose = mode === 'forgot' ? 'PASSWORD_RESET' : 'EMAIL_VERIFICATION'
-      await apiPost('/api/student/resend-otp', { email, purpose })
+      await apiPost('/api/student/resend-otp', { email })
       startCountdown()
     } catch {
       setError('Gửi lại mã OTP thất bại.')
@@ -150,6 +151,8 @@ export function StudentLoginPage() {
     setMode(newMode)
   }
 
+  // ─── OTP digit handlers ───────────────────────
+
   function handleOtpPaste(e: React.ClipboardEvent) {
     e.preventDefault()
     const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
@@ -162,6 +165,7 @@ export function StudentLoginPage() {
       }
       return next
     })
+    // Focus last filled or last input
     const focusIndex = Math.min(digits.length, 5)
     const target = document.getElementById(`otp-${focusIndex}`)
     target?.focus()
@@ -232,13 +236,9 @@ export function StudentLoginPage() {
       if (forgotStep === 1) {
         try {
           const res = await apiPost<{ email: string }>('/api/student/forgot-password', { studentCode })
-          if (!res.email) {
-            setError('Nếu tài khoản tồn tại, mã OTP đã được gửi đến email của bạn')
-          } else {
-            setEmail(res.email)
-            setForgotStep(2)
-            startCountdown()
-          }
+          setEmail(res.email)
+          setForgotStep(2)
+          startCountdown()
         } catch (e) {
           const msg = e instanceof Error ? e.message : 'Gửi yêu cầu thất bại.'
           setError(msg)
@@ -323,6 +323,7 @@ export function StudentLoginPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-[14px]">
+          {/* ─── LOGIN MODE ─────────────────────────── */}
           {mode === 'login' && (
             <>
               <div>
@@ -344,6 +345,7 @@ export function StudentLoginPage() {
             </>
           )}
 
+          {/* ─── REGISTER MODE ──────────────────────── */}
           {mode === 'register' && (
             <>
               <div>
@@ -371,6 +373,7 @@ export function StudentLoginPage() {
             </>
           )}
 
+          {/* ─── OTP MODE ───────────────────────────── */}
           {mode === 'otp' && (
             <>
               <div>
@@ -406,6 +409,7 @@ export function StudentLoginPage() {
             </>
           )}
 
+          {/* ─── FORGOT MODE ────────────────────────── */}
           {mode === 'forgot' && (
             <>
               <div>
@@ -460,6 +464,7 @@ export function StudentLoginPage() {
           )}
         </form>
 
+        {/* ─── FOOTER LINKS ─────────────────────────── */}
         {mode === 'otp' && (
           <div className="mt-[20px] pt-[20px] border-t border-glass-border flex items-center justify-center body-sm">
             <button type="button" className="text-emerald-400 hover:text-emerald-400/80 font-medium transition-colors cursor-pointer"

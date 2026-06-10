@@ -13,6 +13,7 @@ import vn.edu.uit.devorbit_api.service.CourseTutorialService;
 import vn.edu.uit.devorbit_api.service.CourseYoutubePlaylistService;
 import vn.edu.uit.devorbit_api.service.JwtService;
 import vn.edu.uit.devorbit_api.service.KnowledgeGraphService;
+import vn.edu.uit.devorbit_api.service.RevokedTokenStore;
 import vn.edu.uit.devorbit_api.entity.CourseRelationType;
 
 import java.util.List;
@@ -33,6 +34,9 @@ class PublicCourseControllerTest {
 
     @MockitoBean
     private JwtService jwtService;
+
+    @MockitoBean
+    private RevokedTokenStore revokedTokenStore;
 
     @MockitoBean
     private CourseTutorialService tutorialService;

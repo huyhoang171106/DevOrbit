@@ -17,6 +17,17 @@ import vn.edu.uit.devorbit_api.entity.OtpPurpose;
 import vn.edu.uit.devorbit_api.exception.BadRequestException;
 import vn.edu.uit.devorbit_api.service.StudentAuthService;
 
+/**
+ * STUDENT AUTH CONTROLLER = register, login, and manage student accounts.
+ *
+ * Endpoints:
+ *   POST /api/student/register        — creates a new student account (sends OTP)
+ *   POST /api/student/verify-otp      — verifies OTP code and activates account
+ *   POST /api/student/login           — logs in with student code + password
+ *   POST /api/student/forgot-password — sends password reset OTP to email
+ *   POST /api/student/reset-password  — verifies OTP and resets password
+ *   GET  /api/student/me              — returns the logged-in student's profile
+ */
 @RestController
 @RequestMapping("/api/student")
 @RequiredArgsConstructor
@@ -24,22 +35,34 @@ public class StudentAuthController {
 
     private final StudentAuthService studentAuthService;
 
+    /** Log in with student code + password. Returns JWT token. */
     @PostMapping("/login")
     public StudentAuthResponse login(@RequestBody @Valid StudentLoginRequest request,
                                       HttpServletRequest httpRequest) {
         return studentAuthService.login(request, httpRequest);
     }
 
+    /**
+     * Register a new student account. Sends OTP to email.
+     * Account is inactive until OTP is verified.
+     */
     @PostMapping("/register")
     public StudentProfileResponse register(@RequestBody @Valid StudentRegisterRequest request) {
         return studentAuthService.register(request);
     }
 
+    /**
+     * Verify OTP code and activate the account. Returns JWT token.
+     */
     @PostMapping("/verify-otp")
     public StudentAuthResponse verifyOtp(@RequestBody @Valid OtpVerificationRequest request) {
         return studentAuthService.verifyOtp(request);
     }
 
+    /**
+     * Resend OTP to the student's email (overwrites previous OTP for given purpose).
+     * Body: { email, purpose? } — purpose defaults to EMAIL_VERIFICATION.
+     */
     @PostMapping("/resend-otp")
     public Map<String, String> resendOtp(@RequestBody Map<String, String> body) {
         String email = body.get("email");
@@ -54,18 +77,27 @@ public class StudentAuthController {
         return Map.of("message", "OTP resent");
     }
 
+    /**
+     * Send password reset OTP to the student's email.
+     * Always returns success — no information leak on whether student exists.
+     */
     @PostMapping("/forgot-password")
     public Map<String, String> forgotPassword(@RequestBody @Valid ForgotPasswordRequest request) {
-        String email = studentAuthService.forgotPassword(request);
-        return Map.of("email", email != null ? email : "",
-                      "message", "Nếu tài khoản tồn tại, mã OTP đã được gửi đến email của bạn");
+        studentAuthService.forgotPassword(request);
+        return Map.of("message", "Nếu tài khoản tồn tại, mã OTP đã được gửi đến email của bạn");
     }
 
+    /**
+     * Verify OTP and reset password. Returns JWT token.
+     */
     @PostMapping("/reset-password")
     public StudentAuthResponse resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
         return studentAuthService.resetPassword(request);
     }
 
+    /**
+     * Logout: revoke the current JWT token.
+     */
     @PostMapping("/logout")
     public Map<String, String> logout(@RequestHeader("Authorization") String authHeader) {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -74,6 +106,10 @@ public class StudentAuthController {
         return Map.of("message", "Logged out");
     }
 
+    /**
+     * Get the currently logged-in student's profile.
+     * Uses @AuthenticationPrincipal to extract the student code from the JWT.
+     */
     @GetMapping("/me")
     public StudentProfileResponse me(@AuthenticationPrincipal String studentCode) {
         return studentAuthService.me(studentCode);

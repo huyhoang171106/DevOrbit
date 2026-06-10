@@ -46,6 +46,18 @@ class PublicRepoControllerTest {
     }
 
     @Test
+    void shouldReturnRepoById() throws Exception {
+        when(githubRepoService.getApprovedRepoById(1L)).thenReturn(
+            new RepoSummaryResponse(1L, "My Repo", "A test repo", "https://github.com/test/repo", "Java", 10, List.of(), 1L, "SE101", "Intro", null, null, null, "2026-05-20T10:00:00Z")
+        );
+
+        mockMvc.perform(get("/api/repos/1"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.displayName").value("My Repo"))
+            .andExpect(jsonPath("$.id").value(1L));
+    }
+
+    @Test
     void shouldReturnReposByCourse() throws Exception {
         when(githubRepoService.getApprovedReposByCourse(1L)).thenReturn(List.of(
             new RepoSummaryResponse(1L, "My Repo", "A test repo", "https://github.com/test/repo", "Java", 10, List.of(), 1L, "SE101", "Intro", null, null, null, null)

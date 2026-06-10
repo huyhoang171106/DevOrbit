@@ -32,16 +32,16 @@ public class AiConfig {
     /**
      * WebClient bean with timeout configuration for LLM API calls.
      * Connect timeout: 10 seconds
-     * Read timeout: 30 seconds
+     * Read timeout: 90 seconds
      */
     @Bean
     public WebClient aiWebClient() {
         HttpClient httpClient = HttpClient.create()
             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
-            .responseTimeout(Duration.ofSeconds(30))
+            .responseTimeout(Duration.ofSeconds(90))
             .doOnConnected(conn ->
-                conn.addHandlerLast(new ReadTimeoutHandler(30, TimeUnit.SECONDS))
-                    .addHandlerLast(new WriteTimeoutHandler(30, TimeUnit.SECONDS))
+                conn.addHandlerLast(new ReadTimeoutHandler(90, TimeUnit.SECONDS))
+                    .addHandlerLast(new WriteTimeoutHandler(90, TimeUnit.SECONDS))
             );
 
         return WebClient.builder()

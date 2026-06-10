@@ -55,7 +55,7 @@ public class OpenCodeAiService {
                 .bodyValue(requestBody)
                 .retrieve()
                 .bodyToMono(Map.class)
-                .timeout(Duration.ofSeconds(30))
+                .timeout(Duration.ofSeconds(90))
                 .block();
 
             if (response != null && response.containsKey("choices")) {
@@ -102,7 +102,7 @@ public class OpenCodeAiService {
             .bodyValue(requestBody)
             .retrieve()
             .bodyToMono(Map.class)
-            .timeout(Duration.ofSeconds(30))
+            .timeout(Duration.ofSeconds(90))
             .map(response -> {
                 if (response != null && response.containsKey("choices")) {
                     List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");

@@ -106,6 +106,7 @@ public class StudentAuthService {
                 .emailVerified(false)
                 .build());
 
+        // rate limit by email for register
         otpRateLimitService.check("EMAIL_VERIFICATION:" + student.getEmail());
 
         String otpCode = generateOtp();
@@ -150,9 +151,6 @@ public class StudentAuthService {
 
     @Transactional
     public void resendOtp(String email, OtpPurpose purpose) {
-        if (email == null || email.isBlank()) {
-            throw new BadRequestException("Email không được để trống");
-        }
         otpRateLimitService.check("RESEND_OTP:" + email.trim().toLowerCase());
 
         StudentUser student = studentUserRepository.findByEmail(email.trim().toLowerCase())
@@ -180,7 +178,7 @@ public class StudentAuthService {
     // ───────── FORGOT / RESET PASSWORD ─────────
 
     @Transactional
-    public String forgotPassword(ForgotPasswordRequest request) {
+    public void forgotPassword(ForgotPasswordRequest request) {
         otpRateLimitService.check("FORGOT_PASSWORD:" + request.studentCode().trim());
 
         var studentOpt = studentUserRepository.findByStudentCode(request.studentCode().trim());
@@ -198,9 +196,8 @@ public class StudentAuthService {
                     .expiresAt(LocalDateTime.now().plusMinutes(otpExpirationMinutes))
                     .build());
             emailService.sendPasswordResetOtp(student.getEmail(), otpCode, otpExpirationMinutes);
-            return student.getEmail();
         }
-        return null;
+        // Always return success — no info leak on whether student exists
     }
 
     @Transactional
@@ -219,10 +216,6 @@ public class StudentAuthService {
 
         StudentUser student = studentUserRepository.findByEmail(email)
                 .orElseThrow(() -> new BadRequestException("Người dùng không tồn tại."));
-
-        if (passwordEncoder.matches(request.newPassword(), student.getPasswordHash())) {
-            throw new BadRequestException("Mật khẩu mới không được giống mật khẩu cũ");
-        }
 
         student.setPasswordHash(passwordEncoder.encode(request.newPassword()));
         studentUserRepository.save(student);

@@ -1,5 +1,6 @@
 package vn.edu.uit.devorbit_api.service.ai;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import vn.edu.uit.devorbit_api.constant.CurriculumConstants;
 import vn.edu.uit.devorbit_api.dto.admin.CourseRelationshipResponse;
@@ -16,14 +17,17 @@ import java.util.stream.Collectors;
 /**
  * Generates personalized learning roadmaps based on career goals.
  * Uses the knowledge graph structure (topological levels) and keyword matching.
- * No LLM required.
+ * Uses LLM for enhanced explanations when available.
  */
+@Slf4j
 @Component
 public class RoadmapGenerator {
 
     private final CourseRepository courseRepository;
     private final CourseRelationshipService relationshipService;
     private final CurriculumMatcher curriculumMatcher;
+    private final OpenCodeAiService openCodeAiService;
+    private final LlmContextBuilder contextBuilder;
 
     // In-memory cache: loaded lazily on first request
     private volatile Map<String, Course> courseCache;
@@ -33,10 +37,14 @@ public class RoadmapGenerator {
 
     public RoadmapGenerator(CourseRepository courseRepository,
                             CourseRelationshipService relationshipService,
-                            CurriculumMatcher curriculumMatcher) {
+                            CurriculumMatcher curriculumMatcher,
+                            OpenCodeAiService openCodeAiService,
+                            LlmContextBuilder contextBuilder) {
         this.courseRepository = courseRepository;
         this.relationshipService = relationshipService;
         this.curriculumMatcher = curriculumMatcher;
+        this.openCodeAiService = openCodeAiService;
+        this.contextBuilder = contextBuilder;
     }
 
     /** Lazily loads reference data into memory on first use. */
@@ -344,7 +352,55 @@ public class RoadmapGenerator {
             prioritized, selectedCodes, crossTraining, courseMap
         );
 
+        // Enhance summary with LLM if available
+        summary = enhanceSummaryWithLLM(summary, careerPath, learningGoals, recommendations);
+
         return new RoadmapRecommendationResponse(summary, recommendations, graduationTracks, electivePools);
+    }
+
+    /**
+     * Enhance the rule-based summary with LLM explanation using RAG context.
+     */
+    private String enhanceSummaryWithLLM(String ruleBasedSummary, String careerPath, 
+            String learningGoals, List<RoadmapRecommendationResponse.CourseRecommendation> recommendations) {
+        if (!openCodeAiService.isLlmEnabled()) {
+            return ruleBasedSummary;
+        }
+
+        try {
+            // Build RAG context from knowledge graph + recommendations
+            String courseCodes = recommendations.stream()
+                .map(RoadmapRecommendationResponse.CourseRecommendation::courseCode)
+                .collect(Collectors.joining(", "));
+            
+            // Use LlmContextBuilder to get rich context for these courses
+            String ragContext = "Chương trình KTPM 2025:\n" +
+                "Môn học đề xuất: " + courseCodes + "\n" +
+                "Định hướng: " + careerPath + "\n" +
+                "Mục tiêu: " + learningGoals;
+            
+            // If we have a knowledge graph, we could also call buildQueryContext
+            // but for now, we'll pass the course codes for context
+            String context = String.format(
+                "%s\n\nĐịnh hướng: %s, Môn học đề xuất: %s",
+                ragContext, careerPath, courseCodes
+            );
+            
+            log.debug("Roadmap RAG context length: {} chars", ragContext.length());
+            
+            String llmExplanation = openCodeAiService.generateCompletion(
+                PromptTemplates.ROADMAP_EXPLANATION, context
+            );
+            
+            if (llmExplanation != null && !llmExplanation.isBlank()) {
+                log.debug("LLM roadmap explanation generated");
+                return llmExplanation + "\n\n---\n\n" + ruleBasedSummary;
+            }
+        } catch (Exception e) {
+            log.warn("LLM roadmap explanation failed: {}", e.getMessage());
+        }
+
+        return ruleBasedSummary;
     }
 
     private record CourseElectiveSem(Course course, int credits, int semester) {}

@@ -9,6 +9,7 @@ import vn.edu.uit.devorbit_api.dto.publicapi.RepoSummaryResponse;
 import vn.edu.uit.devorbit_api.dto.publicapi.TechStackResponse;
 import vn.edu.uit.devorbit_api.service.GithubRepoService;
 import vn.edu.uit.devorbit_api.service.JwtService;
+import vn.edu.uit.devorbit_api.service.RevokedTokenStore;
 
 import java.util.List;
 
@@ -28,6 +29,21 @@ class PublicRepoControllerTest {
 
     @MockitoBean
     private JwtService jwtService;
+
+    @MockitoBean
+    private RevokedTokenStore revokedTokenStore;
+
+    @Test
+    void shouldReturnRepoById() throws Exception {
+        when(githubRepoService.getApprovedRepoById(1L)).thenReturn(
+            new RepoSummaryResponse(1L, "My Repo", "A test repo", "https://github.com/test/repo", "Java", 10, List.of(), 1L, "SE101", "Intro", null, null, null, "2026-05-20T10:00:00Z")
+        );
+
+        mockMvc.perform(get("/api/repos/1"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.displayName").value("My Repo"))
+            .andExpect(jsonPath("$.id").value(1L));
+    }
 
     @Test
     void shouldReturnRepoById() throws Exception {

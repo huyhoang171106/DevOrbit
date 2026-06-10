@@ -83,38 +83,55 @@ class CourseKnowledgeIndexerTest {
     }
 
     @Test
-    void indexMetadata_includesCourseCodeAndChunkIndex() {
+    void indexMetadata_includesCourseCodeAndChunkIndex() throws Exception {
         indexer = new CourseKnowledgeIndexer(knowledgeChunkRepository, objectMapper);
         KnowledgeSource source = mockSource();
         String md = "# Section\nContent\n";
 
         indexer.indexMarkdown(source, "IT001", md);
 
-        ArgumentCaptor<List<KnowledgeChunk>> captor = ArgumentCaptor.forClass(List.class);
-        verify(knowledgeChunkRepository).saveAll(captor.capture());
+        ArgumentCaptor<String> metadataCaptor = ArgumentCaptor.forClass(String.class);
+        verify(knowledgeChunkRepository).insertChunkWithoutEmbedding(
+            any(UUID.class),
+            eq(source.getId()),
+            eq("IT001"),
+            eq(0),
+            eq("Section"),
+            eq("# Section\nContent"),
+            metadataCaptor.capture(),
+            isNull(),
+            isNull()
+        );
 
-        List<KnowledgeChunk> saved = captor.getValue();
-        assertThat(saved).hasSize(1);
-        assertThat(saved.get(0).getMetadataJson().get("courseCode").asText()).isEqualTo("IT001");
-        assertThat(saved.get(0).getMetadataJson().get("chunkIndex").asInt()).isEqualTo(0);
-        assertThat(saved.get(0).getMetadataJson().get("sourceFile").asText()).isEqualTo("IT001.md");
+        var metadata = objectMapper.readTree(metadataCaptor.getValue());
+        assertThat(metadata.get("courseCode").asText()).isEqualTo("IT001");
+        assertThat(metadata.get("chunkIndex").asInt()).isEqualTo(0);
+        assertThat(metadata.get("sourceFile").asText()).isEqualTo("IT001.md");
     }
 
     @Test
-    void indexMetadata_includesPageFieldsWhenPresent() {
+    void indexMetadata_includesPageFieldsWhenPresent() throws Exception {
         indexer = new CourseKnowledgeIndexer(knowledgeChunkRepository, objectMapper);
         KnowledgeSource source = mockSource();
         String md = "# Section [Page 5-10]\nContent\n";
 
         indexer.indexMarkdown(source, "IT001", md);
 
-        ArgumentCaptor<List<KnowledgeChunk>> captor = ArgumentCaptor.forClass(List.class);
-        verify(knowledgeChunkRepository).saveAll(captor.capture());
+        ArgumentCaptor<String> metadataCaptor = ArgumentCaptor.forClass(String.class);
+        verify(knowledgeChunkRepository).insertChunkWithoutEmbedding(
+            any(UUID.class),
+            eq(source.getId()),
+            eq("IT001"),
+            eq(0),
+            eq("Section [Page 5-10]"),
+            eq("# Section [Page 5-10]\nContent"),
+            metadataCaptor.capture(),
+            eq(5),
+            eq(10)
+        );
 
-        KnowledgeChunk chunk = captor.getValue().get(0);
-        assertThat(chunk.getPageFrom()).isEqualTo(5);
-        assertThat(chunk.getPageTo()).isEqualTo(10);
-        assertThat(chunk.getMetadataJson().get("pageFrom").asInt()).isEqualTo(5);
-        assertThat(chunk.getMetadataJson().get("pageTo").asInt()).isEqualTo(10);
+        var metadata = objectMapper.readTree(metadataCaptor.getValue());
+        assertThat(metadata.get("pageFrom").asInt()).isEqualTo(5);
+        assertThat(metadata.get("pageTo").asInt()).isEqualTo(10);
     }
 }

@@ -10,6 +10,7 @@ import vn.edu.uit.devorbit_api.dto.admin.CandidateReviewRequest;
 import vn.edu.uit.devorbit_api.dto.admin.RepoCandidateResponse;
 import vn.edu.uit.devorbit_api.service.JwtService;
 import vn.edu.uit.devorbit_api.service.RepoCandidateService;
+import vn.edu.uit.devorbit_api.service.RevokedTokenStore;
 
 import java.util.List;
 
@@ -32,6 +33,9 @@ class AdminRepoCandidateControllerTest {
 
     @MockitoBean
     private JwtService jwtService;
+
+    @MockitoBean
+    private RevokedTokenStore revokedTokenStore;
 
     private RepoCandidateResponse makeCandidateResponse(Long id, String status) {
         return new RepoCandidateResponse(

@@ -1,9 +1,16 @@
 package vn.edu.uit.devorbit_api.service;
 
-
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import vn.edu.uit.devorbit_api.dto.admin.ApprovedRepoUpdateRequest;
 import vn.edu.uit.devorbit_api.dto.publicapi.RepoSummaryResponse;
 import vn.edu.uit.devorbit_api.dto.publicapi.TechStackResponse;
@@ -14,13 +21,12 @@ import vn.edu.uit.devorbit_api.exception.NotFoundException;
 import vn.edu.uit.devorbit_api.repository.CourseRepository;
 import vn.edu.uit.devorbit_api.repository.GithubRepoRepository;
 import vn.edu.uit.devorbit_api.repository.TechStackRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,38 +37,73 @@ public class GithubRepoService {
     private final CourseRepository courseRepository;
     private final GithubScanService githubScanService;
 
-    @Transactional
+    // Self-inject for proxy-aware @Cacheable + @Async from same class
+    @Autowired @Lazy
+    private GithubRepoService self;
+
+    // =====================================================================
+    // READ METHODS — cached, transactional
+    // =====================================================================
+
+    @Transactional(readOnly = true)
+    @Cacheable(value = "repoById", unless = "#result == null")
     public RepoSummaryResponse getApprovedRepoById(Long repoId) {
         GithubRepo repo = githubRepoRepository.findById(repoId)
                 .orElseThrow(() -> new NotFoundException("Repo not found: " + repoId));
         if (!repo.isActive()) {
             throw new NotFoundException("Repo not found: " + repoId);
         }
-        refreshLastPushedAtIfMissing(repo);
+        // Fire async refresh in background — cached response returns immediately
+        self.asyncRefreshLastPushedAt(repoId);
         return mapToRepoSummary(repo);
     }
 
+    @Transactional(readOnly = true)
+    @Cacheable(value = "reposByCourse", unless = "#result.isEmpty()")
     public List<RepoSummaryResponse> getApprovedReposByCourse(Long courseId) {
-        return githubRepoRepository.findByCourseIdAndActiveTrue(courseId).stream()
-                .map(this::refreshAndMap)
+        List<RepoSummaryResponse> responses = githubRepoRepository
+                .findByCourseIdAndActiveTrue(courseId).stream()
+                .map(this::mapToRepoSummary)
                 .toList();
+        // Fire async refresh for any repos needing GitHub data
+        for (var repo : githubRepoRepository.findByCourseIdAndActiveTrue(courseId)) {
+            if (repo.getLastPushedAt() == null || repo.getLastPushedAt().isBlank()) {
+                self.asyncRefreshLastPushedAt(repo.getId());
+            }
+        }
+        return responses;
     }
 
+    @Transactional(readOnly = true)
+    @Cacheable(value = "allRepos", unless = "#result.isEmpty()")
     public List<RepoSummaryResponse> getAllApprovedRepos() {
         List<GithubRepo> repos = githubRepoRepository.findByActiveTrue();
         log.info("getAllApprovedRepos: found {} active repos", repos.size());
-        return repos.stream()
-                .map(this::refreshAndMap)
+        List<RepoSummaryResponse> responses = repos.stream()
+                .map(this::mapToRepoSummary)
                 .toList();
+        // Async refresh in background
+        for (var repo : repos) {
+            if (repo.getLastPushedAt() == null || repo.getLastPushedAt().isBlank()) {
+                self.asyncRefreshLastPushedAt(repo.getId());
+            }
+        }
+        return responses;
     }
 
+    @Transactional(readOnly = true)
     public List<RepoSummaryResponse> getApprovedReposByCourseAndTechStack(Long courseId, String techStack) {
         return githubRepoRepository.findByCourseIdAndActiveTrueAndTechStack(courseId, techStack).stream()
                 .map(this::mapToRepoSummary)
                 .toList();
     }
 
+    // =====================================================================
+    // WRITE METHODS — evict cache
+    // =====================================================================
+
     @Transactional
+    @CacheEvict(value = {"reposByCourse", "repoById", "allRepos"}, allEntries = true)
     public RepoSummaryResponse updateApprovedRepo(Long repoId, ApprovedRepoUpdateRequest request) {
         GithubRepo repo = githubRepoRepository.findById(repoId)
                 .orElseThrow(() -> new NotFoundException("Repo not found: " + repoId));
@@ -90,6 +131,8 @@ public class GithubRepoService {
         return saved;
     }
 
+    @Transactional
+    @CacheEvict(value = {"reposByCourse", "repoById", "allRepos"}, allEntries = true)
     public void deleteApprovedRepo(Long repoId) {
         GithubRepo repo = githubRepoRepository.findById(repoId)
                 .orElseThrow(() -> new NotFoundException("Repo not found: " + repoId));
@@ -97,6 +140,67 @@ public class GithubRepoService {
         githubRepoRepository.save(repo);
         log.info("deleteApprovedRepo: deactivated repo id={}", repoId);
     }
+
+    // =====================================================================
+    // ASYNC GITHUB REFRESH — background HTTP calls
+    // =====================================================================
+
+    @Async
+    public void asyncRefreshLastPushedAt(Long repoId) {
+        try {
+            GithubRepo repo = githubRepoRepository.findById(repoId).orElse(null);
+            if (repo == null) return;
+            if (repo.getLastPushedAt() != null && !repo.getLastPushedAt().isBlank()) return;
+
+            RepoSlug slug = parseGithubSlug(repo.getGithubUrl());
+            if (slug == null) return;
+
+            String lastPushedAt = githubScanService.fetchLatestActivityAt(slug.owner(), slug.name());
+            if (lastPushedAt == null) return;
+
+            repo.setLastPushedAt(lastPushedAt);
+            githubRepoRepository.save(repo);
+            log.info("asyncRefreshed lastPushedAt for repo id={} -> {}", repoId, lastPushedAt);
+        } catch (Exception e) {
+            log.warn("asyncRefreshLastPushedAt failed for repo id={}: {}", repoId, e.getMessage());
+        }
+    }
+
+    // =====================================================================
+    // SCHEDULED BATCH REFRESH — runs every 30 min
+    // =====================================================================
+
+    @Scheduled(fixedRate = 1_800_000) // 30 min
+    @Transactional
+    public void batchRefreshStaleLastPushedAt() {
+        List<GithubRepo> stale = githubRepoRepository.findStaleActiveRepos().stream()
+                .filter(r -> r.getGithubUrl() != null && !r.getGithubUrl().isBlank())
+                .toList();
+        if (stale.isEmpty()) {
+            log.debug("batchRefreshStaleLastPushedAt: no stale repos");
+            return;
+        }
+        log.info("batchRefreshStaleLastPushedAt: refreshing {} repos", stale.size());
+        for (GithubRepo repo : stale) {
+            try {
+                RepoSlug slug = parseGithubSlug(repo.getGithubUrl());
+                if (slug == null) continue;
+                String lastPushedAt = githubScanService.fetchLatestActivityAt(slug.owner(), slug.name());
+                if (lastPushedAt != null) {
+                    repo.setLastPushedAt(lastPushedAt);
+                    githubRepoRepository.save(repo);
+                }
+                Thread.sleep(200); // rate-limit politeness
+            } catch (Exception e) {
+                log.warn("batchRefresh failed for repo id={}: {}", repo.getId(), e.getMessage());
+            }
+        }
+        log.info("batchRefreshStaleLastPushedAt: completed");
+    }
+
+    // =====================================================================
+    // DTO MAPPING
+    // =====================================================================
 
     public RepoSummaryResponse mapToRepoSummary(GithubRepo repo) {
         Long courseId = null;
@@ -127,20 +231,9 @@ public class GithubRepoService {
         );
     }
 
-    private RepoSummaryResponse refreshAndMap(GithubRepo repo) {
-        refreshLastPushedAtIfMissing(repo);
-        return mapToRepoSummary(repo);
-    }
-
-    private void refreshLastPushedAtIfMissing(GithubRepo repo) {
-        if (repo.getLastPushedAt() != null && !repo.getLastPushedAt().isBlank()) return;
-        RepoSlug slug = parseGithubSlug(repo.getGithubUrl());
-        if (slug == null) return;
-        String lastPushedAt = githubScanService.fetchLatestActivityAt(slug.owner(), slug.name());
-        if (lastPushedAt == null) return;
-        repo.setLastPushedAt(lastPushedAt);
-        githubRepoRepository.save(repo);
-    }
+    // =====================================================================
+    // HELPERS
+    // =====================================================================
 
     private RepoSlug parseGithubSlug(String githubUrl) {
         if (githubUrl == null || githubUrl.isBlank()) return null;

@@ -15,14 +15,13 @@ import java.util.Map;
  */
 @Slf4j
 @Component
-@ConditionalOnProperty(name = "firecrawl.enabled", havingValue = "true", matchIfMissing = false)
 public class FirecrawlClient {
 
     private final WebClient webClient;
     private final FirecrawlProperties properties;
 
-    public FirecrawlClient(WebClient.Builder webClientBuilder, FirecrawlProperties properties) {
-        this.webClient = webClientBuilder.baseUrl(properties.getApiUrl()).build();
+    public FirecrawlClient(FirecrawlProperties properties) {
+        this.webClient = WebClient.builder().baseUrl(properties.getApiUrl() != null && !properties.getApiUrl().isBlank() ? properties.getApiUrl() : "https://api.firecrawl.dev").build();
         this.properties = properties;
     }
 
@@ -39,6 +38,10 @@ public class FirecrawlClient {
      * Scrape a single URL and return markdown content.
      */
     public FirecrawlResult scrape(String url) {
+        if (!properties.isEnabled()) {
+            log.warn("Firecrawl is disabled. Skipping scrape for {}", url);
+            return new FirecrawlResult(null, null, null);
+        }
         try {
             Map<String, Object> body = Map.of(
                 "url", url,
@@ -67,6 +70,10 @@ public class FirecrawlClient {
      * Crawl a site and return multiple page results.
      */
     public List<FirecrawlResult> crawl(String url, int maxPages) {
+        if (!properties.isEnabled()) {
+            log.warn("Firecrawl is disabled. Skipping crawl for {}", url);
+            return List.of();
+        }
         try {
             Map<String, Object> body = Map.of(
                 "url", url,

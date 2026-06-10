@@ -1,3 +1,5 @@
+import { getStudentToken } from './auth'
+
 export const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? ''
 
 export function buildApiUrl(baseUrl: string, path: string): string {
@@ -75,14 +77,6 @@ export const apiUpload = <T>(path: string, formData: FormData): Promise<T> => {
     if (!res.ok) throw new Error(`Upload failed: ${res.status}`)
     return (await res.json()) as T
   })
-}
-
-function getStudentToken(): string | null {
-  try {
-    return localStorage.getItem('devorbit-student-token')
-  } catch {
-    return null
-  }
 }
 
 // --- Student API (authenticated) ---

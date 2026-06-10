@@ -150,7 +150,7 @@ public class ChatService {
     private String extractCourseCode(String message) {
         if (message == null) return null;
         java.util.regex.Matcher matcher = java.util.regex.Pattern
-                .compile("\b([A-Z]{2}[0-9]{3})\b")
+                .compile("\\b([A-Z]{2}[0-9]{3})\\b")
                 .matcher(message);
         return matcher.find() ? matcher.group(1) : null;
     }

@@ -48,6 +48,7 @@ class GithubRepoServiceTest {
             courseRepository,
             githubScanService
         );
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "self", service);
 
         RepoSummaryResponse response = service.getApprovedRepoById(1L);
 

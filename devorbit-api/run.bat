@@ -32,6 +32,13 @@ if "%OPENCODE_API_KEY%"=="" (
 )
 echo OPENCODE_API_URL=%OPENCODE_API_URL%
 echo OPENCODE_MODEL=%OPENCODE_MODEL%
+echo EXA_ENABLED=%EXA_ENABLED%
+echo EXA_API_URL=%EXA_API_URL%
+if "%EXA_API_KEY%"=="" (
+    echo WARNING: EXA_API_KEY is empty. Web search will fall back to Firecrawl or empty results.
+) else (
+    echo EXA_API_KEY loaded
+)
 echo FIRECRAWL_ENABLED=%FIRECRAWL_ENABLED%
 if "%FIRECRAWL_API_KEY%"=="" (
     echo WARNING: FIRECRAWL_API_KEY is empty. Firecrawl scraping will fail.

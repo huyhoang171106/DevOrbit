@@ -1,0 +1,19 @@
+package vn.edu.uit.devorbit_api.config;
+
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
+@Data
+@Configuration
+@ConfigurationProperties(prefix = "exa")
+public class ExaProperties {
+
+    private boolean enabled = true;
+    private String apiUrl = "https://api.exa.ai";
+    private String apiKey = "";
+    private String searchType = "auto";
+    private int numResults = 10;
+    private int maxAgeHours = 24;
+    private int timeoutSeconds = 15;
+}

@@ -162,8 +162,6 @@ Expected data:
 This is Phase 1. The following are intentionally not implemented:
 
 - **Firecrawl** - PDF fetching from web sources
-- **pgvector embeddings** - Vector similarity search for RAG
-- **ChatService RAG integration** - Using knowledge in chat responses
 - **Incremental updates** - Only full re-ingestion supported
 - **Course deduplication across sources** - Multiple PDFs for same course
 
@@ -188,6 +186,16 @@ MarkerMarkdownLoader → SyllabusFactExtractor → SyllabusValidator
                     - course_tools
                     - knowledge_chunks
 ```
+
+
+## Phase 2: Smarter Retrieval
+
+Phase 2 (implemented) adds the following improvements:
+- **Hybrid search**: Combines pgvector cosine similarity with PostgreSQL FTS (`ts_rank_cd`) via RRF-style score fusion.
+- **Query planner**: Expands Vietnamese study/resource/project intent terms and enriches queries with course metadata.
+- **Reranker**: Deduplicates, applies lexical overlap boost, section-title match, and source diversity.
+- **Adaptive web fallback**: Subject Q&A only searches external web when local RAG chunks are empty/weak.
+- **Hierarchical chunking**: SECTION_SUMMARY + DETAIL chunks with 500-char overlap and parent_chunk_id references.
 
 ## Error Handling
 

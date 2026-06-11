@@ -314,7 +314,7 @@ function ChatArea({
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto scrollbar-thin px-6 py-4 space-y-3"
+        className="flex-1 overflow-y-auto scrollbar-thin px-6 py-4 space-y-3 min-h-0"
       >
         {page < totalPages - 1 && (
           <div className="flex justify-center py-2">

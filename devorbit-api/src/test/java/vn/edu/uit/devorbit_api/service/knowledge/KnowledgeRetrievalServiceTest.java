@@ -7,6 +7,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import vn.edu.uit.devorbit_api.dto.knowledge.SearchRequest;
 import vn.edu.uit.devorbit_api.dto.knowledge.SearchResponse;
+import vn.edu.uit.devorbit_api.entity.KnowledgeChunk;
+import vn.edu.uit.devorbit_api.entity.KnowledgeSource;
 import vn.edu.uit.devorbit_api.repository.KnowledgeChunkRepository;
 import vn.edu.uit.devorbit_api.service.ai.EmbeddingService;
 
@@ -27,34 +29,51 @@ class KnowledgeRetrievalServiceTest {
     @Mock
     private EmbeddingService embeddingService;
 
+    @Mock
+    private RagQueryPlanner ragQueryPlanner;
+
+    private final RagResultReranker realReranker = new RagResultReranker();
+
     private KnowledgeRetrievalService service;
 
     @BeforeEach
     void setUp() {
-        service = new KnowledgeRetrievalService(knowledgeChunkRepository, embeddingService);
+        service = new KnowledgeRetrievalService(
+                knowledgeChunkRepository, embeddingService, ragQueryPlanner, realReranker);
         lenient().when(embeddingService.embed(anyString())).thenReturn(new float[]{0.1f, 0.2f, 0.3f});
+    }
+
+    private Object[] makeRow(UUID chunkId, UUID sourceId, String courseCode, String sectionTitle, String text, double score) {
+        KnowledgeSource s = new KnowledgeSource();
+        s.setId(sourceId);
+        return new Object[]{
+                chunkId, sourceId, courseCode, 0,
+                sectionTitle, text, null, 1, 5, null, null, score
+        };
     }
 
     @Test
     void search_throwsOnBlankQuery() {
+        lenient().when(ragQueryPlanner.plan(anyString(), any())).thenReturn(
+                new RagQueryPlan("  ", "primary", "text", List.of("test"), java.util.Set.of()));
+
         SearchRequest req = new SearchRequest(null, "  ", 5);
 
         assertThatThrownBy(() -> service.search(req))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("query is required");
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("query is required");
     }
 
     @Test
     void search_mapsResultsCorrectly() {
         UUID chunkId = UUID.randomUUID();
         UUID sourceId = UUID.randomUUID();
-        Object[] row = {
-            chunkId, sourceId, "IT001", 0,
-            "Introduction", "Some content", null, 1, 5, null, null, 0.85
-        };
+        Object[] row = makeRow(chunkId, sourceId, "IT001", "Introduction", "Some content", 0.85);
 
-        when(knowledgeChunkRepository.searchByVector(anyString(), isNull(), eq(5)))
-            .thenReturn(List.<Object[]>of(row));
+        when(ragQueryPlanner.plan(anyString(), isNull())).thenReturn(
+                new RagQueryPlan("what is IT001", "primary", "text", List.of("what is IT001"), java.util.Set.of()));
+        when(knowledgeChunkRepository.searchHybrid(anyString(), anyString(), isNull(), anyInt(), anyInt()))
+                .thenReturn(List.<Object[]>of(row));
 
         SearchRequest req = new SearchRequest(null, "what is IT001", 5);
         SearchResponse resp = service.search(req);
@@ -76,15 +95,19 @@ class KnowledgeRetrievalServiceTest {
 
     @Test
     void search_passesCourseCodeFilter() {
-        when(knowledgeChunkRepository.searchByVector(anyString(), eq("IT001"), eq(3)))
-            .thenReturn(List.of());
+        when(ragQueryPlanner.plan("exam format", "IT001")).thenReturn(
+                new RagQueryPlan("exam format", "primary", "text", List.of("exam format"), java.util.Set.of("IT001")));
+        lenient().when(knowledgeChunkRepository.searchByVector(anyString(), eq("IT001"), anyInt()))
+                .thenReturn(List.of());
+        when(knowledgeChunkRepository.searchHybrid(anyString(), anyString(), eq("IT001"), anyInt(), anyInt()))
+                .thenReturn(List.of());
 
         SearchRequest req = new SearchRequest("IT001", "exam format", 3);
         SearchResponse resp = service.search(req);
 
         assertThat(resp.courseCode()).isEqualTo("IT001");
         assertThat(resp.results()).isEmpty();
-        verify(knowledgeChunkRepository).searchByVector(anyString(), eq("IT001"), eq(3));
+        verify(knowledgeChunkRepository).searchHybrid(anyString(), anyString(), eq("IT001"), anyInt(), anyInt());
     }
 
     @Test
@@ -96,11 +119,57 @@ class KnowledgeRetrievalServiceTest {
 
     @Test
     void search_emptyResults_returnsEmptyList() {
-        when(knowledgeChunkRepository.searchByVector(anyString(), isNull(), eq(5)))
-            .thenReturn(List.of());
+        when(ragQueryPlanner.plan("nothing here", null)).thenReturn(
+                new RagQueryPlan("nothing here", "primary", "text", List.of("nothing here"), java.util.Set.of()));
+        when(knowledgeChunkRepository.searchHybrid(anyString(), anyString(), isNull(), anyInt(), anyInt()))
+                .thenReturn(List.of());
 
         SearchResponse resp = service.search(new SearchRequest(null, "nothing here", 5));
 
         assertThat(resp.results()).isEmpty();
+    }
+
+    @Test
+    void search_fallsBackToVectorWhenHybridFails() {
+        UUID chunkId = UUID.randomUUID();
+        UUID sourceId = UUID.randomUUID();
+        Object[] row = makeRow(chunkId, sourceId, "IT001", "Fallback", "Fallback content", 0.75);
+
+        when(ragQueryPlanner.plan("test query", "IT001")).thenReturn(
+                new RagQueryPlan("test query", "primary", "text", List.of("test query"), java.util.Set.of("IT001")));
+        when(knowledgeChunkRepository.searchHybrid(anyString(), anyString(), eq("IT001"), anyInt(), anyInt()))
+                .thenThrow(new RuntimeException("search_text not available"));
+        when(knowledgeChunkRepository.searchByVector(anyString(), eq("IT001"), anyInt()))
+                .thenReturn(List.<Object[]>of(row));
+
+        SearchResponse resp = service.search(new SearchRequest("IT001", "test query", 5));
+
+        assertThat(resp.results()).hasSize(1);
+        assertThat(resp.results().get(0).chunkId()).isEqualTo(chunkId.toString());
+        verify(knowledgeChunkRepository).searchByVector(anyString(), eq("IT001"), anyInt());
+    }
+
+    @Test
+    void search_usesExpandedQueriesAndDedupesHighestScore() {
+        UUID chunkId = UUID.randomUUID();
+        UUID sourceId = UUID.randomUUID();
+
+        Object[] rowLow = makeRow(chunkId, sourceId, "IT001", "Title", "Content", 0.02);
+        Object[] rowHigh = makeRow(chunkId, sourceId, "IT001", "Title", "Content", 0.08);
+
+        when(ragQueryPlanner.plan("query", null)).thenReturn(
+                new RagQueryPlan("query", "primary expanded", "text expanded",
+                        List.of("query", "primary expanded"), java.util.Set.of()));
+        lenient().when(knowledgeChunkRepository.searchByVector(anyString(), isNull(), anyInt()))
+                .thenReturn(List.of());
+        when(knowledgeChunkRepository.searchHybrid(anyString(), anyString(), isNull(), anyInt(), anyInt()))
+                .thenReturn(List.<Object[]>of(rowLow))
+                .thenReturn(List.<Object[]>of(rowHigh));
+
+        SearchResponse resp = service.search(new SearchRequest(null, "query", 5));
+
+        // Should deduplicate by ID and keep higher score
+        assertThat(resp.results()).hasSize(1);
+        assertThat(resp.results().get(0).score()).isCloseTo(0.08, org.assertj.core.data.Offset.offset(0.01));
     }
 }

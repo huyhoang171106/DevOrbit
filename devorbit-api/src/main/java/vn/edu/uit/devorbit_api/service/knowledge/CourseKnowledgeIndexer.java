@@ -11,14 +11,17 @@ import vn.edu.uit.devorbit_api.entity.KnowledgeSource;
 import vn.edu.uit.devorbit_api.repository.KnowledgeChunkRepository;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * Chunks raw markdown into section-aware chunks for future RAG retrieval.
- * No embedding yet — just stores chunk text with metadata.
+ * Emits SECTION_SUMMARY chunks for headed sections and DETAIL chunks with overlap.
+ * DETAIL chunks reference their parent SECTION_SUMMARY chunk via parent_chunk_id.
  */
 @Slf4j
 @Component
@@ -28,11 +31,15 @@ public class CourseKnowledgeIndexer {
     private final KnowledgeChunkRepository knowledgeChunkRepository;
     private final ObjectMapper objectMapper;
 
-    private static final int TARGET_CHUNK_SIZE = 4000; // ~1000 tokens
+    private static final int TARGET_CHUNK_SIZE = 4000;
     private static final int MAX_CHUNK_SIZE = 5000;
+    private static final int OVERLAP_CHARS = 500;
+    private static final int SECTION_SUMMARY_MAX_CHARS = 900;
+    private static final String CHUNK_KIND_SECTION_SUMMARY = "SECTION_SUMMARY";
+    private static final String CHUNK_KIND_DETAIL = "DETAIL";
     private static final Pattern HEADING_PATTERN = Pattern.compile("^(#{1,4})\\s+(.+)$", Pattern.MULTILINE);
     private static final Pattern PAGE_MARKER_PATTERN = Pattern.compile(
-        "\\[(?:Page|Trang)\\s+(\\d+)(?:\\s*[-–]\\s*(\\d+))?\\]", Pattern.CASE_INSENSITIVE);
+            "\\[(?:Page|Trang)\\s+(\\d+)(?:\\s*[-–]\\s*(\\d+))?\\]", Pattern.CASE_INSENSITIVE);
 
     /**
      * Chunk markdown and store chunks in the database.
@@ -45,52 +52,80 @@ public class CourseKnowledgeIndexer {
 
         List<ChunkInfo> chunked = chunkMarkdown(markdown);
         List<KnowledgeChunk> saved = new ArrayList<>();
+        Map<String, UUID> sectionSummaryIds = new LinkedHashMap<>();
 
         for (int i = 0; i < chunked.size(); i++) {
             ChunkInfo info = chunked.get(i);
+
+            // If this is a SECTION_SUMMARY, register its UUID for parent linking
+            UUID summaryId = null;
+            if (CHUNK_KIND_SECTION_SUMMARY.equals(info.chunkKind())) {
+                summaryId = UUID.randomUUID();
+                sectionSummaryIds.put(info.sectionKey(), summaryId);
+            }
+
+            // For DETAIL chunks, look up parent summary UUID
+            UUID parentChunkId = null;
+            if (CHUNK_KIND_DETAIL.equals(info.chunkKind()) && info.sectionKey() != null) {
+                parentChunkId = sectionSummaryIds.get(info.sectionKey());
+            }
+
             ObjectNode meta = objectMapper.createObjectNode();
             meta.put("sourceFile", source.getFileName());
             meta.put("courseCode", courseCode);
             meta.put("chunkIndex", i);
-            if (info.sectionTitle != null) {
-                meta.put("section", info.sectionTitle);
+            meta.put("chunkKind", info.chunkKind());
+            if (parentChunkId != null) {
+                meta.put("parentChunkId", parentChunkId.toString());
             }
-            if (info.pageFrom != null) {
-                meta.put("pageFrom", info.pageFrom);
+            if (info.sectionTitle() != null) {
+                meta.put("section", info.sectionTitle());
             }
-            if (info.pageTo != null) {
-                meta.put("pageTo", info.pageTo);
+            if (info.pageFrom() != null) {
+                meta.put("pageFrom", info.pageFrom());
+            }
+            if (info.pageTo() != null) {
+                meta.put("pageTo", info.pageTo());
             }
 
+            UUID chunkId = summaryId != null ? summaryId : UUID.randomUUID();
             KnowledgeChunk.KnowledgeChunkBuilder builder = KnowledgeChunk.builder()
+                    .id(chunkId)
                     .source(source)
                     .courseCode(courseCode)
                     .chunkIndex(i)
-                    .sectionTitle(info.sectionTitle)
-                    .chunkText(info.text)
+                    .sectionTitle(info.sectionTitle())
+                    .chunkText(info.text())
+                    .chunkKind(info.chunkKind())
+                    .parentChunkId(parentChunkId)
                     .metadataJson(meta);
-            if (info.pageFrom != null) {
-                builder.pageFrom(info.pageFrom);
+            if (info.pageFrom() != null) {
+                builder.pageFrom(info.pageFrom());
             }
-            if (info.pageTo != null) {
-                builder.pageTo(info.pageTo);
+            if (info.pageTo() != null) {
+                builder.pageTo(info.pageTo());
             }
-            KnowledgeChunk chunk = builder.id(UUID.randomUUID()).build();
+            KnowledgeChunk chunk = builder.build();
             knowledgeChunkRepository.insertChunkWithoutEmbedding(
-                chunk.getId(),
-                source.getId(),
-                chunk.getCourseCode(),
-                chunk.getChunkIndex(),
-                chunk.getSectionTitle(),
-                chunk.getChunkText(),
-                metadataJson(chunk),
-                chunk.getPageFrom(),
-                chunk.getPageTo()
+                    chunk.getId(),
+                    source.getId(),
+                    chunk.getCourseCode(),
+                    chunk.getChunkIndex(),
+                    chunk.getSectionTitle(),
+                    chunk.getChunkText(),
+                    metadataJson(chunk),
+                    chunk.getPageFrom(),
+                    chunk.getPageTo(),
+                    info.chunkKind(),
+                    parentChunkId
             );
             saved.add(chunk);
         }
 
-        log.info("Indexed {} chunks for course {} from source {}", saved.size(), courseCode, source.getId());
+        log.info("Indexed {} chunks for course {} from source {} ({} summaries, {} details)",
+                saved.size(), courseCode, source.getId(),
+                chunked.stream().filter(c -> CHUNK_KIND_SECTION_SUMMARY.equals(c.chunkKind())).count(),
+                chunked.stream().filter(c -> CHUNK_KIND_DETAIL.equals(c.chunkKind())).count());
         return saved;
     }
 
@@ -102,7 +137,7 @@ public class CourseKnowledgeIndexer {
     }
 
     /**
-     * Chunk markdown into section-aware pieces.
+     * Chunk markdown into section-aware pieces with summary chunks and overlap.
      */
     List<ChunkInfo> chunkMarkdown(String markdown) {
         List<ChunkInfo> chunks = new ArrayList<>();
@@ -110,53 +145,35 @@ public class CourseKnowledgeIndexer {
         // Split by headings
         List<Section> sections = splitByHeadings(markdown);
 
-        StringBuilder currentChunk = new StringBuilder();
-        String currentSection = null;
-        Integer currentChunkPageFrom = null;
-        Integer currentChunkPageTo = null;
-
         for (Section section : sections) {
             String sectionText = section.fullText();
 
-            if (currentChunk.length() + sectionText.length() > TARGET_CHUNK_SIZE && currentChunk.length() > 0) {
-                // Save current chunk
-                chunks.add(new ChunkInfo(currentSection, currentChunk.toString().trim(),
-                    currentChunkPageFrom, currentChunkPageTo));
-                currentChunk = new StringBuilder();
-                currentSection = section.title();
-                currentChunkPageFrom = section.pageFrom();
-                currentChunkPageTo = section.pageTo();
+            // Emit SECTION_SUMMARY chunk when section has a title
+            if (section.title() != null && !section.title().isBlank()) {
+                String summaryText = trimText(section.title() + "\n" + section.fullText(), SECTION_SUMMARY_MAX_CHARS);
+                chunks.add(new ChunkInfo(
+                        section.key(),
+                        section.title(),
+                        summaryText,
+                        section.pageFrom(),
+                        section.pageTo(),
+                        CHUNK_KIND_SECTION_SUMMARY
+                ));
             }
 
-            // If single section is too large, split it further
+            // Emit DETAIL chunks for the section text
             if (sectionText.length() > MAX_CHUNK_SIZE) {
-                if (currentChunk.length() > 0) {
-                    chunks.add(new ChunkInfo(currentSection, currentChunk.toString().trim(),
-                        currentChunkPageFrom, currentChunkPageTo));
-                    currentChunk = new StringBuilder();
-                    currentSection = section.title();
-                    currentChunkPageFrom = section.pageFrom();
-                    currentChunkPageTo = section.pageTo();
-                }
                 chunks.addAll(splitLargeSection(section));
-            } else {
-                if (currentSection == null) {
-                    currentSection = section.title();
-                }
-                if (currentChunkPageFrom == null && section.pageFrom() != null) {
-                    currentChunkPageFrom = section.pageFrom();
-                }
-                if (section.pageTo() != null) {
-                    currentChunkPageTo = section.pageTo();
-                }
-                currentChunk.append(sectionText).append("\n\n");
+            } else if (!sectionText.isBlank()) {
+                chunks.add(new ChunkInfo(
+                        section.key(),
+                        section.title(),
+                        sectionText,
+                        section.pageFrom(),
+                        section.pageTo(),
+                        CHUNK_KIND_DETAIL
+                ));
             }
-        }
-
-        // Add remaining content
-        if (currentChunk.length() > 0) {
-            chunks.add(new ChunkInfo(currentSection, currentChunk.toString().trim(),
-                currentChunkPageFrom, currentChunkPageTo));
         }
 
         return chunks;
@@ -165,6 +182,7 @@ public class CourseKnowledgeIndexer {
     private List<Section> splitByHeadings(String markdown) {
         List<Section> sections = new ArrayList<>();
         Matcher matcher = HEADING_PATTERN.matcher(markdown);
+        int sectionIndex = 0;
 
         int lastEnd = 0;
         String lastTitle = null;
@@ -175,7 +193,9 @@ public class CourseKnowledgeIndexer {
             if (lastEnd < matcher.start()) {
                 String content = markdown.substring(lastEnd, matcher.start()).trim();
                 if (!content.isEmpty()) {
-                    sections.add(new Section(lastTitle, content + "\n", lastPageFrom, lastPageTo));
+                    sections.add(new Section(
+                            "section-" + sectionIndex++,
+                            lastTitle, content + "\n", lastPageFrom, lastPageTo));
                 }
             }
             lastTitle = matcher.group(2).trim();
@@ -190,14 +210,17 @@ public class CourseKnowledgeIndexer {
         if (lastEnd < markdown.length()) {
             String content = markdown.substring(lastEnd).trim();
             if (!content.isEmpty()) {
-                sections.add(new Section(lastTitle, content + "\n", lastPageFrom, lastPageTo));
+                sections.add(new Section(
+                        "section-" + sectionIndex++,
+                        lastTitle, content + "\n", lastPageFrom, lastPageTo));
             }
         }
 
         // If no headings found, treat entire markdown as one section
         if (sections.isEmpty()) {
             Integer[] pages = extractPageRange(markdown);
-            sections.add(new Section(null, markdown, pages[0], pages[1]));
+            sections.add(new Section(
+                    "section-0", null, markdown, pages[0], pages[1]));
         }
 
         return sections;
@@ -234,9 +257,24 @@ public class CourseKnowledgeIndexer {
                 }
             }
 
-            chunks.add(new ChunkInfo(section.title(), text.substring(start, end).trim(),
-                section.pageFrom(), section.pageTo()));
-            start = end;
+            chunks.add(new ChunkInfo(
+                    section.key(),
+                    section.title(),
+                    text.substring(start, end).trim(),
+                    section.pageFrom(),
+                    section.pageTo(),
+                    CHUNK_KIND_DETAIL
+            ));
+
+            // Apply overlap for next chunk, unless we've reached the end
+            if (end < text.length()) {
+                start = Math.max(end - OVERLAP_CHARS, start + 1);
+                if (start > text.length()) {
+                    break;
+                }
+            } else {
+                break;
+            }
         }
 
         return chunks;
@@ -250,6 +288,26 @@ public class CourseKnowledgeIndexer {
         }
     }
 
-    record ChunkInfo(String sectionTitle, String text, Integer pageFrom, Integer pageTo) {}
-    record Section(String title, String fullText, Integer pageFrom, Integer pageTo) {}
+    private static String trimText(String text, int maxChars) {
+        if (text == null) return "";
+        if (text.length() <= maxChars) return text;
+        return text.substring(0, maxChars);
+    }
+
+    record ChunkInfo(
+            String sectionKey,
+            String sectionTitle,
+            String text,
+            Integer pageFrom,
+            Integer pageTo,
+            String chunkKind
+    ) {}
+
+    record Section(
+            String key,
+            String title,
+            String fullText,
+            Integer pageFrom,
+            Integer pageTo
+    ) {}
 }

@@ -1,14 +1,20 @@
 package vn.edu.uit.devorbit_api.service.ai;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 
 /**
  * Service to connect to OpenCode Go API for chat completions.
@@ -20,13 +26,17 @@ public class OpenCodeAiService {
 
     private final WebClient webClient;
     private final vn.edu.uit.devorbit_api.config.AiConfig aiConfig;
+    private final ObjectMapper objectMapper;
 
     public OpenCodeAiService(
             @Qualifier("aiWebClient") WebClient webClient,
-            vn.edu.uit.devorbit_api.config.AiConfig aiConfig) {
+            vn.edu.uit.devorbit_api.config.AiConfig aiConfig,
+            ObjectMapper objectMapper) {
         this.webClient = webClient;
         this.aiConfig = aiConfig;
+        this.objectMapper = objectMapper;
     }
+
 
     /**
      * Generate completion synchronously with timeout.
@@ -127,6 +137,113 @@ public class OpenCodeAiService {
      */
     public boolean isLlmEnabled() {
         return aiConfig.isLlmEnabled();
+    }
+
+    /**
+     * Stream completion from the LLM using OpenAI-compatible SSE format.
+     * Returns a Flux of delta content strings as they arrive from the server.
+     * Falls back to one-shot generateCompletion on errors before the first delta.
+     */
+    public Flux<String> streamCompletion(String systemPrompt, String userMessage) {
+        if (!aiConfig.isLlmEnabled()) {
+            log.debug("LLM not enabled, returning offline fallback as single delta");
+            return Flux.just(generateOfflineFallback(userMessage));
+        }
+
+        Map<String, Object> requestBody = Map.of(
+            "model", aiConfig.getModel(),
+            "messages", List.of(
+                Map.of("role", "system", "content", systemPrompt),
+                Map.of("role", "user", "content", userMessage)
+            ),
+            "temperature", 0.3,
+            "stream", true
+        );
+
+        AtomicBoolean emittedAnyDelta = new AtomicBoolean(false);
+
+        return webClient.post()
+            .uri(aiConfig.getApiUrl() + "/chat/completions")
+            .header("Authorization", "Bearer " + aiConfig.getApiKey())
+            .header("Accept", "text/event-stream")
+            .bodyValue(requestBody)
+            .retrieve()
+            .bodyToFlux(String.class)
+            .timeout(Duration.ofSeconds(90))
+            .flatMap(rawChunk -> {
+                List<String> deltas = extractDeltaContents(rawChunk);
+                if (!deltas.isEmpty()) {
+                    emittedAnyDelta.set(true);
+                }
+                return Flux.fromIterable(deltas);
+            })
+            .onErrorResume(e -> {
+                if (!emittedAnyDelta.get()) {
+                    log.warn("Streaming LLM call failed before first token: {}", e.getMessage());
+                    String fallback = generateCompletion(systemPrompt, userMessage);
+                    return Flux.just(fallback);
+                }
+                log.error("Streaming LLM call failed after at least one delta: {}", e.getMessage());
+                return Flux.error(e);
+            })
+            .thenMany(Flux.defer(() -> {
+                if (!emittedAnyDelta.get()) {
+                    log.warn("Streaming LLM returned no deltas, falling back to one-shot");
+                    return Flux.just(generateCompletion(systemPrompt, userMessage));
+                }
+                return Flux.empty();
+            }));
+    }
+
+    /**
+     * Extract delta content strings from an SSE chunk received from the LLM.
+     * Handles OpenAI-compatible SSE format with data: lines.
+     */
+    private List<String> extractDeltaContents(String rawChunk) {
+        List<String> deltas = new ArrayList<>();
+        if (rawChunk == null || rawChunk.isBlank()) {
+            return deltas;
+        }
+
+        String[] lines = rawChunk.split("\n");
+        for (String line : lines) {
+            if (line == null || !line.startsWith("data:")) {
+                continue;
+            }
+            String payload = line.substring("data:".length()).trim();
+            if (payload.isEmpty() || "[DONE]".equals(payload)) {
+                continue;
+            }
+
+            try {
+                JsonNode node = objectMapper.readTree(payload);
+                JsonNode choices = node.get("choices");
+                if (choices == null || !choices.isArray() || choices.isEmpty()) {
+                    continue;
+                }
+                JsonNode firstChoice = choices.get(0);
+                JsonNode delta = firstChoice.get("delta");
+                if (delta != null) {
+                    JsonNode content = delta.get("content");
+                    if (content != null && !content.asText().isBlank()) {
+                        deltas.add(content.asText());
+                        continue;
+                    }
+                }
+                // Fallback: some providers put content directly in message
+                JsonNode message = firstChoice.get("message");
+                if (message != null) {
+                    JsonNode content = message.get("content");
+                    if (content != null && !content.asText().isBlank()) {
+                        deltas.add(content.asText());
+                    }
+                }
+            } catch (Exception e) {
+                log.debug("Failed to parse SSE delta chunk: {}", e.getMessage());
+            }
+        }
+
+        return deltas;
     }
 
     private String generateOfflineFallback(String userMessage) {

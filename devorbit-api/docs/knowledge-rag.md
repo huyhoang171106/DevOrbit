@@ -13,9 +13,12 @@ User Question
   → TutorIntentClassifier (rule-based Vietnamese keywords)
   → Route:
       FACT_QUERY → CourseFactQueryService → PostgreSQL structured facts → answer (no LLM)
-      Others     → KnowledgeRetrievalService.search() → pgvector cosine similarity
-                  → LlmContextBuilder.buildQueryContext() → OpenCodeAiService → answer + citations
+      Others     → RagQueryPlanner (query expansion + course metadata)
+                  → Multi-query hybrid search: pgvector + PostgreSQL FTS
+                  → RagResultReranker (lexical boost, section match, source diversity)
+                  → OpenCodeAiService → answer + citations
 ```
+
 
 ## Marker Conversion (PDF → Markdown)
 
@@ -153,6 +156,20 @@ curl -X POST http://localhost:8080/api/admin/knowledge/rag-preview \
 
 Returns retrieved chunks + constructed prompt for debugging.
 
+### Hybrid Retrieval
+
+The KnowledgeRetrievalService now performs multi-query hybrid retrieval:
+- **RagQueryPlanner** expands Vietnamese study/resource/project intent terms and enriches queries with course metadata from DB.
+- **searchHybrid** CTE combines pgvector cosine similarity and PostgreSQL FTS (`ts_rank_cd`) with RRF-style score fusion, plus metadata boosts for trust level, source type, and chunk kind.
+- **RagResultReranker** deduplicates by chunk ID, applies lexical overlap boost (+0.006 per matching token, max 0.030), section-title match boost (+0.010), and source diversity (max 2 per source before allowing extras).
+- Falls back to vector-only `searchByVector` if `search_text` column or `plainto_tsquery` is unavailable.
+
+### Chunking
+
+CourseKnowledgeIndexer now emits two chunk kinds:
+- **SECTION_SUMMARY**: For each headed section, a summary chunk with title + first 900 chars.
+- **DETAIL**: Full section text; large sections are split with 500-char overlap and reference the parent summary via `parent_chunk_id`.
+
 ## AI Tutor RAG Flow
 
 ### Question Flow
@@ -217,6 +234,42 @@ Citations are extracted from retrieved chunks:
 - Combines repository metadata + course syllabus chunks
 - Outputs concrete learning path with course context
 
+## Streaming Chat UX
+
+### Endpoints
+
+- `POST /api/ai/subject-qa/query` — existing one-shot JSON endpoint (unchanged).
+- `POST /api/ai/subject-qa/stream` — new SSE endpoint for live streaming.
+
+### SSE Event Contract
+
+All events are sent as SSE with `event:<type>` and `data:<JSON>` lines.
+
+| Event Type | Payload Fields | Description |
+|------------|----------------|-------------|
+| `status` | `type`, `stage`, `message` | Operational progress (analyzing, searching, composing) |
+| `search_result` | `type`, `searchResult` | Single web search result card |
+| `delta` | `type`, `content` | Incremental answer text chunk |
+| `complete` | `type`, `response` | Final response metadata |
+| `error` | `type`, `message` | Error notification |
+
+### Progress Stages
+
+`session`, `analyze`, `devorbit_context`, `rag`, `web_search`, `web_read`, `answer`, `done`, `error`
+
+### UI Behavior
+
+- Status rows render as compact progress items with spinner for active stage.
+- Search result cards appear as soon as the backend emits them (before answer text).
+- Answer text grows incrementally from SSE `delta` events — no fake typewriter.
+- Final message shows sources and Copy button after streaming completes.
+- Browser fallback: if `ReadableStream` is unsupported, falls back to the one-shot `/query` endpoint.
+
+### Constraints
+
+- Progress statuses describe system operations only.
+- The `/query` endpoint is preserved for compatibility.
+
 ## Known Limitations
 
 - Firecrawl requires valid API key (`firecrawl.api-key` in application.yaml)
@@ -224,7 +277,7 @@ Citations are extracted from retrieved chunks:
 - LLM responses depend on model availability (OpenCodeAiService)
 - pgvector extension must be installed on PostgreSQL
 - Marker PDF conversion quality varies with PDF complexity
-- Vietnamese intent classification is rule-based (not ML) — may miss edge cases
+- Intent classification is rule-based; retrieval now expands Vietnamese phrasing before hybrid search.
 - No real-time web crawling — Firecrawl is async batch processing
 - No authentication on admin endpoints beyond ROLE_ADMIN
 

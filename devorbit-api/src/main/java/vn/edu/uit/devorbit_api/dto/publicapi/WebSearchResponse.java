@@ -13,6 +13,14 @@ public record WebSearchResponse(
         String url,
         String title,
         String description,
-        int position
-    ) {}
+        int position,
+        List<String> highlights,
+        String publishedDate,
+        String author,
+        String sourceProvider
+    ) {
+        public boolean hasHighlights() {
+            return highlights != null && !highlights.isEmpty();
+        }
+    }
 }

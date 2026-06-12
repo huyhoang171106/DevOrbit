@@ -48,7 +48,8 @@ create table if not exists student_users (
     email           varchar(255) not null unique,
     password_hash   varchar(255) not null,
     active          boolean      not null default true,
-    email_verified  boolean      not null default false
+    email_verified  boolean      not null default false,
+    created_at      timestamp    not null default now()
 );
 
 create table if not exists student_bookmarks (
@@ -209,7 +210,8 @@ create table if not exists repo_candidates (
     file_tree        text,
     status           varchar(20) not null default 'NEW',
     review_note      text,
-    assigned_reviewer varchar(50)
+    assigned_reviewer varchar(50),
+    created_at        timestamp    not null default now()
 );
 
 create table if not exists learning_roadmaps (

@@ -2,6 +2,8 @@ package vn.edu.uit.devorbit_api.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import java.time.LocalDateTime;
 
 /**
@@ -29,6 +31,7 @@ public class Note {
 
     /** Which student wrote this note */
     @ManyToOne(fetch = FetchType.LAZY)
+    @NotFound(action = NotFoundAction.IGNORE)
     @JoinColumn(name = "student_id", nullable = false)
     private StudentUser student;
 

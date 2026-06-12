@@ -5,6 +5,7 @@ cd /d "%~dp0"
 
 if not exist ".env" (
     echo .env file not found.
+    echo Copy .env.example to .env and fill DATABASE_* plus JWT_SECRET before starting the API.
     exit /b 1
 )
 

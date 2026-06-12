@@ -28,13 +28,20 @@ export function RelationshipsPage() {
     r.relatedCourseCode.toLowerCase().includes(filter.toLowerCase()),
   )
 
+  const [createError, setCreateError] = useState<string | null>(null)
+
   const handleCreate = async (data: CourseRelationshipRequest) => {
+    if (!data.courseId || !data.relatedCourseId) {
+      setCreateError('Vui lòng chọn đầy đủ môn học và môn liên quan')
+      return
+    }
+    setCreateError(null)
     try {
       await adminApi.createRelationship(token!, data)
       setDialogOpen(false)
       refetch()
     } catch (e) {
-      console.error(e)
+      setCreateError(e instanceof Error ? e.message : 'Thêm quan hệ thất bại')
     }
   }
 
@@ -68,6 +75,7 @@ export function RelationshipsPage() {
 
       {loading && <AdminSpinner text="Đang tải quan hệ..." />}
       {error && <AdminErrorBanner message={error} onRetry={refetch} />}
+      {createError && <AdminErrorBanner message={createError} onRetry={() => setCreateError(null)} />}
 
       {relationships && (
         <div className="glass-card overflow-hidden border border-orbit-border">

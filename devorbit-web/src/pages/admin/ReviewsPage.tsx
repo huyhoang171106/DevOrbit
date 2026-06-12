@@ -27,23 +27,27 @@ export function ReviewsPage() {
     [],
   )
 
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+
   const handleDeleteCourseReview = async (id: number) => {
     if (!token || !confirm('Xoá đánh giá này?')) return
+    setDeleteError(null)
     try {
       await adminApi.deleteCourseReview(token, id)
       refetchCourse()
     } catch (e) {
-      console.error(e)
+      setDeleteError(e instanceof Error ? e.message : 'Xoá thất bại')
     }
   }
 
   const handleDeleteRepoReview = async (id: number) => {
     if (!token || !confirm('Xoá đánh giá này?')) return
+    setDeleteError(null)
     try {
       await adminApi.deleteRepoReview(token, id)
       refetchRepo()
     } catch (e) {
-      console.error(e)
+      setDeleteError(e instanceof Error ? e.message : 'Xoá thất bại')
     }
   }
 
@@ -69,6 +73,7 @@ export function ReviewsPage() {
         <>
           {courseLoading && <AdminSpinner text="Đang tải đánh giá môn học..." />}
           {courseError && <AdminErrorBanner message={courseError} onRetry={refetchCourse} />}
+          {deleteError && <AdminErrorBanner message={deleteError} onRetry={() => setDeleteError(null)} />}
           {courseReviews && <CourseReviewTable reviews={courseReviews} onDelete={handleDeleteCourseReview} />}
         </>
       )}

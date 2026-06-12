@@ -16,6 +16,7 @@ export function CoursesPage() {
   const [editingCourse, setEditingCourse] = useState<CourseSummary | null>(null)
   const [selectedCourse, setSelectedCourse] = useState<CourseSummary | null>(null)
   const [mutationLoading, setMutationLoading] = useState(false)
+  const [mutationError, setMutationError] = useState<string | null>(null)
 
   const token = getAdminToken()
   const { data: courses, loading, error, refetch } = useAdminFetch(
@@ -35,6 +36,7 @@ export function CoursesPage() {
 
   const handleSubmit = async (data: CourseUpsertRequest) => {
     setMutationLoading(true)
+    setMutationError(null)
     try {
       if (editingCourse) {
         await adminApi.updateCourse(token!, editingCourse.id, data)
@@ -45,7 +47,7 @@ export function CoursesPage() {
       setEditingCourse(null)
       refetch()
     } catch (e) {
-      console.error(e)
+      setMutationError(e instanceof Error ? e.message : 'Thao tác thất bại')
     } finally {
       setMutationLoading(false)
     }
@@ -72,6 +74,7 @@ export function CoursesPage() {
     >
       {loading && <AdminSpinner text="Đang tải môn học..." />}
       {error && <AdminErrorBanner message={error} onRetry={refetch} />}
+      {mutationError && <AdminErrorBanner message={mutationError} onRetry={() => setMutationError(null)} />}
 
       {courses && (
         <div className="space-y-6">

@@ -3,20 +3,35 @@ setlocal enabledelayedexpansion
 
 cd /d "%~dp0"
 
-if not exist ".env" (
-    echo .env file not found.
-    exit /b 1
-)
-
-for /f "usebackq tokens=1,* delims==" %%a in (".env") do (
-    set "env_name=%%a"
-    if not "!env_name!"=="" if not "!env_name:~0,1!"=="#" (
-        set "%%a=%%b"
+if exist ".env" (
+    for /f "usebackq tokens=1,* delims==" %%a in (".env") do (
+        set "env_name=%%a"
+        if not "!env_name!"=="" if not "!env_name:~0,1!"=="#" (
+            set "%%a=%%b"
+        )
     )
+    echo Environment variables loaded from .env
+) else (
+    echo .env file not found. Using local development defaults for this session.
 )
 
-echo Environment variables loaded from .env
-if "%EMBEDDING_OFFLINE%"=="" set "EMBEDDING_OFFLINE=false"
+if "%DATABASE_URL%"=="" set "DATABASE_URL=jdbc:postgresql://localhost:5432/devorbit_db"
+if "%DATABASE_USERNAME%"=="" set "DATABASE_USERNAME=postgres"
+if "%DATABASE_PASSWORD%"=="" (
+    echo PostgreSQL password for %DATABASE_USERNAME%@%DATABASE_URL% is empty.
+    set /p "DATABASE_PASSWORD=Enter PostgreSQL password (leave blank to try empty password): "
+)
+if "%JPA_DDL_AUTO%"=="" set "JPA_DDL_AUTO=update"
+if "%JPA_SHOW_SQL%"=="" set "JPA_SHOW_SQL=false"
+if "%JPA_FORMAT_SQL%"=="" set "JPA_FORMAT_SQL=false"
+if "%SQL_INIT_MODE%"=="" set "SQL_INIT_MODE=never"
+if "%SERVER_PORT%"=="" set "SERVER_PORT=8080"
+if "%CORS_ALLOWED_ORIGINS%"=="" set "CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173,http://localhost:5174"
+if "%JWT_SECRET%"=="" set "JWT_SECRET=devorbit-local-development-secret-key-change-before-production-2026"
+if "%OPENCODE_API_URL%"=="" set "OPENCODE_API_URL=https://opencode.ai/zen/go/v1"
+if "%OPENCODE_MODEL%"=="" set "OPENCODE_MODEL=deepseek-v4-flash"
+if "%FIRECRAWL_ENABLED%"=="" set "FIRECRAWL_ENABLED=false"
+if "%EMBEDDING_OFFLINE%"=="" set "EMBEDDING_OFFLINE=true"
 if "%EMBEDDING_PROVIDER%"=="" set "EMBEDDING_PROVIDER=fireworks"
 if "%EMBEDDING_MODEL%"=="" set "EMBEDDING_MODEL=accounts/fireworks/models/qwen3-embedding-8b"
 if "%EMBEDDING_DIMENSIONS%"=="" set "EMBEDDING_DIMENSIONS=4096"
@@ -50,6 +65,8 @@ if "%FIREWORKS_API_KEY%"=="" (
 echo Starting DevOrbit API...
 echo.
 
-.\mvnw.cmd spring-boot:run -Dmaven.test.skip=true
+call .\mvnw.cmd spring-boot:run -Dmaven.test.skip=true
+echo.
+echo DevOrbit API process exited. If this was unexpected, check the Spring Boot error above.
 
 endlocal

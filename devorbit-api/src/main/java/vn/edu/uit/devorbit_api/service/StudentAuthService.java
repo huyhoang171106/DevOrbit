@@ -178,7 +178,7 @@ public class StudentAuthService {
     // ───────── FORGOT / RESET PASSWORD ─────────
 
     @Transactional
-    public void forgotPassword(ForgotPasswordRequest request) {
+    public String forgotPassword(ForgotPasswordRequest request) {
         otpRateLimitService.check("FORGOT_PASSWORD:" + request.studentCode().trim());
 
         var studentOpt = studentUserRepository.findByStudentCode(request.studentCode().trim());
@@ -196,8 +196,9 @@ public class StudentAuthService {
                     .expiresAt(LocalDateTime.now().plusMinutes(otpExpirationMinutes))
                     .build());
             emailService.sendPasswordResetOtp(student.getEmail(), otpCode, otpExpirationMinutes);
+            return student.getEmail();
         }
-        // Always return success — no info leak on whether student exists
+        return "";
     }
 
     @Transactional

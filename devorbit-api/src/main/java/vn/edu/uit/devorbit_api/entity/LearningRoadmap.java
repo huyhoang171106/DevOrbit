@@ -2,6 +2,8 @@ package vn.edu.uit.devorbit_api.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import java.time.LocalDateTime;
 
 /**
@@ -31,7 +33,8 @@ public class LearningRoadmap {
 
     /** The student who owns this roadmap */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_id", nullable = false)
+    @NotFound(action = NotFoundAction.IGNORE)
+    @JoinColumn(name = "student_id")
     private StudentUser student;
 
     /** Roadmap title (e.g., "AI Engineer Path", "Web Dev Roadmap") */

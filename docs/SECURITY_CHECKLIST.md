@@ -10,13 +10,13 @@
 |----------|--------|-------|
 | .gitignore coverage | PASS | Sensitive files properly excluded |
 | No hardcoded secrets | PASS | Scripts/.env gitignored |
-| Dependency scanning | PARTIAL | Dependabot configured for npm/pip/actions; Maven/Gradle missing |
+| Dependency scanning | PASS | Dependabot configured for npm, pip, Maven, Gradle, and GitHub Actions |
 | OWASP dependency check | FAIL | Plugin not in pom.xml; CI step silently fails |
 | Branch protection | UNKNOWN | Needs GitHub settings verification |
 | SECURITY.md | PASS | Created with responsible disclosure process |
 | Contributing guide | PASS | CONTRIBUTING.md with security guidelines |
 
-**Overall: 4/7 passed, 1 partial, 1 failed, 1 unknown.**
+**Overall: 5/7 passed, 1 failed, 1 unknown.**
 
 ---
 
@@ -70,7 +70,7 @@ pm-debug.log*, *.log | Covered |
 
 ## Dependency Scanning
 
-### ⚠️ PARTIAL — Dependabot configured but coverage gaps
+### ✅ PASS — Dependabot covers package ecosystems
 
 | Ecosystem | Directory | Status | Notes |
 |-----------|-----------|--------|-------|
@@ -78,8 +78,8 @@ pm-debug.log*, *.log | Covered |
 | npm | /devorbit-showcase | ✅ Active | Weekly, 10 PR limit |
 | pip | /scripts | ✅ Active | Weekly, 5 PR limit |
 | github-actions | / | ✅ Active | Weekly, 5 PR limit |
-| **maven** | /devorbit-api | ❌ Missing | No Dependabot for pom.xml |
-| **gradle** | /devorbit-mobile | ❌ Missing | No Dependabot for build.gradle |
+| maven | /devorbit-api | ✅ Active | Weekly, 5 PR limit |
+| gradle | /devorbit-mobile | ✅ Active | Weekly, 5 PR limit |
 
 ### OWASP Dependency Check
 

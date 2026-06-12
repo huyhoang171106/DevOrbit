@@ -293,7 +293,7 @@ export function extractRepoSignals(repo: RepoSummary): RepoSignals {
   const description = cleanText(repo.description)
   const topics = normalizeStringList(metadata.topics ?? metadata.tags)
   const primaryLanguage = cleanText(repo.primaryLanguage)
-  const techStacks = Array.from(new Set((repo.techStacks ?? []).map(cleanText).filter(Boolean) as string[]))
+  const techStacks = normalizeStringList(repo.techStacks)
   const readmeText = cleanText(
     metadata.readmeExcerpt ?? metadata.readmeContent ?? metadata.readmeMarkdown ?? metadata.readmeText ?? metadata.readme,
   )

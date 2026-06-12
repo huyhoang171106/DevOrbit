@@ -24,7 +24,8 @@ create table if not exists student_users (
     full_name     varchar(255) not null,
     email         varchar(255) not null unique,
     password_hash varchar(255) not null,
-    active        boolean      not null default true
+    active        boolean      not null default true,
+    created_at    timestamp    not null default now()
 );
 
 create table if not exists otps (
@@ -151,7 +152,8 @@ create table if not exists repo_candidates (
     file_tree        text,
     status           varchar(20) not null default 'NEW',
     review_note      text,
-    assigned_reviewer varchar(50)
+    assigned_reviewer varchar(50),
+    created_at        timestamp    not null default now()
 );
 
 -- ============================================================

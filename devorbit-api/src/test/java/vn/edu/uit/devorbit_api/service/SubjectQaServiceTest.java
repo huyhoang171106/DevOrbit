@@ -177,6 +177,100 @@ class SubjectQaServiceTest {
     }
 
     @Test
+    void processQuery_courseIntroQuestionDoesNotTreatVietnameseThieuAsHiGreeting() {
+        when(chatSessionRepository.save(any())).thenThrow(new RuntimeException("database unavailable"));
+        String query = "SE104 giới thiệu cho tôi đi";
+        Course course = Course.builder()
+            .id(104L)
+            .maMH("SE104")
+            .tenMH("Nhập môn Công nghệ phần mềm")
+            .loaiMonHoc("BAT_BUOC")
+            .description("Môn học nhập môn về công nghệ phần mềm")
+            .build();
+        when(courseRepository.findByMaMH("SE104")).thenReturn(Optional.of(course));
+        when(githubRepoRepository.findByCourseIdAndActiveTrue(104L)).thenReturn(List.of());
+        when(knowledgeRetrievalService.search("SE104", query, 5))
+            .thenReturn(new KnowledgeRetrievalService.SearchResult("SE104", query, List.of()));
+        when(webSearchService.search(query)).thenReturn(new WebSearchResponse("success", List.of()));
+        when(openCodeAiService.generateCompletion(any(), eq(query))).thenReturn("SE104 answer");
+
+        SubjectQaResponse response = service.processQuery(new SubjectQaRequest(query, null));
+
+        assertThat(response.answer()).isEqualTo("SE104 answer");
+        assertThat(response.type()).isEqualTo("SEARCH");
+        assertThat(response.relevantNodeIds()).containsExactly(104L);
+        verify(courseRepository).findByMaMH("SE104");
+        verify(openCodeAiService).generateCompletion(any(), eq(query));
+    }
+
+    @Test
+    void processQuery_javaBackendCareerQuestionRecommendsGroundedCoursesWithoutCourseCode() {
+        when(chatSessionRepository.save(any())).thenThrow(new RuntimeException("database unavailable"));
+
+        SubjectQaResponse response = service.processQuery(
+            new SubjectQaRequest("tôi muốn làm java backend dev thì nên học môn gì", null)
+        );
+
+        assertThat(response.answer())
+            .contains("Java backend dev")
+            .contains("IT002")
+            .contains("IT004")
+            .contains("SE330")
+            .contains("SE325")
+            .doesNotContain("Hãy hỏi bằng mã môn học cụ thể");
+        assertThat(response.sources()).isEmpty();
+        assertThat(response.type()).isEqualTo("DIRECT");
+        verifyNoInteractions(webSearchService, crawlerService, openCodeAiService, firecrawlClient, knowledgeRetrievalService);
+    }
+
+    @Test
+    void processQuery_firstYearCurriculumQuestionReturnsGroundedPlanWithoutSearchOrLlm() {
+        when(chatSessionRepository.save(any())).thenThrow(new RuntimeException("database unavailable"));
+
+        SubjectQaResponse response = service.processQuery(
+            new SubjectQaRequest("đầu năm 1 sẽ học những môn gì", null)
+        );
+
+        assertThat(response.answer())
+            .contains("KTPM UIT")
+            .contains("HK1")
+            .contains("HK2")
+            .contains("IT001")
+            .contains("IT002");
+        assertThat(response.sources()).isEmpty();
+        assertThat(response.type()).isEqualTo("DIRECT");
+        assertThat(response.relevantNodeIds()).isEmpty();
+        verifyNoInteractions(webSearchService, crawlerService, openCodeAiService, firecrawlClient, knowledgeRetrievalService);
+    }
+
+    @Test
+    void processQuery_uitOrientationQuestionUsesWebSearchForFollowUpResearch() {
+        when(chatSessionRepository.save(any())).thenThrow(new RuntimeException("database unavailable"));
+        String query = "UIT có những ngành nào";
+        when(webSearchService.search(query)).thenReturn(new WebSearchResponse(
+            "success",
+            List.of(new WebSearchResponse.WebSearchResult(
+                "https://www.uit.edu.vn",
+                "UIT",
+                "Trang chủ Đại học Công nghệ Thông tin",
+                1,
+                List.of("Official UIT page"),
+                null,
+                null,
+                "exa"
+            ))
+        ));
+        when(openCodeAiService.generateCompletion(any(), eq(query))).thenReturn("Answer");
+
+        SubjectQaResponse response = service.processQuery(new SubjectQaRequest(query, null));
+
+        assertThat(response.answer()).isEqualTo("Answer");
+        assertThat(response.type()).isEqualTo("SEARCH");
+        verify(webSearchService).search(query);
+        verify(openCodeAiService).generateCompletion(any(), eq(query));
+    }
+
+    @Test
     void processQuery_internalResourceQuestionWithoutCourseCodeAsksForSpecificCourse() {
         when(chatSessionRepository.save(any())).thenThrow(new RuntimeException("database unavailable"));
 

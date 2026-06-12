@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import vn.edu.uit.devorbit_api.constant.CurriculumConstants;
 import vn.edu.uit.devorbit_api.dto.publicapi.*;
 import vn.edu.uit.devorbit_api.entity.*;
 import vn.edu.uit.devorbit_api.repository.*;
@@ -306,9 +307,35 @@ public class SubjectQaService {
             sortedCodes.isEmpty() ? "Đang phân tích câu hỏi" : "Tìm thấy mã môn: " + String.join(", ", sortedCodes)));
 
         // Greeting check
-        if (isGreeting(userMessage)) {
+        if (detectedCodes.isEmpty() && isGreeting(userMessage)) {
             SubjectQaResponse direct = new SubjectQaResponse(
                 buildGroundedGreeting(),
+                sessionId != null ? sessionId : UUID.randomUUID(),
+                List.of(),
+                List.of(),
+                "DIRECT",
+                List.of()
+            );
+            return new SubjectQaPreparation(userMessage, sessionId, session, direct, List.of(), Set.of(), List.of(), "DIRECT", null, null);
+        }
+
+        // Career/course orientation without a concrete course code
+        if (detectedCodes.isEmpty() && asksForCareerCourseAdvice(userMessage)) {
+            SubjectQaResponse direct = new SubjectQaResponse(
+                buildCareerCourseAdviceResponse(userMessage),
+                sessionId != null ? sessionId : UUID.randomUUID(),
+                List.of(),
+                List.of(),
+                "DIRECT",
+                List.of()
+            );
+            return new SubjectQaPreparation(userMessage, sessionId, session, direct, List.of(), Set.of(), List.of(), "DIRECT", null, null);
+        }
+
+        // First-year curriculum questions without a concrete course code
+        if (detectedCodes.isEmpty() && asksForFirstYearCurriculum(userMessage)) {
+            SubjectQaResponse direct = new SubjectQaResponse(
+                buildFirstYearCurriculumResponse(),
                 sessionId != null ? sessionId : UUID.randomUUID(),
                 List.of(),
                 List.of(),
@@ -390,7 +417,14 @@ public class SubjectQaService {
                               normalizedIntent.contains("how to") ||
                               normalizedIntent.contains("project") ||
                               normalizedIntent.contains("repo") ||
-                              normalizedIntent.contains("github");
+                              normalizedIntent.contains("github") ||
+                              normalizedIntent.contains("uit") ||
+                              normalizedIntent.contains("nganh") ||
+                              normalizedIntent.contains("chuyen nganh") ||
+                              normalizedIntent.contains("dao tao") ||
+                              normalizedIntent.contains("hoc phi") ||
+                              normalizedIntent.contains("diem chuan") ||
+                              normalizedIntent.contains("xet tuyen");
 
         // 5. Build semantic context (local RAG)
         sink.emit(SubjectQaStreamEvent.status("rag", "Đang tìm trong Knowledge RAG"));
@@ -517,8 +551,18 @@ public class SubjectQaService {
 
     private boolean isGreeting(String message) {
         String normalized = normalizeForIntent(message);
-        return normalized.isEmpty() ||
-            normalized.matches(".*(xin chào|chào bạn|chào|hello|helo|hi).*");
+        if (normalized.isEmpty()) {
+            return true;
+        }
+        Set<String> tokens = Arrays.stream(normalized.split(" "))
+            .filter(token -> !token.isBlank())
+            .collect(Collectors.toSet());
+        return normalized.equals("xin chao") ||
+            normalized.equals("chao ban") ||
+            tokens.contains("chao") ||
+            tokens.contains("hello") ||
+            tokens.contains("helo") ||
+            tokens.contains("hi");
     }
 
     private SemanticKnowledgeContext buildSemanticKnowledgeContext(String userMessage, Set<String> detectedCodes) {
@@ -677,6 +721,39 @@ public class SubjectQaService {
             normalized.contains("repo");
     }
 
+    private boolean asksForCareerCourseAdvice(String message) {
+        String normalized = normalizeForIntent(message);
+        boolean asksCourseChoice = normalized.contains("nen hoc mon gi") ||
+            normalized.contains("hoc mon gi") ||
+            normalized.contains("chon mon") ||
+            normalized.contains("mon nao") ||
+            normalized.contains("lo trinh") ||
+            normalized.contains("dinh huong");
+        boolean mentionsCareer = normalized.contains("backend") ||
+            normalized.contains("back end") ||
+            normalized.contains("java") ||
+            normalized.contains("spring") ||
+            normalized.contains("developer") ||
+            normalized.contains("dev") ||
+            normalized.contains("lap trinh vien");
+        return asksCourseChoice && mentionsCareer;
+    }
+
+    private boolean asksForFirstYearCurriculum(String message) {
+        String normalized = normalizeForIntent(message);
+        return normalized.contains("nam 1") ||
+            normalized.contains("nam nhat") ||
+            normalized.contains("hoc ki 1") ||
+            normalized.contains("hoc ky 1") ||
+            normalized.contains("hk1") ||
+            normalized.contains("hk 1") ||
+            normalized.contains("sem 1") ||
+            normalized.contains("semester 1") ||
+            normalized.contains("dau nam") ||
+            normalized.contains("nam dau") ||
+            normalized.contains("nam thu nhat");
+    }
+
     private String normalizeForIntent(String message) {
         if (message == null) {
             return "";
@@ -703,5 +780,61 @@ public class SubjectQaService {
             + "DevOrbit chỉ nên trả lời dựa trên dữ liệu thật: môn học, đề cương/tiêu chí đánh giá nếu có, "
             + "và repository GitHub đã liên kết theo môn. "
             + "Bạn hãy gửi mã môn học cụ thể, ví dụ SE104, MA006, IS201 hoặc CS106, để mình tra đúng dữ liệu.";
+    }
+
+    private String buildCareerCourseAdviceResponse(String message) {
+        String normalized = normalizeForIntent(message);
+        if (normalized.contains("java") || normalized.contains("spring") || normalized.contains("backend") || normalized.contains("back end")) {
+            return "Nếu mục tiêu của bạn là **Java backend dev**, nên ưu tiên các môn có thật trong dữ liệu DevOrbit theo thứ tự này:\n\n"
+                + "1. **IT001** - Nhập môn Lập trình: nền tảng tư duy lập trình.\n"
+                + "2. **IT002** - Lập trình hướng đối tượng: rất quan trọng trước khi học Java/Spring nghiêm túc.\n"
+                + "3. **IT003** - Cấu trúc dữ liệu và giải thuật: cần cho code backend, phỏng vấn và tối ưu xử lý.\n"
+                + "4. **IT004** - Cơ sở dữ liệu: backend luôn phải làm việc với SQL, schema, transaction và truy vấn.\n"
+                + "5. **IT005** - Nhập môn mạng máy tính: giúp hiểu HTTP, client-server, API và triển khai service.\n"
+                + "6. **SE104** - Nhập môn Công nghệ phần mềm: học cách làm phần mềm có quy trình, yêu cầu, thiết kế và kiểm thử.\n"
+                + "7. **SE330** - Ngôn ngữ lập trình Java: môn sát nhất với mục tiêu Java.\n"
+                + "8. **SE325** - Chuyên đề J2EE: phù hợp để đi sâu Java enterprise/backend.\n"
+                + "9. **SE347** - Công nghệ Web và ứng dụng: giúp nối backend với web app thực tế.\n"
+                + "10. **SE332** - Chuyên đề CSDL nâng cao: nên học nếu muốn backend mạnh về dữ liệu.\n"
+                + "11. **SE356** - Kiến trúc phần mềm: hữu ích khi lên mức thiết kế hệ thống.\n\n"
+                + "Bạn có thể hỏi tiếp từng mã môn, ví dụ **SE330 học gì?** hoặc **SE325 có repo nào không?**, mình sẽ tra dữ liệu chi tiết trong DevOrbit.";
+        }
+        return "Bạn đang hỏi theo định hướng nghề nghiệp, nhưng mình cần biết rõ hướng bạn muốn theo để gợi ý môn chính xác hơn. "
+            + "Ví dụ: Java backend, frontend, mobile, game, AI/data, DevOps hoặc security.";
+    }
+    private String buildFirstYearCurriculumResponse() {
+        StringBuilder response = new StringBuilder();
+        response.append("Nếu bạn đang hỏi **KTPM UIT (khóa 20-2025)**, năm 1 gồm hai học kỳ nền tảng:\n\n");
+        appendCurriculumSemester(response, 1, "HK1");
+        response.append('\n');
+        appendCurriculumSemester(response, 2, "HK2");
+        response.append("\nNếu bạn chưa rõ ngành, mình có thể tra tiếp theo hướng bạn muốn theo như backend, frontend, mobile, AI/data, DevOps, security hoặc game.");
+        return response.toString();
+    }
+
+    private void appendCurriculumSemester(StringBuilder response, int semester, String heading) {
+        response.append("### ").append(heading).append('\n');
+        List<String> courseCodes = CurriculumConstants.CURRICULUM_SEMESTERS.entrySet().stream()
+            .filter(entry -> entry.getValue() != null && entry.getValue() == semester)
+            .sorted(Map.Entry.comparingByKey())
+            .map(Map.Entry::getKey)
+            .toList();
+
+        if (courseCodes.isEmpty()) {
+            response.append("- Chưa có dữ liệu.\n");
+            return;
+        }
+
+        for (String code : courseCodes) {
+            response.append("- `").append(code).append("`");
+            Optional<Course> courseOpt = courseRepository.findByMaMH(code);
+            if (courseOpt.isPresent()) {
+                String name = courseOpt.get().getTenMH();
+                if (name != null && !name.isBlank()) {
+                    response.append(" - ").append(name);
+                }
+            }
+            response.append('\n');
+        }
     }
 }

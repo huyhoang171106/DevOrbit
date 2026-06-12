@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import { apiPost } from '../lib/api'
+import { getStudentToken } from '../lib/auth'
 
 export interface SubjectQaRequest {
     message: string
@@ -63,11 +64,13 @@ export async function streamSubjectQa(
     handlers: SubjectQaStreamHandlers,
     signal?: AbortSignal,
 ): Promise<void> {
+    const studentToken = getStudentToken()
     const response = await fetch('/api/ai/subject-qa/stream', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             Accept: 'text/event-stream',
+            ...(studentToken ? { Authorization: `Bearer ${studentToken}` } : {}),
         },
         body: JSON.stringify(payload),
         signal,

@@ -134,12 +134,12 @@ export function RoadmapTree({ roadmaps, onRefetch }: RoadmapTreeProps) {
               <CaretRight size={14} className={`text-ink-secondary transition-transform duration-200 ${expandedRoadmaps.has(roadmap.id) ? 'rotate-90' : ''}`} />
               <div>
                 <span className="text-sm font-medium text-ink-primary">{roadmap.title}</span>
-                <span className="ml-2 text-xs text-ink-secondary">by {roadmap.studentName}</span>
+                {roadmap.studentName && <span className="ml-2 text-xs text-ink-secondary">by {roadmap.studentName}</span>}
               </div>
             </div>
             <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
               <button
-                onClick={() => setRoadmapDialog({ open: true, initial: { title: roadmap.title, description: roadmap.description ?? undefined, studentId: roadmap.studentId, isPublic: roadmap.isPublic }, id: roadmap.id })}
+                onClick={() => setRoadmapDialog({ open: true, initial: { title: roadmap.title, description: roadmap.description ?? undefined, studentId: roadmap.studentId ?? undefined, isPublic: roadmap.isPublic }, id: roadmap.id })}
                 className="btn-ghost text-xs"
               >
                 Edit

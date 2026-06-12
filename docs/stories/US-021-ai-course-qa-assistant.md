@@ -1,4 +1,4 @@
-# User Story: AI Course Q&A Assistant
+﻿# User Story: AI Course Q&A Assistant
 
 As a student,
 I want to ask the AI assistant questions about courses, syllabi, grading criteria, and study experiences,
@@ -12,6 +12,9 @@ So that I can better plan my learning journey and study effectively.
 - [x] Frontend features a premium Glassmorphic floating AI chat widget with suggestions and citations.
 - [x] Chat messages parse course codes (like `SE101`) to render clickable CourseBadges.
 - [x] Generic greetings and broad resource requests do not invent DevOrbit features; the assistant asks for a specific course code when it lacks grounded course/repo context.
+- [x] Course-specific Vietnamese intro questions such as `SE104 giới thiệu cho tôi đi` are not misclassified as greetings.
+- [x] Career-oriented course-choice questions such as Java backend development return grounded UIT course-code suggestions instead of a generic greeting.
+- [x] First-year and UIT-orientation questions stay grounded: the assistant answers KTPM year-1 curriculum directly and uses web search when the UIT major/track is still unclear.
 - [x] LLM chat path uses OpenCode responses with DevOrbit DB context, Firecrawl web scraping, and Fireworks-backed semantic retrieval without fabricating DevOrbit-only features.
 - [x] Course-specific chat lazily indexes trusted DevOrbit database course/repo context into Knowledge RAG chunks and embeds them before semantic retrieval.
 - [x] Hybrid local retrieval: RagQueryPlanner expands Vietnamese intent terms, multi-query hybrid search (pgvector + PostgreSQL FTS), RagResultReranker applies dedup/lexical boost/source diversity.
@@ -32,7 +35,7 @@ So that I can better plan my learning journey and study effectively.
 
 - **Automated Tests**:
   - Smarter RAG unit tests: `RagQueryPlannerTest` (9 tests), `RagResultRerankerTest` (8 tests), `CourseKnowledgeIndexerTest` (8 tests), `KnowledgeRetrievalServiceTest` (7 tests) — all pass.
-  - Orchestration tests: `SubjectQaServiceTest` (7 tests), `TutorRagServiceTest` (8 tests), `WebSearchServiceTest` (5 tests) — all pass.
+  - Orchestration tests: `SubjectQaServiceTest` (11 tests), `TutorRagServiceTest` (8 tests), `WebSearchServiceTest` (5 tests) — all pass.
   - Existing contract tests: `AdminKnowledgeControllerTest` (4 tests), `PublicRepoControllerTest` (3 tests) — all pass.
   - Full suite: `mvnw.cmd test -B` — 172/173 tests pass (1 pre-existing H2/vector blocker in `FirecrawlDisabledTest`).
   - Compile: `mvnw.cmd compile -B` succeeds.
@@ -52,6 +55,8 @@ So that I can better plan my learning journey and study effectively.
   - TypeScript: `npx tsc --noEmit` passes with zero errors.
 - **Backend Tests** (Maven-available):
   - `OpenCodeAiServiceTest` — SSE delta parsing, offline fallback, malformed chunk resilience.
-  - `SubjectQaServiceTest` — `prepareQuery` emits status/search_result events; direct response shortcut.
-  - `SubjectQaControllerTest` — `/stream` endpoint returns `text/event-stream`.
+- `SubjectQaServiceTest` — `prepareQuery` emits status/search_result events; direct response shortcut; Vietnamese greeting false-positive regression; Java backend career-course recommendation.
+- `SubjectQaServiceTest` — first-year curriculum grounding and UIT orientation web-search follow-up regressions.
+- `SubjectQaControllerTest` — `/stream` endpoint returns `text/event-stream`.
   - Existing one-shot tests pass unchanged.
+

@@ -20,8 +20,8 @@ export function LoginPage() {
       const res = await apiPost<LoginResponse>('/api/admin/auth/login', { username, password })
       saveAdminToken(res.token)
       navigate('/admin')
-    } catch {
-      setError('Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản.')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản.')
     } finally {
       setLoading(false)
     }
@@ -38,7 +38,7 @@ export function LoginPage() {
               <circle cx="12" cy="12" r="11" strokeDasharray="2 4" opacity="0.2" />
             </svg>
           </div>
-          <h1 className="heading-3 text-clay-text">Quản trị viên</h1>
+          <h1 className="heading-3 text-orbit-text">Quản trị viên</h1>
           <p className="mt-2 body-sm">Đăng nhập để quản lý môn học và kho mã nguồn.</p>
         </div>
 

@@ -31,16 +31,17 @@ public class LearningRoadmapService {
 
     @Transactional
     public RoadmapResponse create(RoadmapRequest request) {
-        StudentUser student = studentRepo.findById(request.studentId())
-                .orElseThrow(() -> new NotFoundException("Student not found: " + request.studentId()));
-        LearningRoadmap entity = LearningRoadmap.builder()
-                .student(student)
+        var builder = LearningRoadmap.builder()
                 .title(request.title())
                 .description(request.description())
                 .markdownContent(request.markdownContent())
-                .isPublic(request.isPublic() != null && request.isPublic())
-                .build();
-        return toRoadmapResponse(roadmapRepo.save(entity));
+                .isPublic(request.isPublic() != null && request.isPublic());
+        if (request.studentId() != null && request.studentId() > 0) {
+            StudentUser student = studentRepo.findById(request.studentId())
+                    .orElseThrow(() -> new NotFoundException("Student not found: " + request.studentId()));
+            builder.student(student);
+        }
+        return toRoadmapResponse(roadmapRepo.save(builder.build()));
     }
 
     @Transactional
@@ -151,8 +152,9 @@ public class LearningRoadmapService {
 
     private RoadmapResponse toRoadmapResponse(LearningRoadmap entity) {
         return new RoadmapResponse(
-                entity.getId(), entity.getStudent().getId(),
-                entity.getStudent().getStudentCode(), entity.getStudent().getFullName(),
+                entity.getId(), entity.getStudent() != null ? entity.getStudent().getId() : null,
+                entity.getStudent() != null ? entity.getStudent().getStudentCode() : null,
+                entity.getStudent() != null ? entity.getStudent().getFullName() : null,
                 entity.getTitle(), entity.getDescription(),
                 entity.getMarkdownContent(), entity.isPublic(),
                 entity.getCreatedAt(), entity.getUpdatedAt());

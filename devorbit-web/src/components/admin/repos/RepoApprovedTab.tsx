@@ -12,6 +12,7 @@ export function RepoApprovedTab() {
   const token = getAdminToken()
   const [editingRepo, setEditingRepo] = useState<RepoSummary | null>(null)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const { data: repos, loading, error, refetch } = useAdminFetch(
     (t) => adminApi.getApprovedRepos(t),
@@ -35,16 +36,18 @@ export function RepoApprovedTab() {
 
   const handleDeactivate = async (id: number) => {
     if (!token || !confirm('Vô hiệu hoá repo này?')) return
+    setActionError(null)
     try {
       await adminApi.updateApprovedRepo(token, id, { active: false })
       refetch()
     } catch (e) {
-      console.error(e)
+      setActionError(e instanceof Error ? e.message : 'Vô hiệu hoá thất bại')
     }
   }
 
   if (loading) return <AdminSpinner text="Đang tải approved repos..." />
   if (error) return <AdminErrorBanner message={error} onRetry={refetch} />
+  if (actionError) return <AdminErrorBanner message={actionError} onRetry={() => setActionError(null)} />
 
   return (
     <div>

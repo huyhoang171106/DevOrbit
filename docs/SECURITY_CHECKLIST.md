@@ -92,7 +92,8 @@ pm-debug.log*, *.log | Covered |
 **Fix required:**
 1. Add dependency-check-maven plugin to devorbit-api/pom.xml
 2. Configure suppression file for known false positives
-3. Add ailBuildOnCVSS threshold (e.g., 7.0)
+3. Add `failBuildOnCVSS` threshold (e.g., 7.0)
+4. Remove `continue-on-error: true` once false positives are triaged
 
 ---
 
@@ -186,8 +187,6 @@ The API has CORS configured for multiple origins:
 |----------|------|--------|--------|
 | P0 | Add OWASP plugin to pom.xml | Low | Java dependency vulnerability detection |
 | P0 | Verify branch protection rules | Low | Prevent direct pushes to master |
-| P1 | Add Dependabot for Maven | Low | Auto-update Java dependencies |
-| P1 | Add Dependabot for Gradle | Low | Auto-update Kotlin dependencies |
 | P1 | Add rate limiting to auth endpoints | Medium | Prevent brute force attacks |
 | P2 | Externalize CORS origins | Low | Environment-specific CORS |
 | P2 | Audit DTO validation annotations | Medium | Ensure all inputs validated |

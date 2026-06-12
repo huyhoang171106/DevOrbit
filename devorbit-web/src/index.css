@@ -75,6 +75,7 @@
   .glass-card { @apply orbit-card; }
   .glass-card-glow { @apply orbit-card-glow; }
   .clay-card-hover { @apply orbit-card-interactive; }
+  .label { @apply text-xs font-semibold text-ink-secondary uppercase tracking-wider; }
 
   /* Force GPU compositing for animated elements */
   .gpu { transform: translateZ(0); }

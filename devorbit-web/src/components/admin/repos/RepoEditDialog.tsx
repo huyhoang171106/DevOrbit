@@ -23,7 +23,6 @@ export function RepoEditDialog({ open, repo, courses, onClose, onSave }: RepoEdi
         githubUrl: repo.githubUrl,
         primaryLanguage: repo.primaryLanguage,
         stars: repo.stars,
-        active: true,
         courseId: repo.courseId,
         techStacks: repo.techStacks ?? [],
       })

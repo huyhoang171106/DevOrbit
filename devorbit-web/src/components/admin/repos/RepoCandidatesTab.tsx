@@ -11,6 +11,7 @@ export function RepoCandidatesTab() {
   const token = getAdminToken()
   const [reviewer, setReviewer] = useState('all')
   const [approvalDialog, setApprovalDialog] = useState<{ candidate: RepoCandidate } | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
   const [reviewForm, setReviewForm] = useState<CandidateReviewRequest>({
     description: '',
     techStacks: [],
@@ -27,23 +28,25 @@ export function RepoCandidatesTab() {
 
   const handleApprove = async (candidate: RepoCandidate) => {
     if (!token) return
+    setActionError(null)
     try {
       await adminApi.approveCandidate(token, candidate.id, reviewForm)
       setApprovalDialog(null)
       setReviewForm({ description: '', techStacks: [], reviewNote: '' })
       refetch()
     } catch (e) {
-      console.error(e)
+      setActionError(e instanceof Error ? e.message : 'Duyệt thất bại')
     }
   }
 
   const handleReject = async (candidate: RepoCandidate) => {
     if (!token || !confirm('Từ chối candidate này?')) return
+    setActionError(null)
     try {
       await adminApi.rejectCandidate(token, candidate.id)
       refetch()
     } catch (e) {
-      console.error(e)
+      setActionError(e instanceof Error ? e.message : 'Từ chối thất bại')
     }
   }
 
@@ -61,6 +64,7 @@ export function RepoCandidatesTab() {
 
   if (loading) return <AdminSpinner text="Đang tải candidates..." />
   if (error) return <AdminErrorBanner message={error} onRetry={refetch} />
+  if (actionError) return <AdminErrorBanner message={actionError} onRetry={() => setActionError(null)} />
 
   return (
     <div className="space-y-4">

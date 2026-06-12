@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Sparkle, ArrowUp, X, ChatTeardropText, Spinner as SpinnerIcon, Link as LinkIcon, Trash, Copy, Check, CheckCircle } from '@phosphor-icons/react'
+import { Sparkle, ArrowUp, X, ChatTeardropText, Spinner as SpinnerIcon, Link as LinkIcon, Trash, Copy, Check, CheckCircle, CaretDown, Globe, Database, BookOpen, MagnifyingGlass } from '@phosphor-icons/react'
 import {
     useSubjectQa,
     streamSubjectQa,
@@ -328,6 +328,7 @@ function SourcesList({ sources }: SourcesListProps) {
 
 interface SearchResultsListProps {
     results?: WebSearchResult[]
+    isSearching?: boolean
 }
 
 function getResultDomain(url: string): string {
@@ -339,43 +340,105 @@ function getResultDomain(url: string): string {
     }
 }
 
-function SearchResultsList({ results }: SearchResultsListProps) {
-    if (!results || results.length === 0) return null
+function isWebSearching(events?: AiChatStatusEvent[]): boolean {
+    if (!events || events.length === 0) return false
+    const last = events[events.length - 1]
+    return last.stage === 'web_search' || last.stage === 'web_read'
+}
+
+function SearchResultsList({ results, isSearching }: SearchResultsListProps) {
+    if ((!results || results.length === 0) && !isSearching) return null
 
     return (
-        <div className="mt-3 pt-3 border-t border-zinc-800/40">
-            <p className="text-[11px] font-bold text-zinc-400 mb-2 uppercase tracking-wider">Kết quả tìm kiếm:</p>
-            <div className="space-y-2">
-                {results.map((r, i) => (
+        <div className="mt-3.5 pb-3.5 border-b border-zinc-800/40">
+            <div className="flex items-center gap-2 text-zinc-400 mb-2">
+                <div className="relative flex items-center justify-center">
+                    {isSearching ? (
+                        <>
+                            <Globe className="h-4 w-4 text-orbit-accent animate-pulse shrink-0" aria-hidden="true" />
+                            <span className="absolute inline-flex h-full w-full rounded-full bg-orbit-accent/30 animate-ping opacity-75"></span>
+                        </>
+                    ) : (
+                        <Globe className="h-4 w-4 text-emerald-400 shrink-0" aria-hidden="true" />
+                    )}
+                </div>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+                    Kết quả tìm kiếm:
+                    {isSearching && (
+                        <span className="text-[10px] lowercase font-normal text-zinc-500 italic">
+                            (đang cập nhật...)
+                        </span>
+                    )}
+                </p>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                {results?.map((r, i) => (
                     <a
                         key={`${r.url}-${i}`}
                         href={sanitizeUrl(r.url) || r.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="block bg-zinc-900/30 border border-zinc-800/40 hover:border-zinc-700/60 rounded-xl p-3 transition-colors group"
+                        className="flex flex-col justify-between bg-zinc-900/40 hover:bg-zinc-800/40 border border-zinc-800/60 hover:border-orbit-accent/40 rounded-xl p-3 transition-all duration-200 group text-left relative overflow-hidden"
                     >
-                        <div className="flex items-start gap-2">
-                            <div className="flex-1 min-w-0">
-                                <p className="text-[13px] font-medium text-zinc-200 group-hover:text-orbit-accent transition-colors truncate">
-                                    {r.title || 'Không có tiêu đề'}
-                                </p>
-                                <p className="text-[11px] text-zinc-500 mt-0.5 truncate">{getResultDomain(r.url)}</p>
-                                {r.description && (
-                                    <p className="text-[12px] text-zinc-400 mt-1 line-clamp-2">{r.description}</p>
-                                )}
-                                {r.sourceProvider && (
-                                    <span className="inline-block mt-1 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
-                                        {r.sourceProvider}
-                                    </span>
-                                )}
+                        <div className="flex items-center gap-2 min-w-0">
+                            <div className="w-5 h-5 rounded-lg bg-zinc-950 flex items-center justify-center shrink-0 border border-zinc-800 overflow-hidden">
+                                <img
+                                    src={`https://www.google.com/s2/favicons?sz=32&domain=${getResultDomain(r.url)}`}
+                                    alt=""
+                                    className="w-3.5 h-3.5 object-contain"
+                                    onError={(e) => {
+                                        e.currentTarget.style.display = 'none'
+                                        const fallback = e.currentTarget.nextElementSibling as HTMLElement
+                                        if (fallback) fallback.style.display = 'block'
+                                    }}
+                                />
+                                <LinkIcon className="h-3 w-3 text-zinc-500 shrink-0" style={{ display: 'none' }} />
                             </div>
-                            <LinkIcon
-                                className="h-4 w-4 text-zinc-600 group-hover:text-orbit-accent/70 shrink-0 mt-0.5"
-                                aria-hidden="true"
-                            />
+                            <span className="text-[11px] font-medium text-zinc-400 group-hover:text-zinc-200 transition-colors truncate">
+                                {getResultDomain(r.url)}
+                            </span>
+                        </div>
+                        
+                        <div className="mt-2 flex-1 min-w-0">
+                            <p className="text-[13px] font-semibold text-zinc-200 group-hover:text-orbit-accent leading-snug transition-colors line-clamp-2">
+                                {r.title || 'Không có tiêu đề'}
+                            </p>
+                            {r.description && (
+                                <p className="text-[11px] text-zinc-500 mt-1 line-clamp-1 group-hover:text-zinc-400 transition-colors">
+                                    {r.description}
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-zinc-800/30 text-[10px] text-zinc-500">
+                            <span className="bg-zinc-900/85 px-1.5 py-0.5 rounded-md font-mono border border-zinc-850 text-[9px] font-bold text-zinc-400 group-hover:text-orbit-accent group-hover:border-orbit-accent/20 transition-all font-bold">
+                                {i + 1}
+                            </span>
+                            {r.sourceProvider && (
+                                <span className="bg-zinc-900/60 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider text-zinc-500">
+                                    {r.sourceProvider}
+                                </span>
+                            )}
                         </div>
                     </a>
                 ))}
+
+                {isSearching && (!results || results.length < 3) && 
+                    Array.from({ length: 3 - (results?.length || 0) }).map((_, idx) => (
+                        <div
+                            key={`skeleton-${idx}`}
+                            className="flex flex-col justify-between bg-zinc-900/20 border border-zinc-800/40 rounded-xl p-3 min-h-[92px] animate-pulse"
+                        >
+                            <div className="flex items-center gap-2">
+                                <div className="w-5 h-5 rounded-lg bg-zinc-800 shrink-0" />
+                                <div className="h-3 w-16 bg-zinc-800 rounded" />
+                            </div>
+                            <div className="h-4 w-5/6 bg-zinc-800 rounded mt-2.5" />
+                            <div className="h-3 w-2/3 bg-zinc-800 rounded mt-1.5" />
+                        </div>
+                    ))
+                }
             </div>
         </div>
     )
@@ -424,29 +487,136 @@ interface StatusProgressProps {
     isStreaming: boolean
 }
 
+function getStageDetailedDescription(stage: SubjectQaStreamStage): string {
+    switch (stage) {
+        case 'session':
+            return 'Khởi tạo session ID và kết nối SSE stream.'
+        case 'analyze':
+            return 'LLM phân tích từ khóa ý định, nhận dạng mã môn học.'
+        case 'devorbit_context':
+            return 'Đọc cấu trúc môn học, đề cương và tài liệu từ cơ sở dữ liệu DevOrbit.'
+        case 'rag':
+            return 'Truy vấn embedding tương đồng vector từ DevOrbit Vector DB.'
+        case 'web_search':
+            return 'Tìm tài liệu đề thi & kinh nghiệm học tập từ diễn đàn UIT.'
+        case 'web_read':
+            return 'Đọc & trích xuất nội dung bài viết bằng Firecrawl.'
+        case 'answer':
+            return 'Tổng hợp ngữ cảnh đa nguồn (RAG + Web + Database) và tạo câu trả lời.'
+        case 'done':
+            return 'Hoàn tất sinh câu trả lời và kết thúc.'
+        case 'error':
+            return 'Tiến trình bị gián đoạn. Sử dụng câu trả lời fallback.'
+        default:
+            return ''
+    }
+}
+
+function getStageIcon(stage: SubjectQaStreamStage, isActive: boolean) {
+    if (stage === 'error') {
+        return <X className="h-3.5 w-3.5 text-rose-400 shrink-0" aria-hidden="true" />
+    }
+    
+    switch (stage) {
+        case 'session':
+            return <Sparkle className="h-3.5 w-3.5 text-zinc-500 shrink-0" aria-hidden="true" />
+        case 'analyze':
+            return <MagnifyingGlass className="h-3.5 w-3.5 text-zinc-400 shrink-0" aria-hidden="true" />
+        case 'devorbit_context':
+        case 'rag':
+            return <Database className="h-3.5 w-3.5 text-orbit-accent shrink-0" aria-hidden="true" />
+        case 'web_search':
+            return <Globe className={`h-3.5 w-3.5 text-sky-400 shrink-0 ${isActive ? 'animate-pulse' : ''}`} aria-hidden="true" />
+        case 'web_read':
+            return <BookOpen className={`h-3.5 w-3.5 text-emerald-400 shrink-0 ${isActive ? 'animate-pulse' : ''}`} aria-hidden="true" />
+        case 'answer':
+            return <ChatTeardropText className={`h-3.5 w-3.5 text-amber-400 shrink-0 ${isActive ? 'animate-pulse' : ''}`} aria-hidden="true" />
+        case 'done':
+            return <CheckCircle className="h-3.5 w-3.5 text-emerald-500 shrink-0" aria-hidden="true" />
+        default:
+            return <Sparkle className="h-3.5 w-3.5 text-zinc-400 shrink-0" aria-hidden="true" />
+    }
+}
+
 function StatusProgress({ statusEvents, isStreaming }: StatusProgressProps) {
     if (!statusEvents || statusEvents.length === 0) return null
 
+    const [isExpanded, setIsExpanded] = useState(isStreaming)
+
+    // Automatically expand when a new event arrives while streaming
+    useEffect(() => {
+        if (isStreaming) {
+            setIsExpanded(true)
+        }
+    }, [isStreaming, statusEvents.length])
+
     return (
-        <div className="mb-3 space-y-1.5">
-            {statusEvents.map((evt) => {
-                const isLast = evt === statusEvents[statusEvents.length - 1]
-                const isActive = isLast && isStreaming && evt.stage !== 'error' && evt.stage !== 'done'
-                return (
-                    <div key={evt.id} className="flex items-center gap-2 text-[12px]">
-                        {isActive ? (
-                            <SpinnerIcon className="h-3.5 w-3.5 animate-spin text-orbit-accent shrink-0" aria-hidden="true" />
-                        ) : evt.stage === 'error' ? (
-                            <X className="h-3.5 w-3.5 text-rose-400 shrink-0" aria-hidden="true" />
-                        ) : (
-                            <CheckCircle className="h-3.5 w-3.5 text-emerald-400 shrink-0" aria-hidden="true" />
-                        )}
-                        <span className={isActive ? 'text-zinc-300' : evt.stage === 'error' ? 'text-rose-300' : 'text-zinc-400'}>
-                            {evt.message}
-                        </span>
-                    </div>
-                )
-            })}
+        <div className="bg-zinc-900/40 border border-zinc-800/50 rounded-2xl p-3 mb-3 text-[13px] text-zinc-300">
+            {/* Header Accordion */}
+            <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="flex items-center justify-between w-full text-zinc-400 hover:text-zinc-200 transition-colors focus:outline-none"
+                aria-expanded={isExpanded}
+                aria-label="Xem chi tiết quá trình RAG"
+            >
+                <div className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-wider text-left min-w-0">
+                    {isStreaming ? (
+                        <div className="relative flex h-2.5 w-2.5 shrink-0">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orbit-accent opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orbit-accent"></span>
+                        </div>
+                    ) : (
+                        <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0" aria-hidden="true" />
+                    )}
+                    <span className="text-zinc-300 truncate">
+                        {isStreaming 
+                            ? 'Đang tìm kiếm & RAG...' 
+                            : 'Đã hoàn thành phân tích & RAG'}
+                    </span>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                    <span className="text-[10px] text-zinc-400 bg-zinc-900/60 px-2 py-0.5 rounded-lg border border-zinc-800/40 font-mono">
+                        {statusEvents.length} bước
+                    </span>
+                    <CaretDown className={`h-3.5 w-3.5 text-zinc-400 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                </div>
+            </button>
+
+            {/* Stepper Steps (Timeline) */}
+            <div
+                className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                    isExpanded ? 'mt-3 opacity-100 max-h-[500px] pointer-events-auto' : 'opacity-0 max-h-0 pointer-events-none'
+                }`}
+            >
+                <div className="relative pl-4 border-l border-zinc-800/60 ml-2.5 space-y-4 pt-1">
+                    {statusEvents.map((evt, idx) => {
+                        const isLast = idx === statusEvents.length - 1
+                        const isActive = isLast && isStreaming && evt.stage !== 'error' && evt.stage !== 'done'
+                        
+                        return (
+                            <div key={evt.id} className="relative flex gap-3 items-start group">
+                                {/* Timeline Icon */}
+                                <div className="absolute -left-[12px] mt-0.5 flex items-center justify-center bg-zinc-950 rounded-full border border-zinc-800 w-6 h-6 z-10">
+                                    {getStageIcon(evt.stage, isActive)}
+                                </div>
+                                
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                        <span className={`font-semibold text-[12.5px] ${
+                                            isActive ? 'text-orbit-accent' : evt.stage === 'error' ? 'text-rose-400' : 'text-zinc-300'
+                                        }`}>
+                                            {evt.message}
+                                        </span>
+                                    </div>
+                                    <p className="text-[11px] text-zinc-500 mt-0.5 leading-relaxed font-mono">
+                                        {getStageDetailedDescription(evt.stage)}
+                                    </p>
+                                </div>
+                            </div>
+                        )
+                    })}
+                </div>
+            </div>
         </div>
     )
 }
@@ -468,7 +638,7 @@ export function ChatMessage({
 }: ChatMessageProps) {
     const isAi = message.sender === 'ai'
     const showSources = isAi && message.sources && message.sources.length > 0
-    const showSearchResults = isAi && message.searchResults && message.searchResults.length > 0
+    const showSearchResults = isAi && ((message.searchResults && message.searchResults.length > 0) || (isStreaming && isWebSearching(message.statusEvents)))
 
     return (
         <div
@@ -476,7 +646,7 @@ export function ChatMessage({
             role="listitem"
         >
             <div
-                className={`max-w-[88%] px-4 py-3 rounded-2xl text-[14px] leading-relaxed ${
+                className={`max-w-[88%] w-full px-4 py-3 rounded-2xl text-[14px] leading-relaxed ${
                     isAi
                         ? 'bg-zinc-900/50 border border-zinc-800/60 text-zinc-100 rounded-tl-none'
                         : 'bg-orbit-accent/10 border border-orbit-accent/20 text-orbit-accent rounded-tr-none'
@@ -486,9 +656,16 @@ export function ChatMessage({
                     <StatusProgress statusEvents={message.statusEvents} isStreaming={isStreaming} />
                 )}
 
+                {showSearchResults && (
+                    <SearchResultsList 
+                        results={message.searchResults} 
+                        isSearching={isStreaming && isWebSearching(message.statusEvents)} 
+                    />
+                )}
+
                 {isAi ? (
                     message.content.length > 0 ? (
-                        <div className="whitespace-pre-wrap break-words">
+                        <div className="whitespace-pre-wrap break-words mt-3">
                             <MarkdownRenderer text={message.content} />
                             {isStreaming && (
                                 <span
@@ -500,9 +677,9 @@ export function ChatMessage({
                             )}
                         </div>
                     ) : isStreaming ? (
-                        <div className="flex items-center gap-2 text-[12px] text-zinc-400" role="status" aria-label="AI đang trả lời">
+                        <div className="flex items-center gap-2 text-[12px] text-zinc-400 mt-2" role="status" aria-label="AI đang trả lời">
                             <SpinnerIcon className="h-4 w-4 animate-spin text-orbit-accent" aria-hidden="true" />
-                            <span>Đang xử lý...</span>
+                            <span>Đang soạn câu trả lời...</span>
                         </div>
                     ) : null
                 ) : (
@@ -511,7 +688,6 @@ export function ChatMessage({
                     </div>
                 )}
 
-                {showSearchResults && <SearchResultsList results={message.searchResults!} />}
                 {showSources && <SourcesList sources={message.sources!} />}
 
                 {isAi && !isStreaming && message.content.length > 0 && (
@@ -579,6 +755,18 @@ export function AiChatWidget() {
             })
         }
     }, [messages, streamingMsgId])
+
+    // Scroll to bottom when opening the chat widget
+    useEffect(() => {
+        if (isOpen) {
+            const timer = setTimeout(() => {
+                if (scrollRef.current) {
+                    scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+                }
+            }, 100)
+            return () => clearTimeout(timer)
+        }
+    }, [isOpen])
 
     // Copy timeout
     useEffect(() => {
@@ -802,6 +990,7 @@ export function AiChatWidget() {
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 15 }}
                         transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+                        data-lenis-prevent
                         className="w-[90vw] sm:w-[420px] h-[600px] max-h-[80vh] mb-4 flex flex-col rounded-[2rem] border border-zinc-800/50 bg-zinc-950/80 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden"
                         role="dialog"
                         aria-label="DevOrbit AI Chat"

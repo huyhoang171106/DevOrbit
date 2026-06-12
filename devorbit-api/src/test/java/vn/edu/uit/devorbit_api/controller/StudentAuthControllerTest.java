@@ -92,7 +92,7 @@ class StudentAuthControllerTest {
 
     @Test
     void shouldForgotPasswordSuccessfully() throws Exception {
-        doNothing().when(studentAuthService).forgotPassword(any());
+        when(studentAuthService.forgotPassword(any())).thenReturn("");
 
         mockMvc.perform(post("/api/student/forgot-password")
                         .contentType(MediaType.APPLICATION_JSON)

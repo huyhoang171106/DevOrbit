@@ -6,7 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import vn.edu.uit.devorbit_api.entity.CommunityMessage;
 
+import java.util.List;
+
 @Repository
 public interface CommunityMessageRepository extends JpaRepository<CommunityMessage, Long> {
     Page<CommunityMessage> findByChannelIdOrderByCreatedAtDesc(Long channelId, Pageable pageable);
+    List<CommunityMessage> findAllByOrderByCreatedAtDesc();
 }

@@ -1,4 +1,6 @@
 spring:
+  config:
+    import: optional:file:.env.properties
   application:
     name: devorbit-api
 
@@ -16,7 +18,7 @@ spring:
 
   sql:
     init:
-      mode: ${SQL_INIT_MODE:never}
+      mode: never
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/devorbit_db}
     username: ${DATABASE_USERNAME:postgres}
@@ -52,7 +54,7 @@ app:
     user-agent: ${GITHUB_USER_AGENT:DevOrbit/1.0}
     token: ${GITHUB_TOKEN:}
   jwt:
-    secret: ${JWT_SECRET}
+    secret: ${JWT_SECRET:default-jwt-secret-key-long-enough-256bits}
     expiration-minutes: ${JWT_EXPIRATION_MINUTES:120}
   openapi:
     local-dev-url: ${OPENAPI_LOCAL_DEV_URL:http://localhost:8080}
@@ -62,9 +64,12 @@ app:
     api-key: ${OPENCODE_API_KEY:}
     model: ${OPENCODE_MODEL:deepseek-v4-flash}
   embedding:
-    offline: ${EMBEDDING_OFFLINE:true}
-    model: ${EMBEDDING_MODEL:text-embedding-3-small}
-    dimensions: ${EMBEDDING_DIMENSIONS:1536}
+    offline: ${EMBEDDING_OFFLINE:false}
+    provider: ${EMBEDDING_PROVIDER:fireworks}
+    model: ${EMBEDDING_MODEL:accounts/fireworks/models/qwen3-embedding-8b}
+    dimensions: ${EMBEDDING_DIMENSIONS:4096}
+    fireworks:
+      api-key: ${FIREWORKS_API_KEY:}
   otp:
     expiration-minutes: ${OTP_EXPIRATION_MINUTES:5}
 

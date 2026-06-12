@@ -200,7 +200,7 @@ function getRepoSignals(repo: RepoSummary): RepoSignals {
     name: cleanText(repo.displayName) || `Repo #${repo.id}`,
     description: cleanText(repo.description),
     language: cleanText(repo.primaryLanguage),
-    techStacks: Array.from(new Set((repo.techStacks ?? []).map(cleanText).filter(Boolean) as string[])),
+    techStacks: normalizeStringList(repo.techStacks),
     topics: normalizeStringList(metadata.topics ?? metadata.tags),
     readmeExcerpt: cleanText(metadata.readmeExcerpt ?? metadata.readmeContent ?? metadata.readmeMarkdown ?? metadata.readmeText ?? metadata.readme),
     courseLabel: formatCourseLabel(repo),

@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -162,16 +164,17 @@ public class OpenCodeAiService {
 
         AtomicBoolean emittedAnyDelta = new AtomicBoolean(false);
 
-        return webClient.post()
+        Flux<String> stream = webClient.post()
             .uri(aiConfig.getApiUrl() + "/chat/completions")
             .header("Authorization", "Bearer " + aiConfig.getApiKey())
             .header("Accept", "text/event-stream")
             .bodyValue(requestBody)
             .retrieve()
-            .bodyToFlux(String.class)
+            .bodyToFlux(new ParameterizedTypeReference<ServerSentEvent<String>>() {})
             .timeout(Duration.ofSeconds(90))
-            .flatMap(rawChunk -> {
-                List<String> deltas = extractDeltaContents(rawChunk);
+            .flatMap(event -> {
+                String data = event.data();
+                List<String> deltas = extractDeltaContents(data == null ? null : "data: " + data);
                 if (!deltas.isEmpty()) {
                     emittedAnyDelta.set(true);
                 }
@@ -185,14 +188,12 @@ public class OpenCodeAiService {
                 }
                 log.error("Streaming LLM call failed after at least one delta: {}", e.getMessage());
                 return Flux.error(e);
-            })
-            .thenMany(Flux.defer(() -> {
-                if (!emittedAnyDelta.get()) {
-                    log.warn("Streaming LLM returned no deltas, falling back to one-shot");
-                    return Flux.just(generateCompletion(systemPrompt, userMessage));
-                }
-                return Flux.empty();
-            }));
+            });
+
+        return stream.switchIfEmpty(Flux.defer(() -> {
+            log.warn("Streaming LLM returned no deltas, falling back to one-shot");
+            return Flux.just(generateCompletion(systemPrompt, userMessage));
+        }));
     }
 
     /**
@@ -225,7 +226,7 @@ public class OpenCodeAiService {
                 JsonNode delta = firstChoice.get("delta");
                 if (delta != null) {
                     JsonNode content = delta.get("content");
-                    if (content != null && !content.asText().isBlank()) {
+                    if (content != null && content.isTextual() && !content.asText().isBlank()) {
                         deltas.add(content.asText());
                         continue;
                     }
@@ -234,7 +235,7 @@ public class OpenCodeAiService {
                 JsonNode message = firstChoice.get("message");
                 if (message != null) {
                     JsonNode content = message.get("content");
-                    if (content != null && !content.asText().isBlank()) {
+                    if (content != null && content.isTextual() && !content.asText().isBlank()) {
                         deltas.add(content.asText());
                     }
                 }

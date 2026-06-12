@@ -14,6 +14,7 @@ export function StudentsPage() {
   const [search, setSearch] = useState('')
   const [detailStudent, setDetailStudent] = useState<AdminStudent | null>(null)
   const [detailOpen, setDetailOpen] = useState(false)
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const fetchStudents = useCallback(
     (t: string) => adminApi.getStudents(t, search || undefined),
@@ -29,11 +30,12 @@ export function StudentsPage() {
     if (!token) return
     const action = student.active ? 'vô hiệu hoá' : 'kích hoạt'
     if (!confirm(`${action} sinh viên này?`)) return
+    setActionError(null)
     try {
       await adminApi.toggleStudentActive(token, student.id)
       refetch()
     } catch (e) {
-      console.error(e)
+      setActionError(e instanceof Error ? e.message : 'Thao tác thất bại')
     }
   }
 
@@ -51,6 +53,7 @@ export function StudentsPage() {
 
       {loading && <AdminSpinner text="Đang tải sinh viên..." />}
       {error && <AdminErrorBanner message={error} onRetry={refetch} />}
+      {actionError && <AdminErrorBanner message={actionError} onRetry={() => setActionError(null)} />}
       {students && (
         <StudentTable
           students={students}

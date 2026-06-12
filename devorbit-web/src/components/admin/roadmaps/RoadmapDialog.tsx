@@ -11,7 +11,6 @@ interface RoadmapDialogProps {
 
 export function RoadmapDialog({ open, onClose, onSubmit, initial, loading }: RoadmapDialogProps) {
   const [form, setForm] = useState<RoadmapRequest>({
-    studentId: 0,
     title: '',
     description: '',
     isPublic: false,
@@ -20,13 +19,12 @@ export function RoadmapDialog({ open, onClose, onSubmit, initial, loading }: Roa
   useEffect(() => {
     if (initial) {
       setForm({
-        studentId: initial.studentId ?? 0,
         title: initial.title ?? '',
         description: initial.description ?? '',
         isPublic: initial.isPublic ?? false,
       })
     } else {
-      setForm({ studentId: 0, title: '', description: '', isPublic: false })
+      setForm({ title: '', description: '', isPublic: false })
     }
   }, [initial, open])
 

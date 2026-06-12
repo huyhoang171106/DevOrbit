@@ -178,7 +178,7 @@ export type TutorialResponse = {
 // --- Roadmaps ---
 
 export type RoadmapRequest = {
-  studentId: number
+  studentId?: number
   title: string
   description?: string
   markdownContent?: string
@@ -187,9 +187,9 @@ export type RoadmapRequest = {
 
 export type RoadmapResponse = {
   id: number
-  studentId: number
-  studentCode: string
-  studentName: string
+  studentId: number | null
+  studentCode: string | null
+  studentName: string | null
   title: string
   description: string | null
   markdownContent: string | null

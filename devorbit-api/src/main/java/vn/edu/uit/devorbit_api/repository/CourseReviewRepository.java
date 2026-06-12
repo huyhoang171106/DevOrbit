@@ -12,6 +12,8 @@ import java.util.Optional;
 public interface CourseReviewRepository extends JpaRepository<CourseReview, Long> {
     Optional<CourseReview> findByCourseIdAndStudentId(Long courseId, Long studentId);
     List<CourseReview> findByCourseIdOrderByUpdatedAtDesc(Long courseId);
+    List<CourseReview> findAllByOrderByCreatedAtDesc();
+    List<CourseReview> findTop10ByOrderByCreatedAtDesc();
 
     @Query("SELECT AVG(r.rating) FROM CourseReview r WHERE r.course.id = :courseId")
     Double averageRatingByCourseId(Long courseId);

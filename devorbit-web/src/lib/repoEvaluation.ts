@@ -1,4 +1,5 @@
 import type { RepoSummary } from '../types/api'
+import { cleanText, normalizeStringList } from './repoText'
 
 export type RepoType =
   | 'programming_exercise'
@@ -290,9 +291,9 @@ export function extractRepoSignals(repo: RepoSummary): RepoSignals {
   const metadata = repo as RepoSummary & OptionalRepoMetadata
   const name = cleanText(repo.displayName) || `Repo #${repo.id}`
   const description = cleanText(repo.description)
-  const topics = normalizeList(metadata.topics ?? metadata.tags)
+  const topics = normalizeStringList(metadata.topics ?? metadata.tags)
   const primaryLanguage = cleanText(repo.primaryLanguage)
-  const techStacks = Array.from(new Set((repo.techStacks ?? []).map(cleanText).filter(Boolean) as string[]))
+  const techStacks = normalizeStringList(repo.techStacks)
   const readmeText = cleanText(
     metadata.readmeExcerpt ?? metadata.readmeContent ?? metadata.readmeMarkdown ?? metadata.readmeText ?? metadata.readme,
   )
@@ -1078,12 +1079,6 @@ function normalizeFilePaths(value: OptionalRepoMetadata['files'] | OptionalRepoM
   }).filter(Boolean) as string[]))
 }
 
-function normalizeList(value: string[] | string | null | undefined): string[] {
-  if (!value) return []
-  const rawValues = Array.isArray(value) ? value : value.split(/[,;|]/)
-  return Array.from(new Set(rawValues.map(cleanText).filter(Boolean) as string[]))
-}
-
 function normalizeSearchText(values: Array<string | null | undefined>): string {
   return values
     .filter(Boolean)
@@ -1093,12 +1088,6 @@ function normalizeSearchText(values: Array<string | null | undefined>): string {
     .replace(/đ/g, 'd')
     .replace(/Đ/g, 'd')
     .toLowerCase()
-}
-
-function cleanText(value: unknown): string | null {
-  if (typeof value !== 'string') return null
-  const normalized = value.replace(/\s+/g, ' ').trim()
-  return normalized ? normalized : null
 }
 
 function hasPath(paths: string[], pattern: RegExp): boolean {

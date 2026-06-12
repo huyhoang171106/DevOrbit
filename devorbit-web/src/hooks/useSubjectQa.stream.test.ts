@@ -38,6 +38,31 @@ function eventBlock(eventName: string, data: unknown): string {
 }
 
 describe('streamSubjectQa SSE parser', () => {
+    test('sends student bearer token when available', async () => {
+        await loadModule()
+
+        localStorage.setItem('devorbit-student-token', 'student-token')
+        mockFetch.mockResolvedValue({
+            ok: false,
+            status: 401,
+            text: async () => '',
+            headers: new Headers(),
+        })
+
+        await expect(
+            streamSubjectQa(
+                { message: 'test' },
+                {},
+            ),
+        ).rejects.toThrow('Streaming request failed: 401')
+
+        expect(mockFetch).toHaveBeenCalled()
+        expect(mockFetch.mock.calls[0][1]?.headers).toMatchObject({
+            Authorization: 'Bearer student-token',
+        })
+        localStorage.removeItem('devorbit-student-token')
+    })
+
     test('dispatches status, search_result, delta, and complete events in order', async () => {
         await loadModule()
 

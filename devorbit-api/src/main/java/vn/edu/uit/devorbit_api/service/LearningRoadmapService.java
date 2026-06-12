@@ -31,7 +31,7 @@ public class LearningRoadmapService {
 
     @Transactional
     public RoadmapResponse create(RoadmapRequest request) {
-        LearningRoadmapBuilder builder = LearningRoadmap.builder()
+        var builder = LearningRoadmap.builder()
                 .title(request.title())
                 .description(request.description())
                 .markdownContent(request.markdownContent())

@@ -1,5 +1,6 @@
 import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { LazyMotion, domAnimation } from 'framer-motion'
 import { Layout } from './components/Layout'
 import { AppRoutes } from './router'
 import { ErrorBoundary } from './components/ErrorBoundary'
@@ -18,15 +19,17 @@ const queryClient = new QueryClient({
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <SmoothScrollProvider>
-          <Layout>
-            <ErrorBoundary>
-              <AppRoutes />
-            </ErrorBoundary>
-          </Layout>
-        </SmoothScrollProvider>
-      </BrowserRouter>
+      <LazyMotion features={domAnimation}>
+        <BrowserRouter>
+          <SmoothScrollProvider>
+            <Layout>
+              <ErrorBoundary>
+                <AppRoutes />
+              </ErrorBoundary>
+            </Layout>
+          </SmoothScrollProvider>
+        </BrowserRouter>
+      </LazyMotion>
     </QueryClientProvider>
   )
 }

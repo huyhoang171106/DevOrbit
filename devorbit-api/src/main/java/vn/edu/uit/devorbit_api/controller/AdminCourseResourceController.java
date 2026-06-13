@@ -49,16 +49,19 @@ public class AdminCourseResourceController {
 
     @PutMapping("/youtube-playlists/{id}")
     public YoutubePlaylistResponse updateYoutubePlaylist(
+            @PathVariable Long courseId,
             @PathVariable Long id,
             @RequestBody @Valid YoutubePlaylistRequest request) {
         return youtubePlaylistService.update(id, request);
     }
-
     @DeleteMapping("/youtube-playlists/{id}")
-    public ResponseEntity<Void> deleteYoutubePlaylist(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteYoutubePlaylist(
+            @PathVariable Long courseId,
+            @PathVariable Long id) {
         youtubePlaylistService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
 
     // ===== ARTICLES =====
 
@@ -76,16 +79,19 @@ public class AdminCourseResourceController {
 
     @PutMapping("/articles/{id}")
     public ArticleResponse updateArticle(
+            @PathVariable Long courseId,
             @PathVariable Long id,
             @RequestBody @Valid ArticleRequest request) {
         return articleService.update(id, request);
     }
-
     @DeleteMapping("/articles/{id}")
-    public ResponseEntity<Void> deleteArticle(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteArticle(
+            @PathVariable Long courseId,
+            @PathVariable Long id) {
         articleService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
 
     // ===== TUTORIALS =====
 
@@ -103,14 +109,17 @@ public class AdminCourseResourceController {
 
     @PutMapping("/tutorials/{id}")
     public TutorialResponse updateTutorial(
+            @PathVariable Long courseId,
             @PathVariable Long id,
             @RequestBody @Valid TutorialRequest request) {
         return tutorialService.update(id, request);
     }
-
     @DeleteMapping("/tutorials/{id}")
-    public ResponseEntity<Void> deleteTutorial(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteTutorial(
+            @PathVariable Long courseId,
+            @PathVariable Long id) {
         tutorialService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
 }

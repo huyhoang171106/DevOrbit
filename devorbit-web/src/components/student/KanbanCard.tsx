@@ -48,9 +48,13 @@ export function KanbanCard({
 
   // Check for misplaced prerequisites
   const nodeSem = semesterMap[node.id]
-  const misplacedPrereqs = prerequisites
-    .map(id => ({ id, sem: semesterMap[id] }))
-    .filter(p => p.sem !== null && nodeSem !== null && p.sem !== undefined && nodeSem !== undefined && p.sem > nodeSem)
+  const misplacedPrereqs = prerequisites.reduce<{ id: number; sem: number }[]>((acc, id) => {
+    const sem = semesterMap[id]
+    if (sem !== null && nodeSem !== null && sem !== undefined && nodeSem !== undefined && sem > nodeSem) {
+      acc.push({ id, sem })
+    }
+    return acc
+  }, [])
 
   const hasWarning = misplacedPrereqs.length > 0
   const isOverloaded = nodeSem !== null && nodeSem !== undefined && credits > maxSemesterCredits

@@ -74,11 +74,18 @@ class WebSocketConfigContractTest {
     void securityConfigPermitsSubjectQaBeforeAuthenticatedAiCatchAll() throws Exception {
         String securityConfig = Files.readString(Path.of("src/main/java/vn/edu/uit/devorbit_api/config/SecurityConfig.java"));
 
+        int webSecurityCustomizerRule = securityConfig.indexOf(
+            "return web -> web.ignoring().requestMatchers(\"/api/ai/subject-qa/**\");");
+        int explicitSubjectQaPostRule = securityConfig.indexOf(
+            ".requestMatchers(HttpMethod.POST, \"/api/ai/subject-qa/query\", \"/api/ai/subject-qa/stream\").permitAll()");
         int subjectQaRule = securityConfig.indexOf(".requestMatchers(\"/api/ai/subject-qa/**\").permitAll()");
         int aiCatchAllRule = securityConfig.indexOf(".requestMatchers(\"/api/ai/**\").authenticated()");
 
+        assertThat(webSecurityCustomizerRule).isGreaterThanOrEqualTo(0);
+        assertThat(explicitSubjectQaPostRule).isGreaterThanOrEqualTo(0);
         assertThat(subjectQaRule).isGreaterThanOrEqualTo(0);
         assertThat(aiCatchAllRule).isGreaterThanOrEqualTo(0);
+        assertThat(explicitSubjectQaPostRule).isLessThan(aiCatchAllRule);
         assertThat(subjectQaRule).isLessThan(aiCatchAllRule);
     }
 

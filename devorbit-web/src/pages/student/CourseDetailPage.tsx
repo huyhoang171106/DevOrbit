@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { m as motion } from 'framer-motion'
 import { apiGet, apiStudentPost } from '../../lib/api'
 import { isStudentAuthenticated } from '../../lib/auth'
 import { RepoCard } from '../../components/student/RepoCard'
@@ -10,7 +10,9 @@ import { ReviewSection } from '../../components/student/ReviewSection'
 import { useCourseReviews } from '../../hooks/useCommunity'
 import type { RepoSummary, CourseDetail } from '../../types/api'
 import { ArrowLeft, GraduationCap, BookOpen, Code, Tag, Building, Clock, Bookmark, BookmarkSimple, ShareNetwork, Sparkle, Stack, WarningCircle } from '@phosphor-icons/react'
-import { StaggerReveal, StaggerItem, SectionTransition, ParallaxLayer } from '../../motion'
+import { StaggerReveal, StaggerItem } from '../../motion/primitives/StaggerReveal'
+import { SectionTransition } from '../../motion/primitives/SectionTransition'
+import { ParallaxLayer } from '../../motion/primitives/ParallaxLayer'
 
 const stagger = {
   hidden: { opacity: 0 },

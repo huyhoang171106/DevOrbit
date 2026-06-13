@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { FrameDefinition } from "../../lib/frames/frameDefinitions";
 
 interface PreviewCanvasProps {
@@ -10,7 +10,6 @@ interface PreviewCanvasProps {
 export function PreviewCanvas({ canvas, isLoading, frame }: PreviewCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const displayCanvasRef = useRef<HTMLCanvasElement>(null);
-  const [frameImg, setFrameImg] = useState<HTMLImageElement | null>(null);
 
   useEffect(() => {
     if (canvas && displayCanvasRef.current) {
@@ -20,15 +19,6 @@ export function PreviewCanvas({ canvas, isLoading, frame }: PreviewCanvasProps) 
       }
     }
   }, [canvas]);
-
-  useEffect(() => {
-    if (!frame?.overlayImage) { setFrameImg(null); return; }
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => setFrameImg(img);
-    img.onerror = () => setFrameImg(null);
-    img.src = frame.overlayImage;
-  }, [frame?.overlayImage]);
 
   return (
     <div className="orbit-card p-8">
@@ -58,10 +48,10 @@ export function PreviewCanvas({ canvas, isLoading, frame }: PreviewCanvasProps) 
             className="max-w-full h-auto shadow-xl rounded-lg"
             style={{ maxHeight: "800px" }}
           />
-        ) : frameImg && frame ? (
+        ) : frame?.overlayImage ? (
           <div className="relative w-full h-full flex items-center justify-center p-4">
             <img
-              src={frame.overlayImage!}
+              src={frame.overlayImage}
               alt="Frame"
               className="max-w-full max-h-[700px] object-contain opacity-40 rounded-lg"
             />

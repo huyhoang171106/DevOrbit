@@ -23,7 +23,10 @@ export function OrbitalGroup({ node, galaxyCenter, children }: Props) {
   const orbitSpeed = 0.03 + node.level * 0.02
 
   const setPosition = ctx ? ctx.registerPlanet(node.id) : null
-  const vec = useRef(new THREE.Vector3())
+  const vec = useRef<THREE.Vector3 | null>(null)
+  if (vec.current === null) {
+    vec.current = new THREE.Vector3()
+  }
 
   useFrame((_, delta) => {
     if (!groupRef.current) return
@@ -35,6 +38,7 @@ export function OrbitalGroup({ node, galaxyCenter, children }: Props) {
     groupRef.current.position.set(x, node.y, z)
 
     if (setPosition) {
+      if (!vec.current) return
       vec.current.set(x, node.y, z)
       setPosition(vec.current)
     }

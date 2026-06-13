@@ -121,3 +121,12 @@ export interface CandidateReviewRequest {
   techStacks?: string[]
   reviewNote?: string
 }
+
+export interface AdminNotification {
+  id: number
+  type: string
+  message: string
+  targetUrl: string | null
+  isRead: boolean
+  createdAt: string
+}

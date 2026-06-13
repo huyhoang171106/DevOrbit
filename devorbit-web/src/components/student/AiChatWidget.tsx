@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import { m as motion, AnimatePresence } from 'framer-motion'
 import { X, ChatTeardropText } from '@phosphor-icons/react'
@@ -20,14 +20,14 @@ export function AiChatWidget() {
   const isAiTutorPage = location.pathname === '/ai-tutor'
 
   // When leaving /ai-tutor, auto-open the widget
-  const prevPathRef = useState(location.pathname)
+  const prevPathRef = useRef(location.pathname)
   useEffect(() => {
-    if (prevPathRef[0] === '/ai-tutor' && location.pathname !== '/ai-tutor') {
+    if (prevPathRef.current === '/ai-tutor' && location.pathname !== '/ai-tutor') {
       setLocalOpen(true)
       setIsOpen(true)
     }
-    prevPathRef[0] = location.pathname
-  }, [location.pathname, setIsOpen])
+    prevPathRef.current = location.pathname
+  }, [location, setIsOpen])
 
   // Hide widget on /ai-tutor
   if (isAiTutorPage) return null

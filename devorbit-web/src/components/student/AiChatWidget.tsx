@@ -7,6 +7,7 @@ import {
     type WebSearchResult,
     type SubjectQaStreamStage,
 } from '../../hooks/useSubjectQa'
+import type { RoadmapResponse } from '../../hooks/useAiRoadmap'
 
 // ─── Types ───
 
@@ -23,6 +24,7 @@ export interface AiChatMessage {
     sources?: string[]
     searchResults?: WebSearchResult[]
     statusEvents?: AiChatStatusEvent[]
+    roadmap?: RoadmapResponse
 }
 
 // ─── Constants ───
@@ -446,6 +448,94 @@ function SearchResultsList({ results, isSearching }: SearchResultsListProps) {
 
 // ─── CourseBadgeRenderer ───
 
+interface RoadmapPreviewProps {
+    roadmap: RoadmapResponse
+}
+
+function RoadmapPreview({ roadmap }: RoadmapPreviewProps) {
+    const previewCourses = roadmap.recommendedCourses.slice(0, 4)
+    const remainingCourses = Math.max(roadmap.recommendedCourses.length - previewCourses.length, 0)
+    const recommendedTrack = roadmap.graduationTracks?.find((track) => track.recommended)
+
+    return (
+        <div className="mt-3 pt-3 border-t border-zinc-800/40 space-y-3">
+            <div className="flex items-center gap-2 text-zinc-400">
+                <BookOpen className="h-4 w-4 text-orbit-accent shrink-0" aria-hidden="true" />
+                <p className="text-[11px] font-bold uppercase tracking-wider">Lộ trình học tập</p>
+            </div>
+
+            {roadmap.summary && (
+                <div className="space-y-1 text-[13px] leading-relaxed text-zinc-200">
+                    <MarkdownRenderer text={roadmap.summary} />
+                </div>
+            )}
+
+            {previewCourses.length > 0 && (
+                <div className="space-y-2">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Môn nổi bật</p>
+                    <div className="space-y-2">
+                        {previewCourses.map((course) => (
+                            <div
+                                key={course.courseCode}
+                                className="flex gap-2 border border-zinc-800/50 rounded-xl px-3 py-2 bg-zinc-950/25"
+                            >
+                                <CheckCircle
+                                    className={`mt-0.5 h-4 w-4 shrink-0 ${course.isMandatory ? 'text-emerald-400' : 'text-orbit-accent'}`}
+                                    weight="fill"
+                                    aria-hidden="true"
+                                />
+                                <div className="min-w-0 flex-1">
+                                    <div className="flex flex-wrap items-center gap-1.5 text-[13px] leading-snug">
+                                        <span className="font-semibold text-zinc-100">{course.courseCode}</span>
+                                        <span className="text-zinc-400">·</span>
+                                        <span className="text-zinc-200">{course.courseName}</span>
+                                        <span className="rounded-full border border-zinc-800/60 px-1.5 py-0.5 text-[10px] text-zinc-400">
+                                            {course.semester ? `HK${course.semester}` : 'HK?'}
+                                        </span>
+                                        <span className="rounded-full border border-zinc-800/60 px-1.5 py-0.5 text-[10px] text-zinc-400">
+                                            {course.credits} TC
+                                        </span>
+                                    </div>
+                                    <div className="mt-1 text-[12px] leading-relaxed text-zinc-400">
+                                        {course.reasoning}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    {remainingCourses > 0 && (
+                        <p className="text-[11px] text-zinc-500">+ {remainingCourses} môn khác trong roadmap</p>
+                    )}
+                </div>
+            )}
+
+            {recommendedTrack && (
+                <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Hướng tốt nghiệp</span>
+                    <span className="rounded-full border border-zinc-800/60 bg-zinc-900/40 px-2 py-1 text-[11px] text-zinc-200">
+                        {recommendedTrack.name}
+                    </span>
+                </div>
+            )}
+
+            {roadmap.electivePools.length > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5">
+                    <Database className="h-3.5 w-3.5 text-zinc-500 shrink-0" aria-hidden="true" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Nhóm tự chọn</span>
+                    {roadmap.electivePools.map((pool) => (
+                        <span
+                            key={pool.poolId}
+                            className="rounded-full border border-zinc-800/60 bg-zinc-900/40 px-2 py-1 text-[11px] text-zinc-300"
+                        >
+                            {pool.poolName}
+                        </span>
+                    ))}
+                </div>
+            )}
+        </div>
+    )
+}
+
 interface CourseBadgeRendererProps {
     content: string
 }
@@ -655,6 +745,7 @@ export const ChatMessage = memo(function ChatMessage({
     const isAi = message.sender === 'ai'
     const showSources = isAi && message.sources && message.sources.length > 0
     const showSearchResults = isAi && ((message.searchResults && message.searchResults.length > 0) || (isStreaming && isWebSearching(message.statusEvents)))
+    const showRoadmap = isAi && Boolean(message.roadmap)
 
     return (
         <div
@@ -703,6 +794,8 @@ export const ChatMessage = memo(function ChatMessage({
                         <CourseBadgeRenderer content={message.content} />
                     </div>
                 )}
+
+                {showRoadmap && message.roadmap && <RoadmapPreview roadmap={message.roadmap} />}
 
                 {showSources && <SourcesList sources={message.sources!} />}
 
@@ -918,6 +1011,7 @@ export function AiChatWidget() {
                                     content: msg.content || response.answer,
                                     sources: response.sources,
                                     searchResults: mergeSearchResults(msg.searchResults ?? [], response.searchResults ?? []),
+                                    roadmap: response.roadmap,
                                 }
                             }),
                         )
@@ -966,6 +1060,7 @@ export function AiChatWidget() {
                                 content: res.answer,
                                 sources: res.sources,
                                 searchResults: res.searchResults ?? [],
+                                roadmap: res.roadmap,
                             }
                         }),
                     )

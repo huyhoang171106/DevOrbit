@@ -5,11 +5,13 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import vn.edu.uit.devorbit_api.constant.CurriculumConstants;
 import vn.edu.uit.devorbit_api.dto.publicapi.*;
 import vn.edu.uit.devorbit_api.entity.*;
+import vn.edu.uit.devorbit_api.event.NotificationEvent;
 import vn.edu.uit.devorbit_api.repository.*;
 import vn.edu.uit.devorbit_api.service.ai.CrawlerService;
 import vn.edu.uit.devorbit_api.service.ai.OpenCodeAiService;
@@ -48,6 +50,7 @@ public class SubjectQaService {
     private final KnowledgeRetrievalService knowledgeRetrievalService;
     private final ObjectMapper objectMapper;
     private final Executor subjectQaStreamExecutor;
+    private final ApplicationEventPublisher eventPublisher;
 
     private static final Logger log = LoggerFactory.getLogger(SubjectQaService.class);
     private static final Pattern COURSE_CODE_PATTERN = Pattern.compile("\\b([A-Z]{2,4}\\d{2,4})\\b");
@@ -64,7 +67,8 @@ public class SubjectQaService {
             CourseKnowledgeBootstrapService courseKnowledgeBootstrapService,
             KnowledgeRetrievalService knowledgeRetrievalService,
             ObjectMapper objectMapper,
-            @Qualifier("subjectQaStreamExecutor") Executor subjectQaStreamExecutor) {
+            @Qualifier("subjectQaStreamExecutor") Executor subjectQaStreamExecutor,
+            ApplicationEventPublisher eventPublisher) {
         this.courseRepository = courseRepository;
         this.githubRepoRepository = githubRepoRepository;
         this.chatSessionRepository = chatSessionRepository;
@@ -77,6 +81,7 @@ public class SubjectQaService {
         this.knowledgeRetrievalService = knowledgeRetrievalService;
         this.objectMapper = objectMapper;
         this.subjectQaStreamExecutor = subjectQaStreamExecutor;
+        this.eventPublisher = eventPublisher;
     }
 
     // ─── Progress Sink ───
@@ -110,14 +115,26 @@ public class SubjectQaService {
             ChatSession session = ChatSession.builder()
                 .title(userMessage.length() > 30 ? userMessage.substring(0, 27) + "..." : userMessage)
                 .build();
-            return chatSessionRepository.save(session);
+            ChatSession saved = chatSessionRepository.save(session);
+            eventPublisher.publishEvent(new NotificationEvent(
+                "AI_CHAT",
+                "Phiên chat AI mới: " + saved.getTitle(),
+                "/admin/chat?sessionId=" + saved.getId()
+            ));
+            return saved;
         }
         return chatSessionRepository.findById(sessionId)
             .orElseGet(() -> {
                 ChatSession newS = ChatSession.builder()
                     .title(userMessage.length() > 30 ? userMessage.substring(0, 27) + "..." : userMessage)
                     .build();
-                return chatSessionRepository.save(newS);
+                ChatSession saved = chatSessionRepository.save(newS);
+                eventPublisher.publishEvent(new NotificationEvent(
+                    "AI_CHAT",
+                    "Phiên chat AI mới: " + saved.getTitle(),
+                "/admin/chat?sessionId=" + saved.getId()
+                ));
+                return saved;
             });
     }
 

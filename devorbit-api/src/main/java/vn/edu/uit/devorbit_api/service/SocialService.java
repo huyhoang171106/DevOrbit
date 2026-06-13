@@ -1,10 +1,12 @@
 package vn.edu.uit.devorbit_api.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.uit.devorbit_api.dto.community.*;
 import vn.edu.uit.devorbit_api.entity.*;
+import vn.edu.uit.devorbit_api.event.NotificationEvent;
 import vn.edu.uit.devorbit_api.exception.BadRequestException;
 import vn.edu.uit.devorbit_api.exception.NotFoundException;
 import vn.edu.uit.devorbit_api.repository.*;
@@ -15,6 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SocialService {
 
+    private final ApplicationEventPublisher eventPublisher;
     private final RepoReviewRepository repoReviewRepository;
     private final RepoVoteRepository repoVoteRepository;
     private final CourseReviewRepository courseReviewRepository;
@@ -31,7 +34,13 @@ public class SocialService {
                 .orElseGet(() -> RepoReview.builder().repo(repo).student(student).build());
         review.setRating(request.rating());
         review.setComment(request.comment());
-        return toRepoReviewResponse(repoReviewRepository.save(review));
+        RepoReview saved = repoReviewRepository.save(review);
+        eventPublisher.publishEvent(new NotificationEvent(
+            "REVIEW_REPO",
+            "Đánh giá mới cho repository: " + repo.getDisplayName(),
+            "/admin/reviews?tab=repo"
+        ));
+        return toRepoReviewResponse(saved);
     }
 
     @Transactional
@@ -87,7 +96,13 @@ public class SocialService {
                 .orElseGet(() -> CourseReview.builder().course(course).student(student).build());
         review.setRating(request.rating());
         review.setComment(request.comment());
-        return toCourseReviewResponse(courseReviewRepository.save(review));
+        CourseReview saved = courseReviewRepository.save(review);
+        eventPublisher.publishEvent(new NotificationEvent(
+            "REVIEW_COURSE",
+            "Đánh giá mới cho môn học: " + course.getTenMH(),
+            "/admin/reviews?tab=course"
+        ));
+        return toCourseReviewResponse(saved);
     }
 
     @Transactional

@@ -571,7 +571,7 @@ export function GpaCalculatorPage() {
       <div className="relative z-10 mx-auto grid w-full max-w-[1440px] gap-8 px-6 py-10 md:grid-cols-[minmax(0,1fr)_360px] md:px-10 lg:px-14">
         <div>
           <div className="mb-8 flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-[8px] border border-orbit-accent/25 bg-orbit-accent/10 text-orbit-accent">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-orbit-accent/25 bg-orbit-accent/10 text-orbit-accent">
               <Calculator className="h-5 w-5" aria-hidden="true" />
             </div>
             <div>
@@ -587,7 +587,7 @@ export function GpaCalculatorPage() {
           </p>
 
           {showDraftRestore && (
-            <div className="mb-6 rounded-[8px] border border-orbit-accent/30 bg-orbit-accent/10 p-4 shadow-diffusion">
+            <div className="mb-6 rounded-2xl border border-orbit-accent/30 bg-orbit-accent/10 p-4 shadow-diffusion">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="text-[14px] font-semibold leading-6 text-orbit-text">
                   Có bản nháp đã lưu{draftSavedTime ? ` lúc ${draftSavedTime}` : ''}. Khôi phục để tiếp tục, hoặc bỏ qua để nhập mới.
@@ -596,14 +596,14 @@ export function GpaCalculatorPage() {
                   <button
                     type="button"
                     onClick={restoreDraft}
-                    className="inline-flex h-10 items-center justify-center rounded-[8px] bg-orbit-accent px-4 text-[12px] font-bold uppercase tracking-[0.12em] text-zinc-950 transition-colors hover:bg-emerald-300"
+                    className="inline-flex h-10 items-center justify-center rounded-2xl bg-orbit-accent px-4 text-[12px] font-bold uppercase tracking-[0.12em] text-zinc-950 transition-colors hover:bg-emerald-300"
                   >
                     Khôi phục
                   </button>
                   <button
                     type="button"
                     onClick={dismissDraftNotice}
-                    className="inline-flex h-10 items-center justify-center rounded-[8px] border border-orbit-border px-4 text-[12px] font-bold uppercase tracking-[0.12em] text-orbit-text-secondary transition-colors hover:border-orbit-accent/60 hover:text-orbit-text"
+                    className="inline-flex h-10 items-center justify-center rounded-2xl border border-orbit-border px-4 text-[12px] font-bold uppercase tracking-[0.12em] text-orbit-text-secondary transition-colors hover:border-orbit-accent/60 hover:text-orbit-text"
                   >
                     Bỏ qua
                   </button>
@@ -613,14 +613,14 @@ export function GpaCalculatorPage() {
           )}
 
           <div className="mb-6 flex flex-wrap gap-3">
-            <div className="inline-flex rounded-[8px] border border-orbit-border bg-orbit-surface p-1 shadow-diffusion">
+            <div className="inline-flex rounded-2xl border border-orbit-border bg-orbit-surface p-1 shadow-diffusion">
               <button
                 type="button"
                 onClick={() => {
                   markUnsaved()
                   setCalculationMode('semester')
                 }}
-                className={`h-10 rounded-[6px] px-4 text-[13px] font-bold transition-colors ${
+                className={`inline-flex h-10 items-center justify-center rounded-2xl px-4 text-[13px] font-bold transition-colors ${
                   calculationMode === 'semester'
                     ? 'bg-orbit-accent text-zinc-950'
                     : 'text-orbit-text-secondary hover:text-orbit-text'
@@ -634,7 +634,7 @@ export function GpaCalculatorPage() {
                   markUnsaved()
                   setCalculationMode('cumulative')
                 }}
-                className={`h-10 rounded-[6px] px-4 text-[13px] font-bold transition-colors ${
+                className={`inline-flex h-10 items-center justify-center rounded-2xl px-4 text-[13px] font-bold transition-colors ${
                   calculationMode === 'cumulative'
                     ? 'bg-orbit-accent text-zinc-950'
                     : 'text-orbit-text-secondary hover:text-orbit-text'
@@ -648,7 +648,7 @@ export function GpaCalculatorPage() {
                   markUnsaved()
                   setCalculationMode('goal')
                 }}
-                className={`h-10 rounded-[6px] px-4 text-[13px] font-bold transition-colors ${
+                className={`inline-flex h-10 items-center justify-center rounded-2xl px-4 text-[13px] font-bold transition-colors ${
                   calculationMode === 'goal'
                     ? 'bg-orbit-accent text-zinc-950'
                     : 'text-orbit-text-secondary hover:text-orbit-text'
@@ -660,10 +660,10 @@ export function GpaCalculatorPage() {
           </div>
 
           {(calculationMode === 'cumulative' || calculationMode === 'goal') && (
-            <div className="mb-6 rounded-[8px] border border-orbit-border bg-orbit-surface p-4 shadow-diffusion">
+            <div className="mb-6 rounded-2xl border border-orbit-border bg-orbit-surface p-4 shadow-diffusion hover:border-orbit-accent/20 shadow-glow transition-all duration-500">
               <div className={`grid gap-4 ${calculationMode === 'goal' ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
                 <div>
-                  <label className="mb-2 block text-[12px] font-bold uppercase tracking-[0.12em] text-orbit-text-muted" htmlFor="current-gpa">
+                  <label className="mb-2 block text-[12px] font-bold uppercase tracking-[0.12em] text-orbit-text text-center" htmlFor="current-gpa">
                     GPA hiện tại
                   </label>
                   <input
@@ -678,11 +678,11 @@ export function GpaCalculatorPage() {
                       setCurrentGpa(event.target.value)
                     }}
                     placeholder="7.50"
-                    className="h-11 w-full rounded-[8px] border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
+                    className="h-11 w-full rounded-2xl border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text text-center outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-[12px] font-bold uppercase tracking-[0.12em] text-orbit-text-muted" htmlFor="completed-credits">
+                  <label className="mb-2 block text-[12px] font-bold uppercase tracking-[0.12em] text-orbit-text text-center" htmlFor="completed-credits">
                     Tín chỉ đã tích lũy
                   </label>
                   <input
@@ -696,12 +696,12 @@ export function GpaCalculatorPage() {
                       setCompletedCredits(event.target.value)
                     }}
                     placeholder="60"
-                    className="h-11 w-full rounded-[8px] border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
+                    className="h-11 w-full rounded-2xl border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text text-center outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
                   />
                 </div>
                 {calculationMode === 'goal' && (
                   <div>
-                    <label className="mb-2 block text-[12px] font-bold uppercase tracking-[0.12em] text-orbit-text-muted" htmlFor="target-gpa">
+                    <label className="mb-2 block text-[12px] font-bold uppercase tracking-[0.12em] text-orbit-text text-center" htmlFor="target-gpa">
                       GPA mục tiêu
                     </label>
                     <input
@@ -716,7 +716,7 @@ export function GpaCalculatorPage() {
                         setTargetGpa(event.target.value)
                       }}
                       placeholder="8.00"
-                      className="h-11 w-full rounded-[8px] border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
+                      className="h-11 w-full rounded-2xl border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text text-center outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
                     />
                   </div>
                 )}
@@ -724,7 +724,7 @@ export function GpaCalculatorPage() {
             </div>
           )}
 
-          <div className="mb-6 rounded-[8px] border border-orbit-border bg-orbit-surface p-4 shadow-diffusion">
+          <div className="mb-6 rounded-2xl border border-orbit-border bg-orbit-surface p-4 shadow-diffusion hover:border-orbit-accent/20 shadow-glow transition-all duration-500">
             <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_220px] md:items-end">
               <div>
                 <p className="text-[12px] font-black uppercase tracking-[0.14em] text-orbit-accent">Preset theo học kỳ</p>
@@ -746,7 +746,7 @@ export function GpaCalculatorPage() {
                     markUnsaved()
                     setSelectedSemester(event.target.value)
                   }}
-                  className="h-11 w-full rounded-[8px] border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text outline-none transition-colors focus:border-orbit-accent/60"
+                  className="h-11 w-full rounded-2xl border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text outline-none transition-colors focus:border-orbit-accent/60"
                 >
                   {semesters.map((semester) => (
                     <option key={semester} value={semester}>Học kỳ {semester}</option>
@@ -758,7 +758,7 @@ export function GpaCalculatorPage() {
                   type="button"
                   onClick={replaceWithSemesterPreset}
                   disabled={semesterCourses.length === 0}
-                  className="inline-flex h-11 items-center justify-center rounded-[8px] bg-orbit-accent px-5 text-[13px] font-bold uppercase tracking-[0.12em] text-zinc-950 transition-colors hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex h-11 items-center justify-center rounded-2xl bg-orbit-accent px-5 text-[13px] font-bold uppercase tracking-[0.12em] text-zinc-950 transition-colors hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Thay thế danh sách
                 </button>
@@ -766,7 +766,7 @@ export function GpaCalculatorPage() {
                   type="button"
                   onClick={mergeSemesterPreset}
                   disabled={semesterCourses.length === 0}
-                  className="inline-flex h-11 items-center justify-center rounded-[8px] border border-orbit-border px-5 text-[13px] font-bold uppercase tracking-[0.12em] text-orbit-text-secondary transition-colors hover:border-orbit-accent/60 hover:text-orbit-text disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex h-11 items-center justify-center rounded-2xl border border-orbit-border px-5 text-[13px] font-bold uppercase tracking-[0.12em] text-orbit-text-secondary transition-colors hover:border-orbit-accent/60 hover:text-orbit-text disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Gộp vào danh sách
                 </button>
@@ -774,8 +774,8 @@ export function GpaCalculatorPage() {
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-[8px] border border-orbit-border bg-orbit-surface shadow-diffusion">
-            <div className="grid grid-cols-[minmax(180px,1fr)_96px_128px_104px] gap-3 border-b border-orbit-border bg-orbit-elevated/40 px-4 py-3 text-[12px] font-black uppercase tracking-[0.12em] text-orbit-text-muted">
+          <div className="overflow-hidden rounded-2xl border border-orbit-border bg-orbit-surface shadow-diffusion hover:border-orbit-accent/20 shadow-glow transition-all duration-500">
+            <div className="grid grid-cols-[minmax(180px,1fr)_96px_128px_104px] gap-3 border-b border-orbit-border bg-orbit-elevated/40 px-4 py-3 text-[12px] font-black uppercase tracking-[0.12em] text-orbit-text text-center">
               <span>Môn học</span>
               <span>Tín chỉ</span>
               <span>Điểm hệ 10</span>
@@ -801,7 +801,7 @@ export function GpaCalculatorPage() {
                         value={course.name}
                         onChange={(event) => updateCourse(course.id, 'name', event.target.value)}
                         placeholder={`Môn ${index + 1}`}
-                        className="h-11 w-full rounded-[8px] border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
+                        className="h-11 w-full rounded-2xl border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
                       />
                     </div>
 
@@ -814,7 +814,7 @@ export function GpaCalculatorPage() {
                         step="0.5"
                         value={course.credits}
                         onChange={(event) => updateCourse(course.id, 'credits', event.target.value)}
-                        className={`h-11 w-full rounded-[8px] border px-3 text-[14px] text-orbit-text outline-none transition-colors ${
+                        className={`h-11 w-full rounded-2xl border px-3 text-[14px] text-orbit-text outline-none transition-colors ${
                           validation.creditsReason ? warningInputClass : defaultInputClass
                         }`}
                       />
@@ -833,7 +833,7 @@ export function GpaCalculatorPage() {
                         step="0.1"
                         value={course.grade10}
                         onChange={(event) => updateCourse(course.id, 'grade10', event.target.value)}
-                        className={`h-11 w-full rounded-[8px] border px-3 text-[14px] text-orbit-text outline-none transition-colors ${
+                        className={`h-11 w-full rounded-2xl border px-3 text-[14px] text-orbit-text outline-none transition-colors ${
                           validation.gradeReason ? warningInputClass : defaultInputClass
                         }`}
                       />
@@ -846,7 +846,7 @@ export function GpaCalculatorPage() {
                       <button
                         type="button"
                         onClick={() => duplicateCourse(course.id)}
-                        className="flex h-11 w-11 items-center justify-center rounded-[8px] border border-orbit-border text-orbit-text-muted transition-colors hover:border-orbit-accent/60 hover:text-orbit-accent"
+                        className="flex h-11 w-11 items-center justify-center rounded-2xl border border-orbit-border text-orbit-text-muted transition-colors hover:border-orbit-accent/60 hover:text-orbit-accent"
                         aria-label="Nhân bản dòng"
                       >
                         <Copy className="h-4 w-4" aria-hidden="true" />
@@ -854,7 +854,7 @@ export function GpaCalculatorPage() {
                       <button
                         type="button"
                         onClick={() => removeCourse(course.id)}
-                        className="flex h-11 w-11 items-center justify-center rounded-[8px] border border-orbit-border text-orbit-text-muted transition-colors hover:border-rose-300/60 hover:text-rose-300 disabled:cursor-not-allowed disabled:opacity-40"
+                        className="flex h-11 w-11 items-center justify-center rounded-2xl border border-orbit-border text-orbit-text-muted transition-colors hover:border-rose-300/60 hover:text-rose-300 disabled:cursor-not-allowed disabled:opacity-40"
                         disabled={courses.length === 1}
                         aria-label="Xóa môn"
                       >
@@ -871,7 +871,7 @@ export function GpaCalculatorPage() {
             <button
               type="button"
               onClick={addCourse}
-              className="inline-flex h-11 items-center gap-2 rounded-[8px] bg-orbit-accent px-5 text-[13px] font-bold uppercase tracking-[0.12em] text-zinc-950 transition-colors hover:bg-emerald-300"
+              className="inline-flex h-11 items-center gap-2 rounded-2xl bg-orbit-accent px-5 text-[13px] font-bold uppercase tracking-[0.12em] text-zinc-950 transition-colors hover:bg-emerald-300"
             >
               <Plus className="h-4 w-4" aria-hidden="true" />
               Thêm môn
@@ -879,7 +879,7 @@ export function GpaCalculatorPage() {
             <button
               type="button"
               onClick={addFiveCourses}
-              className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-orbit-border px-4 text-[13px] font-bold uppercase tracking-[0.12em] text-orbit-text-secondary transition-colors hover:border-orbit-accent/60 hover:text-orbit-text"
+              className="inline-flex h-11 items-center gap-2 rounded-2xl border border-orbit-border px-4 text-[13px] font-bold uppercase tracking-[0.12em] text-orbit-text-secondary transition-colors hover:border-orbit-accent/60 hover:text-orbit-text"
             >
               <Plus className="h-4 w-4" aria-hidden="true" />
               Thêm 5 môn
@@ -887,7 +887,7 @@ export function GpaCalculatorPage() {
             <button
               type="button"
               onClick={clearCourses}
-              className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-orbit-border px-4 text-[13px] font-bold uppercase tracking-[0.12em] text-orbit-text-secondary transition-colors hover:border-rose-300/60 hover:text-rose-300"
+              className="inline-flex h-11 items-center gap-2 rounded-2xl border border-orbit-border px-4 text-[13px] font-bold uppercase tracking-[0.12em] text-orbit-text-secondary transition-colors hover:border-rose-300/60 hover:text-rose-300"
             >
               <Trash2 className="h-4 w-4" aria-hidden="true" />
               Xóa tất cả
@@ -895,7 +895,7 @@ export function GpaCalculatorPage() {
             <button
               type="button"
               onClick={resetCourses}
-              className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-orbit-border px-4 text-[13px] font-bold uppercase tracking-[0.12em] text-orbit-text-secondary transition-colors hover:border-orbit-accent/60 hover:text-orbit-text"
+              className="inline-flex h-11 items-center gap-2 rounded-2xl border border-orbit-border px-4 text-[13px] font-bold uppercase tracking-[0.12em] text-orbit-text-secondary transition-colors hover:border-orbit-accent/60 hover:text-orbit-text"
             >
               <RotateCcw className="h-4 w-4" aria-hidden="true" />
               Reset mẫu
@@ -903,10 +903,10 @@ export function GpaCalculatorPage() {
           </div>
         </div>
 
-        <aside className="h-fit rounded-[8px] border border-orbit-border bg-orbit-surface p-6 shadow-diffusion md:sticky md:top-24">
+        <aside className="h-fit rounded-2xl border border-orbit-border bg-orbit-surface p-6 shadow-diffusion hover:border-orbit-accent/20 shadow-glow transition-all duration-500 md:sticky md:top-24">
           <p className="text-[12px] font-black uppercase tracking-[0.16em] text-orbit-text-muted">Kết quả tạm tính</p>
 
-          <div className="mt-6 rounded-[8px] border border-orbit-accent/20 bg-orbit-accent/10 p-5">
+          <div className="mt-6 rounded-2xl border border-orbit-accent/20 bg-orbit-accent/10 p-5">
             <p className="text-[13px] font-bold text-orbit-accent">GPA học kỳ</p>
             <p className="mt-2 font-heading text-[56px] font-black leading-none text-orbit-text">
               {formatNumber(summary.average10)}
@@ -957,22 +957,22 @@ export function GpaCalculatorPage() {
           </dl>
 
           {summary.ignoredRows > 0 && (
-            <p className="mt-4 rounded-[8px] border border-amber-300/30 bg-amber-300/10 p-3 text-[13px] leading-6 text-amber-100">
+            <p className="mt-4 rounded-2xl border border-amber-300/30 bg-amber-300/10 p-3 text-[13px] leading-6 text-amber-100">
               Đang bỏ qua {summary.ignoredRows} dòng chưa hợp lệ.
             </p>
           )}
 
           {calculationMode === 'cumulative' && !cumulativeSummary.valid && (
-            <p className="mt-4 rounded-[8px] border border-orbit-border bg-orbit-bg p-3 text-[13px] leading-6 text-orbit-text-secondary">
+            <p className="mt-4 rounded-2xl border border-orbit-border bg-orbit-bg p-3 text-[13px] leading-6 text-orbit-text-secondary">
               Nhập GPA hiện tại, tín chỉ đã tích lũy và điểm kỳ này hợp lệ để ước lượng GPA mới.
             </p>
           )}
 
           {calculationMode === 'goal' && (
-            <div className="mt-4 rounded-[8px] border border-orbit-border bg-orbit-bg p-3 text-[13px] leading-6 text-orbit-text-secondary">
+            <div className="mt-4 rounded-2xl border border-orbit-border bg-orbit-bg p-3 text-[13px] leading-6 text-orbit-text-secondary">
               <p>{goalGuidance(goalSummary.status)}</p>
               {goalSummary.whatIf?.projectedTermGpa !== null && goalSummary.whatIf?.projectedTermGpa !== undefined && (
-                <div className="mt-4 rounded-[8px] border border-orbit-border bg-orbit-surface/60 p-3">
+                <div className="mt-4 rounded-2xl border border-orbit-border bg-orbit-surface/60 p-3">
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-orbit-text-secondary">GPA học kỳ dự kiến</span>
                     <span className="font-bold text-orbit-text">{formatNumber(goalSummary.whatIf.projectedTermGpa)}</span>
@@ -1010,7 +1010,7 @@ export function GpaCalculatorPage() {
                           value={projectedGrades[course.id] ?? ''}
                           onChange={(event) => updateProjectedGrade(course.id, event.target.value)}
                           placeholder="0-10"
-                          className="h-10 w-full rounded-[8px] border border-orbit-border bg-orbit-bg px-3 text-[14px] font-bold text-orbit-text outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
+                          className="h-10 w-full rounded-2xl border border-orbit-border bg-orbit-bg px-3 text-[14px] font-bold text-orbit-text outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
                         />
                       </div>
                     </div>
@@ -1020,7 +1020,7 @@ export function GpaCalculatorPage() {
             </div>
           )}
 
-          <div className="mt-4 rounded-[8px] border border-orbit-border bg-orbit-bg p-3 text-[13px] leading-6 text-orbit-text-secondary">
+          <div className="mt-4 rounded-2xl border border-orbit-border bg-orbit-bg p-3 text-[13px] leading-6 text-orbit-text-secondary">
             <p>
               {hasUnsavedChanges
                 ? 'Có thay đổi chưa lưu.'
@@ -1032,7 +1032,7 @@ export function GpaCalculatorPage() {
               <button
                 type="button"
                 onClick={saveDraft}
-                className="inline-flex h-9 w-full items-center justify-center rounded-[8px] bg-orbit-accent px-3 text-[12px] font-bold uppercase tracking-[0.12em] text-zinc-950 transition-colors hover:bg-emerald-300"
+                className="inline-flex h-9 w-full items-center justify-center rounded-2xl bg-orbit-accent px-3 text-[12px] font-bold uppercase tracking-[0.12em] text-zinc-950 transition-colors hover:bg-emerald-300"
               >
                 Lưu bản nháp
               </button>
@@ -1040,7 +1040,7 @@ export function GpaCalculatorPage() {
                 type="button"
                 onClick={clearSavedDraft}
                 disabled={!availableDraft}
-                className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-[8px] border border-orbit-border px-3 text-[12px] font-bold uppercase tracking-[0.12em] text-orbit-text-secondary transition-colors hover:border-rose-300/60 hover:text-rose-300 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-2xl border border-orbit-border px-3 text-[12px] font-bold uppercase tracking-[0.12em] text-orbit-text-secondary transition-colors hover:border-rose-300/60 hover:text-rose-300 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Trash2 className="h-4 w-4" aria-hidden="true" />
                 Xóa bản nháp
@@ -1048,7 +1048,7 @@ export function GpaCalculatorPage() {
             </div>
           </div>
 
-          <div className="mt-6 rounded-[8px] border border-orbit-border bg-orbit-bg p-4 text-[13px] leading-6 text-orbit-text-secondary">
+          <div className="mt-6 rounded-2xl border border-orbit-border bg-orbit-bg p-4 text-[13px] leading-6 text-orbit-text-secondary">
             Công thức: tổng của <span className="font-semibold text-orbit-text">điểm x tín chỉ</span> chia cho tổng tín chỉ hợp lệ. Với mục tiêu GPA, app tính ngược điểm trung bình kỳ này cần đạt. Kết quả chỉ mang tính tham khảo.
           </div>
         </aside>

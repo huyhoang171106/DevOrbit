@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { AdminPageLayout } from '../../components/admin/shared/AdminPageLayout'
 import { AdminSpinner } from '../../components/admin/shared/AdminSpinner'
 import { AdminErrorBanner } from '../../components/admin/shared/AdminErrorBanner'
@@ -10,11 +11,20 @@ import type { ChatSessionAdmin } from '../../types/admin'
 
 export function ChatMonitorPage() {
   const [selectedSession, setSelectedSession] = useState<ChatSessionAdmin | null>(null)
+  const [searchParams] = useSearchParams()
 
   const { data: sessions, loading, error, refetch } = useAdminFetch(
     (t) => adminApi.getChatSessions(t),
     [],
   )
+
+  useEffect(() => {
+    const sessionId = searchParams.get('sessionId')
+    if (sessionId && sessions && sessions.length > 0) {
+      const match = sessions.find((s) => s.id === sessionId)
+      if (match) setSelectedSession(match)
+    }
+  }, [searchParams, sessions])
 
   const { data: messages, loading: loadingMessages } = useAdminFetch(
     (t) => selectedSession ? adminApi.getChatMessages(t, selectedSession.id) : Promise.resolve([]),

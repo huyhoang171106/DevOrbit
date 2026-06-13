@@ -9,7 +9,7 @@ import { CourseKnowledgeGraph } from '../../components/student/CourseKnowledgeGr
 import { ReviewSection } from '../../components/student/ReviewSection'
 import { useCourseReviews } from '../../hooks/useCommunity'
 import type { RepoSummary, CourseDetail, StudentBookmark } from '../../types/api'
-import { ArrowLeft, GraduationCap, BookOpen, Code, Tag, Building, Clock, Bookmark, BookmarkSimple, ShareNetwork, Sparkle, Stack, WarningCircle } from '@phosphor-icons/react'
+import { ArrowLeft, GraduationCap, BookOpen, Code, Tag, Building, Clock, Bookmark, BookmarkSimple, ShareNetwork, Sparkle, Stack, WarningCircle, X, Check, Copy } from '@phosphor-icons/react'
 import { StaggerReveal, StaggerItem } from '../../motion/primitives/StaggerReveal'
 import { SectionTransition } from '../../motion/primitives/SectionTransition'
 import { ParallaxLayer } from '../../motion/primitives/ParallaxLayer'
@@ -72,6 +72,26 @@ export function CourseDetailPage() {
   const [bookmarking, setBookmarking] = useState(false)
   const [bookmarkError, setBookmarkError] = useState<string | null>(null)
   const [bookmarkId, setBookmarkId] = useState<number | null>(null)
+  const [shareDialogOpen, setShareDialogOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  const shareUrl = courseId ? `${window.location.origin}/courses/${courseId}` : ''
+
+  function handleCopyLink() {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }).catch(() => {})
+  }
+
+  function handleNativeShare() {
+    if (!('share' in navigator) || !course) return
+    navigator.share({
+      title: course.name,
+      text: `${course.name} - ${course.code}`,
+      url: shareUrl,
+    }).then(() => setShareDialogOpen(false)).catch(() => {})
+  }
 
   useEffect(() => {
     if (!courseId) return
@@ -203,6 +223,7 @@ export function CourseDetailPage() {
   }
 
   return (
+    <>
     <SectionTransition atmosphere="deep" className="relative w-full min-h-screen pb-32 gpu">
       {/* Ambient background with parallax */}
       <ParallaxLayer speed={0.1} range={80}>
@@ -468,7 +489,7 @@ export function CourseDetailPage() {
                 {bookmarkError && (
                   <p className="text-[11px] text-rose-400 font-medium px-2">{bookmarkError}</p>
                 )}
-                <button className="btn-secondary justify-start px-6 py-4 text-[12px] group">
+                <button onClick={() => setShareDialogOpen(true)} className="btn-secondary justify-start px-6 py-4 text-[12px] group">
                   <ShareNetwork className="h-4 w-4 text-orbit-text-muted group-hover:text-orbit-accent transition-colors" weight="regular" />
                   Chia sẻ Repository
                 </button>
@@ -478,5 +499,39 @@ export function CourseDetailPage() {
         </div>
       </div>
     </SectionTransition>
+
+    {/* Share Dialog */}
+    {shareDialogOpen && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setShareDialogOpen(false)}>
+        <div className="orbit-card w-full max-w-md p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="heading-5 text-orbit-text">Chia sẻ Repository</h3>
+            <button onClick={() => setShareDialogOpen(false)} className="text-orbit-text-muted hover:text-orbit-text transition-colors">
+              <X className="h-5 w-5" weight="bold" />
+            </button>
+          </div>
+          <div className="space-y-4">
+            <div className="p-4 rounded-2xl bg-orbit-surface border border-orbit-border break-all text-[13px] text-orbit-text-muted select-all">
+              {shareUrl}
+            </div>
+            <div className="flex gap-3">
+              <button onClick={handleCopyLink} className="btn-primary flex-1 justify-center py-3 text-[13px]">
+                {copied ? (
+                  <><Check className="h-4 w-4" weight="bold" /> Đã sao chép</>
+                ) : (
+                  <><Copy className="h-4 w-4" weight="bold" /> Sao chép liên kết</>
+                )}
+              </button>
+              {'share' in navigator && (
+                <button onClick={handleNativeShare} className="btn-secondary justify-center py-3 text-[13px] px-4">
+                  <ShareNetwork className="h-4 w-4" weight="bold" />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+  </>
   )
 }

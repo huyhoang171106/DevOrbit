@@ -4,6 +4,7 @@ import {
   streamSubjectQa,
   type WebSearchResult,
 } from '../../hooks/useSubjectQa'
+import type { RoadmapResponse } from '../../hooks/useAiRoadmap'
 
 // ─── Shared Types ───
 
@@ -20,6 +21,7 @@ export interface AiChatMessage {
   sources?: string[]
   searchResults?: WebSearchResult[]
   statusEvents?: AiChatStatusEvent[]
+  roadmap?: RoadmapResponse
 }
 
 // ─── Context Value ───
@@ -220,6 +222,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
                   content: msg.content || response.answer,
                   sources: response.sources,
                   searchResults: mergeSearchResults(msg.searchResults ?? [], response.searchResults ?? []),
+                  roadmap: response.roadmap,
                 }
               }),
             )
@@ -266,6 +269,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
                 content: res.answer,
                 sources: res.sources,
                 searchResults: res.searchResults ?? [],
+                roadmap: res.roadmap,
               }
             }),
           )

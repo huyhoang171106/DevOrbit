@@ -164,7 +164,7 @@ function expandKeywords(keyword: string, intent: QueryIntent): string[] {
     }
   }
   for (const [key, expansions] of Object.entries(expansionMap)) {
-    if (key.includes(' ') && norm.includes(key)) {
+    if (/\s/.test(key) && hasPhrase(norm, key)) {
       for (const exp of expansions) add(exp)
     }
   }
@@ -180,7 +180,15 @@ function fieldMatchScore(text: string, keyword: string): number {
   if (/^[a-z0-9]+$/i.test(kw)) {
     return new RegExp(`\\b${escapeRegex(kw)}\\b`).test(lower) ? 1 : 0
   }
-  return lower.includes(kw) ? 1 : 0
+  return containsText(lower, kw) ? 1 : 0
+}
+
+function containsText(value: string, keyword: string): boolean {
+  return value.indexOf(keyword) !== -1
+}
+
+function hasPhrase(value: string, phrase: string): boolean {
+  return new RegExp(escapeRegex(phrase)).test(value)
 }
 
 function matchScoreAll(text: string, keywords: string[]): number {
@@ -270,10 +278,11 @@ export function searchCourses(
   const results: SearchCourseResult[] = []
   const normQuery = normalizeText(query)
   const queryTokens = normQuery.split(/\s+/).filter(Boolean)
+  const queryTokenSet = new Set(queryTokens)
 
   const aliasTargets = new Set<string>()
   for (const [alias, targets] of Object.entries(courseAliases)) {
-    if (queryTokens.includes(alias) || normQuery.includes(alias)) {
+    if (queryTokenSet.has(alias) || containsText(normQuery, alias)) {
       for (const t of targets) aliasTargets.add(t)
     }
   }
@@ -294,15 +303,15 @@ export function searchCourses(
     const name = course.name.toLowerCase()
 
     if (intent === 'phrase' && queryTokens.length >= 2) {
-      if (name.includes(normQuery)) score += 120
-      else if (code.includes(normQuery)) score += 120
+      if (containsText(name, normQuery)) score += 120
+      else if (containsText(code, normQuery)) score += 120
       if (tokensInOrder(name, queryTokens)) score += 100
       if (course.description && tokensInOrder(course.description.toLowerCase(), queryTokens)) score += 60
     }
 
     for (const kw of keywords) {
       if (exactFieldMatch(code, kw) || exactFieldMatch(name, kw)) score += 100
-      else if (code.includes(kw) || name.includes(kw)) score += 40
+      else if (containsText(code, kw) || containsText(name, kw)) score += 40
     }
 
     score += matchScoreAll(course.code, keywords) * 3
@@ -311,25 +320,25 @@ export function searchCourses(
 
     if (aliasTargets.size > 0) {
       for (const target of aliasTargets) {
-        if (name.includes(target)) score += 70
+        if (containsText(name, target)) score += 70
       }
     }
 
     const courseRepos = reposByCourse.get(course.id)
     if (courseRepos && courseRepos.length > 0 && score < 80) {
       let repoScore = 0
+      const repoKeywords = keywords
       for (const r of courseRepos) {
         const rn = (r.displayName || '').toLowerCase()
         const rl = (r.primaryLanguage || '').toLowerCase()
         const rs = (r.techStacks ?? []).map(s => s.toLowerCase())
         if (repos) {
-          const repoKeywords = expandKeywords(query, intent)
           for (const kw of repoKeywords) {
             if (fieldMatchScore(rn, kw)) repoScore += 3
             else if (fieldMatchScore(rl, kw)) repoScore += 3
-            else if (rs.some(s => s.includes(kw) || kw.includes(s))) repoScore += 2
+            else if (rs.some(s => containsText(s, kw) || containsText(kw, s))) repoScore += 2
             else if (r.readmeExcerpt && fieldMatchScore(r.readmeExcerpt, kw)) repoScore += 1
-            else if (r.fileTree && r.fileTree.toLowerCase().includes(kw)) repoScore += 1
+            else if (r.fileTree && containsText(r.fileTree.toLowerCase(), kw)) repoScore += 1
           }
         }
         if (repoScore >= 3) break
@@ -364,26 +373,26 @@ export function searchRepos(repos: RepoSummary[], query: string): SearchRepoResu
     const courseCode = (repo.courseCode || '').toLowerCase()
 
     if (intent === 'phrase' && queryTokens.length >= 2) {
-      if (name.includes(normQuery)) score += 120
+      if (containsText(name, normQuery)) score += 120
       if (tokensInOrder(name, queryTokens)) score += 100
-      if (desc.includes(normQuery)) score += 80
+      if (containsText(desc, normQuery)) score += 80
       if (tokensInOrder(desc, queryTokens)) score += 60
-      if (courseName.includes(normQuery)) score += 60
-      if (courseCode.includes(normQuery)) score += 60
+      if (containsText(courseName, normQuery)) score += 60
+      if (containsText(courseCode, normQuery)) score += 60
     }
 
     for (const kw of keywords) {
       if (exactFieldMatch(name, kw)) score += 100
       else if (exactFieldMatch(courseCode, kw)) score += 80
       else if (exactFieldMatch(courseName, kw)) score += 60
-      else if (name.includes(kw)) score += 50
-      else if (lang.includes(kw)) score += 40
+      else if (containsText(name, kw)) score += 50
+      else if (containsText(lang, kw)) score += 40
     }
 
     for (const kw of keywords) {
       for (const stack of repo.techStacks || []) {
         if (exactFieldMatch(stack, kw)) score += 85
-        else if (stack.toLowerCase().includes(kw)) score += 40
+        else if (containsText(stack.toLowerCase(), kw)) score += 40
       }
     }
 

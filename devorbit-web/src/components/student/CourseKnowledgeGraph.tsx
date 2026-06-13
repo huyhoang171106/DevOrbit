@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m as motion, AnimatePresence } from 'framer-motion'
 import { apiGet } from '../../lib/api'
 import type { CourseRelationshipResponse } from '../../types/api'
 import { Graph, ArrowRight } from '@phosphor-icons/react'

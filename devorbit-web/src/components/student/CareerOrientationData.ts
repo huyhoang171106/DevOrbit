@@ -293,9 +293,11 @@ export function getRecommendedNodeIds(
 ): Set<number> {
   if (!orientation) return new Set()
   const codeSet = new Set(orientation.recommendedCodes.map(c => c.trim().toUpperCase()))
-  return new Set(
-    nodes.filter(n => codeSet.has(n.code.toUpperCase())).map(n => n.id),
-  )
+  const ids = new Set<number>()
+  for (const node of nodes) {
+    if (codeSet.has(node.code.toUpperCase())) ids.add(node.id)
+  }
+  return ids
 }
 
 export const SEMESTER_LABELS: Record<number, string> = {

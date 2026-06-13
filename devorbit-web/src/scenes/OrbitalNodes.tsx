@@ -3,7 +3,7 @@ import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { Line } from '@react-three/drei'
-import { usePerformanceProfile } from '../performance'
+import { usePerformanceProfile } from '../performance/usePerformanceProfile'
 
 interface OrbitalNodesProps {
   count?: number
@@ -12,6 +12,33 @@ interface OrbitalNodesProps {
   colors?: string[]
   showOrbits?: boolean
   nodeSize?: number
+}
+
+interface OrbitalNodeProps {
+  node: { radius: number; color: string }
+  nodeSize: number
+  texture?: THREE.Texture
+  hasGlow: boolean
+}
+
+function OrbitalNode({ node, nodeSize, texture, hasGlow }: OrbitalNodeProps) {
+  return (
+    <mesh position={[node.radius, 0, 0]}>
+      <sphereGeometry args={[nodeSize, 8, 8]} />
+      <meshBasicMaterial color={node.color} transparent opacity={0.7} />
+      {hasGlow && texture && (
+        <sprite scale={[nodeSize * 3, nodeSize * 3, 1]}>
+          <spriteMaterial
+            map={texture}
+            transparent
+            opacity={0.3}
+            blending={THREE.AdditiveBlending}
+            depthWrite={false}
+          />
+        </sprite>
+      )}
+    </mesh>
+  )
 }
 
 /**
@@ -117,31 +144,15 @@ export function OrbitalNodes({
       ))}
 
       {/* Orbiting nodes */}
-      {nodes.map((node, i) => {
-        const meshRef = useRef<THREE.Mesh>(null)
-        return (
-          <mesh
-            key={`node-${i}`}
-            ref={meshRef}
-            position={[node.radius, 0, 0]}
-          >
-            <sphereGeometry args={[nodeSize, 8, 8]} />
-            <meshBasicMaterial color={node.color} transparent opacity={0.7} />
-            {/* Glow sprite — only on high/medium tier */}
-            {hasGlow && (
-              <sprite scale={[nodeSize * 3, nodeSize * 3, 1]}>
-                <spriteMaterial
-                  map={glowTextures.get(node.color)}
-                  transparent
-                  opacity={0.3}
-                  blending={THREE.AdditiveBlending}
-                  depthWrite={false}
-                />
-              </sprite>
-            )}
-          </mesh>
-        )
-      })}
+      {nodes.map((node, i) => (
+        <OrbitalNode
+          key={`node-${i}`}
+          node={node}
+          nodeSize={nodeSize}
+          texture={glowTextures.get(node.color)}
+          hasGlow={hasGlow}
+        />
+      ))}
     </group>
   )
 }

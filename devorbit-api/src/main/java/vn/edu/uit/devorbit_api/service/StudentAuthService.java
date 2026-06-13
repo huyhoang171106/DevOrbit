@@ -3,6 +3,7 @@ package vn.edu.uit.devorbit_api.service;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import vn.edu.uit.devorbit_api.dto.student.StudentRegisterRequest;
 import vn.edu.uit.devorbit_api.entity.Otp;
 import vn.edu.uit.devorbit_api.entity.OtpPurpose;
 import vn.edu.uit.devorbit_api.entity.StudentUser;
+import vn.edu.uit.devorbit_api.event.NotificationEvent;
 import vn.edu.uit.devorbit_api.exception.BadRequestException;
 import vn.edu.uit.devorbit_api.exception.UnauthorizedException;
 import vn.edu.uit.devorbit_api.repository.OtpRepository;
@@ -35,6 +37,7 @@ public class StudentAuthService {
     private final OtpRateLimitService otpRateLimitService;
     private final LoginRateLimitService loginRateLimitService;
     private final RevokedTokenStore revokedTokenStore;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Value("${app.otp.expiration-minutes:10}")
     private int otpExpirationMinutes;
@@ -142,6 +145,12 @@ public class StudentAuthService {
         student.setEmailVerified(true);
         studentUserRepository.save(student);
         otpRepository.delete(otp);
+
+        eventPublisher.publishEvent(new NotificationEvent(
+            "STUDENT_REGISTER",
+            "Sinh viên mới đăng ký: " + student.getFullName() + " (" + student.getStudentCode() + ")",
+            "/admin/students"
+        ));
 
         String token = jwtService.generateToken(student.getStudentCode(), "STUDENT");
         return new StudentAuthResponse(token, student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail());

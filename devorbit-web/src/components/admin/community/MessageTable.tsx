@@ -19,20 +19,22 @@ export function MessageTable({ messages, onDelete }: MessageTableProps) {
       <table className="w-full">
         <thead>
           <tr className="border-b border-orbit-border bg-orbit-surface/50">
-            <th className="px-4 py-3 text-left text-xs font-medium text-ink-secondary uppercase">Sinh viên</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-ink-secondary uppercase">Nội dung</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-ink-secondary uppercase">Ngày</th>
-            <th className="px-4 py-3 text-right text-xs font-medium text-ink-secondary uppercase">Thao tác</th>
+            <th className="px-4 py-3 text-center text-xs font-medium text-orbit-text uppercase">Sinh viên</th>
+            <th className="px-4 py-3 text-center text-xs font-medium text-orbit-text uppercase">Nội dung</th>
+            <th className="px-4 py-3 text-center text-xs font-medium text-orbit-text uppercase">Ngày</th>
+            <th className="px-4 py-3 text-center text-xs font-medium text-orbit-text uppercase">Thao tác</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-clay-border">
           {messages.map((msg) => (
             <tr key={msg.id} className="transition-colors hover:bg-orbit-surface/30">
-              <td className="px-4 py-3 text-sm text-ink-primary">{msg.studentName}</td>
+              <td className="px-4 py-3 text-sm text-ink-primary text-center">{msg.studentName}</td>
               <td className="px-4 py-3 text-sm text-ink-secondary max-w-md truncate">{msg.content}</td>
-              <td className="px-4 py-3 text-sm text-ink-secondary">{new Date(msg.createdAt).toLocaleDateString()}</td>
-              <td className="px-4 py-3 text-sm text-right">
-                <button onClick={() => onDelete(msg.id)} className="btn-ghost text-xs text-red-400">Xoá</button>
+              <td className="px-4 py-3 text-sm text-ink-secondary text-center">{new Date(msg.createdAt).toLocaleDateString()}</td>
+              <td className="px-4 py-3 text-sm text-center">
+                <div className="flex items-center justify-center">
+                  <button onClick={() => onDelete(msg.id)} className="btn-ghost text-xs text-red-400">Xoá</button>
+                </div>
               </td>
             </tr>
           ))}

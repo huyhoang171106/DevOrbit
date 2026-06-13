@@ -80,6 +80,13 @@ exa:
   max-age-hours: ${EXA_MAX_AGE_HOURS:24}
   timeout-seconds: ${EXA_TIMEOUT_SECONDS:15}
 
+firecrawl:
+  enabled: ${FIRECRAWL_ENABLED:false}
+  api-url: ${FIRECRAWL_API_URL:https://api.firecrawl.dev}
+  api-key: ${FIRECRAWL_API_KEY:}
+  timeout-seconds: ${FIRECRAWL_TIMEOUT_SECONDS:60}
+  max-pages: ${FIRECRAWL_MAX_PAGES:50}
+
 devorbit:
   knowledge:
     marker-md-dir: ${KNOWLEDGE_MARKER_MD_DIR:./data/processed/marker-md}

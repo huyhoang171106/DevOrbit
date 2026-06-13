@@ -79,10 +79,8 @@ public class TutorRagService {
         }
 
         // Semantic search with hybrid retrieval
-        KnowledgeRetrievalService.SearchResult searchResult = null;
-        if (courseCode != null) {
-            searchResult = knowledgeRetrievalService.search(courseCode, message, DEFAULT_TOP_K);
-        }
+        KnowledgeRetrievalService.SearchResult searchResult =
+            knowledgeRetrievalService.search(courseCode, message, DEFAULT_TOP_K);
 
         // Build context for LLM with scores
         StringBuilder context = new StringBuilder();

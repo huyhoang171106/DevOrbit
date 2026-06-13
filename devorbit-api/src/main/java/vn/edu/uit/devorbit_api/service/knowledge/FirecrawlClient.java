@@ -24,9 +24,21 @@ public class FirecrawlClient {
 
     @Autowired
     public FirecrawlClient(FirecrawlProperties properties) {
-        this(WebClient.builder()
+        this(buildWebClient(properties), properties);
+    }
+
+    private static WebClient buildWebClient(FirecrawlProperties properties) {
+        int timeoutSec = Math.max(1, properties.getTimeoutSeconds());
+        reactor.netty.http.client.HttpClient httpClient = reactor.netty.http.client.HttpClient.create()
+            .option(io.netty.channel.ChannelOption.CONNECT_TIMEOUT_MILLIS, timeoutSec * 1000)
+            .doOnConnected(conn -> conn
+                .addHandlerLast(new io.netty.handler.timeout.ReadTimeoutHandler(timeoutSec))
+                .addHandlerLast(new io.netty.handler.timeout.WriteTimeoutHandler(timeoutSec)));
+
+        return WebClient.builder()
             .baseUrl(normalizeBaseUrl(properties.getApiUrl()))
-            .build(), properties);
+            .clientConnector(new org.springframework.http.client.reactive.ReactorClientHttpConnector(httpClient))
+            .build();
     }
 
     FirecrawlClient(WebClient webClient, FirecrawlProperties properties) {
@@ -161,40 +173,58 @@ public class FirecrawlClient {
     }
 
     private Map<String, Object> postJson(String path, Map<String, Object> body, int timeoutSeconds) {
-        @SuppressWarnings("unchecked")
-        Map<String, Object> response = webClient.post()
-            .uri(path)
-            .header("Authorization", "Bearer " + properties.getApiKey())
-            .bodyValue(body)
-            .retrieve()
-            .bodyToMono(Map.class)
-            .timeout(Duration.ofSeconds(Math.max(1, timeoutSeconds)))
-            .block();
-        return response != null ? response : Map.of();
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> response = webClient.post()
+                .uri(path)
+                .header("Authorization", "Bearer " + properties.getApiKey())
+                .bodyValue(body)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .timeout(Duration.ofSeconds(Math.max(1, timeoutSeconds)))
+                .block();
+            return response != null ? response : Map.of();
+        } catch (org.springframework.web.reactive.function.client.WebClientResponseException e) {
+            log.error("Firecrawl POST failed with status {}: {} - Body: {}",
+                e.getStatusCode(), e.getMessage(), e.getResponseBodyAsString());
+            return Map.of();
+        }
     }
 
     private Map<String, Object> getJson(String path, int timeoutSeconds) {
-        @SuppressWarnings("unchecked")
-        Map<String, Object> response = webClient.get()
-            .uri(path)
-            .header("Authorization", "Bearer " + properties.getApiKey())
-            .retrieve()
-            .bodyToMono(Map.class)
-            .timeout(Duration.ofSeconds(Math.max(1, timeoutSeconds)))
-            .block();
-        return response != null ? response : Map.of();
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> response = webClient.get()
+                .uri(path)
+                .header("Authorization", "Bearer " + properties.getApiKey())
+                .retrieve()
+                .bodyToMono(Map.class)
+                .timeout(Duration.ofSeconds(Math.max(1, timeoutSeconds)))
+                .block();
+            return response != null ? response : Map.of();
+        } catch (org.springframework.web.reactive.function.client.WebClientResponseException e) {
+            log.error("Firecrawl GET failed with status {}: {} - Body: {}",
+                e.getStatusCode(), e.getMessage(), e.getResponseBodyAsString());
+            return Map.of();
+        }
     }
 
     private Map<String, Object> getJsonFromAbsoluteUrl(String url, int timeoutSeconds) {
-        @SuppressWarnings("unchecked")
-        Map<String, Object> response = webClient.get()
-            .uri(url)
-            .header("Authorization", "Bearer " + properties.getApiKey())
-            .retrieve()
-            .bodyToMono(Map.class)
-            .timeout(Duration.ofSeconds(Math.max(1, timeoutSeconds)))
-            .block();
-        return response != null ? response : Map.of();
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> response = webClient.get()
+                .uri(url)
+                .header("Authorization", "Bearer " + properties.getApiKey())
+                .retrieve()
+                .bodyToMono(Map.class)
+                .timeout(Duration.ofSeconds(Math.max(1, timeoutSeconds)))
+                .block();
+            return response != null ? response : Map.of();
+        } catch (org.springframework.web.reactive.function.client.WebClientResponseException e) {
+            log.error("Firecrawl GET absolute failed with status {}: {} - Body: {}",
+                e.getStatusCode(), e.getMessage(), e.getResponseBodyAsString());
+            return Map.of();
+        }
     }
 
     private Map<String, Object> pollCrawl(String crawlId) throws InterruptedException {

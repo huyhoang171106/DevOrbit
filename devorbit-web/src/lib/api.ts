@@ -55,9 +55,10 @@ function normalizeResponse(value: unknown): unknown {
   if (!value || typeof value !== 'object') return value
   const record = { ...(value as Record<string, unknown>) }
   if (Array.isArray(record.techStacks)) {
-    record.techStacks = record.techStacks.map((stack) =>
-      typeof stack === 'string' ? stack : String((stack as { name?: string }).name ?? ''),
-    ).filter(Boolean)
+    record.techStacks = record.techStacks.flatMap((stack) => {
+      const normalized = typeof stack === 'string' ? stack : String((stack as { name?: string }).name ?? '')
+      return normalized ? [normalized] : []
+    })
   }
   if (Array.isArray(record.repos)) record.repos = record.repos.map(normalizeResponse)
   return record

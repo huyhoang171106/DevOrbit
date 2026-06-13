@@ -1,5 +1,5 @@
 
-import { motion, useScroll, useSpring, useTransform } from 'framer-motion'
+import { m as motion, useScroll, useSpring, useTransform } from 'framer-motion'
 import { useReducedMotion } from '../hooks/useReducedMotion'
 
 interface ScrollProgressIndicatorProps {
@@ -36,6 +36,7 @@ export function ScrollProgressIndicator({
     [0, 0.08, 0.92, 1],
     [0, 0.7, 0.7, 0]
   )
+  const labelText = useTransform(smoothProgress, (v) => `${Math.round(v * 100)}%`)
 
   const positionClass = position === 'right' ? 'right-6' : 'left-6'
 
@@ -66,7 +67,7 @@ export function ScrollProgressIndicator({
           className="text-[9px] font-black text-orbit-text-muted tabular-nums tracking-wider"
           style={{ opacity: labelOpacity }}
         >
-          <motion.span>{useTransform(smoothProgress, (v) => `${Math.round(v * 100)}%`)}</motion.span>
+          <motion.span>{labelText}</motion.span>
         </motion.span>
       )}
     </motion.div>

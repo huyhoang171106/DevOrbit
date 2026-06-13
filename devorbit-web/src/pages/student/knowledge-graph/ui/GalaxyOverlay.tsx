@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Activity, Play, RotateCcw, AlertTriangle, Sparkles, Loader2, GraduationCap, Building2, FileText, ChevronDown, ChevronRight, Circle, CheckCircle2 } from 'lucide-react'
 import { useGalaxyStore } from '../store/useGalaxyStore'
@@ -18,7 +18,7 @@ export function GalaxyOverlay() {
   const setSelectedGraduationTrack = useGalaxyStore((s) => s.setSelectedGraduationTrack)
 
   // AI Roadmap State
-  const [goals, setGoals] = useState('')
+  const goalsRef = useRef('')
   const [career, setCareer] = useState('')
   const [aiError, setAiError] = useState<string | null>(null)
   const { mutate: generateRoadmap, data: aiResult, isPending: isAiLoading, error: aiMutationError } = useAiRoadmap()
@@ -26,9 +26,6 @@ export function GalaxyOverlay() {
   // Elective pool selection state
   const [selectedElectiveCodes, setSelectedElectiveCodes] = useState<Set<string>>(new Set())
   const [expandedPools, setExpandedPools] = useState<Set<string>>(new Set(['co-so-nganh', 'chuyen-nganh']))
-
-  // Clear error when inputs change
-  useEffect(() => { setAiError(null) }, [goals, career])
 
   // Capture mutation error
   useEffect(() => {
@@ -40,21 +37,23 @@ export function GalaxyOverlay() {
   // Update store when results arrive
   useEffect(() => {
     if (aiResult) {
-      const mandatoryIds = new Set<number>(
-        aiResult.recommendedCourses.filter((c: RoadmapRecommendation) => c.isMandatory).map((c: RoadmapRecommendation) => c.courseId)
-      )
-      const electiveIds = new Set<number>(
-        aiResult.recommendedCourses.filter((c: RoadmapRecommendation) => !c.isMandatory).map((c: RoadmapRecommendation) => c.courseId)
-      )
-      const electiveData = aiResult.recommendedCourses
-        .filter((c: RoadmapRecommendation) => !c.isMandatory)
-        .map((c: RoadmapRecommendation) => ({
+      const mandatoryIds = new Set<number>()
+      const electiveIds = new Set<number>()
+      const electiveData = []
+      for (const c of aiResult.recommendedCourses) {
+        if (c.isMandatory) {
+          mandatoryIds.add(c.courseId)
+          continue
+        }
+        electiveIds.add(c.courseId)
+        electiveData.push({
           id: c.courseId,
           code: c.courseCode,
           name: c.courseName,
           semester: c.semester,
           description: c.description,
-        }))
+        })
+      }
       setAiRecommendedNodes(mandatoryIds)
       setAiElectiveNodes(electiveIds)
       setAiElectiveNodeData(electiveData)
@@ -93,24 +92,24 @@ export function GalaxyOverlay() {
   // Sync elective selection to graph store
   useEffect(() => {
     if (!aiResult?.electivePools) return
-    // Find all course IDs matching the selected codes
-    const allCandidates = aiResult.electivePools.flatMap(p => p.candidates)
-    const selectedCourses = allCandidates
-      .filter(c => selectedElectiveCodes.has(c.courseCode))
-    const selectedNodeIds = new Set(selectedCourses.map(c => c.courseId))
     // Get semester from recommendedCourses (has semester info) instead of ElectiveCandidate
     const recByCode = new Map(aiResult.recommendedCourses.map((r: RoadmapRecommendation) => [r.courseCode, r]))
-    const electiveNodeData = selectedCourses
-      .map(c => {
+    const selectedNodeIds = new Set<number>()
+    const electiveNodeData = []
+    for (const pool of aiResult.electivePools) {
+      for (const c of pool.candidates) {
+        if (!selectedElectiveCodes.has(c.courseCode)) continue
+        selectedNodeIds.add(c.courseId)
         const rec = recByCode.get(c.courseCode)
-        return {
+        electiveNodeData.push({
           id: c.courseId,
           code: c.courseCode,
           name: c.courseName,
           semester: rec?.semester ?? c.semester ?? 4,
           description: c.description || '',
-        }
-      })
+        })
+      }
+    }
     setAiElectiveNodes(selectedNodeIds)
     setAiElectiveNodeData(electiveNodeData)
   }, [selectedElectiveCodes, aiResult, setAiElectiveNodes, setAiElectiveNodeData])
@@ -184,7 +183,7 @@ export function GalaxyOverlay() {
                     key={p.id}
                     onClick={() => {
                       setCareer(p.label)
-                      setGoals(p.goal)
+                      goalsRef.current = p.goal
                       setAiError(null)
                       generateRoadmap({ learningGoals: p.goal, careerPath: p.label })
                     }}
@@ -214,7 +213,7 @@ export function GalaxyOverlay() {
                 {aiError}
               </p>
               <button 
-                onClick={() => generateRoadmap({ learningGoals: goals, careerPath: career })}
+                onClick={() => generateRoadmap({ learningGoals: goalsRef.current, careerPath: career })}
                 className="mt-2 text-[9px] font-bold text-rose-600 underline hover:text-rose-800"
               >
                 Thử lại
@@ -299,7 +298,7 @@ export function GalaxyOverlay() {
           <button
             onClick={() => {
               setAiError(null)
-              generateRoadmap({ learningGoals: goals || 'Lập trình', careerPath: career || 'Backend Developer' })
+              generateRoadmap({ learningGoals: goalsRef.current || 'Lập trình', careerPath: career || 'Backend Developer' })
             }}
             disabled={isAiLoading}
             className="w-full py-2.5 bg-clay-primary text-white text-[10px] font-bold uppercase tracking-widest hover:bg-clay-primary/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
@@ -321,7 +320,7 @@ export function GalaxyOverlay() {
             <div className="space-y-1.5">
               <span className="text-[10px] font-bold text-clay-text-muted uppercase mb-2 block">Môn học đề xuất:</span>
               <div className="divide-y divide-clay-border/50 max-h-[280px] overflow-y-auto custom-scrollbar -mx-1 px-1">
-                {aiResult.recommendedCourses.filter(rc => !rc.isMandatory).map((rc: RoadmapRecommendation) => (
+                {aiResult.recommendedCourses.flatMap((rc: RoadmapRecommendation) => rc.isMandatory ? [] : [
                   <div
                     key={rc.courseId}
                     className="flex items-center gap-2 py-1.5"
@@ -336,8 +335,8 @@ export function GalaxyOverlay() {
                     }`}>
                       {rc.isMandatory ? 'BẮT BUỘC' : 'TỰ CHỌN'}
                     </span>
-                  </div>
-                ))}
+                  </div>,
+                ])}
               </div>
             </div>
 

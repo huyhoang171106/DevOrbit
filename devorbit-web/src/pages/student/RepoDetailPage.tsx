@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { m as motion } from 'framer-motion'
 import { apiGet, apiStudentPost } from '../../lib/api'
 import { isStudentAuthenticated } from '../../lib/auth'
 import { RepoAiAnalysisSection } from '../../components/student/RepoAiAnalysisSection'

@@ -1,5 +1,5 @@
 
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { m as motion, useScroll, useTransform } from 'framer-motion'
 import { useRef } from 'react'
 import { useReducedMotion } from '../hooks/useReducedMotion'
 

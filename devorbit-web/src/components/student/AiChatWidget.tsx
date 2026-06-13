@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m as motion, AnimatePresence } from 'framer-motion'
 import { Sparkle, ArrowUp, X, ChatTeardropText, Spinner as SpinnerIcon, Link as LinkIcon, Trash, Copy, Check, CheckCircle, CaretDown, Globe, Database, BookOpen, MagnifyingGlass } from '@phosphor-icons/react'
 import {
     useSubjectQa,
@@ -456,14 +456,13 @@ function CourseBadgeRenderer({ content }: CourseBadgeRendererProps) {
         const parts: React.ReactNode[] = []
         let lastIndex = 0
         let match: RegExpExecArray | null
-        let keyIndex = 0
         while ((match = pattern.exec(content)) !== null) {
             if (match.index > lastIndex) {
-                parts.push(<span key={keyIndex++}>{content.slice(lastIndex, match.index)}</span>)
+                parts.push(<span key={`text-${lastIndex}-${match.index}`}>{content.slice(lastIndex, match.index)}</span>)
             }
             parts.push(
                 <span
-                    key={keyIndex++}
+                    key={`course-${match.index}-${match[0]}`}
                     className="inline-block bg-orbit-accent/10 border border-orbit-accent/20 text-orbit-accent rounded-lg px-2 py-0.5 text-[12px] font-bold mx-0.5"
                 >
                     {match[1]}
@@ -472,7 +471,7 @@ function CourseBadgeRenderer({ content }: CourseBadgeRendererProps) {
             lastIndex = match.index + match[0].length
         }
         if (lastIndex < content.length) {
-            parts.push(<span key={keyIndex++}>{content.slice(lastIndex)}</span>)
+            parts.push(<span key={`text-${lastIndex}-${content.length}`}>{content.slice(lastIndex)}</span>)
         }
         return parts
     }, [content])
@@ -514,33 +513,31 @@ function getStageDetailedDescription(stage: SubjectQaStreamStage): string {
 
 function getStageIcon(stage: SubjectQaStreamStage, isActive: boolean) {
     if (stage === 'error') {
-        return <X className="h-3.5 w-3.5 text-rose-400 shrink-0" aria-hidden="true" />
+        return <X className="h-2.5 w-2.5 text-rose-400 shrink-0" aria-hidden="true" />
     }
     
     switch (stage) {
         case 'session':
-            return <Sparkle className="h-3.5 w-3.5 text-zinc-500 shrink-0" aria-hidden="true" />
+            return <Sparkle className="h-2.5 w-2.5 text-zinc-500 shrink-0" aria-hidden="true" />
         case 'analyze':
-            return <MagnifyingGlass className="h-3.5 w-3.5 text-zinc-400 shrink-0" aria-hidden="true" />
+            return <MagnifyingGlass className="h-2.5 w-2.5 text-zinc-400 shrink-0" aria-hidden="true" />
         case 'devorbit_context':
         case 'rag':
-            return <Database className="h-3.5 w-3.5 text-orbit-accent shrink-0" aria-hidden="true" />
+            return <Database className="h-2.5 w-2.5 text-orbit-accent shrink-0" aria-hidden="true" />
         case 'web_search':
-            return <Globe className={`h-3.5 w-3.5 text-sky-400 shrink-0 ${isActive ? 'animate-pulse' : ''}`} aria-hidden="true" />
+            return <Globe className={`h-2.5 w-2.5 text-sky-400 shrink-0 ${isActive ? 'animate-pulse' : ''}`} aria-hidden="true" />
         case 'web_read':
-            return <BookOpen className={`h-3.5 w-3.5 text-emerald-400 shrink-0 ${isActive ? 'animate-pulse' : ''}`} aria-hidden="true" />
+            return <BookOpen className={`h-2.5 w-2.5 text-emerald-400 shrink-0 ${isActive ? 'animate-pulse' : ''}`} aria-hidden="true" />
         case 'answer':
-            return <ChatTeardropText className={`h-3.5 w-3.5 text-amber-400 shrink-0 ${isActive ? 'animate-pulse' : ''}`} aria-hidden="true" />
+            return <ChatTeardropText className={`h-2.5 w-2.5 text-amber-400 shrink-0 ${isActive ? 'animate-pulse' : ''}`} aria-hidden="true" />
         case 'done':
-            return <CheckCircle className="h-3.5 w-3.5 text-emerald-500 shrink-0" aria-hidden="true" />
+            return <CheckCircle className="h-2.5 w-2.5 text-emerald-500 shrink-0" aria-hidden="true" />
         default:
-            return <Sparkle className="h-3.5 w-3.5 text-zinc-400 shrink-0" aria-hidden="true" />
+            return <Sparkle className="h-2.5 w-2.5 text-zinc-400 shrink-0" aria-hidden="true" />
     }
 }
 
 function StatusProgress({ statusEvents, isStreaming }: StatusProgressProps) {
-    if (!statusEvents || statusEvents.length === 0) return null
-
     const [isExpanded, setIsExpanded] = useState(isStreaming)
 
     // Automatically expand when a new event arrives while streaming
@@ -550,8 +547,10 @@ function StatusProgress({ statusEvents, isStreaming }: StatusProgressProps) {
         }
     }, [isStreaming, statusEvents.length])
 
+    if (!statusEvents || statusEvents.length === 0) return null
+
     return (
-        <div className="bg-zinc-900/40 border border-zinc-800/50 rounded-2xl p-3 mb-3 text-[13px] text-zinc-300">
+        <div className="bg-zinc-950/20 border border-zinc-800/35 rounded-xl p-2.5 mb-2.5 text-[12.5px] text-zinc-300">
             {/* Header Accordion */}
             <button
                 onClick={() => setIsExpanded(!isExpanded)}
@@ -559,14 +558,14 @@ function StatusProgress({ statusEvents, isStreaming }: StatusProgressProps) {
                 aria-expanded={isExpanded}
                 aria-label="Xem chi tiết quá trình RAG"
             >
-                <div className="flex items-center gap-2 text-[12px] font-bold uppercase tracking-wider text-left min-w-0">
+                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-left min-w-0">
                     {isStreaming ? (
-                        <div className="relative flex h-2.5 w-2.5 shrink-0">
+                        <div className="relative flex h-2 w-2 shrink-0">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orbit-accent opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orbit-accent"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-orbit-accent"></span>
                         </div>
                     ) : (
-                        <CheckCircle className="h-4 w-4 text-emerald-400 shrink-0" aria-hidden="true" />
+                        <CheckCircle className="h-3.5 w-3.5 text-emerald-400 shrink-0" aria-hidden="true" />
                     )}
                     <span className="text-zinc-300 truncate">
                         {isStreaming 
@@ -575,40 +574,57 @@ function StatusProgress({ statusEvents, isStreaming }: StatusProgressProps) {
                     </span>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0 ml-2">
-                    <span className="text-[10px] text-zinc-400 bg-zinc-900/60 px-2 py-0.5 rounded-lg border border-zinc-800/40 font-mono">
+                    <span className="text-[9px] text-zinc-400 bg-zinc-900/40 px-1.5 py-0.5 rounded border border-zinc-800/30 font-medium">
                         {statusEvents.length} bước
                     </span>
-                    <CaretDown className={`h-3.5 w-3.5 text-zinc-400 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                    <CaretDown className={`h-3 w-3 text-zinc-400 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
                 </div>
             </button>
 
             {/* Stepper Steps (Timeline) */}
             <div
                 className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                    isExpanded ? 'mt-3 opacity-100 max-h-[500px] pointer-events-auto' : 'opacity-0 max-h-0 pointer-events-none'
+                    isExpanded ? 'mt-2.5 opacity-100 max-h-[500px] pointer-events-auto' : 'opacity-0 max-h-0 pointer-events-none'
                 }`}
             >
-                <div className="relative pl-4 border-l border-zinc-800/60 ml-2.5 space-y-4 pt-1">
+                <div className="relative pl-3.5 border-l border-zinc-800/40 ml-1.5 space-y-2.5 pt-1">
                     {statusEvents.map((evt, idx) => {
                         const isLast = idx === statusEvents.length - 1
                         const isActive = isLast && isStreaming && evt.stage !== 'error' && evt.stage !== 'done'
+                        const isCompleted = !isStreaming || idx < statusEvents.length - 1 || evt.stage === 'done'
                         
                         return (
-                            <div key={evt.id} className="relative flex gap-3 items-start group">
+                            <div key={evt.id} className="relative flex gap-2.5 items-start group">
                                 {/* Timeline Icon */}
-                                <div className="absolute -left-[12px] mt-0.5 flex items-center justify-center bg-zinc-950 rounded-full border border-zinc-800 w-6 h-6 z-10">
+                                <div className={`absolute -left-[10px] mt-0.5 flex items-center justify-center rounded-full border z-10 w-5 h-5 transition-all duration-200 ${
+                                    evt.stage === 'error'
+                                        ? 'bg-rose-950/40 border-rose-500/30 text-rose-400'
+                                        : isCompleted
+                                            ? 'bg-emerald-950/25 border-emerald-500/20 text-emerald-400'
+                                            : isActive
+                                                ? 'bg-zinc-900 border-orbit-accent/40 text-orbit-accent shadow-[0_0_8px_rgba(52,211,153,0.15)]'
+                                                : 'bg-zinc-950 border-zinc-800 text-zinc-600'
+                                }`}>
                                     {getStageIcon(evt.stage, isActive)}
                                 </div>
                                 
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2">
-                                        <span className={`font-semibold text-[12.5px] ${
-                                            isActive ? 'text-orbit-accent' : evt.stage === 'error' ? 'text-rose-400' : 'text-zinc-300'
+                                        <span className={`text-[12px] transition-colors ${
+                                            isActive 
+                                                ? 'text-orbit-accent font-medium' 
+                                                : evt.stage === 'error' 
+                                                    ? 'text-rose-400 font-medium' 
+                                                    : 'text-zinc-300'
                                         }`}>
                                             {evt.message}
                                         </span>
                                     </div>
-                                    <p className="text-[11px] text-zinc-500 mt-0.5 leading-relaxed font-mono">
+                                    <p className={`text-[11px] text-zinc-500 transition-all duration-300 ease-in-out overflow-hidden leading-normal ${
+                                        (isActive || evt.stage === 'error') 
+                                            ? 'mt-0.5 opacity-100 max-h-12' 
+                                            : 'max-h-0 opacity-0 group-hover:max-h-12 group-hover:opacity-100 group-hover:mt-0.5'
+                                    }`}>
                                         {getStageDetailedDescription(evt.stage)}
                                     </p>
                                 </div>
@@ -708,9 +724,7 @@ export function ChatMessage({
 export function AiChatWidget() {
     const [isOpen, setIsOpen] = useState(false)
     const [input, setInput] = useState('')
-    const [sessionId, setSessionId] = useState<string | undefined>(() => {
-        return localStorage.getItem('orbit_chat_session_id') || undefined
-    })
+    const sessionIdRef = useRef<string | undefined>(localStorage.getItem('orbit_chat_session_id') || undefined)
     const [messages, setMessages] = useState<AiChatMessage[]>(() => {
         const saved = localStorage.getItem('orbit_chat_messages')
         return saved ? JSON.parse(saved) : [
@@ -733,10 +747,16 @@ export function AiChatWidget() {
     // Persist chat history
     useEffect(() => {
         localStorage.setItem('orbit_chat_messages', JSON.stringify(messages))
-        if (sessionId) {
-            localStorage.setItem('orbit_chat_session_id', sessionId)
+    }, [messages])
+
+    const updateSessionId = useCallback((nextSessionId: string | undefined) => {
+        sessionIdRef.current = nextSessionId
+        if (nextSessionId) {
+            localStorage.setItem('orbit_chat_session_id', nextSessionId)
+        } else {
+            localStorage.removeItem('orbit_chat_session_id')
         }
-    }, [messages, sessionId])
+    }, [])
 
     // Track scroll position to decide auto-scroll
     const handleScroll = useCallback(() => {
@@ -749,9 +769,10 @@ export function AiChatWidget() {
     // Auto-scroll when new messages arrive, but only if user was near bottom
     useEffect(() => {
         if (isNearBottomRef.current) {
+            const isStreaming = streamingMsgId !== null
             scrollRef.current?.scrollTo({
                 top: scrollRef.current.scrollHeight,
-                behavior: 'smooth',
+                behavior: isStreaming ? 'auto' : 'smooth',
             })
         }
     }, [messages, streamingMsgId])
@@ -807,7 +828,7 @@ export function AiChatWidget() {
 
         try {
             await streamSubjectQa(
-                { message: text, sessionId },
+                { message: text, sessionId: sessionIdRef.current },
                 {
                     onStatus: (evt) => {
                         setMessages((prev) =>
@@ -859,8 +880,8 @@ export function AiChatWidget() {
                         )
                     },
                     onComplete: (response) => {
-                        if (response.sessionId && response.sessionId !== sessionId) {
-                            setSessionId(response.sessionId)
+                        if (response.sessionId && response.sessionId !== sessionIdRef.current) {
+                            updateSessionId(response.sessionId)
                         }
                         setMessages((prev) =>
                             prev.map((msg) => {
@@ -905,9 +926,9 @@ export function AiChatWidget() {
             if (error instanceof Error && error.message === 'Streaming is not supported in this browser') {
                 // Fallback to one-shot
                 try {
-                    const res = await chatMutation.mutateAsync({ message: text, sessionId })
-                    if (res.sessionId && res.sessionId !== sessionId) {
-                        setSessionId(res.sessionId)
+                    const res = await chatMutation.mutateAsync({ message: text, sessionId: sessionIdRef.current })
+                    if (res.sessionId && res.sessionId !== sessionIdRef.current) {
+                        updateSessionId(res.sessionId)
                     }
                     setMessages((prev) =>
                         prev.map((msg) => {
@@ -922,8 +943,7 @@ export function AiChatWidget() {
                     )
                 } catch (fallbackError) {
                     if (fallbackError instanceof Error && fallbackError.message.includes('400')) {
-                        setSessionId(undefined)
-                        localStorage.removeItem('orbit_chat_session_id')
+                        updateSessionId(undefined)
                     }
                     setMessages((prev) =>
                         prev.map((msg) => {
@@ -966,7 +986,7 @@ export function AiChatWidget() {
                 content: 'Chào bạn! Mình là Cố vấn Học tập AI của DevOrbit. Bạn cần hỏi điều gì về môn học, đề cương, cách tính điểm hay tham khảo đồ án mẫu UIT không?',
             },
         ])
-        setSessionId(undefined)
+        updateSessionId(undefined)
         setStreamingMsgId(null)
         localStorage.removeItem('orbit_chat_messages')
         localStorage.removeItem('orbit_chat_session_id')

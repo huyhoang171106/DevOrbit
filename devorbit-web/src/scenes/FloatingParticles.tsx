@@ -2,7 +2,7 @@
 import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { usePerformanceProfile } from '../performance'
+import { usePerformanceProfile } from '../performance/usePerformanceProfile'
 
 interface FloatingParticlesProps {
   count?: number

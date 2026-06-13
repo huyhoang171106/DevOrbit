@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 interface Shortcut {
   key: string;
@@ -14,26 +14,26 @@ export function useKeyboardShortcuts(shortcuts: Shortcut[]) {
   const shortcutsRef = useRef(shortcuts);
   shortcutsRef.current = shortcuts;
 
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    for (const shortcut of shortcutsRef.current) {
-      if (shortcut.enabled === false) continue;
-      const match =
-        e.key.toLowerCase() === shortcut.key.toLowerCase() &&
-        !!e.ctrlKey === !!shortcut.ctrl &&
-        !!e.shiftKey === !!shortcut.shift &&
-        !!e.altKey === !!shortcut.alt;
-      if (match) {
-        e.preventDefault();
-        shortcut.handler(e);
-        return;
-      }
-    }
-  }, []);
-
   useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      for (const shortcut of shortcutsRef.current) {
+        if (shortcut.enabled === false) continue;
+        const match =
+          e.key.toLowerCase() === shortcut.key.toLowerCase() &&
+          !!e.ctrlKey === !!shortcut.ctrl &&
+          !!e.shiftKey === !!shortcut.shift &&
+          !!e.altKey === !!shortcut.alt;
+        if (match) {
+          e.preventDefault();
+          shortcut.handler(e);
+          return;
+        }
+      }
+    };
+
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [handleKeyDown]);
+  }, []);
 }
 
 // Common shortcuts preset

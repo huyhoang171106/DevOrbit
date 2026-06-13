@@ -13,14 +13,7 @@ function getLogicalSize(imgW: number, imgH: number) {
 
 export class PhotoCompositor {
   static async loadImages(files: File[]): Promise<HTMLImageElement[]> {
-    const images: HTMLImageElement[] = [];
-
-    for (const file of files) {
-      const img = await this.loadImageFromFile(file);
-      images.push(img);
-    }
-
-    return images;
+    return Promise.all(files.map((file) => this.loadImageFromFile(file)));
   }
 
   private static loadImageFromFile(file: File): Promise<HTMLImageElement> {

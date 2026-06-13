@@ -1,5 +1,5 @@
 
-import { motion, type Variants } from 'framer-motion'
+import { m as motion, type Variants } from 'framer-motion'
 import type { HTMLMotionProps } from 'framer-motion'
 import { useReducedMotion } from '../hooks/useReducedMotion'
 

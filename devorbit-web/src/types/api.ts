@@ -175,65 +175,6 @@ export type TutorialResponse = {
   createdAt: string
 }
 
-// --- Roadmaps ---
-
-export type RoadmapRequest = {
-  studentId?: number
-  title: string
-  description?: string
-  markdownContent?: string
-  isPublic?: boolean
-}
-
-export type RoadmapResponse = {
-  id: number
-  studentId: number | null
-  studentCode: string | null
-  studentName: string | null
-  title: string
-  description: string | null
-  markdownContent: string | null
-  isPublic: boolean
-  createdAt: string
-  updatedAt: string
-}
-
-export type PhaseRequest = {
-  title: string
-  description?: string
-  sortOrder?: number
-}
-
-export type PhaseResponse = {
-  id: number
-  roadmapId: number
-  title: string
-  description: string | null
-  sortOrder: number
-  createdAt: string
-}
-
-export type RoadmapItemTargetType = 'COURSE' | 'REPO'
-
-export type ItemRequest = {
-  targetType: RoadmapItemTargetType
-  targetId: number
-  title?: string
-  note?: string
-  sortOrder?: number
-}
-
-export type ItemResponse = {
-  id: number
-  phaseId: number
-  targetType: RoadmapItemTargetType
-  targetId: number
-  title: string | null
-  note: string | null
-  sortOrder: number
-  createdAt: string
-}
-
 // --- Knowledge Graph ---
 
 export type GraphNode = {

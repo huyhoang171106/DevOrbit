@@ -1,7 +1,7 @@
 
 import { lazy, Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { usePerformanceProfile } from '../performance'
+import { usePerformanceProfile } from '../performance/usePerformanceProfile'
 
 const FloatingParticles = lazy(() =>
   import('./FloatingParticles').then((m) => ({ default: m.FloatingParticles }))

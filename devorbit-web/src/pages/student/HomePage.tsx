@@ -1,17 +1,14 @@
 ﻿import { Link, useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { m as motion } from 'framer-motion'
 import { DiscoveryFeed } from '../../components/student/DiscoveryFeed'
 import { HeroStoryCarousel } from '../../components/student/HeroStoryCarousel'
 import { Compass, Graph, MagicWand, Rocket, Sparkle, ArrowRight, Globe, Star, Code } from '@phosphor-icons/react'
-import {
-  FadeReveal,
-  BlurReveal,
-  StaggerReveal,
-  StaggerItem,
-  SectionTransition,
-  ParallaxLayer,
-  ScrollProgressIndicator,
-} from '../../motion'
+import { FadeReveal } from '../../motion/primitives/FadeReveal'
+import { BlurReveal } from '../../motion/primitives/BlurReveal'
+import { StaggerReveal, StaggerItem } from '../../motion/primitives/StaggerReveal'
+import { SectionTransition } from '../../motion/primitives/SectionTransition'
+import { ParallaxLayer } from '../../motion/primitives/ParallaxLayer'
+import { ScrollProgressIndicator } from '../../motion/primitives/ScrollProgressIndicator'
 
 const staggerContainer = {
   hidden: { opacity: 0 },
@@ -441,5 +438,4 @@ export function HomePage() {
     </div>
   )
 }
-
 

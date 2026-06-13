@@ -373,7 +373,7 @@ export function CourseDetailPage() {
                 </div>
               )}
 
-              <StaggerReveal stagger={0.05} y={16}>
+              <StaggerReveal key={filtered.map((repo) => repo.id).join('-')} stagger={0.05} y={16}>
                 <div className="grid sm:grid-cols-2 gap-5">
                   {filtered.map((r) => (
                     <StaggerItem key={r.id}>

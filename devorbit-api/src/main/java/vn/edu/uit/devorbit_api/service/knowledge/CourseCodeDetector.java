@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 @Component
 public class CourseCodeDetector {
 
-    private static final Pattern COURSE_CODE_PATTERN = Pattern.compile("\\b([A-Z]{2}[0-9]{3})\\b");
+    private static final Pattern COURSE_CODE_PATTERN = Pattern.compile("\\b([A-Z]{2,4}\\d{2,4})\\b");
 
     /**
      * Extract the first course code found in the message.

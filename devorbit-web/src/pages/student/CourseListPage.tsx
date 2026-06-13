@@ -203,7 +203,7 @@ export function CourseListPage() {
               <h3 className="text-[14px] font-black text-orbit-text uppercase tracking-[0.12em]">Môn học phù hợp</h3>
               <span className="px-2.5 py-0.5 rounded-full bg-orbit-accent/10 border border-orbit-accent/15 text-[10px] font-bold text-orbit-accent">{matchedCourses.length}</span>
             </div>
-            <StaggerReveal stagger={0.04} y={20}>
+            <StaggerReveal key={`${page}-${debouncedQuery}`} stagger={0.04} y={20}>
               <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                 {paged.map((c) => (
                   <StaggerItem key={c.id}>

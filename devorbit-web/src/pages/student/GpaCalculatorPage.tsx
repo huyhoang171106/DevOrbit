@@ -663,7 +663,7 @@ export function GpaCalculatorPage() {
             <div className="mb-6 rounded-2xl border border-orbit-border bg-orbit-surface p-4 shadow-diffusion hover:border-orbit-accent/20 shadow-glow transition-all duration-500">
               <div className={`grid gap-4 ${calculationMode === 'goal' ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
                 <div>
-                  <label className="mb-2 block text-[12px] font-bold uppercase tracking-[0.12em] text-orbit-text-muted" htmlFor="current-gpa">
+                  <label className="mb-2 block text-[12px] font-bold uppercase tracking-[0.12em] text-orbit-text text-center" htmlFor="current-gpa">
                     GPA hiện tại
                   </label>
                   <input
@@ -678,11 +678,11 @@ export function GpaCalculatorPage() {
                       setCurrentGpa(event.target.value)
                     }}
                     placeholder="7.50"
-                    className="h-11 w-full rounded-2xl border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
+                    className="h-11 w-full rounded-2xl border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text text-center outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-[12px] font-bold uppercase tracking-[0.12em] text-orbit-text-muted" htmlFor="completed-credits">
+                  <label className="mb-2 block text-[12px] font-bold uppercase tracking-[0.12em] text-orbit-text text-center" htmlFor="completed-credits">
                     Tín chỉ đã tích lũy
                   </label>
                   <input
@@ -696,12 +696,12 @@ export function GpaCalculatorPage() {
                       setCompletedCredits(event.target.value)
                     }}
                     placeholder="60"
-                    className="h-11 w-full rounded-2xl border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
+                    className="h-11 w-full rounded-2xl border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text text-center outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
                   />
                 </div>
                 {calculationMode === 'goal' && (
                   <div>
-                    <label className="mb-2 block text-[12px] font-bold uppercase tracking-[0.12em] text-orbit-text-muted" htmlFor="target-gpa">
+                    <label className="mb-2 block text-[12px] font-bold uppercase tracking-[0.12em] text-orbit-text text-center" htmlFor="target-gpa">
                       GPA mục tiêu
                     </label>
                     <input
@@ -716,7 +716,7 @@ export function GpaCalculatorPage() {
                         setTargetGpa(event.target.value)
                       }}
                       placeholder="8.00"
-                      className="h-11 w-full rounded-2xl border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
+                      className="h-11 w-full rounded-2xl border border-orbit-border bg-orbit-bg px-3 text-[14px] text-orbit-text text-center outline-none transition-colors placeholder:text-orbit-text-muted focus:border-orbit-accent/60"
                     />
                   </div>
                 )}

@@ -27,7 +27,7 @@ export function AdminTable<T>({ columns, data, keyExtractor, emptyMessage = 'Kh√
         <thead>
           <tr className="border-b border-orbit-border">
             {columns.map((col) => (
-              <th key={col.key} className={`px-5 py-4 text-left text-[10px] font-black uppercase tracking-[0.2em] text-ink-secondary bg-orbit-surface/50 ${col.className || ''}`}>
+              <th key={col.key} className={`px-5 py-4 text-center text-[10px] font-black uppercase tracking-[0.2em] text-orbit-text bg-orbit-surface/50 ${col.className || ''}`}>
                 {col.header}
               </th>
             ))}

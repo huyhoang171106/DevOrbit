@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { apiGet } from '../../lib/api'
 import { useCourseList } from '../../hooks/useCourseList'
 import { CourseCard } from '../../components/student/CourseCard'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import type { RepoSummary } from '../../types/api'
 import { hasExactCourseMatch, searchCourses, searchRepos } from '../../lib/repoSearch'
 import { MagnifyingGlass, Graph, Funnel, X, GraduationCap, BookOpen, CaretLeft, CaretRight, Code } from '@phosphor-icons/react'
@@ -15,6 +15,7 @@ import { ParallaxLayer } from '../../motion/primitives/ParallaxLayer'
 const PAGE_SIZE = 30
 
 export function CourseListPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const { data: courses = [], isLoading: loading, error: queryError } = useCourseList()
   const [allRepos, setAllRepos] = useState<RepoSummary[]>([])
   const [reposLoading, setReposLoading] = useState(false)
@@ -24,12 +25,33 @@ export function CourseListPage() {
   const reposFetched = useRef(false)
 
   // Debounce search by 200ms to avoid re-filtering on every keystroke
+  const pageParam = Number(searchParams.get('page'))
+  const [page, setPage] = useState(
+    Number.isInteger(pageParam) && pageParam > 0 ? pageParam - 1 : 0,
+  )
+
+  useEffect(() => {
+    const urlPage = Number.isInteger(pageParam) && pageParam > 0 ? pageParam - 1 : 0
+    setPage((current) => current === urlPage ? current : urlPage)
+  }, [pageParam])
+
+  const changePage = useCallback((nextPage: number, replace = false) => {
+    setPage(nextPage)
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current)
+      if (nextPage === 0) next.delete('page')
+      else next.set('page', String(nextPage + 1))
+      return next
+    }, { replace })
+  }, [setSearchParams])
+
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value
     setSearchQuery(val)
+    changePage(0, true)
     if (searchTimer.current) clearTimeout(searchTimer.current)
     searchTimer.current = setTimeout(() => setDebouncedQuery(val), 200)
-  }, [])
+  }, [changePage])
 
   const submitSearch = useCallback(() => {
     if (searchTimer.current) clearTimeout(searchTimer.current)
@@ -40,10 +62,10 @@ export function CourseListPage() {
     if (searchTimer.current) clearTimeout(searchTimer.current)
     setSearchQuery('')
     setDebouncedQuery('')
-  }, [])
+    changePage(0, true)
+  }, [changePage])
 
   useEffect(() => () => { if (searchTimer.current) clearTimeout(searchTimer.current) }, [])
-  const [page, setPage] = useState(0)
 
   // Fetch all repos lazily when user first searches
   useEffect(() => {
@@ -83,11 +105,15 @@ export function CourseListPage() {
     [hasSearch, matchedCourses],
   )
 
-  // Reset page on search
-  useEffect(() => { setPage(0) }, [searchQuery])
-
   const totalPages = Math.ceil(sortedCourses.length / PAGE_SIZE)
   const paged = sortedCourses.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+  const courseListPath = searchParams.size > 0
+    ? `/courses?${searchParams.toString()}`
+    : '/courses'
+
+  useEffect(() => {
+    if (totalPages > 0 && page >= totalPages) changePage(totalPages - 1, true)
+  }, [changePage, page, totalPages])
 
   if (loading) {
     return (
@@ -172,7 +198,8 @@ export function CourseListPage() {
                 <div className="relative flex-1">
                   <MagnifyingGlass className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-orbit-text-muted group-focus-within:text-orbit-accent transition-colors duration-300" weight="regular" />
                   <input
-                    type="search"
+                    type="text"
+                    role="searchbox"
                     placeholder="Tìm kiếm môn học và repo theo tên, mã, ngôn ngữ..."
                     value={searchQuery}
                     onChange={handleSearchChange}
@@ -240,7 +267,7 @@ export function CourseListPage() {
               <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                 {paged.map((c) => (
                   <StaggerItem key={c.id}>
-                    <CourseCard course={c} />
+                    <CourseCard course={c} courseListPath={courseListPath} />
                   </StaggerItem>
                 ))}
               </div>
@@ -250,7 +277,7 @@ export function CourseListPage() {
             {totalPages > 1 && (
               <div className="mt-12 flex items-center justify-center gap-3">
                 <button
-                  onClick={() => setPage(p => Math.max(0, p - 1))}
+                  onClick={() => changePage(Math.max(0, page - 1))}
                   disabled={page === 0}
                   className="btn-secondary px-4 py-3 disabled:opacity-30"
                 >
@@ -275,7 +302,7 @@ export function CourseListPage() {
                   return (
                     <button
                       key={pageNum}
-                      onClick={() => setPage(pageNum)}
+                      onClick={() => changePage(pageNum)}
                       className={`px-4 py-3 rounded-xl text-[12px] font-bold transition-all ${
                         isCurrent
                           ? 'bg-orbit-accent text-white shadow-glow'
@@ -288,7 +315,7 @@ export function CourseListPage() {
                 })}
 
                 <button
-                  onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                  onClick={() => changePage(Math.min(totalPages - 1, page + 1))}
                   disabled={page >= totalPages - 1}
                   className="btn-secondary px-4 py-3 disabled:opacity-30"
                 >

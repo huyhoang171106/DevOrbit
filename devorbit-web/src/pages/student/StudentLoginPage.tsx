@@ -96,7 +96,7 @@ export function StudentLoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [otpDigits, setOtpDigits] = useState<string[]>(Array(6).fill(''))
+  const [otpDigits, setOtpDigits] = useState<string[]>(() => Array(6).fill(''))
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [countdown, setCountdown] = useState(0)

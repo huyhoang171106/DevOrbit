@@ -11,5 +11,6 @@ public record SubjectQaResponse(
     UUID sessionId,
     List<Long> relevantNodeIds,
     List<String> sources,
-    String type
+    String type,
+    List<WebSearchResponse.WebSearchResult> searchResults
 ) {}

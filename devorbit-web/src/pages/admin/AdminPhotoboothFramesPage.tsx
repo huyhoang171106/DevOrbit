@@ -327,7 +327,10 @@ function SlotEditor({
   const [selectedIdx, setSelectedIdx] = useState<number>(-1);
   const [corner1, setCorner1] = useState<{ x: number; y: number } | null>(null);
   const mousePosRef = useRef<{ x: number; y: number } | null>(null);
-  const [imgSize, setImgSize] = useState<{ w: number; h: number } | null>(null);
+  const [loadedImage, setLoadedImage] = useState<{ src: string; w: number; h: number } | null>(null);
+  const imgSize = loadedImage?.src === frame.overlayImage
+    ? { w: loadedImage.w, h: loadedImage.h }
+    : null;
 
   const logicalSize = useMemo(() => {
     if (!imgSize) return { w: LOGICAL_MAX, h: LOGICAL_MAX };
@@ -405,15 +408,19 @@ function SlotEditor({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    if (!frame.overlayImage) { imgRef.current = null; setImgSize(null); return; }
+    if (!frame.overlayImage) {
+      imgRef.current = null;
+      return;
+    }
+    const overlayImage = frame.overlayImage;
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
       imgRef.current = img;
-      setImgSize({ w: img.naturalWidth, h: img.naturalHeight });
+      setLoadedImage({ src: overlayImage, w: img.naturalWidth, h: img.naturalHeight });
     };
-    img.onerror = () => { imgRef.current = null; setImgSize(null); };
-    img.src = frame.overlayImage;
+    img.onerror = () => { imgRef.current = null; };
+    img.src = overlayImage;
   }, [frame.overlayImage]);
 
   useEffect(() => { redraw(); }, [redraw, imgSize]);
@@ -527,16 +534,18 @@ function SlotEditor({
     const scaleX = lw / w;
     const scaleY = lh / h;
 
-    const detected: StoredSlot[] = regions
-      .filter((r) => (r.maxX - r.minX) > 20 && (r.maxY - r.minY) > 20)
-      .map((r, i) => ({
-        id: `slot${i + 1}`,
+    const detected: StoredSlot[] = [];
+    for (const r of regions) {
+      if ((r.maxX - r.minX) <= 20 || (r.maxY - r.minY) <= 20) continue;
+      detected.push({
+        id: `slot${detected.length + 1}`,
         x: Math.round(r.minX * scaleX),
         y: Math.round(r.minY * scaleY),
         width: Math.round((r.maxX - r.minX) * scaleX),
         height: Math.round((r.maxY - r.minY) * scaleY),
         borderRadius: 0,
-      }));
+      });
+    }
 
     if (detected.length > 0) {
       setSlots(detected);
@@ -628,13 +637,13 @@ function UploadDialog({
   const [name, setName] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [photoCount, setPhotoCount] = useState<number>(4);
-  const [file, setFile] = useState<File | null>(null);
+  const fileRef = useRef<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   const handleFile = (f: File | null) => {
-    setFile(f);
+    fileRef.current = f;
     if (f) {
       const reader = new FileReader();
       reader.onload = (e) => setPreview(e.target?.result as string);
@@ -661,7 +670,7 @@ function UploadDialog({
         filter: "normal",
         backgroundColor: "#ffffff",
       };
-      await onUpload(frame, file);
+      await onUpload(frame, fileRef.current);
     } catch (e: any) {
       setErr(e?.message || "Tải lên thất bại");
     } finally {

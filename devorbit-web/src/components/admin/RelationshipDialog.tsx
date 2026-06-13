@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react'
+﻿import { useState } from 'react'
 import type { CourseRelationshipRequest, CourseRelationType, CourseSummary } from '../../types/api'
 
 type Props = {
@@ -17,11 +17,20 @@ const relationTypes: { value: CourseRelationType; label: string }[] = [
 ]
 
 export function RelationshipDialog({ open, onClose, onSubmit, courses }: Props) {
-  const [form, setForm] = useState<CourseRelationshipRequest>(empty)
-
-  useEffect(() => { setForm(empty) }, [open])
-
   if (!open) return null
+
+  return (
+    <RelationshipDialogContent
+      key="relationship-dialog"
+      onClose={onClose}
+      onSubmit={onSubmit}
+      courses={courses}
+    />
+  )
+}
+
+function RelationshipDialogContent({ onClose, onSubmit, courses }: Omit<Props, 'open'>) {
+  const [form, setForm] = useState<CourseRelationshipRequest>(empty)
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const { name, value } = e.target

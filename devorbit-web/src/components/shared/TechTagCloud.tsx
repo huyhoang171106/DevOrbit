@@ -20,9 +20,11 @@ const defaultColors = [
   "bg-teal-100 text-teal-700 ring-teal-300/40 dark:bg-teal-900/30 dark:text-teal-300",
 ];
 
+const EMPTY_SELECTED: string[] = [];
+
 export function TechTagCloud({
   tags,
-  selected = [],
+  selected = EMPTY_SELECTED,
   onToggle,
   maxTags,
 }: TechTagCloudProps) {

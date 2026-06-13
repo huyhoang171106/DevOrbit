@@ -21,11 +21,9 @@ const DashboardPage = lazy(() => import('./pages/admin/DashboardPage').then(m =>
 const CoursesPage = lazy(() => import('./pages/admin/CoursesPage').then(m => ({ default: m.CoursesPage })))
 const ReposPage = lazy(() => import('./pages/admin/ReposPage').then(m => ({ default: m.ReposPage })))
 const StudentsPage = lazy(() => import('./pages/admin/StudentsPage').then(m => ({ default: m.StudentsPage })))
-const RoadmapsPage = lazy(() => import('./pages/admin/RoadmapsPage').then(m => ({ default: m.RoadmapsPage })))
 const ReviewsPage = lazy(() => import('./pages/admin/ReviewsPage').then(m => ({ default: m.ReviewsPage })))
 const CommunityAdminPage = lazy(() => import('./pages/admin/CommunityPage').then(m => ({ default: m.CommunityPage })))
 const ChatMonitorPage = lazy(() => import('./pages/admin/ChatMonitorPage').then(m => ({ default: m.ChatMonitorPage })))
-const NotesPage = lazy(() => import('./pages/admin/NotesPage').then(m => ({ default: m.NotesPage })))
 const RelationshipsPage = lazy(() => import('./pages/admin/RelationshipsPage').then(m => ({ default: m.RelationshipsPage })))
 const PhotoboothAdminPage = lazy(() => import('./pages/admin/PhotoboothPage').then(m => ({ default: m.PhotoboothPage })))
 const TechStackPage = lazy(() => import('./pages/admin/TechStackPage').then(m => ({ default: m.TechStackPage })))
@@ -69,11 +67,9 @@ export function AppRoutes() {
         <Route path="courses" element={<CoursesPage />} />
         <Route path="repos" element={<ReposPage />} />
         <Route path="students" element={<StudentsPage />} />
-        <Route path="roadmaps" element={<RoadmapsPage />} />
         <Route path="reviews" element={<ReviewsPage />} />
         <Route path="community" element={<CommunityAdminPage />} />
         <Route path="chat" element={<ChatMonitorPage />} />
-        <Route path="notes" element={<NotesPage />} />
         <Route path="relationships" element={<RelationshipsPage />} />
         <Route path="photobooth" element={<PhotoboothAdminPage />} />
         <Route path="techstack" element={<TechStackPage />} />

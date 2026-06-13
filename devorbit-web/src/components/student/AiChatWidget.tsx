@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react'
+import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { m as motion, AnimatePresence } from 'framer-motion'
 import { Sparkle, ArrowUp, X, ChatTeardropText, Spinner as SpinnerIcon, Link as LinkIcon, Trash, Copy, Check, CheckCircle, CaretDown, Globe, Database, BookOpen, MagnifyingGlass } from '@phosphor-icons/react'
 import {
@@ -9,13 +10,10 @@ import {
 } from '../../hooks/useSubjectQa'
 import type { RoadmapResponse } from '../../hooks/useAiRoadmap'
 
-// ─── Types ───
+// Re-export types and sub-components for backward compatibility
+export type { AiChatMessage, AiChatStatusEvent } from './ChatContext'
 
-export interface AiChatStatusEvent {
-    id: string
-    stage: SubjectQaStreamStage
-    message: string
-}
+export { ChatMessage } from './ChatMessage'
 
 export interface AiChatMessage {
     id: string
@@ -919,26 +917,11 @@ export const ChatMessage = memo(function ChatMessage({
 // ─── AiChatWidget (main) ───
 
 export function AiChatWidget() {
-    const [isOpen, setIsOpen] = useState(false)
-    const [input, setInput] = useState('')
-    const sessionIdRef = useRef<string | undefined>(localStorage.getItem('orbit_chat_session_id') || undefined)
-    const [messages, setMessages] = useState<AiChatMessage[]>(() => {
-        const saved = localStorage.getItem('orbit_chat_messages')
-        return saved ? JSON.parse(saved) : [
-            {
-                id: 'welcome',
-                sender: 'ai',
-                content: 'Chào bạn! Mình là Cố vấn Học tập AI của DevOrbit. Bạn cần hỏi điều gì về môn học, đề cương, cách tính điểm hay tham khảo đồ án mẫu UIT không?',
-            },
-        ]
-    })
-    const [streamingMsgId, setStreamingMsgId] = useState<string | null>(null)
-    const [copiedId, setCopiedId] = useState<string | null>(null)
-    const abortRef = useRef<AbortController | null>(null)
-    const inputRef = useRef<HTMLInputElement>(null)
+  const location = useLocation()
+  const { setIsOpen } = useChat()
+  const [localOpen, setLocalOpen] = useState(false)
 
-    const scrollRef = useRef<HTMLDivElement>(null)
-    const isNearBottomRef = useRef(true)
+  const isAiTutorPage = location.pathname === '/ai-tutor'
 
     const chatMutation = useSubjectQa()
 
@@ -1202,181 +1185,50 @@ export function AiChatWidget() {
             abortRef.current = null
         }
     }
+    prevPathRef[0] = location.pathname
+  }, [location.pathname, setIsOpen])
 
-    const clearHistory = () => {
-        if (abortRef.current) {
-            abortRef.current.abort()
-            abortRef.current = null
-        }
-        setMessages([
-            {
-                id: 'welcome',
-                sender: 'ai',
-                content: 'Chào bạn! Mình là Cố vấn Học tập AI của DevOrbit. Bạn cần hỏi điều gì về môn học, đề cương, cách tính điểm hay tham khảo đồ án mẫu UIT không?',
-            },
-        ])
-        updateSessionId(undefined)
-        setStreamingMsgId(null)
-        localStorage.removeItem('orbit_chat_messages')
-        localStorage.removeItem('orbit_chat_session_id')
-    }
+  // Hide widget on /ai-tutor
+  if (isAiTutorPage) return null
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
-        handleSend(input)
-    }
+  return (
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+      <AnimatePresence>
+        {localOpen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 15 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 15 }}
+            transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+            data-lenis-prevent
+            className="w-[90vw] sm:w-[420px] h-[600px] max-h-[80vh] mb-4 flex flex-col rounded-[2rem] border border-zinc-800/50 bg-zinc-950/80 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden"
+            role="dialog"
+            aria-label="DevOrbit AI Chat"
+            aria-modal="true"
+          >
+            <ChatPanel onClose={() => setLocalOpen(false)} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-    const isMessageStreaming = (msgId: string): boolean => {
-        return streamingMsgId === msgId
-    }
-
-    return (
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
-            <AnimatePresence>
-                {isOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: 15 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 15 }}
-                        transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                        data-lenis-prevent
-                        className="w-[90vw] sm:w-[420px] h-[600px] max-h-[80vh] mb-4 flex flex-col rounded-[2rem] border border-zinc-800/50 bg-zinc-950/80 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden"
-                        role="dialog"
-                        aria-label="DevOrbit AI Chat"
-                        aria-modal="true"
-                    >
-                        {/* ─── Header ─── */}
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800/40 bg-zinc-900/10 shrink-0">
-                            <div className="flex items-center gap-3">
-                                <div className="h-9 w-9 rounded-xl bg-orbit-accent/15 border border-orbit-accent/20 flex items-center justify-center relative">
-                                    <Sparkle className="h-5 w-5 text-orbit-accent animate-pulse" weight="fill" aria-hidden="true" />
-                                    <span className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-emerald-400 border border-zinc-950" />
-                                </div>
-                                <div>
-                                    <h4 className="text-[14px] font-bold text-zinc-100">DevOrbit AI</h4>
-                                    <p className="text-[11px] text-zinc-400">Trợ lý Cố vấn Học tập UIT</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={clearHistory}
-                                    title="Xóa lịch sử chat"
-                                    aria-label="Xóa lịch sử chat"
-                                    className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-zinc-800/40 transition-colors"
-                                >
-                                    <Trash className="h-4.5 w-4.5" aria-hidden="true" />
-                                </button>
-                                <button
-                                    onClick={() => setIsOpen(false)}
-                                    aria-label="Đóng chat"
-                                    className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/40 transition-colors"
-                                >
-                                    <X className="h-5 w-5" aria-hidden="true" />
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* ─── Messages ─── */}
-                        <div
-                            ref={scrollRef}
-                            onScroll={handleScroll}
-                            className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-thin min-h-0"
-                            role="list"
-                            aria-label="Tin nhắn chat"
-                        >
-                            {messages.map((msg) => (
-                                <ChatMessage
-                                    key={msg.id}
-                                    message={msg}
-                                    isStreaming={isMessageStreaming(msg.id)}
-                                    copiedId={copiedId}
-                                    onCopy={handleCopy}
-                                />
-                            ))}
-                        </div>
-
-                        {/* ─── Suggestion Chips ─── */}
-                        {messages.length === 1 && (
-                            <div className="px-6 py-2 flex flex-col gap-1.5 shrink-0">
-                                <span className="text-[10px] font-bold text-zinc-400">Gợi ý câu hỏi:</span>
-                                <div className="flex flex-wrap gap-1.5 max-h-[85px] overflow-y-auto">
-                                    {SUGGESTIONS.map((s, i) => (
-                                        <button
-                                            key={i}
-                                            onClick={() => handleSend(s)}
-                                            disabled={streamingMsgId !== null}
-                                            className="text-[11px] text-left text-zinc-300 hover:text-orbit-accent bg-zinc-900/40 border border-zinc-800 hover:border-orbit-accent/30 rounded-xl px-3 py-1.5 transition-colors duration-200 disabled:opacity-50"
-                                            aria-label={`Gợi ý: ${s}`}
-                                        >
-                                            {s}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* ─── Input ─── */}
-                        <div className="p-4 border-t border-zinc-800/40 bg-zinc-900/10 shrink-0">
-                            <form onSubmit={handleSubmit} className="relative flex items-center">
-                                <input
-                                    ref={inputRef}
-                                    type="text"
-                                    value={input}
-                                    onChange={(e) => setInput(e.target.value)}
-                                    placeholder="Hỏi về môn học, đề cương, cách ôn thi..."
-                                    disabled={streamingMsgId !== null}
-                                    aria-label="Tin nhắn của bạn"
-                                    className="w-full bg-zinc-900 border border-zinc-800 hover:border-zinc-700 focus:border-orbit-accent/50 focus:ring-1 focus:ring-orbit-accent/50 rounded-2xl pl-4 pr-12 py-3 text-[14px] text-zinc-100 placeholder:text-zinc-500 transition-[border-color,box-shadow] outline-none disabled:opacity-50"
-                                />
-                                <button
-                                    type="submit"
-                                    disabled={!input.trim() || streamingMsgId !== null}
-                                    aria-label="Gửi tin nhắn"
-                                    className="absolute right-2.5 h-8 w-8 rounded-xl bg-orbit-accent hover:bg-orbit-accent/90 disabled:bg-zinc-800 text-zinc-950 disabled:text-zinc-500 flex items-center justify-center transition-all focus:outline-none"
-                                >
-                                    <ArrowUp className="h-4.5 w-4.5" weight="bold" aria-hidden="true" />
-                                </button>
-                            </form>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* ─── FAB Toggle ─── */}
-            <motion.button
-                onClick={() => setIsOpen(!isOpen)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                aria-label={isOpen ? 'Đóng chat' : 'Mở chat AI'}
-                className={`h-14 w-14 rounded-full shadow-2xl flex items-center justify-center border transition-all duration-300 ${
-                    isOpen
-                        ? 'bg-zinc-900 border-zinc-800 text-zinc-100 hover:bg-zinc-800'
-                        : 'bg-orbit-accent border-orbit-accent/20 text-zinc-950 hover:shadow-[0_0_20px_rgba(52,211,153,0.4)]'
-                }`}
-            >
-                {isOpen ? (
-                    <X className="h-6 w-6" weight="bold" aria-hidden="true" />
-                ) : (
-                    <ChatTeardropText className="h-6 w-6" weight="fill" aria-hidden="true" />
-                )}
-            </motion.button>
-        </div>
-    )
-}
-
-// ─── Helpers ───
-
-function mergeSearchResults(
-    existing: WebSearchResult[],
-    incoming: WebSearchResult[],
-): WebSearchResult[] {
-    const seen = new Set(existing.map((r) => r.url))
-    const merged = [...existing]
-    for (const r of incoming) {
-        if (!seen.has(r.url)) {
-            seen.add(r.url)
-            merged.push(r)
-        }
-    }
-    return merged
+      {/* ─── FAB Toggle ─── */}
+      <motion.button
+        onClick={() => setLocalOpen(!localOpen)}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        aria-label={localOpen ? 'Đóng chat' : 'Mở chat AI'}
+        className={`h-14 w-14 rounded-full shadow-2xl flex items-center justify-center border transition-all duration-300 ${
+          localOpen
+            ? 'bg-zinc-900 border-zinc-800 text-zinc-100 hover:bg-zinc-800'
+            : 'bg-orbit-accent border-orbit-accent/20 text-zinc-950 hover:shadow-[0_0_20px_rgba(52,211,153,0.4)]'
+        }`}
+      >
+        {localOpen ? (
+          <X className="h-6 w-6" weight="bold" aria-hidden="true" />
+        ) : (
+          <ChatTeardropText className="h-6 w-6" weight="fill" aria-hidden="true" />
+        )}
+      </motion.button>
+    </div>
+  )
 }

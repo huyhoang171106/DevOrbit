@@ -6,6 +6,7 @@ import { Cube, UserCircle, SignOut, BookmarkSimple, UsersThree, User } from '@ph
 import { ScrollProgressIndicator } from '../motion/primitives/ScrollProgressIndicator'
 import { navLinks } from './navigation'
 import { AiChatWidget } from './student/AiChatWidget'
+import { ChatProvider } from './student/ChatContext'
 import { ProfileDropdown } from './student/ProfileDropdown'
 import { isStudentAuthenticated, clearStudentToken } from '../lib/auth'
 
@@ -26,6 +27,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const showParticles = useMemo(() => !isAdmin, [isAdmin])
 
   return (
+    <ChatProvider>
     <div className="relative min-h-screen flex flex-col bg-orbit-bg selection:bg-orbit-accent selection:text-zinc-950">
       {showParticles && <ParticleNetwork />}
 
@@ -202,11 +204,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </motion.nav>}
 
       {/* Main content */}
-      <main className="relative z-10 flex-1 w-full">
+      <main className="relative z-10 flex-1 w-full min-h-0">
         {children}
       </main>
 
-      {!isAdmin && !location.pathname.startsWith('/knowledge-graph') && (
+      {!isAdmin && !location.pathname.startsWith('/knowledge-graph') && !location.pathname.startsWith('/ai-tutor') && !location.pathname.startsWith('/community') && (
         <footer className="relative z-10 border-t border-orbit-border bg-orbit-bg">
           <div className="mx-auto max-w-[1440px] px-6 md:px-10 py-16">
             <div className="flex flex-col md:flex-row items-center justify-between gap-8">
@@ -231,5 +233,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {!isAdmin && <AiChatWidget />}
     </div>
+    </ChatProvider>
   )
 }

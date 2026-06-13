@@ -1,5 +1,6 @@
 import type { RepoSummary } from '../types/api'
 import { formatVietnameseRelativeDate } from './repoEvaluation'
+import { cleanText, normalizeStringList } from './repoText'
 
 export type RepoAiAnalysisTone = 'accent' | 'indigo' | 'amber' | 'rose'
 
@@ -199,8 +200,8 @@ function getRepoSignals(repo: RepoSummary): RepoSignals {
     name: cleanText(repo.displayName) || `Repo #${repo.id}`,
     description: cleanText(repo.description),
     language: cleanText(repo.primaryLanguage),
-    techStacks: uniqueClean(repo.techStacks ?? []),
-    topics: normalizeList(metadata.topics ?? metadata.tags),
+    techStacks: normalizeStringList(repo.techStacks),
+    topics: normalizeStringList(metadata.topics ?? metadata.tags),
     readmeExcerpt: cleanText(metadata.readmeExcerpt ?? metadata.readmeContent ?? metadata.readmeMarkdown ?? metadata.readmeText ?? metadata.readme),
     courseLabel: formatCourseLabel(repo),
     stars: typeof repo.stars === 'number' ? repo.stars : null,
@@ -208,17 +209,6 @@ function getRepoSignals(repo: RepoSummary): RepoSignals {
     updatedAt: formatVietnameseRelativeDate(metadata.lastPushedAt ?? metadata.updatedAt),
     deadline: cleanText(metadata.deadline),
   }
-}
-
-function cleanText(value: string | null | undefined): string | null {
-  const normalized = value?.replace(/\s+/g, ' ').trim()
-  return normalized ? normalized : null
-}
-
-function normalizeList(value: string[] | string | null | undefined): string[] {
-  if (!value) return []
-  const rawValues = Array.isArray(value) ? value : value.split(/[,;|]/)
-  return uniqueClean(rawValues)
 }
 
 function formatCourseLabel(repo: RepoSummary): string | null {

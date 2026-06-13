@@ -14,6 +14,7 @@ import java.util.Optional;
 public interface RepoCandidateRepository extends JpaRepository<RepoCandidate, Long> {
     @EntityGraph(attributePaths = {"course"})
     List<RepoCandidate> findByStatus(RepoCandidateStatus status);
+    List<RepoCandidate> findTop10ByOrderByIdDesc();
 
     long countByStatus(RepoCandidateStatus status);
 

@@ -21,6 +21,7 @@ public class AdminNoteService {
 
     // ================ NOTE CRUD ================
 
+    @Transactional(readOnly = true)
     public List<NoteResponse> getAll() {
         return noteRepo.findAllByOrderByUpdatedAtDesc().stream()
                 .map(this::toNoteResponse)
@@ -43,7 +44,9 @@ public class AdminNoteService {
                 .toList();
         return new NoteResponse(
                 entity.getId(),
-                entity.getStudent().getId(), entity.getStudent().getStudentCode(), entity.getStudent().getFullName(),
+                entity.getStudent() != null ? entity.getStudent().getId() : null,
+                entity.getStudent() != null ? entity.getStudent().getStudentCode() : "Deleted",
+                entity.getStudent() != null ? entity.getStudent().getFullName() : "Deleted",
                 entity.getTitle(), entity.getContentMarkdown(),
                 entity.getTargetType(), entity.getTargetId(),
                 entity.getCreatedAt(), entity.getUpdatedAt(),

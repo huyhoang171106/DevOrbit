@@ -12,6 +12,7 @@ import java.util.Optional;
 public interface RepoReviewRepository extends JpaRepository<RepoReview, Long> {
     Optional<RepoReview> findByRepoIdAndStudentId(Long repoId, Long studentId);
     List<RepoReview> findByRepoIdOrderByUpdatedAtDesc(Long repoId);
+    List<RepoReview> findAllByOrderByCreatedAtDesc();
 
     @Query("SELECT AVG(r.rating) FROM RepoReview r WHERE r.repo.id = :repoId")
     Double averageRatingByRepoId(Long repoId);

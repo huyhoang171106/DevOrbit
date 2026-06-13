@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link, useLocation, useNavigate } from 'react-router-dom'
 import { m as motion } from 'framer-motion'
 import { apiGet, apiStudentPost, apiStudentGet, apiStudentDelete } from '../../lib/api'
 import { isStudentAuthenticated } from '../../lib/auth'
@@ -56,7 +56,11 @@ function setCachedCourse(id: string, data: CourseDetail) {
 
 export function CourseDetailPage() {
   const { courseId } = useParams<{ courseId: string }>()
+  const location = useLocation()
   const navigate = useNavigate()
+  const courseListPath = typeof location.state?.courseListPath === 'string'
+    ? location.state.courseListPath
+    : '/courses'
   const cached = courseId ? getCachedCourse(courseId) : null
   const cachedRef = useRef(cached)
   cachedRef.current = cached
@@ -189,7 +193,7 @@ export function CourseDetailPage() {
           </div>
           <h2 className="heading-4 mb-4 text-orbit-text">Môn học không tồn tại</h2>
           <p className="body-md mb-8">Chúng tôi không thể tìm thấy dữ liệu về môn học này trong hệ thống.</p>
-          <Link to="/courses" className="btn-primary">
+          <Link to={courseListPath} className="btn-primary">
             <ArrowLeft className="h-4 w-4" weight="bold" />
             Quay lại danh sách
           </Link>
@@ -217,7 +221,7 @@ export function CourseDetailPage() {
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         >
           <Link
-            to="/courses"
+            to={courseListPath}
             className="group flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-orbit-surface border border-orbit-border hover:border-orbit-accent/30 hover:bg-orbit-accent/5 transition-[border-color,background-color] duration-300"
           >
             <ArrowLeft className="h-4 w-4 text-orbit-text-muted group-hover:text-orbit-accent transition-colors group-hover:-translate-x-0.5 duration-300" weight="bold" />

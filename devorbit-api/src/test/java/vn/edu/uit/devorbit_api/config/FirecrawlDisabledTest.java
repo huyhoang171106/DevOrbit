@@ -12,8 +12,7 @@ import static org.assertj.core.api.Assertions.assertThatNoException;
  */
 @SpringBootTest(properties = {
     "firecrawl.enabled=false",
-    "devorbit.knowledge.schema-init.enabled=false",
-    "spring.jpa.hibernate.ddl-auto=none"
+    "devorbit.knowledge.schema-init.enabled=false"
 })
 @ActiveProfiles("test")
 class FirecrawlDisabledTest {

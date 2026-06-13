@@ -258,20 +258,20 @@ function ChatArea({
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const prevMessagesLength = useRef(0)
-  const [autoScroll, setAutoScroll] = useState(true)
+  const autoScrollRef = useRef(true)
 
   useEffect(() => {
-    if (autoScroll && messages.length > prevMessagesLength.current) {
+    if (autoScrollRef.current && messages.length > prevMessagesLength.current) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
     prevMessagesLength.current = messages.length
-  }, [messages.length, autoScroll])
+  }, [messages.length])
 
   const handleScroll = () => {
     if (!containerRef.current) return
     const el = containerRef.current
     const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100
-    setAutoScroll(atBottom)
+    autoScrollRef.current = atBottom
 
     if (el.scrollTop < 50 && page < totalPages - 1 && !loadingMessages) {
       onLoadMore()

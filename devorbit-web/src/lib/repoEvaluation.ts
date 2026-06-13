@@ -292,7 +292,7 @@ export function extractRepoSignals(repo: RepoSummary): RepoSignals {
   const description = cleanText(repo.description)
   const topics = normalizeList(metadata.topics ?? metadata.tags)
   const primaryLanguage = cleanText(repo.primaryLanguage)
-  const techStacks = Array.from(new Set((repo.techStacks ?? []).map(cleanText).filter(Boolean) as string[]))
+  const techStacks = uniqueClean(repo.techStacks ?? [])
   const readmeText = cleanText(
     metadata.readmeExcerpt ?? metadata.readmeContent ?? metadata.readmeMarkdown ?? metadata.readmeText ?? metadata.readme,
   )
@@ -1072,16 +1072,22 @@ function buildEvidence(signals: RepoSignals): string[] {
 function normalizeFilePaths(value: OptionalRepoMetadata['files'] | OptionalRepoMetadata['paths'] | OptionalRepoMetadata['fileTree']): string[] {
   if (!value) return []
   const rawValues = Array.isArray(value) ? value : value.split(/\r?\n/)
-  return Array.from(new Set(rawValues.map((item) => {
+  const paths: string[] = []
+  const seen = new Set<string>()
+  for (const item of rawValues) {
     const rawPath = typeof item === 'string' ? item : item.path ?? item.name
-    return cleanText(rawPath)?.replace(/\\/g, '/')
-  }).filter(Boolean) as string[]))
+    const normalized = cleanText(rawPath)?.replace(/\\/g, '/')
+    if (!normalized || seen.has(normalized)) continue
+    seen.add(normalized)
+    paths.push(normalized)
+  }
+  return paths
 }
 
 function normalizeList(value: string[] | string | null | undefined): string[] {
   if (!value) return []
   const rawValues = Array.isArray(value) ? value : value.split(/[,;|]/)
-  return Array.from(new Set(rawValues.map(cleanText).filter(Boolean) as string[]))
+  return uniqueClean(rawValues)
 }
 
 function normalizeSearchText(values: Array<string | null | undefined>): string {
@@ -1122,15 +1128,36 @@ function clampScore(value: number): number {
 }
 
 function collectMatches(text: string, matchers: Array<[string, RegExp]>): string[] {
-  return matchers.filter(([, pattern]) => pattern.test(text)).map(([label]) => label)
+  const matches: string[] = []
+  for (const [label, pattern] of matchers) {
+    if (pattern.test(text)) matches.push(label)
+  }
+  return matches
 }
 
 function unique(values: string[]): string[] {
-  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)))
+  return uniqueClean(values)
 }
 
 function countTopLevelFolders(paths: string[]): number {
-  return new Set(paths.map((path) => path.split(/[\\/]/)[0]).filter((part) => part && !part.includes('.'))).size
+  const folders = new Set<string>()
+  for (const path of paths) {
+    const part = path.split(/[\\/]/)[0]
+    if (part && !/\./.test(part)) folders.add(part)
+  }
+  return folders.size
+}
+
+function uniqueClean(values: unknown[]): string[] {
+  const seen = new Set<string>()
+  const result: string[] = []
+  for (const value of values) {
+    const normalized = cleanText(value)
+    if (!normalized || seen.has(normalized)) continue
+    seen.add(normalized)
+    result.push(normalized)
+  }
+  return result
 }
 
 function compact(items: Array<string | null | undefined>, limit: number, fallback: string[] = []): string[] {

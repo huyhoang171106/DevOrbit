@@ -1,4 +1,4 @@
-﻿import { motion } from 'framer-motion'
+﻿import { m as motion } from 'framer-motion'
 import { Sparkle } from '@phosphor-icons/react'
 
 export function AiTutorPage() {

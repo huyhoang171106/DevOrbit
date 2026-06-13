@@ -1,3 +1,5 @@
+import { getStudentToken } from './auth'
+
 export const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? ''
 
 export function buildApiUrl(baseUrl: string, path: string): string {
@@ -53,9 +55,10 @@ function normalizeResponse(value: unknown): unknown {
   if (!value || typeof value !== 'object') return value
   const record = { ...(value as Record<string, unknown>) }
   if (Array.isArray(record.techStacks)) {
-    record.techStacks = record.techStacks.map((stack) =>
-      typeof stack === 'string' ? stack : String((stack as { name?: string }).name ?? ''),
-    ).filter(Boolean)
+    record.techStacks = record.techStacks.flatMap((stack) => {
+      const normalized = typeof stack === 'string' ? stack : String((stack as { name?: string }).name ?? '')
+      return normalized ? [normalized] : []
+    })
   }
   if (Array.isArray(record.repos)) record.repos = record.repos.map(normalizeResponse)
   return record
@@ -75,14 +78,6 @@ export const apiUpload = <T>(path: string, formData: FormData): Promise<T> => {
     if (!res.ok) throw new Error(`Upload failed: ${res.status}`)
     return (await res.json()) as T
   })
-}
-
-function getStudentToken(): string | null {
-  try {
-    return localStorage.getItem('devorbit-student-token')
-  } catch {
-    return null
-  }
 }
 
 // --- Student API (authenticated) ---

@@ -32,7 +32,7 @@ export function AdminCandidatesPage() {
     ? mappedCandidates
     : mappedCandidates.filter(c => c.courseCode === selectedSubject)
 
-  const uniqueSubjects = Array.from(new Set(mappedCandidates.map(c => c.courseCode).filter(Boolean) as string[]))
+  const uniqueSubjects = Array.from(new Set(mappedCandidates.flatMap(c => c.courseCode ? [c.courseCode] : [])))
 
   async function handleApprove(id: number) {
     const candidate = (candidates ?? []).find(c => c.id === id)

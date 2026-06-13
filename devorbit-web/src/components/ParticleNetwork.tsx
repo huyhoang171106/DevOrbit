@@ -55,8 +55,12 @@ export function ParticleNetwork() {
       mouse.x = e.clientX
       mouse.y = e.clientY
     }
+    const onMouseLeave = () => {
+      mouse.x = -1000
+      mouse.y = -1000
+    }
     window.addEventListener('mousemove', onMouse, { passive: true })
-    window.addEventListener('mouseleave', () => { mouse.x = -1000; mouse.y = -1000 })
+    window.addEventListener('mouseleave', onMouseLeave)
 
     // Init particles (GPU-friendly Float32 for positions)
     const particles: Particle[] = []
@@ -84,7 +88,7 @@ export function ParticleNetwork() {
 
       // Throttle on mobile/low-end
       if (interval > 0 && timestamp - lastFrame < interval) {
-        requestAnimationFrame(animate)
+        rafId = requestAnimationFrame(animate)
         return
       }
       lastFrame = timestamp
@@ -177,6 +181,7 @@ export function ParticleNetwork() {
       cancelAnimationFrame(rafId)
       window.removeEventListener('resize', resize)
       window.removeEventListener('mousemove', onMouse)
+      window.removeEventListener('mouseleave', onMouseLeave)
       document.removeEventListener('visibilitychange', onVisibility)
     }
   }, [profile.enableParticleNetwork, profile.particleMultiplier, profile.maxDpr, profile.canvasUpdateInterval])

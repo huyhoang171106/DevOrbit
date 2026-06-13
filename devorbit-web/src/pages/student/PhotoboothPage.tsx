@@ -10,7 +10,7 @@ import {
   FRAME_DEFINITIONS,
   ensureFramesLoaded,
 } from "../../lib/frames/frameDefinitions";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import {
   ImageSquare,
   Palette,
@@ -50,12 +50,13 @@ export function PhotoboothPage() {
     try {
       const images = await PhotoCompositor.loadImages(files);
 
-      const orderedImages = selectedFrame.slots.map((_, i) => {
+      const orderedImages = selectedFrame.slots.flatMap((_, i) => {
         const f = slotPhotos[i];
-        if (!f) return null;
+        if (!f) return [];
         const idx = files.indexOf(f);
-        return images[idx] ?? null;
-      }).filter(Boolean) as HTMLImageElement[];
+        const image = images[idx];
+        return image ? [image] : [];
+      });
 
       const canvas = await PhotoCompositor.compositePhotos(
         orderedImages, selectedFrame, slotOffsets,

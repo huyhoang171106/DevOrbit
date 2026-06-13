@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion'
+import { m as motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { gsap } from 'gsap'
 import { Compass, Graph, MagicWand, Rocket, Cube } from '@phosphor-icons/react'
 import type { Icon } from '@phosphor-icons/react'
-import { useReducedMotion } from '../../motion'
+import { useReducedMotion } from '../../motion/hooks/useReducedMotion'
 
 /* ─── Scene definitions — pure storytelling, no fake stats ─── */
 

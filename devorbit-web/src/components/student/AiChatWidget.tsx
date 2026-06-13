@@ -94,7 +94,7 @@ function groupRoadmapCoursesBySemester(courses: readonly RoadmapCourse[]): Roadm
         })
         .map((group) => ({
             ...group,
-            courses: [...group.courses].sort((a, b) => {
+            courses: group.courses.toSorted((a, b) => {
                 const mandatoryA = a.isMandatory ? 0 : 1
                 const mandatoryB = b.isMandatory ? 0 : 1
                 if (mandatoryA !== mandatoryB) return mandatoryA - mandatoryB

@@ -19,7 +19,7 @@ public class SubjectQaStreamingConfig {
         executor.setThreadNamePrefix("subject-qa-stream-");
         executor.setCorePoolSize(2);
         executor.setMaxPoolSize(8);
-        executor.setQueueCapacity(32);
+        executor.setQueueCapacity(0);
         executor.initialize();
         return executor;
     }

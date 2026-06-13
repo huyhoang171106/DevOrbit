@@ -97,7 +97,7 @@ class WebSearchServiceTest {
         @SuppressWarnings("unchecked")
         Map<String, Object> contents = (Map<String, Object>) request.get("contents");
         assertThat(contents.get("highlights")).isEqualTo(true);
-        assertThat(contents.get("maxAgeHours")).isEqualTo(24);
+        assertThat(request.get("maxAgeHours")).isEqualTo(24);
 
         assertThat(response.status()).isEqualTo("success");
         assertThat(response.web()).hasSize(2);

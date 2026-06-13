@@ -3,17 +3,15 @@ import type {
   AdminStats, AdminStudent, CourseReviewAdmin, RepoReviewAdmin,
   CommunityMessageAdmin, ChatSessionAdmin, ChatMessageAdmin, TechStackAdmin,
   CourseUpsertRequest, ApprovedRepoUpdateRequest, CandidateReviewRequest,
+  AdminNotification,
 } from '../types/admin'
 import type {
   CourseSummary, CourseDetail, RepoSummary, RepoCandidate, ReviewerStats,
   YoutubePlaylistResponse, YoutubePlaylistRequest,
   ArticleResponse, ArticleRequest,
   TutorialResponse, TutorialRequest,
-  RoadmapResponse, RoadmapRequest,
-  PhaseResponse, PhaseRequest,
-  ItemResponse, ItemRequest,
   CourseRelationshipResponse, CourseRelationshipRequest,
-  NoteResponse, ChatChannelResponse,
+  ChatChannelResponse,
 } from '../types/api'
 
 export const adminApi = {
@@ -127,36 +125,6 @@ export const adminApi = {
   deleteApprovedRepo: (token: string, id: number) =>
     apiAdminDelete(`/api/admin/repos/${id}`, token),
 
-  // --- Roadmaps ---
-  getRoadmaps: (token: string) =>
-    apiAdminGet<RoadmapResponse[]>('/api/admin/roadmaps', token),
-  createRoadmap: (token: string, data: RoadmapRequest) =>
-    apiAdminPost<RoadmapResponse>('/api/admin/roadmaps', token, data),
-  updateRoadmap: (token: string, id: number, data: RoadmapRequest) =>
-    apiAdminPut<RoadmapResponse>(`/api/admin/roadmaps/${id}`, token, data),
-  deleteRoadmap: (token: string, id: number) =>
-    apiAdminDelete(`/api/admin/roadmaps/${id}`, token),
-
-  // --- Roadmap Phases ---
-  getPhases: (token: string, roadmapId: number) =>
-    apiAdminGet<PhaseResponse[]>(`/api/admin/roadmaps/${roadmapId}/phases`, token),
-  createPhase: (token: string, roadmapId: number, data: PhaseRequest) =>
-    apiAdminPost<PhaseResponse>(`/api/admin/roadmaps/${roadmapId}/phases`, token, data),
-  updatePhase: (token: string, phaseId: number, data: PhaseRequest) =>
-    apiAdminPut<PhaseResponse>(`/api/admin/roadmaps/phases/${phaseId}`, token, data),
-  deletePhase: (token: string, phaseId: number) =>
-    apiAdminDelete(`/api/admin/roadmaps/phases/${phaseId}`, token),
-
-  // --- Roadmap Items ---
-  getItems: (token: string, phaseId: number) =>
-    apiAdminGet<ItemResponse[]>(`/api/admin/roadmaps/phases/${phaseId}/items`, token),
-  createItem: (token: string, phaseId: number, data: ItemRequest) =>
-    apiAdminPost<ItemResponse>(`/api/admin/roadmaps/phases/${phaseId}/items`, token, data),
-  updateItem: (token: string, itemId: number, data: ItemRequest) =>
-    apiAdminPut<ItemResponse>(`/api/admin/roadmaps/items/${itemId}`, token, data),
-  deleteItem: (token: string, itemId: number) =>
-    apiAdminDelete(`/api/admin/roadmaps/items/${itemId}`, token),
-
   // --- Relationships ---
   getRelationships: (token: string) =>
     apiAdminGet<CourseRelationshipResponse[]>('/api/admin/courses/relationships', token),
@@ -165,9 +133,13 @@ export const adminApi = {
   deleteRelationship: (token: string, id: number) =>
     apiAdminDelete(`/api/admin/courses/relationships/${id}`, token),
 
-  // --- Notes ---
-  getNotes: (token: string) =>
-    apiAdminGet<NoteResponse[]>('/api/admin/notes', token),
-  deleteNote: (token: string, id: number) =>
-    apiAdminDelete(`/api/admin/notes/${id}`, token),
+  // --- Notifications ---
+  getNotifications: (token: string) =>
+    apiAdminGet<AdminNotification[]>('/api/admin/notifications', token),
+  getUnreadNotificationCount: (token: string) =>
+    apiAdminGet<{ count: number }>('/api/admin/notifications/unread-count', token),
+  markNotificationRead: (token: string, id: number) =>
+    apiAdminPut(`/api/admin/notifications/${id}/read`, token, {}),
+  markAllNotificationsRead: (token: string) =>
+    apiAdminPut('/api/admin/notifications/read-all', token, {}),
 }

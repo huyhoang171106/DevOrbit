@@ -1,4 +1,5 @@
 const TOKEN_KEY = 'devorbit-admin-token'
+export const ADMIN_TOKEN_KEY = TOKEN_KEY
 const STUDENT_TOKEN_KEY = 'devorbit-student-token'
 
 export function getAdminToken(): string | null {

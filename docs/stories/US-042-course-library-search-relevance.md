@@ -13,9 +13,8 @@ normal
 Course-library search must find courses and repositories from Vietnamese
 queries with or without accents. Results update while the user types, exact
 phrase matches rank before related matches, and pressing Enter or the search
-button immediately applies the complete query. When the normalized query
-matches a complete course title or course code, search narrows to exact course
-matches instead of continuing to show loosely related courses or repositories.
+button immediately applies the complete query. A complete title or code match
+ranks first without hiding other courses that directly contain the same phrase.
 
 ## Relevant Product Docs
 
@@ -26,11 +25,20 @@ matches instead of continuing to show loosely related courses or repositories.
 
 - `nhập môn` and `nhap mon` both match courses containing "Nhập môn".
 - Partial input such as `nhập` and `nhập m` shows relevant results.
-- Exact phrase matches rank before looser related matches.
-- A complete course title or code locks results to exact course matches only.
-- Shorter partial phrases remain broad to support discovery while typing.
-- Search compares normalized course, repository, language, technology, README,
-  and file-tree text consistently.
+- A direct phrase match narrows results to names or codes containing that phrase.
+- A complete course title or code ranks first while longer names containing the
+  same direct phrase remain visible.
+- Shorter partial phrases remain responsive while the user is typing.
+- If no complete phrase matches, each independently matching keyword can return
+  courses whose name or code directly contains that word.
+- Complete words use exact word matching; prefix matching is used only when no
+  complete keyword matches yet, preserving useful results while typing.
+- Keyword matching respects word boundaries, so `anh` does not match inside
+  `hành`, `văn` does not match `vận`, and `java` does not match `javascript`.
+- Repository results follow the same direct phrase and word-boundary rules over
+  repo name, course name/code, language, or technology stack.
+- Descriptions, README content, file trees, aliases, and semantic expansions do
+  not create additional matches.
 - Enter and the search button apply the current input immediately.
 - All matching repositories are shown rather than truncated to a fixed limit.
 - The empty state is not shown while repository data is still loading.
@@ -58,9 +66,9 @@ No harness rule changes.
 
 ## Evidence
 
-- `devorbit-web`: targeted search tests passed 13/13.
-- `devorbit-web`: full Vitest suite passed 153/153.
+- `devorbit-web`: targeted search and navigation tests passed 23/23.
+- `devorbit-web`: full Vitest suite passed 162/162 with `--maxWorkers=1`;
+  parallel execution can exhaust the existing 5-second router-test timeout.
 - `devorbit-web`: `npx tsc --noEmit` passed.
 - `devorbit-web`: `npm run build` passed.
-- GitNexus index synchronized after the code change; detected scope is limited
-  to course-library search and its existing page flows.
+- GitNexus index synchronization is included in final validation.

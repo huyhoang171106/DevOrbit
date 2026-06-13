@@ -45,6 +45,7 @@ public class SubjectQaService {
     private final WebSearchService webSearchService;
     private final CrawlerService crawlerService;
     private final OpenCodeAiService openCodeAiService;
+    private final AiService aiService;
     private final FirecrawlClient firecrawlClient;
     private final CourseKnowledgeBootstrapService courseKnowledgeBootstrapService;
     private final KnowledgeRetrievalService knowledgeRetrievalService;
@@ -63,6 +64,7 @@ public class SubjectQaService {
             WebSearchService webSearchService,
             CrawlerService crawlerService,
             OpenCodeAiService openCodeAiService,
+            AiService aiService,
             FirecrawlClient firecrawlClient,
             CourseKnowledgeBootstrapService courseKnowledgeBootstrapService,
             KnowledgeRetrievalService knowledgeRetrievalService,
@@ -76,6 +78,7 @@ public class SubjectQaService {
         this.webSearchService = webSearchService;
         this.crawlerService = crawlerService;
         this.openCodeAiService = openCodeAiService;
+        this.aiService = aiService;
         this.firecrawlClient = firecrawlClient;
         this.courseKnowledgeBootstrapService = courseKnowledgeBootstrapService;
         this.knowledgeRetrievalService = knowledgeRetrievalService;
@@ -169,7 +172,8 @@ public class SubjectQaService {
             preparation.relevantNodeIds(),
             new ArrayList<>(preparation.sources()),
             preparation.queryType(),
-            List.copyOf(preparation.searchResults())
+            List.copyOf(preparation.searchResults()),
+            null
         );
     }
 
@@ -302,7 +306,8 @@ public class SubjectQaService {
             preparation.relevantNodeIds(),
             new ArrayList<>(preparation.sources()),
             preparation.queryType(),
-            List.copyOf(preparation.searchResults())
+            List.copyOf(preparation.searchResults()),
+            null
         );
         emit(emitter, SubjectQaStreamEvent.complete(response));
         emitter.complete();
@@ -361,21 +366,15 @@ public class SubjectQaService {
                 List.of(),
                 List.of(),
                 "DIRECT",
-                List.of()
+                List.of(),
+                null
             );
             return new SubjectQaPreparation(userMessage, sessionId, session, direct, List.of(), Set.of(), List.of(), "DIRECT", null, null);
         }
 
-        // Career/course orientation without a concrete course code
-        if (detectedCodes.isEmpty() && asksForCareerCourseAdvice(userMessage)) {
-            SubjectQaResponse direct = new SubjectQaResponse(
-                buildCareerCourseAdviceResponse(userMessage),
-                sessionId != null ? sessionId : UUID.randomUUID(),
-                List.of(),
-                List.of(),
-                "DIRECT",
-                List.of()
-            );
+        // Roadmap / career goals without a concrete course code
+        if (detectedCodes.isEmpty() && asksForRoadmap(userMessage)) {
+            SubjectQaResponse direct = buildRoadmapResponse(userMessage, sessionId, List.of(), List.of());
             return new SubjectQaPreparation(userMessage, sessionId, session, direct, List.of(), Set.of(), List.of(), "DIRECT", null, null);
         }
 
@@ -387,7 +386,8 @@ public class SubjectQaService {
                 List.of(),
                 List.of(),
                 "DIRECT",
-                List.of()
+                List.of(),
+                null
             );
             return new SubjectQaPreparation(userMessage, sessionId, session, direct, List.of(), Set.of(), List.of(), "DIRECT", null, null);
         }
@@ -400,7 +400,8 @@ public class SubjectQaService {
                 List.of(),
                 List.of(),
                 "DIRECT",
-                List.of()
+                List.of(),
+                null
             );
             return new SubjectQaPreparation(userMessage, sessionId, session, direct, List.of(), Set.of(), List.of(), "DIRECT", null, null);
         }
@@ -790,6 +791,48 @@ public class SubjectQaService {
         return asksCourseChoice && mentionsCareer;
     }
 
+    private boolean asksForRoadmap(String message) {
+        String normalized = normalizeForIntent(message);
+        if (asksForCareerCourseAdvice(message)) {
+            return true;
+        }
+
+        boolean expressesGoal = normalized.contains("muon lam") ||
+            normalized.contains("tro thanh") ||
+            normalized.contains("muon theo") ||
+            normalized.contains("muon co them ky nang") ||
+            normalized.contains("them ky nang") ||
+            normalized.contains("hoc them") ||
+            normalized.contains("bo sung ky nang") ||
+            normalized.contains("nang cap ky nang") ||
+            normalized.contains("upskill") ||
+            normalized.contains("reskill") ||
+            normalized.contains("roadmap") ||
+            normalized.contains("ke hoach hoc") ||
+            normalized.contains("ke hoach phat trien");
+
+        boolean mentionsTarget = normalized.contains("backend") ||
+            normalized.contains("frontend") ||
+            normalized.contains("mobile") ||
+            normalized.contains("fullstack") ||
+            normalized.equals("ai") ||
+            normalized.startsWith("ai ") ||
+            normalized.contains(" ai ") ||
+            normalized.endsWith(" ai") ||
+            normalized.contains("ai engineer") ||
+            normalized.contains("artificial intelligence") ||
+            normalized.contains("machine learning") ||
+            normalized.contains("data engineer") ||
+            normalized.contains("data science") ||
+            normalized.contains("devops") ||
+            normalized.contains("security") ||
+            normalized.contains("game") ||
+            normalized.contains("software engineer") ||
+            normalized.contains("lap trinh vien");
+
+        return expressesGoal && mentionsTarget;
+    }
+
     private boolean asksForFirstYearCurriculum(String message) {
         String normalized = normalizeForIntent(message);
         return normalized.contains("nam 1") ||
@@ -831,6 +874,47 @@ public class SubjectQaService {
             + "DevOrbit chỉ nên trả lời dựa trên dữ liệu thật: môn học, đề cương/tiêu chí đánh giá nếu có, "
             + "và repository GitHub đã liên kết theo môn. "
             + "Bạn hãy gửi mã môn học cụ thể, ví dụ SE104, MA006, IS201 hoặc CS106, để mình tra đúng dữ liệu.";
+    }
+
+    private SubjectQaResponse buildRoadmapResponse(
+            String message,
+            UUID sessionId,
+            List<Long> relevantNodeIds,
+            List<String> sources) {
+        UUID effectiveSessionId = sessionId != null ? sessionId : UUID.randomUUID();
+        String roadmapAnswer = "Mình đã dựng lộ trình học tập theo mục tiêu bạn nhập. "
+            + "Xem phần roadmap bên dưới để thấy môn học, tín chỉ, học kỳ và hướng tốt nghiệp.";
+
+        try {
+            RoadmapGenerationRequest request = new RoadmapGenerationRequest(
+                trimForPrompt(message, 2000),
+                trimForPrompt(message, 200)
+            );
+            RoadmapRecommendationResponse roadmap = aiService.generateRoadmap(request);
+            if (roadmap != null) {
+                return new SubjectQaResponse(
+                    roadmapAnswer,
+                    effectiveSessionId,
+                    relevantNodeIds,
+                    sources,
+                    "ROADMAP",
+                    List.of(),
+                    roadmap
+                );
+            }
+        } catch (Exception e) {
+            log.warn("SubjectQaService: roadmap generation failed, falling back to text advice: {}", e.getMessage());
+        }
+
+        return new SubjectQaResponse(
+            buildCareerCourseAdviceResponse(message),
+            effectiveSessionId,
+            relevantNodeIds,
+            sources,
+            "DIRECT",
+            List.of(),
+            null
+        );
     }
 
     private String buildCareerCourseAdviceResponse(String message) {

@@ -558,7 +558,7 @@ function CameraCapture({
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [stream, setStream] = useState<MediaStream | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [mirrored, setMirrored] = useState(true);
 
@@ -569,14 +569,15 @@ function CameraCapture({
           video: { facingMode: "user", width: 1280, height: 720 },
           audio: false,
         });
-        setStream(s);
+        streamRef.current = s;
         if (videoRef.current) videoRef.current.srcObject = s;
       } catch (err: any) {
         setError(err?.message || "Không thể truy cập camera");
       }
     })();
     return () => {
-      stream?.getTracks().forEach((t) => t.stop());
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
     };
   }, []);
 

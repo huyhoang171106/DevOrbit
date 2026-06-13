@@ -199,7 +199,7 @@ function getRepoSignals(repo: RepoSummary): RepoSignals {
     name: cleanText(repo.displayName) || `Repo #${repo.id}`,
     description: cleanText(repo.description),
     language: cleanText(repo.primaryLanguage),
-    techStacks: Array.from(new Set((repo.techStacks ?? []).map(cleanText).filter(Boolean) as string[])),
+    techStacks: uniqueClean(repo.techStacks ?? []),
     topics: normalizeList(metadata.topics ?? metadata.tags),
     readmeExcerpt: cleanText(metadata.readmeExcerpt ?? metadata.readmeContent ?? metadata.readmeMarkdown ?? metadata.readmeText ?? metadata.readme),
     courseLabel: formatCourseLabel(repo),
@@ -218,7 +218,7 @@ function cleanText(value: string | null | undefined): string | null {
 function normalizeList(value: string[] | string | null | undefined): string[] {
   if (!value) return []
   const rawValues = Array.isArray(value) ? value : value.split(/[,;|]/)
-  return Array.from(new Set(rawValues.map(cleanText).filter(Boolean) as string[]))
+  return uniqueClean(rawValues)
 }
 
 function formatCourseLabel(repo: RepoSummary): string | null {
@@ -439,10 +439,7 @@ function summarizeReadmeGoal(signals: RepoSignals): string | null {
   const heading = withoutCodeFence.match(/(?:^|\s)#{1,3}\s+([^#.!?]{4,120})/)
   if (heading?.[1]) return truncate(cleanText(heading[1]) ?? heading[1], 140)
 
-  const sentences = withoutCodeFence
-    .split(/(?<=[.!?])\s+/)
-    .map(cleanText)
-    .filter(Boolean) as string[]
+  const sentences = uniqueClean(withoutCodeFence.split(/(?<=[.!?])\s+/))
   const usefulSentence = sentences.find((sentence) => {
     const lower = sentence.toLowerCase()
     return sentence.length >= 24 && !/(npm|yarn|pnpm|docker|mvn|gradle|pip install|clone|cd\s)/.test(lower)
@@ -516,10 +513,24 @@ function detectReadmeReadingTargets(readme: string): string[] {
     [/\bnotebooks?\b|\b\.ipynb\b/i, 'notebook'],
   ]
 
-  return targets
-    .filter(([pattern]) => pattern.test(readme))
-    .map(([, label]) => label)
-    .slice(0, 6)
+  const labels: string[] = []
+  for (const [pattern, label] of targets) {
+    if (pattern.test(readme)) labels.push(label)
+    if (labels.length >= 6) break
+  }
+  return labels
+}
+
+function uniqueClean(values: Array<string | null | undefined>): string[] {
+  const seen = new Set<string>()
+  const result: string[] = []
+  for (const value of values) {
+    const normalized = cleanText(value)
+    if (!normalized || seen.has(normalized)) continue
+    seen.add(normalized)
+    result.push(normalized)
+  }
+  return result
 }
 
 function uniqueMatches(value: string, patterns: RegExp[]): string[] {

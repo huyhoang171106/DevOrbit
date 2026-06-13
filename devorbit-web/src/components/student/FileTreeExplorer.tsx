@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { CaretRight, Folder, FolderOpen, FileCode, FileImage, FileText, FileZip, FilePy, FileTsx, FileJs, FileCss, FileHtml, FileMd, FileSql, FileVideo, FileAudio, FilePdf, FileIni, FileLock } from '@phosphor-icons/react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m as motion, AnimatePresence } from 'framer-motion'
 type RepoTreeItem = {
   name: string
   path: string
@@ -21,7 +21,7 @@ function buildTree(items: RepoTreeItem[]): TreeNode[] {
   const root: TreeNode[] = []
   const map = new Map<string, TreeNode>()
 
-  const sorted = [...items].sort((a, b) => {
+  const sorted = items.toSorted((a, b) => {
     if (a.type !== b.type) return a.type === 'tree' ? -1 : 1
     return a.path.localeCompare(b.path)
   })

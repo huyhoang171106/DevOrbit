@@ -728,7 +728,11 @@ public class SubjectQaService {
             normalized.contains("chon mon") ||
             normalized.contains("mon nao") ||
             normalized.contains("lo trinh") ||
-            normalized.contains("dinh huong");
+            normalized.contains("dinh huong") ||
+            normalized.contains("hoc nhu nao") ||
+            normalized.contains("hoc the nao") ||
+            normalized.contains("hoc ra sao") ||
+            normalized.contains("hoc lam sao");
         boolean mentionsCareer = normalized.contains("backend") ||
             normalized.contains("back end") ||
             normalized.contains("java") ||

@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
 import { apiPost, apiBaseUrl, buildApiUrl } from '../lib/api'
 import { getStudentToken } from '../lib/auth'
+import type { RoadmapResponse } from './useAiRoadmap'
 
 export interface SubjectQaRequest {
     message: string
@@ -14,6 +15,7 @@ export interface SubjectQaResponse {
     sources: string[]
     type: string
     searchResults?: WebSearchResult[]
+    roadmap?: RoadmapResponse
 }
 
 export interface WebSearchResult {

@@ -1549,6 +1549,7 @@ export type SubjectQaResponse = {
   relevantNodeIds?: number[];
   sources?: string[];
   type?: string;
+  roadmap?: RoadmapRecommendationResponse;
 };
 export type SubjectQaRequest = {
   message?: string;

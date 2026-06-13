@@ -2,6 +2,7 @@
 
 import { describe, expect, test, vi } from 'vitest'
 import type { WebSearchResult, SubjectQaResponse } from './useSubjectQa'
+import type { RoadmapResponse } from './useAiRoadmap'
 
 // We must import after mocks are set up
 let streamSubjectQa: typeof import('./useSubjectQa').streamSubjectQa
@@ -84,6 +85,12 @@ describe('streamSubjectQa SSE parser', () => {
             sources: ['https://example.com'],
             type: 'SEARCH',
             searchResults: [searchResult],
+            roadmap: {
+                summary: 'Roadmap summary',
+                recommendedCourses: [],
+                graduationTracks: [],
+                electivePools: [],
+            } as RoadmapResponse,
         }
 
         mockFetch.mockResolvedValue({
@@ -130,6 +137,7 @@ describe('streamSubjectQa SSE parser', () => {
         expect(completeResponse).not.toBeNull()
         expect(completeResponse!.answer).toBe('Final answer.')
         expect(completeResponse!.sessionId).toBe('sess-1')
+        expect(completeResponse!.roadmap?.summary).toBe('Roadmap summary')
 
         expect(errorMessage).toBeNull()
     })

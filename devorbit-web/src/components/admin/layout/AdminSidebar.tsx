@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import {
-  BookOpen, Graph, UsersThree, ChatDots, Camera, Tag,
-  GitBranch, Star, Note, Link, CaretDown, CaretLeft, CaretRight, Cube,
+  BookOpen, UsersThree, ChatDots, Camera, Tag,
+  GitBranch, Star, Link, GearSix, CaretDown, CaretLeft, CaretRight, Cube,
   SignOut, UserCircle,
 } from '@phosphor-icons/react'
 import { getSidebarCollapsed, setSidebarCollapsed, getAdminToken } from '../../../lib/adminAuth'
@@ -21,19 +21,18 @@ function decodeUsername(token: string): string {
 
 const NAV_GROUPS = [
   {
-    label: 'Môn học',
-    icon: BookOpen,
+    label: 'Quản lý môn học',
+    icon: GearSix,
     children: [
+      { to: '/admin/courses', icon: BookOpen, label: 'Môn học' },
       { to: '/admin/repos', icon: GitBranch, label: 'Repos' },
       { to: '/admin/reviews', icon: Star, label: 'Đánh giá' },
-      { to: '/admin/notes', icon: Note, label: 'Ghi chú' },
       { to: '/admin/relationships', icon: Link, label: 'Quan hệ' },
     ],
   },
 ]
 
 const NAV_ITEMS = [
-  { to: '/admin/roadmaps', icon: Graph, label: 'Lộ trình' },
   { to: '/admin/students', icon: UsersThree, label: 'Sinh viên' },
   { to: '/admin/community', icon: UsersThree, label: 'Cộng đồng' },
   { to: '/admin/chat', icon: ChatDots, label: 'AI Chat' },
@@ -120,7 +119,7 @@ export function AdminSidebar() {
               )}
             </button>
             {groupOpen && !collapsed && (
-              <div className="ml-3 mt-0.5 mb-1">
+              <div className="ml-5 mt-0.5 mb-1">
                 {group.children.map((child) => (
                   <NavLink
                     key={child.to}

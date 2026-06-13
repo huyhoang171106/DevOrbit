@@ -1,6 +1,7 @@
 package vn.edu.uit.devorbit_api.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -9,6 +10,7 @@ import vn.edu.uit.devorbit_api.dto.community.ChatChannelResponse;
 import vn.edu.uit.devorbit_api.dto.community.ChatMessageRequest;
 import vn.edu.uit.devorbit_api.dto.community.ChatMessageResponse;
 import vn.edu.uit.devorbit_api.entity.*;
+import vn.edu.uit.devorbit_api.event.NotificationEvent;
 import vn.edu.uit.devorbit_api.exception.NotFoundException;
 import vn.edu.uit.devorbit_api.repository.*;
 
@@ -20,6 +22,8 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class CommunityChatService {
 
+    private final ApplicationEventPublisher eventPublisher;
+    private final NotificationRepository notificationRepository;
     private final ChatChannelRepository channelRepository;
     private final CommunityMessageRepository messageRepository;
     private final StudentUserRepository studentUserRepository;
@@ -72,7 +76,19 @@ public class CommunityChatService {
                 .content(request.content().trim())
                 .build();
 
-        return toMessageResponse(messageRepository.save(message));
+        ChatMessageResponse response = toMessageResponse(messageRepository.save(message));
+
+        boolean hasExisting = notificationRepository.findByIsReadFalseOrderByCreatedAtDesc()
+                .stream().anyMatch(n -> "COMMUNITY_CHAT".equals(n.getType()));
+        if (!hasExisting) {
+            eventPublisher.publishEvent(new NotificationEvent(
+                "COMMUNITY_CHAT",
+                "Có tin nhắn mới trong cộng đồng",
+                "/admin/community"
+            ));
+        }
+
+        return response;
     }
 
     private void ensureChannel(String channelId, String name, ChatChannelType type, String referenceId) {

@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { m as motion } from 'framer-motion'
-import { apiGet, apiStudentPost } from '../../lib/api'
+import { apiGet, apiStudentPost, apiStudentGet, apiStudentDelete } from '../../lib/api'
 import { isStudentAuthenticated } from '../../lib/auth'
 import { RepoAiAnalysisSection } from '../../components/student/RepoAiAnalysisSection'
 import { ReviewSection } from '../../components/student/ReviewSection'
 import { VoteButtons } from '../../components/student/VoteButtons'
 import { useRepoSocialInfo } from '../../hooks/useCommunity'
-import type { RepoSummary } from '../../types/api'
+import type { RepoSummary, StudentBookmark } from '../../types/api'
 import { analyzeRepository, type RepoAnalysisResult } from '../../lib/repoAnalysisService'
 import { ArrowLeft, Code, Star, ArrowSquareOut, WarningCircle, GithubLogo, Bookmark, BookmarkSimple } from '@phosphor-icons/react'
 
@@ -38,6 +38,7 @@ export function RepoDetailPage() {
   const [bookmarked, setBookmarked] = useState(false)
   const [bookmarking, setBookmarking] = useState(false)
   const [bookmarkError, setBookmarkError] = useState<string | null>(null)
+  const [bookmarkId, setBookmarkId] = useState<number | null>(null)
 
   async function toggleBookmark() {
     if (!isStudentAuthenticated()) {
@@ -48,8 +49,14 @@ export function RepoDetailPage() {
     setBookmarkError(null)
     setBookmarking(true)
     try {
-      if (!bookmarked) {
-        await apiStudentPost('/api/student/bookmarks', {
+      if (bookmarked) {
+        if (bookmarkId) {
+          await apiStudentDelete(`/api/student/bookmarks/${bookmarkId}`)
+        }
+        setBookmarked(false)
+        setBookmarkId(null)
+      } else {
+        const result = await apiStudentPost<StudentBookmark>('/api/student/bookmarks', {
           targetType: 'REPO',
           targetId: repo.id,
           title: repo.displayName,
@@ -57,6 +64,7 @@ export function RepoDetailPage() {
           url: `/repos/${repo.id}`,
         })
         setBookmarked(true)
+        setBookmarkId(result.id)
       }
     } catch (e) {
       setBookmarkError(e instanceof Error ? e.message : 'Đánh dấu thất bại, vui lòng thử lại')
@@ -64,6 +72,22 @@ export function RepoDetailPage() {
       setBookmarking(false)
     }
   }
+
+  useEffect(() => {
+    if (!repo || !isStudentAuthenticated()) return
+    apiStudentGet<StudentBookmark[]>('/api/student/bookmarks')
+      .then((bookmarks) => {
+        const bookmark = bookmarks.find(b => b.targetType === 'REPO' && b.targetId === repo.id)
+        if (bookmark) {
+          setBookmarked(true)
+          setBookmarkId(bookmark.id)
+        } else {
+          setBookmarked(false)
+          setBookmarkId(null)
+        }
+      })
+      .catch(() => {})
+  }, [repo])
 
   const { data: socialInfo, refetch: refetchSocial } = useRepoSocialInfo(Number(repoId))
 

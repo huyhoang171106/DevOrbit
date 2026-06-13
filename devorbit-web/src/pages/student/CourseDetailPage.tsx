@@ -1,14 +1,14 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { m as motion } from 'framer-motion'
-import { apiGet, apiStudentPost } from '../../lib/api'
+import { apiGet, apiStudentPost, apiStudentGet, apiStudentDelete } from '../../lib/api'
 import { isStudentAuthenticated } from '../../lib/auth'
 import { RepoCard } from '../../components/student/RepoCard'
 import { RepoFilterBar } from '../../components/student/RepoFilterBar'
 import { CourseKnowledgeGraph } from '../../components/student/CourseKnowledgeGraph'
 import { ReviewSection } from '../../components/student/ReviewSection'
 import { useCourseReviews } from '../../hooks/useCommunity'
-import type { RepoSummary, CourseDetail } from '../../types/api'
+import type { RepoSummary, CourseDetail, StudentBookmark } from '../../types/api'
 import { ArrowLeft, GraduationCap, BookOpen, Code, Tag, Building, Clock, Bookmark, BookmarkSimple, ShareNetwork, Sparkle, Stack, WarningCircle } from '@phosphor-icons/react'
 import { StaggerReveal, StaggerItem } from '../../motion/primitives/StaggerReveal'
 import { SectionTransition } from '../../motion/primitives/SectionTransition'
@@ -67,6 +67,7 @@ export function CourseDetailPage() {
   const [bookmarked, setBookmarked] = useState(false)
   const [bookmarking, setBookmarking] = useState(false)
   const [bookmarkError, setBookmarkError] = useState<string | null>(null)
+  const [bookmarkId, setBookmarkId] = useState<number | null>(null)
 
   useEffect(() => {
     if (!courseId) return
@@ -92,9 +93,13 @@ export function CourseDetailPage() {
     setBookmarking(true)
     try {
       if (bookmarked) {
+        if (bookmarkId) {
+          await apiStudentDelete(`/api/student/bookmarks/${bookmarkId}`)
+        }
         setBookmarked(false)
+        setBookmarkId(null)
       } else {
-        await apiStudentPost('/api/student/bookmarks', {
+        const result = await apiStudentPost<StudentBookmark>('/api/student/bookmarks', {
           targetType: 'COURSE',
           targetId: course.id,
           title: course.name,
@@ -102,6 +107,7 @@ export function CourseDetailPage() {
           url: `/courses/${course.id}`,
         })
         setBookmarked(true)
+        setBookmarkId(result.id)
       }
     } catch (e) {
       setBookmarkError(e instanceof Error ? e.message : 'Đánh dấu thất bại, vui lòng thử lại')
@@ -109,6 +115,22 @@ export function CourseDetailPage() {
       setBookmarking(false)
     }
   }
+
+  useEffect(() => {
+    if (!course || !isStudentAuthenticated()) return
+    apiStudentGet<StudentBookmark[]>('/api/student/bookmarks')
+      .then((bookmarks) => {
+        const bookmark = bookmarks.find(b => b.targetType === 'COURSE' && b.targetId === course.id)
+        if (bookmark) {
+          setBookmarked(true)
+          setBookmarkId(bookmark.id)
+        } else {
+          setBookmarked(false)
+          setBookmarkId(null)
+        }
+      })
+      .catch(() => {})
+  }, [course])
 
   const { data: courseReviews, isLoading: reviewsLoading, refetch: refetchReviews } =
     useCourseReviews(Number(courseId))

@@ -12,5 +12,6 @@ public record SubjectQaResponse(
     List<Long> relevantNodeIds,
     List<String> sources,
     String type,
-    List<WebSearchResponse.WebSearchResult> searchResults
+    List<WebSearchResponse.WebSearchResult> searchResults,
+    RoadmapRecommendationResponse roadmap
 ) {}

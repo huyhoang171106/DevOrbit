@@ -6,6 +6,7 @@ import type { ComponentProps } from 'react'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { ChatMessage } from '../AiChatWidget'
 import type { WebSearchResult, SubjectQaStreamStage } from '../../../hooks/useSubjectQa'
+import type { RoadmapResponse } from '../../../hooks/useAiRoadmap'
 
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -60,6 +61,73 @@ function renderSearchResultMessage(overrides: Partial<ComponentProps<typeof Chat
   return { searchResults }
 }
 
+function renderRoadmapMessage() {
+  const roadmap: RoadmapResponse = {
+    summary: '## Mục tiêu\n\n- Học các môn nền tảng trước.\n- Ưu tiên môn phù hợp mục tiêu backend.',
+    recommendedCourses: [
+      {
+        courseId: 330,
+        courseCode: 'SE330',
+        courseName: 'Ngôn ngữ lập trình Java',
+        reasoning: 'Môn nền tảng để đi sâu vào Java backend.',
+        description: 'Java course',
+        isMandatory: false,
+        semester: 4,
+        credits: 3,
+      },
+      {
+        courseId: 325,
+        courseCode: 'SE325',
+        courseName: 'Chuyên đề J2EE',
+        reasoning: 'Môn đi sâu vào Java enterprise.',
+        description: 'Enterprise Java course',
+        isMandatory: false,
+        semester: 5,
+        credits: 3,
+      },
+    ],
+    graduationTracks: [
+      {
+        type: 'THESIS',
+        name: 'Khóa luận tốt nghiệp',
+        description: 'Theo hướng nghiên cứu và tổng hợp.',
+        credits: 10,
+        requirements: 'Hoàn tất các học phần bắt buộc.',
+        recommendation: 'Phù hợp nếu muốn đi sâu nghiên cứu.',
+        recommended: true,
+        courseCodes: ['SE505'],
+      },
+    ],
+    electivePools: [
+      {
+        poolId: 'chuyen-nganh',
+        poolName: 'Chuyên ngành',
+        targetTC: 16,
+        currentTC: 9,
+        candidates: [],
+      },
+    ],
+  }
+
+  const message: ComponentProps<typeof ChatMessage>['message'] = {
+    id: 'ai-roadmap-1',
+    sender: 'ai',
+    content: 'Mình đã dựng lộ trình học tập theo mục tiêu bạn nhập.',
+    sources: [],
+    searchResults: [],
+    roadmap,
+  }
+
+  render(
+    <ChatMessage
+      message={message}
+      isStreaming={false}
+      copiedId={null}
+      onCopy={vi.fn()}
+    />,
+  )
+}
+
 describe('AiChatWidget search result cards', () => {
   test('shows search results even while the answer is still streaming', () => {
     renderSearchResultMessage()
@@ -68,6 +136,19 @@ describe('AiChatWidget search result cards', () => {
     expect(screen.getByText('SE104 - Nhập môn công nghệ phần mềm')).toBeInTheDocument()
     expect(screen.getByText('svuit.org')).toBeInTheDocument()
     expect(screen.getByText('exa')).toBeInTheDocument()
+  })
+})
+
+describe('AiChatWidget roadmap preview', () => {
+  test('shows structured roadmap payload inside the chat bubble', () => {
+    renderRoadmapMessage()
+
+    expect(screen.getByText('Lộ trình học tập')).toBeInTheDocument()
+    expect(screen.getByText('SE330')).toBeInTheDocument()
+    expect(screen.getByText('Ngôn ngữ lập trình Java')).toBeInTheDocument()
+    expect(screen.getByText('Hướng tốt nghiệp')).toBeInTheDocument()
+    expect(screen.getByText('Khóa luận tốt nghiệp')).toBeInTheDocument()
+    expect(screen.getByText('Nhóm tự chọn')).toBeInTheDocument()
   })
 })
 

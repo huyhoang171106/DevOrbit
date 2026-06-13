@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m as motion, AnimatePresence } from 'framer-motion'
 import { BookmarkSimple, UsersThree, SignOut, User } from '@phosphor-icons/react'
 import { apiStudentGet } from '../../lib/api'
 import { isStudentAuthenticated, clearStudentToken } from '../../lib/auth'

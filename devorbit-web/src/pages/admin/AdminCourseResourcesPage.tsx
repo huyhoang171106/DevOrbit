@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { apiAdminGet, apiAdminPost, apiAdminPut, apiAdminDelete } from '../../lib/api'
 import { getAdminToken } from '../../lib/auth'
@@ -25,7 +25,7 @@ export function AdminCourseResourcesPage() {
   // YouTube state
   const [ytDialog, setYtDialog] = useState(false)
   const [ytEdit, setYtEdit] = useState<YoutubePlaylistRequest | undefined>(undefined)
-  const [ytEditId, setYtEditId] = useState<number | null>(null)
+  const ytEditIdRef = useRef<number | null>(null)
   const { data: ytList, loading: ytLoading, refetch: ytRefetch } = useApiFetch(
     () => apiAdminGet<YoutubePlaylistResponse[]>(`/api/admin/courses/${cid}/resources/youtube-playlists`, token),
     [cid, token],
@@ -34,7 +34,7 @@ export function AdminCourseResourcesPage() {
   // Article state
   const [artDialog, setArtDialog] = useState(false)
   const [artEdit, setArtEdit] = useState<ArticleRequest | undefined>(undefined)
-  const [artEditId, setArtEditId] = useState<number | null>(null)
+  const artEditIdRef = useRef<number | null>(null)
   const { data: artList, loading: artLoading, refetch: artRefetch } = useApiFetch(
     () => apiAdminGet<ArticleResponse[]>(`/api/admin/courses/${cid}/resources/articles`, token),
     [cid, token],
@@ -43,7 +43,7 @@ export function AdminCourseResourcesPage() {
   // Tutorial state
   const [tutDialog, setTutDialog] = useState(false)
   const [tutEdit, setTutEdit] = useState<TutorialRequest | undefined>(undefined)
-  const [tutEditId, setTutEditId] = useState<number | null>(null)
+  const tutEditIdRef = useRef<number | null>(null)
   const { data: tutList, loading: tutLoading, refetch: tutRefetch } = useApiFetch(
     () => apiAdminGet<TutorialResponse[]>(`/api/admin/courses/${cid}/resources/tutorials`, token),
     [cid, token],
@@ -57,12 +57,13 @@ export function AdminCourseResourcesPage() {
 
   async function handleYtSubmit(data: YoutubePlaylistRequest) {
     try {
-      if (ytEditId) {
-        await apiAdminPut(`/api/admin/courses/${cid}/resources/youtube-playlists/${ytEditId}`, token, data)
+      const editId = ytEditIdRef.current
+      if (editId) {
+        await apiAdminPut(`/api/admin/courses/${cid}/resources/youtube-playlists/${editId}`, token, data)
       } else {
         await apiAdminPost(`/api/admin/courses/${cid}/resources/youtube-playlists`, token, data)
       }
-      setYtDialog(false); setYtEdit(undefined); setYtEditId(null); ytRefetch()
+      setYtDialog(false); setYtEdit(undefined); ytEditIdRef.current = null; ytRefetch()
     } catch (e) { console.error(e) }
   }
 
@@ -74,12 +75,13 @@ export function AdminCourseResourcesPage() {
 
   async function handleArtSubmit(data: ArticleRequest) {
     try {
-      if (artEditId) {
-        await apiAdminPut(`/api/admin/courses/${cid}/resources/articles/${artEditId}`, token, data)
+      const editId = artEditIdRef.current
+      if (editId) {
+        await apiAdminPut(`/api/admin/courses/${cid}/resources/articles/${editId}`, token, data)
       } else {
         await apiAdminPost(`/api/admin/courses/${cid}/resources/articles`, token, data)
       }
-      setArtDialog(false); setArtEdit(undefined); setArtEditId(null); artRefetch()
+      setArtDialog(false); setArtEdit(undefined); artEditIdRef.current = null; artRefetch()
     } catch (e) { console.error(e) }
   }
 
@@ -91,12 +93,13 @@ export function AdminCourseResourcesPage() {
 
   async function handleTutSubmit(data: TutorialRequest) {
     try {
-      if (tutEditId) {
-        await apiAdminPut(`/api/admin/courses/${cid}/resources/tutorials/${tutEditId}`, token, data)
+      const editId = tutEditIdRef.current
+      if (editId) {
+        await apiAdminPut(`/api/admin/courses/${cid}/resources/tutorials/${editId}`, token, data)
       } else {
         await apiAdminPost(`/api/admin/courses/${cid}/resources/tutorials`, token, data)
       }
-      setTutDialog(false); setTutEdit(undefined); setTutEditId(null); tutRefetch()
+      setTutDialog(false); setTutEdit(undefined); tutEditIdRef.current = null; tutRefetch()
     } catch (e) { console.error(e) }
   }
 
@@ -134,7 +137,7 @@ export function AdminCourseResourcesPage() {
       {tab === 'youtube' && (
         <>
           <div className="mb-[16px] flex justify-end">
-            <button onClick={() => { setYtEdit(undefined); setYtEditId(null); setYtDialog(true) }} className="btn-primary text-sm px-4 py-2">
+            <button onClick={() => { setYtEdit(undefined); ytEditIdRef.current = null; setYtDialog(true) }} className="btn-primary text-sm px-4 py-2">
               <svg className="mr-2 h-4 w-4 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
               Thêm danh sách phát
             </button>
@@ -154,7 +157,7 @@ export function AdminCourseResourcesPage() {
                       <td className="table-cell text-clay-text-muted body-sm py-3 px-4">{item.channelName || <span className="text-clay-text-muted/50">—</span>}</td>
                       <td className="table-cell text-right py-3 px-4">
                         <div className="flex justify-end gap-2">
-                          <button onClick={() => { setYtEdit({ title: item.title, url: item.url, description: item.description ?? '', channelName: item.channelName ?? '' }); setYtEditId(item.id); setYtDialog(true) }} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-clay-text-muted hover:!text-clay-text border border-clay-border">Sửa</button>
+                          <button onClick={() => { setYtEdit({ title: item.title, url: item.url, description: item.description ?? '', channelName: item.channelName ?? '' }); ytEditIdRef.current = item.id; setYtDialog(true) }} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-clay-text-muted hover:!text-clay-text border border-clay-border">Sửa</button>
                           <button onClick={() => handleYtDelete(item.id)} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Xoá</button>
                         </div>
                       </td>
@@ -164,7 +167,7 @@ export function AdminCourseResourcesPage() {
               </table>
             </div>
           )}
-          <YoutubePlaylistDialog open={ytDialog} onClose={() => { setYtDialog(false); setYtEdit(undefined); setYtEditId(null) }} onSubmit={handleYtSubmit} initial={ytEdit} />
+          <YoutubePlaylistDialog open={ytDialog} onClose={() => { setYtDialog(false); setYtEdit(undefined); ytEditIdRef.current = null }} onSubmit={handleYtSubmit} initial={ytEdit} />
         </>
       )}
 
@@ -172,7 +175,7 @@ export function AdminCourseResourcesPage() {
       {tab === 'articles' && (
         <>
           <div className="mb-[16px] flex justify-end">
-            <button onClick={() => { setArtEdit(undefined); setArtEditId(null); setArtDialog(true) }} className="btn-primary text-sm px-4 py-2">
+            <button onClick={() => { setArtEdit(undefined); artEditIdRef.current = null; setArtDialog(true) }} className="btn-primary text-sm px-4 py-2">
               <svg className="mr-2 h-4 w-4 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
               Thêm bài viết
             </button>
@@ -192,7 +195,7 @@ export function AdminCourseResourcesPage() {
                       <td className="table-cell text-clay-text-muted body-sm py-3 px-4">{item.author || <span className="text-clay-text-muted/50">—</span>}</td>
                       <td className="table-cell text-right py-3 px-4">
                         <div className="flex justify-end gap-2">
-                          <button onClick={() => { setArtEdit({ title: item.title, url: item.url, author: item.author ?? '', description: item.description ?? '' }); setArtEditId(item.id); setArtDialog(true) }} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-clay-text-muted hover:!text-clay-text border border-clay-border">Sửa</button>
+                          <button onClick={() => { setArtEdit({ title: item.title, url: item.url, author: item.author ?? '', description: item.description ?? '' }); artEditIdRef.current = item.id; setArtDialog(true) }} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-clay-text-muted hover:!text-clay-text border border-clay-border">Sửa</button>
                           <button onClick={() => handleArtDelete(item.id)} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Xoá</button>
                         </div>
                       </td>
@@ -202,7 +205,7 @@ export function AdminCourseResourcesPage() {
               </table>
             </div>
           )}
-          <ArticleDialog open={artDialog} onClose={() => { setArtDialog(false); setArtEdit(undefined); setArtEditId(null) }} onSubmit={handleArtSubmit} initial={artEdit} />
+          <ArticleDialog open={artDialog} onClose={() => { setArtDialog(false); setArtEdit(undefined); artEditIdRef.current = null }} onSubmit={handleArtSubmit} initial={artEdit} />
         </>
       )}
 
@@ -210,7 +213,7 @@ export function AdminCourseResourcesPage() {
       {tab === 'tutorials' && (
         <>
           <div className="mb-[16px] flex justify-end">
-            <button onClick={() => { setTutEdit(undefined); setTutEditId(null); setTutDialog(true) }} className="btn-primary text-sm px-4 py-2">
+            <button onClick={() => { setTutEdit(undefined); tutEditIdRef.current = null; setTutDialog(true) }} className="btn-primary text-sm px-4 py-2">
               <svg className="mr-2 h-4 w-4 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
               Thêm hướng dẫn
             </button>
@@ -232,7 +235,7 @@ export function AdminCourseResourcesPage() {
                       </td>
                       <td className="table-cell text-right py-3 px-4">
                         <div className="flex justify-end gap-2">
-                          <button onClick={() => { setTutEdit({ title: item.title, url: item.url, type: item.type ?? '', description: item.description ?? '' }); setTutEditId(item.id); setTutDialog(true) }} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-clay-text-muted hover:!text-clay-text border border-clay-border">Sửa</button>
+                          <button onClick={() => { setTutEdit({ title: item.title, url: item.url, type: item.type ?? '', description: item.description ?? '' }); tutEditIdRef.current = item.id; setTutDialog(true) }} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-clay-text-muted hover:!text-clay-text border border-clay-border">Sửa</button>
                           <button onClick={() => handleTutDelete(item.id)} className="btn-secondary !py-1 !px-3 !bg-clay-surface !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Xoá</button>
                         </div>
                       </td>
@@ -242,7 +245,7 @@ export function AdminCourseResourcesPage() {
               </table>
             </div>
           )}
-          <TutorialDialog open={tutDialog} onClose={() => { setTutDialog(false); setTutEdit(undefined); setTutEditId(null) }} onSubmit={handleTutSubmit} initial={tutEdit} />
+          <TutorialDialog open={tutDialog} onClose={() => { setTutDialog(false); setTutEdit(undefined); tutEditIdRef.current = null }} onSubmit={handleTutSubmit} initial={tutEdit} />
         </>
       )}
     </div>

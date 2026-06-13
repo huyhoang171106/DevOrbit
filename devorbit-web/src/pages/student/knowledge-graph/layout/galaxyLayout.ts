@@ -43,7 +43,7 @@ function spiralize(
     byLevel.set(n.level, l)
   }
 
-  const sortedLevels = [...byLevel.keys()].sort((a, b) => a - b)
+  const sortedLevels = Array.from(byLevel.keys()).toSorted((a, b) => a - b)
   const result: GalaxyNode[] = []
 
   for (let li = 0; li < sortedLevels.length; li++) {
@@ -108,18 +108,20 @@ export function computeGalaxyData(
   const nodeMap = new Map<number, GalaxyNode>()
   for (const g of galaxies) { for (const n of g.nodes) { nodeMap.set(n.id, n) } }
 
-  const edges: GalaxyEdge[] = links
-    .filter(l => nodeMap.has(l.source) && nodeMap.has(l.target))
-    .map(l => {
-      const srcDomain = getDomain(nodeMap.get(l.source)!.code)
-      const tgtDomain = getDomain(nodeMap.get(l.target)!.code)
-      return {
-        source: l.source,
-        target: l.target,
-        type: l.type,
-        isInterGalaxy: srcDomain !== tgtDomain,
-      }
+  const edges: GalaxyEdge[] = []
+  for (const l of links) {
+    const sourceNode = nodeMap.get(l.source)
+    const targetNode = nodeMap.get(l.target)
+    if (!sourceNode || !targetNode) continue
+    const srcDomain = getDomain(sourceNode.code)
+    const tgtDomain = getDomain(targetNode.code)
+    edges.push({
+      source: l.source,
+      target: l.target,
+      type: l.type,
+      isInterGalaxy: srcDomain !== tgtDomain,
     })
+  }
 
   return { galaxies, edges }
 }

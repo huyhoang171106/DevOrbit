@@ -16,7 +16,10 @@ const PARTICLE_COUNT = 10
 export function Wormhole({ sourcePos, targetPos, edge, color, isHovered }: Props) {
   const meshRef = useRef<THREE.Mesh>(null)
   const pointsRef = useRef<THREE.Points>(null)
-  const phasesRef = useRef(new Float32Array(PARTICLE_COUNT).map((_, i) => i / PARTICLE_COUNT))
+  const phasesRef = useRef<Float32Array | null>(null)
+  if (phasesRef.current === null) {
+    phasesRef.current = new Float32Array(PARTICLE_COUNT).map((_, i) => i / PARTICLE_COUNT)
+  }
   const curveRef = useRef<THREE.CatmullRomCurve3>(null!)
 
   const { tubeGeo, particleGeo } = useMemo(() => {
@@ -56,6 +59,7 @@ export function Wormhole({ sourcePos, targetPos, edge, color, isHovered }: Props
 
     const speed = isHovered ? 0.4 : 0.15
     const phases = phasesRef.current
+    if (!phases) return
     const array = posAttr.array as Float32Array
     for (let i = 0; i < PARTICLE_COUNT; i++) {
       let t = phases[i] + delta * speed

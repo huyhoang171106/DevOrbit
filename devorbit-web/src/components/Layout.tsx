@@ -1,9 +1,9 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { motion, AnimatePresence, useScroll, useTransform, LayoutGroup } from 'framer-motion'
+import { m as motion, AnimatePresence, useScroll, useTransform, LayoutGroup } from 'framer-motion'
 import { ParticleNetwork } from './ParticleNetwork'
 import { Cube, UserCircle, SignOut, BookmarkSimple, UsersThree, User } from '@phosphor-icons/react'
-import { ScrollProgressIndicator } from '../motion'
+import { ScrollProgressIndicator } from '../motion/primitives/ScrollProgressIndicator'
 import { navLinks } from './navigation'
 import { AiChatWidget } from './student/AiChatWidget'
 import { ProfileDropdown } from './student/ProfileDropdown'
@@ -18,11 +18,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   // Scroll-driven nav background opacity
   const { scrollY } = useScroll()
+  const navBorderColor = useTransform(scrollY, [0, 100], ['rgba(39,39,42,0.3)', 'rgba(39,39,42,0.8)'])
+  const navBackgroundOpacity = useTransform(scrollY, [0, 80], [0.3, 1])
 
-  // Only skip admin pages
-  const showParticles = useMemo(() => {
-    return !location.pathname.startsWith('/admin')
-  }, [location.pathname])
+  const showParticles = !location.pathname.startsWith('/admin')
 
   return (
     <div className="relative min-h-screen flex flex-col bg-orbit-bg selection:bg-orbit-accent selection:text-zinc-950">
@@ -37,7 +36,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <motion.nav
         className="sticky top-0 z-50 w-full border-b gpu"
         style={{
-          borderColor: useTransform(scrollY, [0, 100], ['rgba(39,39,42,0.3)', 'rgba(39,39,42,0.8)']),
+          borderColor: navBorderColor,
         }}
       >
         {/* Background layer with animated opacity */}
@@ -45,9 +44,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           className="absolute inset-0 -z-10"
           style={{
             background: 'rgba(9,9,11,0.95)',
-            backdropFilter: 'blur(24px)',
-            WebkitBackdropFilter: 'blur(24px)',
-            opacity: useTransform(scrollY, [0, 80], [0.3, 1]),
+            opacity: navBackgroundOpacity,
           }}
         />
         <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between px-6 md:px-10 h-[72px]">

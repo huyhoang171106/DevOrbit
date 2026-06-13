@@ -37,6 +37,13 @@ public class KnowledgeChunk {
     @Column(name = "chunk_text", nullable = false, columnDefinition = "TEXT")
     private String chunkText;
 
+    @Column(name = "chunk_kind", nullable = false, length = 30)
+    @Builder.Default
+    private String chunkKind = "DETAIL";
+
+    @Column(name = "parent_chunk_id")
+    private UUID parentChunkId;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "metadata_json")
     private JsonNode metadataJson;

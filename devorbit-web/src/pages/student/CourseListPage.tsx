@@ -6,7 +6,11 @@ import { Link } from 'react-router-dom'
 import type { RepoSummary } from '../../types/api'
 import { searchCourses, searchRepos } from '../../lib/repoSearch'
 import { MagnifyingGlass, Graph, Funnel, X, GraduationCap, BookOpen, CaretLeft, CaretRight, Code } from '@phosphor-icons/react'
-import { BlurReveal, FadeReveal, StaggerReveal, StaggerItem, SectionTransition, ParallaxLayer } from '../../motion'
+import { BlurReveal } from '../../motion/primitives/BlurReveal'
+import { FadeReveal } from '../../motion/primitives/FadeReveal'
+import { StaggerReveal, StaggerItem } from '../../motion/primitives/StaggerReveal'
+import { SectionTransition } from '../../motion/primitives/SectionTransition'
+import { ParallaxLayer } from '../../motion/primitives/ParallaxLayer'
 
 const PAGE_SIZE = 30
 const MAX_REPO_RESULTS = 12
@@ -60,7 +64,7 @@ export function CourseListPage() {
   const searchResultCount = matchedCourses.length + matchedRepos.length
 
   const sortedCourses = useMemo(() =>
-    [...matchedCourses].sort((a, b) => b.repoCount - a.repoCount),
+    matchedCourses.toSorted((a, b) => b.repoCount - a.repoCount),
     [matchedCourses]
   )
 

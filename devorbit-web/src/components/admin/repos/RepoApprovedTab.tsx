@@ -55,11 +55,11 @@ export function RepoApprovedTab() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-orbit-border bg-orbit-surface/50">
-              <th className="px-4 py-3 text-left text-xs font-medium text-ink-secondary uppercase">Repo</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-ink-secondary uppercase">Môn học</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-ink-secondary uppercase">Ngôn ngữ</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-ink-secondary uppercase">Stars</th>
-              <th className="px-4 py-3 text-right text-xs font-medium text-ink-secondary uppercase">Thao tác</th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-orbit-text uppercase">Repo</th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-orbit-text uppercase">Môn học</th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-orbit-text uppercase">Ngôn ngữ</th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-orbit-text uppercase">Stars</th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-orbit-text uppercase">Thao tác</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-clay-border">

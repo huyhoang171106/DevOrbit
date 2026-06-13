@@ -2,7 +2,7 @@
 import { m as motion } from 'framer-motion'
 import { DiscoveryFeed } from '../../components/student/DiscoveryFeed'
 import { HeroStoryCarousel } from '../../components/student/HeroStoryCarousel'
-import { Compass, Graph, MagicWand, Rocket, Sparkle, ArrowRight, Globe, Star, Code } from '@phosphor-icons/react'
+import { Compass, Graph, MagicWand, Rocket, Sparkle, ArrowRight, Globe, Star, Code, UsersThree, Camera, Calculator } from '@phosphor-icons/react'
 import { FadeReveal } from '../../motion/primitives/FadeReveal'
 import { BlurReveal } from '../../motion/primitives/BlurReveal'
 import { StaggerReveal, StaggerItem } from '../../motion/primitives/StaggerReveal'
@@ -147,7 +147,7 @@ export function HomePage() {
           <StaggerReveal stagger={0.1} y={30}>
             {/* Step 1 */}
             <StaggerItem>
-              <div className="grid md:grid-cols-12 gap-8 md:gap-16 items-center mb-28 md:mb-36 last:mb-0">
+              <div className="grid md:grid-cols-12 gap-8 md:gap-16 items-center mb-[25px]">
                 <div className="md:col-span-5 order-2 md:order-1">
                   <div className="flex items-center gap-3 mb-4">
                     <span className="h-8 w-8 rounded-xl bg-orbit-accent/10 border border-orbit-accent/20 flex items-center justify-center text-[12px] font-black text-orbit-accent">01</span>
@@ -191,7 +191,7 @@ export function HomePage() {
 
             {/* Step 2 */}
             <StaggerItem>
-              <div className="grid md:grid-cols-12 gap-8 md:gap-16 items-center mb-28 md:mb-36 last:mb-0">
+              <div className="grid md:grid-cols-12 gap-8 md:gap-16 items-center mb-[25px]">
                 <div className="md:col-span-7">
                   <ParallaxLayer speed={-0.15} range={60}>
                     <div className="orbit-card-glow p-10 md:p-14 relative overflow-hidden">
@@ -330,7 +330,7 @@ export function HomePage() {
                     <MagicWand className="h-7 w-7 text-orbit-accent" weight="duotone" />
                   </div>
                   <div>
-                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-orbit-accent mb-1">AI Tutor</div>
+                    <div className="text-[10px] font-black uppercase tracking-[0.2em] text-orbit-accent mb-1">DevOrbit AI</div>
                     <div className="text-[15px] font-bold text-orbit-text">Trợ lý học tập thông minh</div>
                   </div>
                 </div>
@@ -341,7 +341,7 @@ export function HomePage() {
                     </div>
                     <div>
                       <div className="flex items-center gap-3 mb-3">
-                        <span className="text-[11px] font-bold text-orbit-accent uppercase tracking-wider">AI Tutor</span>
+                        <span className="text-[11px] font-bold text-orbit-accent uppercase tracking-wider">DevOrbit AI</span>
                         <span className="text-[10px] text-orbit-text-muted">Vừa xong</span>
                       </div>
                       <p className="body-md text-[14px] italic leading-relaxed text-orbit-text-secondary">
@@ -403,8 +403,85 @@ export function HomePage() {
                   </p>
                 </div>
               </div>
-              <Link to="/courses" className="btn-secondary text-[12px] shrink-0">
+              <Link to="/knowledge-graph" className="btn-secondary text-[12px] shrink-0">
                 Xem lộ trình
+                <ArrowRight className="h-4 w-4" weight="bold" />
+              </Link>
+            </motion.div>
+          </motion.div>
+        </div>
+      </SectionTransition>
+
+      {/* ─── MORE FEATURES ─── */}
+      <SectionTransition atmosphere="deep" className="relative py-16 sm:py-28 md:py-36 border-b border-orbit-border/40">
+        <div className="w-full max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12">
+          <BlurReveal blur={10} duration={0.8}>
+            <div className="flex items-center gap-3 mb-8">
+              <span className="section-label">
+                <Compass className="h-3 w-3" weight="fill" />
+                Tính năng khác
+              </span>
+            </div>
+            <h2 className="display-lg mb-16">
+              Mở rộng{' '}
+              <span className="text-orbit-accent">trải nghiệm</span>
+            </h2>
+          </BlurReveal>
+
+          <motion.div
+            className="grid md:grid-cols-3 gap-6"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-100px' }}
+            variants={staggerContainer}
+          >
+            {/* Community */}
+            <motion.div variants={fadeUp} className="orbit-card-glow p-10 md:p-12 flex flex-col items-start justify-between group will-change-transform">
+              <div className="h-16 w-16 rounded-2xl bg-orbit-accent/10 border border-orbit-accent/20 flex items-center justify-center mb-8 group-hover:scale-105 transition-transform duration-500">
+                <UsersThree className="h-8 w-8 text-orbit-accent" weight="duotone" />
+              </div>
+              <div>
+                <h3 className="heading-4 mb-3">Cộng đồng</h3>
+                <p className="body-md text-[14px] leading-relaxed">
+                  Kết nối với sinh viên UIT, chia sẻ kiến thức, đánh giá repository và tham gia thảo luận về các môn học.
+                </p>
+              </div>
+              <Link to="/community" className="btn-secondary text-[12px] mt-8">
+                Khám phá cộng đồng
+                <ArrowRight className="h-4 w-4" weight="bold" />
+              </Link>
+            </motion.div>
+
+            {/* Photobooth */}
+            <motion.div variants={fadeUp} className="orbit-card-glow p-10 md:p-12 flex flex-col items-start justify-between group will-change-transform">
+              <div className="h-16 w-16 rounded-2xl bg-orbit-accent/10 border border-orbit-accent/20 flex items-center justify-center mb-8 group-hover:scale-105 transition-transform duration-500">
+                <Camera className="h-8 w-8 text-orbit-accent" weight="duotone" />
+              </div>
+              <div>
+                <h3 className="heading-4 mb-3">Photobooth</h3>
+                <p className="body-md text-[14px] leading-relaxed">
+                  Tạo ảnh kỷ niệm với khung hình UIT độc đáo. Chọn frame, tải ảnh lên và nhận ngay sản phẩm để chia sẻ.
+                </p>
+              </div>
+              <Link to="/photobooth" className="btn-secondary text-[12px] mt-8">
+                Tạo ảnh ngay
+                <ArrowRight className="h-4 w-4" weight="bold" />
+              </Link>
+            </motion.div>
+
+            {/* GPA Calculator */}
+            <motion.div variants={fadeUp} className="orbit-card-glow p-10 md:p-12 flex flex-col items-start justify-between group will-change-transform">
+              <div className="h-16 w-16 rounded-2xl bg-orbit-accent/10 border border-orbit-accent/20 flex items-center justify-center mb-8 group-hover:scale-105 transition-transform duration-500">
+                <Calculator className="h-8 w-8 text-orbit-accent" weight="duotone" />
+              </div>
+              <div>
+                <h3 className="heading-4 mb-3">Tính điểm GPA</h3>
+                <p className="body-md text-[14px] leading-relaxed">
+                  Tính toán điểm trung bình học kỳ và tích lũy. Lên kế hoạch học tập với mục tiêu điểm số cụ thể.
+                </p>
+              </div>
+              <Link to="/gpa-calculator" className="btn-secondary text-[12px] mt-8">
+                Tính GPA
                 <ArrowRight className="h-4 w-4" weight="bold" />
               </Link>
             </motion.div>

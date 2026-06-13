@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import vn.edu.uit.devorbit_api.dto.publicapi.SubjectQaRequest;
 import vn.edu.uit.devorbit_api.dto.publicapi.SubjectQaResponse;
+import vn.edu.uit.devorbit_api.dto.publicapi.RoadmapRecommendationResponse;
 import vn.edu.uit.devorbit_api.dto.publicapi.WebSearchResponse;
 import vn.edu.uit.devorbit_api.entity.Course;
 import vn.edu.uit.devorbit_api.entity.GithubRepo;
@@ -59,6 +60,9 @@ class SubjectQaServiceTest {
     private OpenCodeAiService openCodeAiService;
 
     @Mock
+    private AiService aiService;
+
+    @Mock
     private FirecrawlClient firecrawlClient;
 
     @Mock
@@ -79,11 +83,61 @@ class SubjectQaServiceTest {
             webSearchService,
             crawlerService,
             openCodeAiService,
+            aiService,
             firecrawlClient,
             courseKnowledgeBootstrapService,
             knowledgeRetrievalService,
             new ObjectMapper(),
             Runnable::run
+        );
+    }
+
+    private RoadmapRecommendationResponse roadmapResponse() {
+        return new RoadmapRecommendationResponse(
+            "Lộ trình học tập đề xuất cho mục tiêu của bạn.",
+            List.of(
+                new RoadmapRecommendationResponse.CourseRecommendation(
+                    330L,
+                    "SE330",
+                    "Ngôn ngữ lập trình Java",
+                    "Môn nền tảng để đi sâu vào Java backend.",
+                    "Java programing course",
+                    false,
+                    4,
+                    3
+                ),
+                new RoadmapRecommendationResponse.CourseRecommendation(
+                    325L,
+                    "SE325",
+                    "Chuyên đề J2EE",
+                    "Môn đi sâu vào Java enterprise.",
+                    "Enterprise Java course",
+                    false,
+                    5,
+                    3
+                )
+            ),
+            List.of(
+                new RoadmapRecommendationResponse.GraduationTrack(
+                    "THESIS",
+                    "Khóa luận tốt nghiệp",
+                    "Theo hướng nghiên cứu và tổng hợp.",
+                    10,
+                    "Hoàn tất các học phần bắt buộc.",
+                    "Phù hợp nếu muốn đi sâu nghiên cứu.",
+                    true,
+                    List.of("SE505")
+                )
+            ),
+            List.of(
+                new RoadmapRecommendationResponse.ElectivePoolCandidates(
+                    "chuyen-nganh",
+                    "Chuyên ngành",
+                    16,
+                    9,
+                    List.of()
+                )
+            )
         );
     }
 
@@ -206,20 +260,45 @@ class SubjectQaServiceTest {
     @Test
     void processQuery_javaBackendCareerQuestionRecommendsGroundedCoursesWithoutCourseCode() {
         when(chatSessionRepository.save(any())).thenThrow(new RuntimeException("database unavailable"));
+        when(aiService.generateRoadmap(any())).thenReturn(roadmapResponse());
 
         SubjectQaResponse response = service.processQuery(
             new SubjectQaRequest("tôi muốn làm java backend dev thì nên học môn gì", null)
         );
 
         assertThat(response.answer())
-            .contains("Java backend dev")
-            .contains("IT002")
-            .contains("IT004")
-            .contains("SE330")
-            .contains("SE325")
+            .contains("lộ trình học tập")
             .doesNotContain("Hãy hỏi bằng mã môn học cụ thể");
         assertThat(response.sources()).isEmpty();
-        assertThat(response.type()).isEqualTo("DIRECT");
+        assertThat(response.type()).isEqualTo("ROADMAP");
+        assertThat(response.roadmap()).isNotNull();
+        assertThat(response.roadmap().summary()).contains("Lộ trình học tập đề xuất");
+        assertThat(response.roadmap().recommendedCourses()).hasSize(2);
+        assertThat(response.roadmap().recommendedCourses())
+            .extracting(RoadmapRecommendationResponse.CourseRecommendation::courseCode)
+            .containsExactly("SE330", "SE325");
+        verify(aiService).generateRoadmap(any());
+        verifyNoInteractions(webSearchService, crawlerService, openCodeAiService, firecrawlClient, knowledgeRetrievalService);
+    }
+
+    @Test
+    void prepareQuery_roadmapIntentBuildsStructuredDirectResponse() {
+        when(chatSessionRepository.save(any())).thenThrow(new RuntimeException("database unavailable"));
+        when(aiService.generateRoadmap(any())).thenReturn(roadmapResponse());
+
+        SubjectQaService.SubjectQaPreparation preparation = service.prepareQuery(
+            new SubjectQaRequest("toi muon lam backend engineer va hoc them security", null),
+            SubjectQaService.SubjectQaProgressSink.NOOP
+        );
+
+        assertThat(preparation.queryType()).isEqualTo("DIRECT");
+        assertThat(preparation.directResponse()).isNotNull();
+        assertThat(preparation.directResponse().type()).isEqualTo("ROADMAP");
+        assertThat(preparation.directResponse().roadmap()).isNotNull();
+        assertThat(preparation.directResponse().roadmap().recommendedCourses())
+            .extracting(RoadmapRecommendationResponse.CourseRecommendation::courseCode)
+            .containsExactly("SE330", "SE325");
+        verify(aiService).generateRoadmap(any());
         verifyNoInteractions(webSearchService, crawlerService, openCodeAiService, firecrawlClient, knowledgeRetrievalService);
     }
 

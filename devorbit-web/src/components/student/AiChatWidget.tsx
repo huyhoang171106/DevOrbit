@@ -55,6 +55,56 @@ function sanitizeUrl(url: string): string | null {
     return null
 }
 
+type RoadmapCourse = NonNullable<RoadmapResponse['recommendedCourses']>[number]
+
+interface RoadmapSemesterNode {
+    key: string
+    label: string
+    semester: number | null
+    courses: RoadmapCourse[]
+    credits: number
+}
+
+function groupRoadmapCoursesBySemester(courses: readonly RoadmapCourse[]): RoadmapSemesterNode[] {
+    const groups = new Map<string, RoadmapSemesterNode>()
+
+    for (const course of courses) {
+        const semester = typeof course.semester === 'number' && Number.isFinite(course.semester) ? course.semester : null
+        const key = semester != null ? `semester-${semester}` : 'semester-unknown'
+        const existing = groups.get(key)
+        const nextGroup: RoadmapSemesterNode = existing ?? {
+            key,
+            semester,
+            label: semester != null ? `Học kỳ ${semester}` : 'Chưa xếp học kỳ',
+            courses: [],
+            credits: 0,
+        }
+
+        nextGroup.courses.push(course)
+        nextGroup.credits += course.credits ?? 0
+        groups.set(key, nextGroup)
+    }
+
+    return Array.from(groups.values())
+        .sort((a, b) => {
+            if (a.semester == null && b.semester == null) return a.label.localeCompare(b.label)
+            if (a.semester == null) return 1
+            if (b.semester == null) return -1
+            return a.semester - b.semester
+        })
+        .map((group) => ({
+            ...group,
+            courses: [...group.courses].sort((a, b) => {
+                const mandatoryA = a.isMandatory ? 0 : 1
+                const mandatoryB = b.isMandatory ? 0 : 1
+                if (mandatoryA !== mandatoryB) return mandatoryA - mandatoryB
+                const codeA = a.courseCode ?? a.courseName ?? ''
+                const codeB = b.courseCode ?? b.courseName ?? ''
+                return codeA.localeCompare(codeB)
+            }),
+        }))
+}
+
 // ─── Inline Markdown Tokeniser ───
 
 type InlineToken =
@@ -453,9 +503,12 @@ interface RoadmapPreviewProps {
 }
 
 function RoadmapPreview({ roadmap }: RoadmapPreviewProps) {
-    const previewCourses = roadmap.recommendedCourses.slice(0, 4)
-    const remainingCourses = Math.max(roadmap.recommendedCourses.length - previewCourses.length, 0)
+    const roadmapCourses = roadmap.recommendedCourses ?? []
+    const semesterNodes = groupRoadmapCoursesBySemester(roadmapCourses)
+    const totalCredits = roadmapCourses.reduce((sum, course) => sum + (course.credits ?? 0), 0)
+    const mandatoryCount = roadmapCourses.filter((course) => course.isMandatory).length
     const recommendedTrack = roadmap.graduationTracks?.find((track) => track.recommended)
+    const electivePools = roadmap.electivePools ?? []
 
     return (
         <div className="mt-3 pt-3 border-t border-zinc-800/40 space-y-3">
@@ -464,65 +517,116 @@ function RoadmapPreview({ roadmap }: RoadmapPreviewProps) {
                 <p className="text-[11px] font-bold uppercase tracking-wider">Lộ trình học tập</p>
             </div>
 
-            {roadmap.summary && (
-                <div className="space-y-1 text-[13px] leading-relaxed text-zinc-200">
-                    <MarkdownRenderer text={roadmap.summary} />
+            <div className="flex flex-wrap gap-2 text-[11px] text-zinc-400">
+                <span className="rounded-full border border-zinc-800/60 bg-zinc-900/40 px-2 py-1">
+                    {semesterNodes.length} node
+                </span>
+                <span className="rounded-full border border-zinc-800/60 bg-zinc-900/40 px-2 py-1">
+                    {roadmapCourses.length} môn
+                </span>
+                <span className="rounded-full border border-zinc-800/60 bg-zinc-900/40 px-2 py-1">
+                    {totalCredits} TC
+                </span>
+                <span className="rounded-full border border-zinc-800/60 bg-zinc-900/40 px-2 py-1">
+                    {mandatoryCount} bắt buộc
+                </span>
+            </div>
+
+            {semesterNodes.length > 0 && (
+                <div className="space-y-2">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Node lộ trình</p>
+                    <div className="relative pl-4">
+                        <div className="absolute left-[10px] top-2 bottom-2 w-px bg-zinc-800/70" aria-hidden="true" />
+                        <div className="space-y-3">
+                            {semesterNodes.map((group) => (
+                                <div key={group.key} className="relative pl-6">
+                                    <span
+                                        className="absolute left-[3px] top-4 h-3.5 w-3.5 rounded-full border border-orbit-accent bg-zinc-950 shadow-[0_0_0_4px_rgba(14,165,233,0.08)]"
+                                        aria-hidden="true"
+                                    />
+                                    <div className="rounded-2xl border border-zinc-800/50 bg-zinc-950/25 p-3">
+                                        <div className="flex items-start justify-between gap-2">
+                                            <div>
+                                                <p className="text-[12px] font-bold uppercase tracking-wider text-zinc-300">
+                                                    {group.label}
+                                                </p>
+                                                <p className="mt-0.5 text-[11px] text-zinc-500">
+                                                    {group.courses.length} môn · {group.credits} TC
+                                                </p>
+                                            </div>
+                                            <span className="rounded-full border border-zinc-800/60 bg-zinc-900/40 px-2 py-1 text-[11px] text-zinc-300">
+                                                {group.semester != null ? `HK${group.semester}` : 'Chưa xếp HK'}
+                                            </span>
+                                        </div>
+
+                                        <div className="mt-3 space-y-2">
+                                            {group.courses.map((course, index) => (
+                                                <div
+                                                    key={`${group.key}-${course.courseCode ?? course.courseName ?? course.courseId ?? index}`}
+                                                    className="flex gap-2 rounded-xl border border-zinc-800/50 bg-zinc-900/40 px-3 py-2"
+                                                >
+                                                    <span
+                                                        className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${
+                                                            course.isMandatory ? 'bg-emerald-400' : 'bg-orbit-accent'
+                                                        }`}
+                                                        aria-hidden="true"
+                                                    />
+                                                    <div className="min-w-0 flex-1">
+                                                        <div className="flex flex-wrap items-center gap-1.5 text-[13px] leading-snug">
+                                                            <span className="font-semibold text-zinc-100">
+                                                                {course.courseCode ?? '---'}
+                                                            </span>
+                                                            <span className="text-zinc-400">·</span>
+                                                            <span className="text-zinc-200">{course.courseName ?? 'Môn học'}</span>
+                                                            <span className="rounded-full border border-zinc-800/60 px-1.5 py-0.5 text-[10px] text-zinc-400">
+                                                                {course.credits ?? 0} TC
+                                                            </span>
+                                                            <span className="rounded-full border border-zinc-800/60 px-1.5 py-0.5 text-[10px] text-zinc-400">
+                                                                {course.isMandatory ? 'Bắt buộc' : 'Tự chọn'}
+                                                            </span>
+                                                        </div>
+                                                        {course.reasoning && (
+                                                            <div className="mt-1 text-[12px] leading-relaxed text-zinc-400">
+                                                                {course.reasoning}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             )}
 
-            {previewCourses.length > 0 && (
-                <div className="space-y-2">
-                    <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Môn nổi bật</p>
-                    <div className="space-y-2">
-                        {previewCourses.map((course) => (
-                            <div
-                                key={course.courseCode}
-                                className="flex gap-2 border border-zinc-800/50 rounded-xl px-3 py-2 bg-zinc-950/25"
-                            >
-                                <CheckCircle
-                                    className={`mt-0.5 h-4 w-4 shrink-0 ${course.isMandatory ? 'text-emerald-400' : 'text-orbit-accent'}`}
-                                    weight="fill"
-                                    aria-hidden="true"
-                                />
-                                <div className="min-w-0 flex-1">
-                                    <div className="flex flex-wrap items-center gap-1.5 text-[13px] leading-snug">
-                                        <span className="font-semibold text-zinc-100">{course.courseCode}</span>
-                                        <span className="text-zinc-400">·</span>
-                                        <span className="text-zinc-200">{course.courseName}</span>
-                                        <span className="rounded-full border border-zinc-800/60 px-1.5 py-0.5 text-[10px] text-zinc-400">
-                                            {course.semester ? `HK${course.semester}` : 'HK?'}
-                                        </span>
-                                        <span className="rounded-full border border-zinc-800/60 px-1.5 py-0.5 text-[10px] text-zinc-400">
-                                            {course.credits} TC
-                                        </span>
-                                    </div>
-                                    <div className="mt-1 text-[12px] leading-relaxed text-zinc-400">
-                                        {course.reasoning}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+            {roadmap.summary && (
+                <div className="space-y-1 rounded-2xl border border-zinc-800/50 bg-zinc-950/25 p-3">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Tóm tắt</p>
+                    <div className="space-y-1 text-[13px] leading-relaxed text-zinc-200">
+                        <MarkdownRenderer text={roadmap.summary} />
                     </div>
-                    {remainingCourses > 0 && (
-                        <p className="text-[11px] text-zinc-500">+ {remainingCourses} môn khác trong roadmap</p>
-                    )}
                 </div>
             )}
 
             {recommendedTrack && (
                 <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Hướng tốt nghiệp</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                        Hướng tốt nghiệp
+                    </span>
                     <span className="rounded-full border border-zinc-800/60 bg-zinc-900/40 px-2 py-1 text-[11px] text-zinc-200">
                         {recommendedTrack.name}
                     </span>
                 </div>
             )}
 
-            {roadmap.electivePools.length > 0 && (
+            {electivePools.length > 0 && (
                 <div className="flex flex-wrap items-center gap-1.5">
-                    <Database className="h-3.5 w-3.5 text-zinc-500 shrink-0" aria-hidden="true" />
+                    <Database className="h-3.5 w-3.5 shrink-0 text-zinc-500" aria-hidden="true" />
                     <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Nhóm tự chọn</span>
-                    {roadmap.electivePools.map((pool) => (
+                    {electivePools.map((pool) => (
                         <span
                             key={pool.poolId}
                             className="rounded-full border border-zinc-800/60 bg-zinc-900/40 px-2 py-1 text-[11px] text-zinc-300"

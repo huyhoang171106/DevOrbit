@@ -4,7 +4,7 @@ import { useCourseList } from '../../hooks/useCourseList'
 import { CourseCard } from '../../components/student/CourseCard'
 import { Link } from 'react-router-dom'
 import type { RepoSummary } from '../../types/api'
-import { searchCourses, searchRepos } from '../../lib/repoSearch'
+import { hasExactCourseMatch, searchCourses, searchRepos } from '../../lib/repoSearch'
 import { MagnifyingGlass, Graph, Funnel, X, GraduationCap, BookOpen, CaretLeft, CaretRight, Code } from '@phosphor-icons/react'
 import { BlurReveal } from '../../motion/primitives/BlurReveal'
 import { FadeReveal } from '../../motion/primitives/FadeReveal'
@@ -13,7 +13,6 @@ import { SectionTransition } from '../../motion/primitives/SectionTransition'
 import { ParallaxLayer } from '../../motion/primitives/ParallaxLayer'
 
 const PAGE_SIZE = 30
-const MAX_REPO_RESULTS = 12
 
 export function CourseListPage() {
   const { data: courses = [], isLoading: loading, error: queryError } = useCourseList()
@@ -30,6 +29,17 @@ export function CourseListPage() {
     setSearchQuery(val)
     if (searchTimer.current) clearTimeout(searchTimer.current)
     searchTimer.current = setTimeout(() => setDebouncedQuery(val), 200)
+  }, [])
+
+  const submitSearch = useCallback(() => {
+    if (searchTimer.current) clearTimeout(searchTimer.current)
+    setDebouncedQuery(searchQuery.trim())
+  }, [searchQuery])
+
+  const clearSearch = useCallback(() => {
+    if (searchTimer.current) clearTimeout(searchTimer.current)
+    setSearchQuery('')
+    setDebouncedQuery('')
   }, [])
 
   useEffect(() => () => { if (searchTimer.current) clearTimeout(searchTimer.current) }, [])
@@ -52,10 +62,15 @@ export function CourseListPage() {
     return searchCourses(courses, debouncedQuery, allRepos)
   }, [courses, debouncedQuery, allRepos])
 
+  const exactCourseMatch = useMemo(
+    () => hasExactCourseMatch(courses, debouncedQuery),
+    [courses, debouncedQuery],
+  )
+
   const matchedRepos = useMemo(() => {
-    if (!debouncedQuery.trim() || allRepos.length === 0) return []
+    if (!debouncedQuery.trim() || exactCourseMatch || allRepos.length === 0) return []
     return searchRepos(allRepos, debouncedQuery)
-  }, [allRepos, debouncedQuery])
+  }, [allRepos, debouncedQuery, exactCourseMatch])
 
   const hasSearch = debouncedQuery.trim().length > 0
   const showRepos = hasSearch && matchedRepos.length > 0
@@ -63,9 +78,9 @@ export function CourseListPage() {
   const hasAnyResult = showCourses || showRepos
   const searchResultCount = matchedCourses.length + matchedRepos.length
 
-  const sortedCourses = useMemo(() =>
-    matchedCourses.toSorted((a, b) => b.repoCount - a.repoCount),
-    [matchedCourses]
+  const sortedCourses = useMemo(
+    () => hasSearch ? matchedCourses : matchedCourses.toSorted((a, b) => b.repoCount - a.repoCount),
+    [hasSearch, matchedCourses],
   )
 
   // Reset page on search
@@ -151,25 +166,43 @@ export function CourseListPage() {
 
           {/* Search + CTA row */}
           <div className="flex flex-col lg:flex-row gap-5 items-stretch lg:items-center">
-            <div className="relative flex-1 max-w-xl group">
+            <div className="relative flex-1 max-w-2xl group">
               <div className="absolute -inset-1 bg-gradient-to-r from-orbit-accent/20 to-emerald-500/20 rounded-3xl blur opacity-0 group-focus-within:opacity-100 transition duration-500" />
-              <div className="relative flex items-center">
-                <MagnifyingGlass className="absolute left-5 h-5 w-5 text-orbit-text-muted group-focus-within:text-orbit-accent transition-colors duration-300" weight="regular" />
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm môn học và repo theo tên, mã, ngôn ngữ..."
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  className="w-full bg-orbit-surface/80 backdrop-blur-xl border border-orbit-border rounded-3xl py-5 pl-14 pr-14 text-orbit-text placeholder:text-orbit-text-muted/50 focus:outline-none focus:border-orbit-accent/40 focus:ring-4 focus:ring-orbit-accent/5 transition-all text-[15px]"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => { setSearchQuery(''); setDebouncedQuery(''); }}
-                    className="absolute right-5 h-8 w-8 rounded-full bg-orbit-elevated border border-orbit-border flex items-center justify-center text-orbit-text-muted hover:text-orbit-text hover:border-orbit-accent/30 transition-all"
-                  >
-                    <X className="h-4 w-4" weight="bold" />
-                  </button>
-                )}
+              <div className="relative flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="relative flex-1">
+                  <MagnifyingGlass className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-orbit-text-muted group-focus-within:text-orbit-accent transition-colors duration-300" weight="regular" />
+                  <input
+                    type="search"
+                    placeholder="Tìm kiếm môn học và repo theo tên, mã, ngôn ngữ..."
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault()
+                        submitSearch()
+                      }
+                    }}
+                    className="w-full bg-orbit-surface/80 backdrop-blur-xl border border-orbit-border rounded-3xl py-5 pl-14 pr-14 text-orbit-text placeholder:text-orbit-text-muted/50 focus:outline-none focus:border-orbit-accent/40 focus:ring-4 focus:ring-orbit-accent/5 transition-all text-[15px]"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      aria-label="Xóa tìm kiếm"
+                      onClick={clearSearch}
+                      className="absolute right-5 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-orbit-elevated border border-orbit-border flex items-center justify-center text-orbit-text-muted hover:text-orbit-text hover:border-orbit-accent/30 transition-all"
+                    >
+                      <X className="h-4 w-4" weight="bold" />
+                    </button>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={submitSearch}
+                  className="btn-primary w-full sm:w-auto shrink-0 px-6 py-5 text-[12px]"
+                >
+                  <MagnifyingGlass className="h-4 w-4" weight="bold" />
+                  Tìm kiếm
+                </button>
               </div>
             </div>
 
@@ -275,21 +308,22 @@ export function CourseListPage() {
               <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/15 text-[10px] font-bold text-indigo-400">{matchedRepos.length}</span>
             </div>
             <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-              {matchedRepos.slice(0, MAX_REPO_RESULTS).map((r) => (
+              {matchedRepos.map((r) => (
                 <RepoSearchCard key={r.id} repo={r} />
               ))}
             </div>
-            {reposLoading && (
-              <div className="mt-6 flex items-center justify-center gap-3 text-orbit-text-muted">
-                <div className="h-3 w-3 rounded-full border border-orbit-accent/30 border-t-transparent animate-spin" />
-                <span className="text-[12px]">Đang tải thêm dữ liệu repo...</span>
-              </div>
-            )}
+          </div>
+        )}
+
+        {hasSearch && reposLoading && (
+          <div className="mb-14 flex items-center justify-center gap-3 text-orbit-text-muted">
+            <div className="h-3 w-3 rounded-full border border-orbit-accent/30 border-t-transparent animate-spin" />
+            <span className="text-[12px]">Đang tìm thêm trong dữ liệu repo...</span>
           </div>
         )}
 
         {/* ─── EMPTY STATE ─── */}
-        {!hasAnyResult && !loading && (
+        {!hasAnyResult && !loading && !reposLoading && (
           <div className="orbit-card p-16 md:p-24 text-center border-dashed border-2 border-orbit-accent/10">
             <div className="h-20 w-20 rounded-2xl bg-orbit-surface border border-orbit-border flex items-center justify-center mx-auto mb-8">
               {hasSearch ? <MagnifyingGlass className="h-10 w-10 text-orbit-text-muted" weight="light" /> : <BookOpen className="h-10 w-10 text-orbit-text-muted" weight="light" />}
@@ -305,7 +339,7 @@ export function CourseListPage() {
             </p>
             {hasSearch && (
               <button
-                onClick={() => setSearchQuery('')}
+                onClick={clearSearch}
                 className="btn-primary text-[12px]"
               >
                 <X className="h-4 w-4" weight="bold" />

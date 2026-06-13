@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m as motion, AnimatePresence } from 'framer-motion'
 import { useKnowledgeGraph } from '../../../hooks/useKnowledgeGraph'
 import { useCourseList } from '../../../hooks/useCourseList'
 import type { GraphNode } from '../../../types/api'
@@ -25,6 +25,7 @@ import {
 
 /** Set of mandatory course codes that are always in the curriculum (no warning needed) */
 const MANDATORY_SEMESTER_CODES = new Set(getFixedSemesterCodes().map(c => c.toUpperCase()))
+const CO_SO_NGANH_CODE_SET = new Set(CO_SO_NGANH_COURSES)
 
 function getSelectedCredits(codes: Set<string>): number {
   let total = 0
@@ -41,7 +42,7 @@ function getCsnCredits(codes: Set<string>): number {
 function getCnCredits(codes: Set<string>): number {
   let total = 0
   for (const code of codes) {
-    if (!CO_SO_NGANH_COURSES.includes(code)) total += ELECTIVE_CREDITS[code] ?? 3
+    if (!CO_SO_NGANH_CODE_SET.has(code)) total += ELECTIVE_CREDITS[code] ?? 3
   }
   return total
 }

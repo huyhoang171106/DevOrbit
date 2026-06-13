@@ -258,20 +258,20 @@ function ChatArea({
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const prevMessagesLength = useRef(0)
-  const [autoScroll, setAutoScroll] = useState(true)
+  const autoScrollRef = useRef(true)
 
   useEffect(() => {
-    if (autoScroll && messages.length > prevMessagesLength.current) {
+    if (autoScrollRef.current && messages.length > prevMessagesLength.current) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
     prevMessagesLength.current = messages.length
-  }, [messages.length, autoScroll])
+  }, [messages.length])
 
   const handleScroll = () => {
     if (!containerRef.current) return
     const el = containerRef.current
     const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100
-    setAutoScroll(atBottom)
+    autoScrollRef.current = atBottom
 
     if (el.scrollTop < 50 && page < totalPages - 1 && !loadingMessages) {
       onLoadMore()
@@ -314,7 +314,7 @@ function ChatArea({
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto scrollbar-thin px-6 py-4 space-y-3"
+        className="flex-1 overflow-y-auto scrollbar-thin px-6 py-4 space-y-3 min-h-0"
       >
         {page < totalPages - 1 && (
           <div className="flex justify-center py-2">

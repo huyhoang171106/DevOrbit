@@ -23,9 +23,12 @@ export function KnowledgeGraphPage() {
     while (queue.length > 0) {
       const currentId = queue.shift()!
       // Find all courses that have 'currentId' as a prerequisite
-      const downstream = data.links
-        .filter(link => link.source === currentId && link.type === 'PREREQUISITE')
-        .map(link => link.target)
+      const downstream: number[] = []
+      for (const link of data.links) {
+        if (link.source === currentId && link.type === 'PREREQUISITE') {
+          downstream.push(link.target)
+        }
+      }
 
       for (const targetId of downstream) {
         if (!blocked.has(targetId)) {

@@ -50,7 +50,10 @@ export function AdminReposPage() {
         primaryLanguage: String(data.get('primaryLanguage') ?? '').trim(),
         stars: Number(data.get('stars') ?? 0),
         active: data.get('active') === 'on',
-        techStacks: String(data.get('techStacks') ?? '').split(',').map((s) => s.trim()).filter(Boolean),
+        techStacks: String(data.get('techStacks') ?? '').split(',').flatMap((s) => {
+          const stack = s.trim()
+          return stack ? [stack] : []
+        }),
         courseId: data.get('courseId') ? Number(data.get('courseId')) : null,
       })
       setEditingRepo(null)

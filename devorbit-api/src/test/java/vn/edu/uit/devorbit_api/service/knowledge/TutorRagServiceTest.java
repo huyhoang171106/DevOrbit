@@ -7,9 +7,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import vn.edu.uit.devorbit_api.dto.knowledge.Citation;
 import vn.edu.uit.devorbit_api.dto.knowledge.TutorResponse;
+import vn.edu.uit.devorbit_api.entity.KnowledgeChunk;
 import vn.edu.uit.devorbit_api.service.ai.OpenCodeAiService;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -86,6 +88,8 @@ class TutorRagServiceTest {
         when(courseCodeDetector.detect("Hello")).thenReturn(Optional.empty());
         when(intentClassifier.classify("Hello")).thenReturn(TutorIntent.GENERAL_RAG);
         when(openCodeAiService.isLlmEnabled()).thenReturn(true);
+        when(knowledgeRetrievalService.search(isNull(), eq("Hello"), eq(5)))
+            .thenReturn(new KnowledgeRetrievalService.SearchResult(null, "Hello", List.of()));
         when(openCodeAiService.generateCompletion(anyString(), anyString()))
             .thenReturn("Xin chào! Mình là DevOrbit AI Tutor.");
         when(citationBuilder.buildCitations(any(), isNull()))
@@ -94,7 +98,7 @@ class TutorRagServiceTest {
         TutorResponse response = service.answer("Hello");
 
         assertThat(response.answer()).contains("DevOrbit AI Tutor");
-        verify(knowledgeRetrievalService, never()).search(any(), anyString(), anyInt());
+        verify(knowledgeRetrievalService).search(isNull(), eq("Hello"), eq(5));
     }
 
     @Test
@@ -120,5 +124,52 @@ class TutorRagServiceTest {
 
         assertThat(response.answer()).contains("20%");
         verifyNoInteractions(openCodeAiService);
+    }
+
+    @Test
+    void answer_ragQuery_emptyHybridResultsKeepsLowConfidenceAndCallsLlm() {
+        when(courseCodeDetector.detect("IT003 something")).thenReturn(Optional.of("IT003"));
+        when(intentClassifier.classify("IT003 something")).thenReturn(TutorIntent.GENERAL_RAG);
+        when(knowledgeRetrievalService.search(eq("IT003"), anyString(), eq(5)))
+            .thenReturn(new KnowledgeRetrievalService.SearchResult("IT003", "query", List.of()));
+        when(openCodeAiService.isLlmEnabled()).thenReturn(true);
+        when(openCodeAiService.generateCompletion(anyString(), anyString()))
+            .thenReturn("Not found in DB.");
+        when(citationBuilder.buildCitations(any(), eq("IT003")))
+            .thenReturn(List.of());
+
+        TutorResponse response = service.answer("IT003 something");
+
+        assertThat(response.answer()).isNotBlank();
+        assertThat(response.citations()).isEmpty();
+        assertThat(response.confidence()).isEqualTo("LOW");
+        verify(openCodeAiService).generateCompletion(anyString(), anyString());
+    }
+
+    @Test
+    void answer_ragQuery_containsScoreInContext() {
+        when(courseCodeDetector.detect("IT003 nội dung môn học")).thenReturn(Optional.of("IT003"));
+        when(intentClassifier.classify("IT003 nội dung môn học")).thenReturn(TutorIntent.FACT_QUERY);
+        when(courseFactQueryService.getFact("IT003", "unknown")).thenReturn(Optional.empty());
+
+        KnowledgeChunk chunk = new KnowledgeChunk();
+        chunk.setCourseCode("IT003");
+        chunk.setSectionTitle("Cấu trúc dữ liệu");
+        chunk.setChunkText("Nội dung về cấu trúc dữ liệu và giải thuật.");
+
+        when(knowledgeRetrievalService.search(eq("IT003"), anyString(), eq(5)))
+            .thenReturn(new KnowledgeRetrievalService.SearchResult("IT003", "query",
+                List.of(new KnowledgeRetrievalService.ChunkResult(chunk, 0.85))));
+        when(openCodeAiService.isLlmEnabled()).thenReturn(true);
+        when(openCodeAiService.generateCompletion(anyString(), anyString()))
+            .thenReturn("Cấu trúc dữ liệu là một môn học quan trọng.");
+        when(citationBuilder.buildCitations(any(), eq("IT003")))
+            .thenReturn(List.of(new Citation(
+                UUID.randomUUID(), "Syllabus", "url", "Cấu trúc dữ liệu", 1, 10, 0)));
+
+        TutorResponse response = service.answer("IT003 nội dung môn học");
+
+        assertThat(response.answer()).isNotBlank();
+        verify(openCodeAiService).generateCompletion(argThat(prompt -> prompt.contains("score=0.85")), anyString());
     }
 }

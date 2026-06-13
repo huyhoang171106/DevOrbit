@@ -101,7 +101,7 @@ class AdminKnowledgeControllerTest {
         RagPreviewRequest request = new RagPreviewRequest("IT003", "quy hoạch động", 5);
 
         SearchResponse.SearchResult chunk = new SearchResponse.SearchResult(
-            "chunk-1", "src-1", "IT003", "Session 5", 10, 12, 0.85, "Quy hoạch động...");
+            "chunk-1", "src-1", "IT003", "Session 5", 10, 12, 0.85, "Quy hoạch động...", "file.pdf", "http://example.com");
 
         KnowledgeRetrievalService.SearchResult searchResult =
             new KnowledgeRetrievalService.SearchResult("IT003", "quy hoạch động", List.of());

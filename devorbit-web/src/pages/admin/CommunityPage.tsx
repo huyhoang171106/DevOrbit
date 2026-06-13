@@ -43,7 +43,7 @@ export function CommunityPage() {
     <AdminPageLayout title="Cộng đồng" description="Giám sát tin nhắn cộng đồng">
       {channelsError && <AdminErrorBanner message={channelsError} onRetry={refetchChannels} />}
       <div className="flex gap-6">
-        <div className="w-64 flex-shrink-0">
+        <div className="w-80 flex-shrink-0">
           <ChannelList
             channels={channels ?? []}
             selectedChannel={selectedChannel}

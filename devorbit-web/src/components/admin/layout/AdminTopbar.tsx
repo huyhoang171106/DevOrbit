@@ -1,16 +1,14 @@
 import { useLocation } from 'react-router-dom'
-import { Bell } from '@phosphor-icons/react'
+import { NotificationDropdown } from '../shared/NotificationDropdown'
 
 const ROUTE_LABELS: Record<string, string> = {
   '/admin': 'Bảng điều khiển',
   '/admin/courses': 'Môn học',
   '/admin/repos': 'Repos',
-  '/admin/roadmaps': 'Lộ trình',
   '/admin/students': 'Sinh viên',
   '/admin/reviews': 'Đánh giá',
   '/admin/community': 'Cộng đồng',
   '/admin/chat': 'AI Chat',
-  '/admin/notes': 'Ghi chú',
   '/admin/relationships': 'Quan hệ',
   '/admin/photobooth': 'Photobooth',
   '/admin/techstack': 'Tech Stack',
@@ -27,9 +25,7 @@ export function AdminTopbar() {
         <h2 className="font-heading font-bold text-lg text-orbit-text">{label}</h2>
       </div>
       <div className="flex items-center gap-4">
-        <button className="h-9 w-9 rounded-xl bg-orbit-surface border border-orbit-border flex items-center justify-center text-ink-secondary hover:text-orbit-accent hover:border-orbit-accent/30 transition-all duration-200">
-          <Bell size={18} />
-        </button>
+        <NotificationDropdown />
       </div>
     </header>
   )

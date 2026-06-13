@@ -32,7 +32,9 @@ public class CommunityChatService {
 
     @Transactional
     public List<ChatChannelResponse> getChannels() {
-        syncChannels();
+        if (channelRepository.count() == 0) {
+            syncChannels();
+        }
         return channelRepository.findAllByOrderByTypeAscNameAsc()
                 .stream()
                 .map(this::toChannelResponse)

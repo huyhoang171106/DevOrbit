@@ -144,6 +144,9 @@ describe('AiChatWidget roadmap preview', () => {
     renderRoadmapMessage()
 
     expect(screen.getByText('Lộ trình học tập')).toBeInTheDocument()
+    expect(screen.getByText('Node lộ trình')).toBeInTheDocument()
+    expect(screen.getByText('Học kỳ 4')).toBeInTheDocument()
+    expect(screen.getByText('Học kỳ 5')).toBeInTheDocument()
     expect(screen.getByText('SE330')).toBeInTheDocument()
     expect(screen.getByText('Ngôn ngữ lập trình Java')).toBeInTheDocument()
     expect(screen.getByText('Hướng tốt nghiệp')).toBeInTheDocument()

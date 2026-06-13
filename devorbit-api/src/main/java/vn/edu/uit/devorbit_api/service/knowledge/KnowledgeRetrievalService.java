@@ -112,7 +112,9 @@ public class KnowledgeRetrievalService {
                     chunk.getPageFrom(),
                     chunk.getPageTo(),
                     cr.score(),
-                    chunk.getChunkText()
+                    chunk.getChunkText(),
+                    chunk.getSource() != null ? chunk.getSource().getFileName() : null,
+                    chunk.getSource() != null ? chunk.getSource().getUrl() : null
             ));
         }
 
@@ -147,7 +149,7 @@ public class KnowledgeRetrievalService {
     @SuppressWarnings("unchecked")
     private KnowledgeChunk mapRowToChunk(Object[] row) {
         // Native query returns: id, source_id, course_code, chunk_index, section_title,
-        // chunk_text, metadata_json, page_from, page_to, created_at, embedding, similarity
+        // chunk_text, metadata_json, page_from, page_to, created_at, embedding, file_name, url, similarity
         // We need to reconstruct a KnowledgeChunk from these fields
         KnowledgeChunk chunk = new KnowledgeChunk();
         chunk.setId((UUID) row[0]);
@@ -155,6 +157,8 @@ public class KnowledgeRetrievalService {
         // Create a minimal KnowledgeSource reference with just the ID
         KnowledgeSource source = new KnowledgeSource();
         source.setId((UUID) row[1]);
+        source.setFileName((String) row[11]);
+        source.setUrl((String) row[12]);
         chunk.setSource(source);
 
         chunk.setCourseCode((String) row[2]);
@@ -195,6 +199,8 @@ public class KnowledgeRetrievalService {
                     chunk.setChunkText(r.text());
                     KnowledgeSource source = new KnowledgeSource();
                     source.setId(java.util.UUID.fromString(r.sourceId()));
+                    source.setFileName(r.fileName());
+                    source.setUrl(r.url());
                     chunk.setSource(source);
                     return new ChunkResult(chunk, r.score());
                 })

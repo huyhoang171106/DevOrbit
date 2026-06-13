@@ -22,9 +22,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import reactor.core.Disposable;
 
 /**
  * Service orchestrating AI Q&A operations for course selection and advice.
@@ -47,7 +50,7 @@ public class SubjectQaService {
     private final Executor subjectQaStreamExecutor;
 
     private static final Logger log = LoggerFactory.getLogger(SubjectQaService.class);
-    private static final Pattern COURSE_CODE_PATTERN = Pattern.compile("\\b([A-Z]{2,4}\\d{3,4})\\b");
+    private static final Pattern COURSE_CODE_PATTERN = Pattern.compile("\\b([A-Z]{2,4}\\d{2,4})\\b");
 
     public SubjectQaService(
             CourseRepository courseRepository,
@@ -157,6 +160,25 @@ public class SubjectQaService {
 
     public SseEmitter streamQuery(SubjectQaRequest request) {
         SseEmitter emitter = new SseEmitter(120_000L);
+        AtomicReference<Disposable> subscriptionRef = new AtomicReference<>();
+        AtomicBoolean completed = new AtomicBoolean(false);
+
+        Runnable cleanup = () -> {
+            completed.set(true);
+            Disposable d = subscriptionRef.get();
+            if (d != null) {
+                d.dispose();
+            }
+        };
+
+        emitter.onCompletion(cleanup);
+        emitter.onTimeout(() -> {
+            cleanup.run();
+            try {
+                emit(emitter, SubjectQaStreamEvent.error("Stream timeout. Vui lòng thử lại."));
+            } catch (Exception ignored) {}
+            emitter.complete();
+        });
 
         subjectQaStreamExecutor.execute(() -> {
             StringBuilder answerBuffer = new StringBuilder();
@@ -169,13 +191,18 @@ public class SubjectQaService {
                     emit(emitter, SubjectQaStreamEvent.delta(preparation.directResponse().answer()));
                     emit(emitter, SubjectQaStreamEvent.complete(preparation.directResponse()));
                     emitter.complete();
+                    cleanup.run();
+                    return;
+                }
+
+                if (completed.get()) {
                     return;
                 }
 
                 emit(emitter, SubjectQaStreamEvent.status("answer", "Đang soạn câu trả lời"));
 
                 // Stream from LLM
-                openCodeAiService.streamCompletion(preparation.systemPrompt(), preparation.userMessage())
+                Disposable disposable = openCodeAiService.streamCompletion(preparation.systemPrompt(), preparation.userMessage())
                     .subscribe(
                         delta -> {
                             answerBuffer.append(delta);
@@ -201,6 +228,7 @@ public class SubjectQaService {
                                 emit(emitter, SubjectQaStreamEvent.delta(fallbackAnswer));
                             }
                             completeStream(emitter, preparation, answerBuffer.toString());
+                            cleanup.run();
                         },
                         () -> {
                             // Stream completed normally
@@ -225,8 +253,14 @@ public class SubjectQaService {
                                 answerBuffer.append(finalAnswer);
                             }
                             completeStream(emitter, preparation, answerBuffer.toString());
+                            cleanup.run();
                         }
                     );
+
+                subscriptionRef.set(disposable);
+                if (completed.get()) {
+                    disposable.dispose();
+                }
             } catch (Exception e) {
                 log.error("SubjectQaService: stream query failed: {}", e.getMessage());
                 try {
@@ -235,14 +269,8 @@ public class SubjectQaService {
                     // Emitter may already be closed
                 }
                 emitter.completeWithError(e);
+                cleanup.run();
             }
-        });
-
-        emitter.onTimeout(() -> {
-            try {
-                emit(emitter, SubjectQaStreamEvent.error("Stream timeout. Vui lòng thử lại."));
-            } catch (Exception ignored) {}
-            emitter.complete();
         });
 
         return emitter;
@@ -264,10 +292,12 @@ public class SubjectQaService {
     }
 
     private void emit(SseEmitter emitter, SubjectQaStreamEvent event) {
-        try {
-            emitter.send(SseEmitter.event().name(event.type()).data(event));
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to send SSE event: " + e.getMessage(), e);
+        synchronized (emitter) {
+            try {
+                emitter.send(SseEmitter.event().name(event.type()).data(event));
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to send SSE event: " + e.getMessage(), e);
+            }
         }
     }
 

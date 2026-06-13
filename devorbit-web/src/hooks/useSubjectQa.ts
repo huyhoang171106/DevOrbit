@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
-import { apiPost } from '../lib/api'
+import { apiPost, apiBaseUrl, buildApiUrl } from '../lib/api'
 import { getStudentToken } from '../lib/auth'
 
 export interface SubjectQaRequest {
@@ -65,7 +65,8 @@ export async function streamSubjectQa(
     signal?: AbortSignal,
 ): Promise<void> {
     const studentToken = getStudentToken()
-    const response = await fetch('/api/ai/subject-qa/stream', {
+    const url = buildApiUrl(apiBaseUrl, '/api/ai/subject-qa/stream')
+    const response = await fetch(url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -92,27 +93,30 @@ export async function streamSubjectQa(
     let dataLines: string[] = []
 
     function flushEvent() {
-        if (!eventType || dataLines.length === 0) return
+        const currentType = eventType || 'message'
+        if (dataLines.length === 0) return
         const rawData = dataLines.join('\n')
 
         try {
             const parsed = JSON.parse(rawData) as SubjectQaStreamEvent
 
-            switch (parsed.type) {
+            const finalType = (parsed.type || currentType) as SubjectQaStreamEvent['type']
+
+            switch (finalType) {
                 case 'status':
-                    handlers.onStatus?.(parsed)
+                    handlers.onStatus?.(parsed as any)
                     break
                 case 'search_result':
-                    handlers.onSearchResult?.(parsed.searchResult)
+                    handlers.onSearchResult?.((parsed as any).searchResult)
                     break
                 case 'delta':
-                    handlers.onDelta?.(parsed.content)
+                    handlers.onDelta?.((parsed as any).content)
                     break
                 case 'complete':
-                    handlers.onComplete?.(parsed.response)
+                    handlers.onComplete?.((parsed as any).response)
                     break
                 case 'error':
-                    handlers.onError?.(parsed.message)
+                    handlers.onError?.((parsed as any).message)
                     break
             }
         } catch {
@@ -127,12 +131,26 @@ export async function streamSubjectQa(
         while (true) {
             const { done, value } = await reader.read()
             if (done) {
+                if (buffer.trim()) {
+                    const block = buffer.replace(/\r\n/g, '\n')
+                    const lines = block.split('\n')
+                    for (const line of lines) {
+                        if (line.startsWith('event:')) {
+                            if (eventType) flushEvent()
+                            eventType = line.slice(6).trim()
+                        } else if (line.startsWith('data:')) {
+                            dataLines.push(line.slice(5).trim())
+                        }
+                    }
+                    flushEvent()
+                }
                 flushEvent()
                 break
             }
 
             buffer += decoder.decode(value, { stream: true })
-            const blocks = buffer.split('\n\n')
+            const normalizedBuffer = buffer.replace(/\r\n/g, '\n')
+            const blocks = normalizedBuffer.split('\n\n')
 
             // Keep the last potentially incomplete block in the buffer
             buffer = blocks.pop() ?? ''

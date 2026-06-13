@@ -22,9 +22,21 @@ public class ExaWebSearchClient {
 
     @Autowired
     public ExaWebSearchClient(ExaProperties properties) {
-        this(WebClient.builder()
+        this(buildWebClient(properties), properties);
+    }
+
+    private static WebClient buildWebClient(ExaProperties properties) {
+        int timeoutSec = Math.max(1, properties.getTimeoutSeconds());
+        reactor.netty.http.client.HttpClient httpClient = reactor.netty.http.client.HttpClient.create()
+            .option(io.netty.channel.ChannelOption.CONNECT_TIMEOUT_MILLIS, timeoutSec * 1000)
+            .doOnConnected(conn -> conn
+                .addHandlerLast(new io.netty.handler.timeout.ReadTimeoutHandler(timeoutSec))
+                .addHandlerLast(new io.netty.handler.timeout.WriteTimeoutHandler(timeoutSec)));
+
+        return WebClient.builder()
             .baseUrl(normalizeBaseUrl(properties.getApiUrl()))
-            .build(), properties);
+            .clientConnector(new org.springframework.http.client.reactive.ReactorClientHttpConnector(httpClient))
+            .build();
     }
 
     ExaWebSearchClient(WebClient webClient, ExaProperties properties) {
@@ -50,6 +62,10 @@ public class ExaWebSearchClient {
                 .block();
 
             return response != null ? response : Map.of();
+        } catch (org.springframework.web.reactive.function.client.WebClientResponseException e) {
+            log.warn("Exa search failed with response status {}: {} - Body: {}",
+                e.getStatusCode(), e.getMessage(), e.getResponseBodyAsString());
+            return Map.of();
         } catch (Exception e) {
             log.warn("Exa search failed: {}", e.getMessage());
             return Map.of();

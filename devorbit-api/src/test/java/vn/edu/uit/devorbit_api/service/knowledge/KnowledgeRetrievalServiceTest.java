@@ -44,11 +44,10 @@ class KnowledgeRetrievalServiceTest {
     }
 
     private Object[] makeRow(UUID chunkId, UUID sourceId, String courseCode, String sectionTitle, String text, double score) {
-        KnowledgeSource s = new KnowledgeSource();
-        s.setId(sourceId);
         return new Object[]{
                 chunkId, sourceId, courseCode, 0,
-                sectionTitle, text, null, 1, 5, null, null, score
+                sectionTitle, text, null, 1, 5, null, null,
+                "file.pdf", "http://example.com", score
         };
     }
 

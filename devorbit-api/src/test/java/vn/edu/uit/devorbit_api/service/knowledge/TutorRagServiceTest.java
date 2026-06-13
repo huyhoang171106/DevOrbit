@@ -88,6 +88,8 @@ class TutorRagServiceTest {
         when(courseCodeDetector.detect("Hello")).thenReturn(Optional.empty());
         when(intentClassifier.classify("Hello")).thenReturn(TutorIntent.GENERAL_RAG);
         when(openCodeAiService.isLlmEnabled()).thenReturn(true);
+        when(knowledgeRetrievalService.search(isNull(), eq("Hello"), eq(5)))
+            .thenReturn(new KnowledgeRetrievalService.SearchResult(null, "Hello", List.of()));
         when(openCodeAiService.generateCompletion(anyString(), anyString()))
             .thenReturn("Xin chào! Mình là DevOrbit AI Tutor.");
         when(citationBuilder.buildCitations(any(), isNull()))
@@ -96,7 +98,7 @@ class TutorRagServiceTest {
         TutorResponse response = service.answer("Hello");
 
         assertThat(response.answer()).contains("DevOrbit AI Tutor");
-        verify(knowledgeRetrievalService, never()).search(any(), anyString(), anyInt());
+        verify(knowledgeRetrievalService).search(isNull(), eq("Hello"), eq(5));
     }
 
     @Test

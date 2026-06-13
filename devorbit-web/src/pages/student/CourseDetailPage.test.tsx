@@ -3,7 +3,7 @@
 import '@testing-library/jest-dom/vitest'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { useState, type ReactNode } from 'react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { apiGet } from '../../lib/api'
 import type { CourseDetail } from '../../types/api'
@@ -113,6 +113,11 @@ afterEach(() => {
   localStorage.clear()
 })
 
+function LocationProbe() {
+  const location = useLocation()
+  return <output aria-label="current-location">{`${location.pathname}${location.search}`}</output>
+}
+
 describe('CourseDetailPage repository filters', () => {
   test('reveals every repository immediately after changing tech stack filters', () => {
     render(
@@ -134,5 +139,25 @@ describe('CourseDetailPage repository filters', () => {
     expect(screen.queryByText('Java algorithms')).not.toBeInTheDocument()
     expect(screen.getAllByText(/Python algorithms/)).toHaveLength(4)
     expect(screen.getByTestId('repo-reveal')).toHaveAttribute('data-mount-id', '3')
+  })
+
+  test('uses the originating course-list page for the category link', () => {
+    render(
+      <MemoryRouter initialEntries={[{
+        pathname: '/courses/1',
+        state: { courseListPath: '/courses?page=2' },
+      }]}>
+        <LocationProbe />
+        <Routes>
+          <Route path="/courses/:courseId" element={<CourseDetailPage />} />
+          <Route path="/courses" element={<div>Course list</div>} />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    fireEvent.click(screen.getByRole('link', { name: 'Danh mục' }))
+
+    expect(screen.getByText('Course list')).toBeInTheDocument()
+    expect(screen.getByLabelText('current-location')).toHaveTextContent('/courses?page=2')
   })
 })

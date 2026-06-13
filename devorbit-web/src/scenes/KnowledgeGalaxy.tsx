@@ -2,7 +2,7 @@
 import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { usePerformanceProfile } from '../performance'
+import { usePerformanceProfile } from '../performance/usePerformanceProfile'
 
 interface KnowledgeGalaxyProps {
   starCount?: number
@@ -31,7 +31,6 @@ export function KnowledgeGalaxy({
   const prof = usePerformanceProfile()
 
   const scaledCount = Math.max(50, Math.floor(starCount * prof.particleMultiplier))
-  if (prof.prefersReducedMotion) return null
 
   const rotationSpeedScaled = rotationSpeed * (prof.tier === 'high' ? 1 : 0.5)
 
@@ -84,9 +83,11 @@ export function KnowledgeGalaxy({
   }, [scaledCount, radius, arms, color1, color2])
 
   useFrame((_, delta) => {
-    if (!ref.current) return
+    if (!ref.current || prof.prefersReducedMotion) return
     ref.current.rotation.y += delta * rotationSpeedScaled
   })
+
+  if (prof.prefersReducedMotion) return null
 
   return (
     <points ref={ref}>

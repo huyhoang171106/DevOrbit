@@ -224,6 +224,26 @@ class SubjectQaServiceTest {
     }
 
     @Test
+    void processQuery_javaBackendCareerQuestionNhuNaoRecommendsGroundedCoursesWithoutCourseCode() {
+        when(chatSessionRepository.save(any())).thenThrow(new RuntimeException("database unavailable"));
+
+        SubjectQaResponse response = service.processQuery(
+            new SubjectQaRequest("Môn java nên học như nào", null)
+        );
+
+        assertThat(response.answer())
+            .contains("Java backend dev")
+            .contains("IT002")
+            .contains("IT004")
+            .contains("SE330")
+            .contains("SE325")
+            .doesNotContain("Hãy hỏi bằng mã môn học cụ thể");
+        assertThat(response.sources()).isEmpty();
+        assertThat(response.type()).isEqualTo("DIRECT");
+        verifyNoInteractions(webSearchService, crawlerService, openCodeAiService, firecrawlClient, knowledgeRetrievalService);
+    }
+
+    @Test
     void processQuery_firstYearCurriculumQuestionReturnsGroundedPlanWithoutSearchOrLlm() {
         when(chatSessionRepository.save(any())).thenThrow(new RuntimeException("database unavailable"));
 

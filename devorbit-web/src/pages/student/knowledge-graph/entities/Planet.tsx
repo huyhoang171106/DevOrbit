@@ -36,8 +36,6 @@ export function Planet({ node, color, onClick, opacity = 1 }: PlanetProps) {
     return opacity
   }, [isTimeTravelMode, currentSemester, node.level, opacity])
 
-  if (ttOpacity <= 0) return null
-
   const { displayColor, emissiveIntensity, glowOpacity } = useMemo(() => {
     if (isFailed) {
       return { displayColor: '#f43f5e', emissiveIntensity: 3, glowOpacity: 0.4 }
@@ -50,12 +48,14 @@ export function Planet({ node, color, onClick, opacity = 1 }: PlanetProps) {
   }, [isFailed, isBlocked, color, node.impactScore])
 
   useFrame((state) => {
-    if (!meshRef.current || !ringRef.current) return
+    if (ttOpacity <= 0 || !meshRef.current || !ringRef.current) return
     const t = state.clock.getElapsedTime()
     meshRef.current.position.y = Math.sin(t * 0.5 + node.id) * 0.15
     ringRef.current.rotation.z = t * 0.2
     ringRef.current.rotation.x = Math.sin(t * 0.1) * 0.3
   })
+
+  if (ttOpacity <= 0) return null
 
   return (
     <group scale={scale}>

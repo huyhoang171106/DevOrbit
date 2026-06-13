@@ -1,4 +1,4 @@
-﻿# Test Matrix
+# Test Matrix
 
 This file maps product behavior to proof.
 
@@ -20,7 +20,7 @@ This file maps product behavior to proof.
 | US-016 | Photobooth Upload | - | - | - | Browser | planned | - |
 | US-017 | AI Roadmap Generator | - | pass | pass | no | implemented | US-017-PLAN-1.1 (verified locally) |
 | US-021A | Smarter RAG (hybrid retrieval, query expansion, reranking, adaptive web, hierarchical chunks) | pass | pass | runtime smoke | Maven + focused tests | implemented | `devorbit-api`: `RagQueryPlannerTest`, `RagResultRerankerTest`, `KnowledgeRetrievalServiceTest`, `CourseKnowledgeIndexerTest` — all 32 pass; `SubjectQaServiceTest`, `TutorRagServiceTest`, `WebSearchServiceTest` — all 20 pass; `AdminKnowledgeControllerTest`, `PublicRepoControllerTest` — all 7 pass; full suite `mvnw.cmd test -B` 172/173 pass (1 pre-existing H2/vector blocker in `FirecrawlDisabledTest`); compile succeeds. |
-| US-021B | AI Course Q&A Streaming Chat | pass | no | no | Frontend Vitest + TypeScript + Maven focused tests | implemented | `devorbit-web`: `src/hooks/useSubjectQa.stream.test.ts` (6 tests) + `src/components/student/__tests__/AiChatWidget.test.tsx` (3 tests) - all 9 pass; `npx tsc --noEmit` passes; backend `OpenCodeAiServiceTest`, `SubjectQaServiceTest`, `SubjectQaControllerTest` added. 2026-06-12: `devorbit-api` `.\mvnw.cmd -Dtest=SubjectQaServiceTest,OpenCodeAiServiceTest,ChatServiceTest,TutorRagServiceTest test -B` passes 23 tests, including Vietnamese greeting false-positive, Java backend career-course recommendation, first-year curriculum grounding, and UIT orientation web-search follow-up regressions. |
+| US-021B | AI Course Q&A Streaming Chat | pass | no | no | Frontend Vitest + TypeScript + Maven focused tests | implemented | `devorbit-web`: `src/hooks/useSubjectQa.stream.test.ts` (7 tests) + `src/components/student/__tests__/AiChatWidget.test.tsx` (3 tests) — all pass; `npx tsc --noEmit` passes; `npm test` 141/141 pass; `npm run build` succeeds. Backend: `mvnw test -B` 179/179 pass; `mvnw compile -B` succeeds. **PR #25 merged into master** (commit `4047f9a2`, 2026-06-13). Conflicts with PR #24 admin panel rewrite resolved: `Layout.tsx` useMemo/isAdmin, `repoAiAnalysis/repoEvaluation/repoSearch.ts` consolidated into `repoText.ts` helpers. |
 | US-018 | Mobile Repo Tech Stack Filter | pass | no | no | Gradle unit test | implemented | `devorbit-mobile`: `.\gradlew.bat :app:testDebugUnitTest` |
 | US-019 | Mobile Course Hub Detail Navigation | pass | no | no | Gradle unit test | implemented | `devorbit-mobile`: `.\gradlew.bat :app:testDebugUnitTest` |
 | US-035 | Mobile Course Search, Bookmarks, and Explore Search/Filter | pass | no | no | Gradle unit test | implemented | `devorbit-mobile`: `.\gradlew.bat :app:testDebugUnitTest`; commits `7e01b5d`, `6122db9`, `bbcc294`, `be174b4` |

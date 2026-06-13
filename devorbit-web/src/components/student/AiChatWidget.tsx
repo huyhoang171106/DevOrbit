@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react'
 import { m as motion, AnimatePresence } from 'framer-motion'
 import { Sparkle, ArrowUp, X, ChatTeardropText, Spinner as SpinnerIcon, Link as LinkIcon, Trash, Copy, Check, CheckCircle, CaretDown, Globe, Database, BookOpen, MagnifyingGlass } from '@phosphor-icons/react'
 import {
@@ -646,7 +646,7 @@ interface ChatMessageProps {
     onCopy: (id: string) => void
 }
 
-export function ChatMessage({
+export const ChatMessage = memo(function ChatMessage({
     message,
     isStreaming,
     copiedId,
@@ -717,7 +717,7 @@ export function ChatMessage({
             </div>
         </div>
     )
-}
+})
 
 // ─── AiChatWidget (main) ───
 
@@ -738,16 +738,43 @@ export function AiChatWidget() {
     const [streamingMsgId, setStreamingMsgId] = useState<string | null>(null)
     const [copiedId, setCopiedId] = useState<string | null>(null)
     const abortRef = useRef<AbortController | null>(null)
+    const inputRef = useRef<HTMLInputElement>(null)
 
     const scrollRef = useRef<HTMLDivElement>(null)
     const isNearBottomRef = useRef(true)
 
     const chatMutation = useSubjectQa()
 
+    // Clean abort controller on unmount
+    useEffect(() => {
+        return () => {
+            abortRef.current?.abort()
+        }
+    }, [])
+
+    // Shift focus to input and handle Escape key to close
+    useEffect(() => {
+        if (isOpen) {
+            inputRef.current?.focus()
+            
+            const handleKeyDown = (e: KeyboardEvent) => {
+                if (e.key === 'Escape') {
+                    setIsOpen(false)
+                }
+            }
+            window.addEventListener('keydown', handleKeyDown)
+            return () => {
+                window.removeEventListener('keydown', handleKeyDown)
+            }
+        }
+    }, [isOpen])
+
     // Persist chat history
     useEffect(() => {
-        localStorage.setItem('orbit_chat_messages', JSON.stringify(messages))
-    }, [messages])
+        if (streamingMsgId === null) {
+            localStorage.setItem('orbit_chat_messages', JSON.stringify(messages))
+        }
+    }, [messages, streamingMsgId])
 
     const updateSessionId = useCallback((nextSessionId: string | undefined) => {
         sessionIdRef.current = nextSessionId
@@ -901,9 +928,10 @@ export function AiChatWidget() {
                         setMessages((prev) =>
                             prev.map((msg) => {
                                 if (msg.id !== aiId) return msg
+                                const prefix = msg.content ? msg.content + '\n\n' : ''
                                 return {
                                     ...msg,
-                                    content: '⚠️ Đã xảy ra lỗi khi kết nối với trợ lý AI. Vui lòng thử lại sau.',
+                                    content: prefix + '⚠️ Đã xảy ra lỗi khi kết nối với trợ lý AI. Vui lòng thử lại sau.',
                                     statusEvents: [
                                         ...(msg.statusEvents ?? []),
                                         {
@@ -948,9 +976,10 @@ export function AiChatWidget() {
                     setMessages((prev) =>
                         prev.map((msg) => {
                             if (msg.id !== aiId) return msg
+                            const prefix = msg.content ? msg.content + '\n\n' : ''
                             return {
                                 ...msg,
-                                content: '⚠️ Đã xảy ra lỗi khi kết nối với trợ lý AI. Vui lòng thử lại sau.',
+                                content: prefix + '⚠️ Đã xảy ra lỗi khi kết nối với trợ lý AI. Vui lòng thử lại sau.',
                             }
                         }),
                     )
@@ -962,9 +991,10 @@ export function AiChatWidget() {
                 setMessages((prev) =>
                     prev.map((msg) => {
                         if (msg.id !== aiId) return msg
+                        const prefix = msg.content ? msg.content + '\n\n' : ''
                         return {
                             ...msg,
-                            content: '⚠️ Đã xảy ra lỗi khi kết nối với trợ lý AI. Vui lòng thử lại sau.',
+                            content: prefix + '⚠️ Đã xảy ra lỗi khi kết nối với trợ lý AI. Vui lòng thử lại sau.',
                         }
                     }),
                 )
@@ -1090,6 +1120,7 @@ export function AiChatWidget() {
                         <div className="p-4 border-t border-zinc-800/40 bg-zinc-900/10 shrink-0">
                             <form onSubmit={handleSubmit} className="relative flex items-center">
                                 <input
+                                    ref={inputRef}
                                     type="text"
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}

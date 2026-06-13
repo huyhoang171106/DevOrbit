@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class WebSearchService {
 
-    private static final Pattern COURSE_CODE_PATTERN = Pattern.compile("\\b([A-Z]{2,4}\\d{3,4})\\b");
+    private static final Pattern COURSE_CODE_PATTERN = Pattern.compile("\\b([A-Z]{2,4}\\d{2,4})\\b");
     private static final List<String> DEFAULT_NOISE_DOMAINS = List.of(
         "youtube.com",
         "youtu.be",
@@ -150,9 +150,9 @@ public class WebSearchService {
         request.put("query", query);
         request.put("type", firstNonBlank(exaProperties.getSearchType(), "auto"));
         request.put("numResults", limit);
+        request.put("maxAgeHours", exaProperties.getMaxAgeHours());
         request.put("contents", Map.of(
-            "highlights", true,
-            "maxAgeHours", exaProperties.getMaxAgeHours()
+            "highlights", true
         ));
 
         if (shouldUseTrustedDomains(query)) {
@@ -361,14 +361,7 @@ public class WebSearchService {
         }
 
         String normalized = normalizeForSearch(query);
-        return normalized.contains("uit")
-            || normalized.contains("tai lieu")
-            || normalized.contains("de cuong")
-            || normalized.contains("de thi")
-            || normalized.contains("giao trinh")
-            || normalized.contains("project")
-            || normalized.contains("repo")
-            || normalized.contains("github");
+        return normalized.contains("uit");
     }
 
     private boolean hasCourseCode(String query) {

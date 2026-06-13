@@ -97,42 +97,43 @@ public class RagResultReranker {
         // Sort by new score descending
         scored.sort((a, b) -> Double.compare(b.newScore, a.newScore));
 
-        // 4. Apply source diversity: max 2 per source.id before allowing extras
+        // 4. Apply source diversity: two-pass approach
         List<KnowledgeRetrievalService.ChunkResult> diversified = new ArrayList<>();
+        Set<ScoredResult> selected = new HashSet<>();
         java.util.Map<Object, Integer> sourceCount = new java.util.HashMap<>();
+
+        // Pass 1: Select up to 2 highest-scoring chunks per source
         for (ScoredResult sr : scored) {
             KnowledgeChunk chunk = sr.result.chunk();
             Object sourceKey = chunk.getSource() != null && chunk.getSource().getId() != null
                     ? chunk.getSource().getId()
-                    : chunk.getCourseCode();
+                    : (chunk.getCourseCode() != null ? chunk.getCourseCode() : "default");
 
             int count = sourceCount.getOrDefault(sourceKey, 0);
             if (count < 2) {
                 diversified.add(new KnowledgeRetrievalService.ChunkResult(
                         sr.result.chunk(), sr.newScore));
                 sourceCount.put(sourceKey, count + 1);
-            } else {
-                // Check if there's another source available to fill the limit
-                boolean hasOtherSource = false;
-                for (ScoredResult other : scored) {
-                    Object otherKey = other.result.chunk().getSource() != null
-                            && other.result.chunk().getSource().getId() != null
-                            ? other.result.chunk().getSource().getId()
-                            : other.result.chunk().getCourseCode();
-                    if (!otherKey.equals(sourceKey) && sourceCount.getOrDefault(otherKey, 0) < 2) {
-                        hasOtherSource = true;
-                        break;
-                    }
-                }
-                // If all remaining candidates are from this source, allow extras to fill limit
-                if (!hasOtherSource) {
-                    diversified.add(new KnowledgeRetrievalService.ChunkResult(
-                            sr.result.chunk(), sr.newScore));
-                }
+                selected.add(sr);
             }
 
             if (diversified.size() >= limit) {
                 break;
+            }
+        }
+
+        // Pass 2: Fill the remaining slots up to the limit using the highest scoring remaining items across all sources
+        if (diversified.size() < limit) {
+            for (ScoredResult sr : scored) {
+                if (!selected.contains(sr)) {
+                    diversified.add(new KnowledgeRetrievalService.ChunkResult(
+                            sr.result.chunk(), sr.newScore));
+                    selected.add(sr);
+
+                    if (diversified.size() >= limit) {
+                        break;
+                    }
+                }
             }
         }
 

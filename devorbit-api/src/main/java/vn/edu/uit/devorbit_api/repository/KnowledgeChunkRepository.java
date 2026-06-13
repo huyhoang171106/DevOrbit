@@ -57,11 +57,15 @@ public interface KnowledgeChunkRepository extends JpaRepository<KnowledgeChunk, 
      * Returns chunks ordered by relevance (lowest distance = most similar).
      */
     @Query(value = """
-        SELECT *, 1 - (embedding <=> CAST(:queryVector AS vector)) AS similarity
-        FROM knowledge_chunks
-        WHERE embedding IS NOT NULL
-        AND (:courseCode IS NULL OR course_code = :courseCode)
-        ORDER BY embedding <=> CAST(:queryVector AS vector)
+        SELECT c.id, c.source_id, c.course_code, c.chunk_index, c.section_title,
+               c.chunk_text, c.metadata_json, c.page_from, c.page_to, c.created_at, c.embedding,
+               s.file_name, s.url,
+               1 - (c.embedding <=> CAST(:queryVector AS vector)) AS similarity
+        FROM knowledge_chunks c
+        JOIN knowledge_sources s ON s.id = c.source_id
+        WHERE c.embedding IS NOT NULL
+        AND (:courseCode IS NULL OR c.course_code = :courseCode)
+        ORDER BY c.embedding <=> CAST(:queryVector AS vector)
         LIMIT :topK
         """, nativeQuery = true)
     List<Object[]> searchByVector(
@@ -100,6 +104,7 @@ public interface KnowledgeChunkRepository extends JpaRepository<KnowledgeChunk, 
         )
         SELECT c.id, c.source_id, c.course_code, c.chunk_index, c.section_title,
                c.chunk_text, c.metadata_json, c.page_from, c.page_to, c.created_at, c.embedding,
+               s.file_name, s.url,
                (
                  COALESCE(1.0 / (60 + vr.vector_rank), 0.0)
                  + COALESCE(1.0 / (60 + tr.text_rank), 0.0)

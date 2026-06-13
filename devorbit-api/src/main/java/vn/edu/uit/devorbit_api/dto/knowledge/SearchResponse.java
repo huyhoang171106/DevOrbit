@@ -21,6 +21,8 @@ public record SearchResponse(
         Integer pageFrom,
         Integer pageTo,
         double score,
-        String text
+        String text,
+        String fileName,
+        String url
     ) {}
 }

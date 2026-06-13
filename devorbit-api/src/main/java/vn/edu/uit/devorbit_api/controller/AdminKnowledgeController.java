@@ -111,13 +111,16 @@ public class AdminKnowledgeController {
                 KnowledgeChunk chunk = cr.chunk();
                 return new SearchResponse.SearchResult(
                     chunk.getId() != null ? chunk.getId().toString() : null,
-                    null,
+                    chunk.getSource() != null && chunk.getSource().getId() != null ? chunk.getSource().getId().toString() : null,
                     chunk.getCourseCode(),
                     chunk.getSectionTitle(),
                     chunk.getPageFrom(),
                     chunk.getPageTo(),
                     cr.score(),
-                    chunk.getChunkText());
+                    chunk.getChunkText(),
+                    chunk.getSource() != null ? chunk.getSource().getFileName() : null,
+                    chunk.getSource() != null ? chunk.getSource().getUrl() : null
+                );
             })
             .toList();
         String prompt = String.format(

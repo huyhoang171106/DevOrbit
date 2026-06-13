@@ -24,7 +24,8 @@ create table if not exists student_users (
     full_name     varchar(255) not null,
     email         varchar(255) not null unique,
     password_hash varchar(255) not null,
-    active        boolean      not null default true
+    active        boolean      not null default true,
+    created_at    timestamp    not null default now()
 );
 
 create table if not exists otps (
@@ -151,7 +152,8 @@ create table if not exists repo_candidates (
     file_tree        text,
     status           varchar(20) not null default 'NEW',
     review_note      text,
-    assigned_reviewer varchar(50)
+    assigned_reviewer varchar(50),
+    created_at        timestamp    not null default now()
 );
 
 -- ============================================================
@@ -272,10 +274,6 @@ create index if not exists idx_course_tutorials_course on course_tutorials(cours
 -- ============================================================
 insert into admin_users (username, password_hash, active)
 values ('admin', '$2b$12$3IpxxJtwI/zV8hYwQc8W9eWRkf.l0yocc3Di5FvA65J0QiJ395WSe', true)
-on conflict (username) do nothing;
--- huyhoang admin account
-insert into admin_users (username, password_hash, active)
-values ('huyhoang', '$2b$12$SrwfaUH3F7a9IMizpKhFauugZGdyCvyp2.iFdz6z5JjkUQgaDAlAm', true)
 on conflict (username) do nothing;
 
 insert into courses (mamh, tenmh, sotc, lt, th, loaimonhoc)

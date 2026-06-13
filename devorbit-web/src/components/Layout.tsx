@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { m as motion, AnimatePresence, useScroll, useTransform, LayoutGroup } from 'framer-motion'
 import { ParticleNetwork } from './ParticleNetwork'
@@ -21,19 +21,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const navBorderColor = useTransform(scrollY, [0, 100], ['rgba(39,39,42,0.3)', 'rgba(39,39,42,0.8)'])
   const navBackgroundOpacity = useTransform(scrollY, [0, 80], [0.3, 1])
 
-  const showParticles = !location.pathname.startsWith('/admin')
+  const isAdmin = location.pathname.startsWith('/admin')
+
+  const showParticles = useMemo(() => !isAdmin, [isAdmin])
 
   return (
     <div className="relative min-h-screen flex flex-col bg-orbit-bg selection:bg-orbit-accent selection:text-zinc-950">
       {showParticles && <ParticleNetwork />}
 
-      {/* Scroll Progress Indicator — only on non-admin pages */}
-      {!location.pathname.startsWith('/admin') && (
+      {!isAdmin && (
         <ScrollProgressIndicator position="right" showLabel={false} />
       )}
 
-      {/* Top Navigation — scroll-aware */}
-      <motion.nav
+      {!isAdmin && <motion.nav
         className="sticky top-0 z-50 w-full border-b gpu"
         style={{
           borderColor: navBorderColor,
@@ -199,15 +199,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.nav>
+      </motion.nav>}
 
       {/* Main content */}
       <main className="relative z-10 flex-1 w-full">
         {children}
       </main>
 
-      {/* Footer */}
-      {!location.pathname.startsWith('/knowledge-graph') && (
+      {!isAdmin && !location.pathname.startsWith('/knowledge-graph') && (
         <footer className="relative z-10 border-t border-orbit-border bg-orbit-bg">
           <div className="mx-auto max-w-[1440px] px-6 md:px-10 py-16">
             <div className="flex flex-col md:flex-row items-center justify-between gap-8">
@@ -230,7 +229,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </footer>
       )}
 
-      {!location.pathname.startsWith('/admin') && <AiChatWidget />}
+      {!isAdmin && <AiChatWidget />}
     </div>
   )
 }

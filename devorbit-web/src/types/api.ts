@@ -178,7 +178,7 @@ export type TutorialResponse = {
 // --- Roadmaps ---
 
 export type RoadmapRequest = {
-  studentId: number
+  studentId?: number
   title: string
   description?: string
   markdownContent?: string
@@ -187,9 +187,9 @@ export type RoadmapRequest = {
 
 export type RoadmapResponse = {
   id: number
-  studentId: number
-  studentCode: string
-  studentName: string
+  studentId: number | null
+  studentCode: string | null
+  studentName: string | null
   title: string
   description: string | null
   markdownContent: string | null
@@ -322,4 +322,76 @@ export type NoteResponse = {
 export type AiResponse = {
   content: string
   type: 'SUMMARY' | 'TUTOR_ADVICE'
+}
+
+// --- Community ---
+
+export type ChatChannelType = 'GENERAL' | 'COURSE' | 'TECH_STACK'
+
+export type ChatChannelResponse = {
+  id: number
+  channelId: string
+  name: string
+  type: ChatChannelType
+  referenceId: string | null
+}
+
+export type ChatMessageResponse = {
+  id: number
+  channelId: number
+  studentId: number
+  senderName: string
+  content: string
+  createdAt: string
+}
+
+export type PaginatedMessagesResponse = {
+  content: ChatMessageResponse[]
+  totalPages: number
+  totalElements: number
+  number: number
+  size: number
+  first: boolean
+  last: boolean
+  empty: boolean
+}
+
+export type ReviewRequest = {
+  rating: number
+  comment: string
+}
+
+export type ReviewResponse = {
+  id: number
+  targetId: number
+  studentId: number
+  studentName: string
+  rating: number
+  comment: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type ReviewSummaryResponse = {
+  targetId: number
+  averageRating: number
+  reviews: ReviewResponse[]
+}
+
+export type RepoVoteRequest = {
+  voteValue: -1 | 0 | 1
+}
+
+export type RepoVoteResponse = {
+  repoId: number
+  studentId: number
+  voteValue: number
+  voteScore: number
+}
+
+export type RepoSocialInfoResponse = {
+  repoId: number
+  voteScore: number
+  averageRating: number
+  reviews: ReviewResponse[]
 }

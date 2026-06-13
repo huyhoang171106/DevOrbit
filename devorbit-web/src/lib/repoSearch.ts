@@ -12,6 +12,10 @@ function normalizeText(text: string): string {
     .trim()
 }
 
+export function tokenizeSearchQuery(query: string): string[] {
+  return normalizeText(query).split(/\s+/).filter(Boolean)
+}
+
 function escapeRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
@@ -119,7 +123,7 @@ type QueryIntent = 'broad' | 'specific' | 'phrase'
 
 function getQueryIntent(query: string): QueryIntent {
   if (isSpecificQuery(query)) return 'specific'
-  const tokens = normalizeText(query).split(/\s+/).filter(Boolean)
+  const tokens = tokenizeSearchQuery(query)
   if (tokens.length >= 2) return 'phrase'
   return 'broad'
 }
@@ -138,7 +142,7 @@ function expandKeywords(keyword: string, intent: QueryIntent): string[] {
   const norm = normalizeText(keyword)
   const seen = new Set<string>()
   const result: string[] = []
-  const tokens = norm.split(/\s+/).filter(Boolean)
+  const tokens = tokenizeSearchQuery(norm)
 
   const add = (w: string) => {
     const nw = w.toLowerCase().trim()
@@ -277,12 +281,11 @@ export function searchCourses(
   const threshold = intent === 'phrase' ? 80 : intent === 'specific' ? 30 : 15
   const results: SearchCourseResult[] = []
   const normQuery = normalizeText(query)
-  const queryTokens = normQuery.split(/\s+/).filter(Boolean)
-  const queryTokenSet = new Set(queryTokens)
+  const queryTokens = tokenizeSearchQuery(normQuery)
 
   const aliasTargets = new Set<string>()
   for (const [alias, targets] of Object.entries(courseAliases)) {
-    if (queryTokenSet.has(alias) || containsText(normQuery, alias)) {
+    if (queryTokens.includes(alias) || containsText(normQuery, alias)) {
       for (const t of targets) aliasTargets.add(t)
     }
   }
@@ -362,7 +365,7 @@ export function searchRepos(repos: RepoSummary[], query: string): SearchRepoResu
   const threshold = intent === 'phrase' ? 80 : intent === 'specific' ? 60 : 40
   const results: SearchRepoResult[] = []
   const normQuery = normalizeText(query)
-  const queryTokens = normQuery.split(/\s+/).filter(Boolean)
+  const queryTokens = tokenizeSearchQuery(normQuery)
 
   for (const repo of repos) {
     let score = 0

@@ -11,12 +11,13 @@ import vn.edu.uit.devorbit_api.repository.KnowledgeChunkRepository;
 import vn.edu.uit.devorbit_api.service.ai.EmbeddingService;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.UUID;
 
 /**
- * Semantic search over knowledge chunks using pgvector.
- * Embeds query, performs vector similarity search, returns ranked results.
+ * Semantic search over knowledge chunks using hybrid retrieval:
+ * multi-query expansion -> pgvector + PostgreSQL FTS -> reranking/diversity.
  */
 @Slf4j
 @Service
@@ -25,9 +26,12 @@ public class KnowledgeRetrievalService {
 
     private final KnowledgeChunkRepository knowledgeChunkRepository;
     private final EmbeddingService embeddingService;
+    private final RagQueryPlanner ragQueryPlanner;
+    private final RagResultReranker ragResultReranker;
 
     /**
-     * Search knowledge chunks by semantic similarity.
+     * Search knowledge chunks by semantic similarity using hybrid retrieval.
+     *
      * @param request search parameters (courseCode, query, topK)
      * @return ranked search results with scores
      */
@@ -36,42 +40,91 @@ public class KnowledgeRetrievalService {
             throw new IllegalArgumentException("query is required");
         }
 
-        // Embed the query
-        float[] queryEmbedding = embeddingService.embed(request.query());
-        String queryVector = vectorToPgString(queryEmbedding);
+        // 1. Build query plan
+        RagQueryPlan plan = ragQueryPlanner.plan(request.query(), request.courseCode());
 
-        // Execute similarity search
-        List<Object[]> rows = knowledgeChunkRepository.searchByVector(
-            queryVector,
-            request.courseCode(),
-            request.topK()
-        );
+        // 2. Get query variants to embed and search
+        List<String> queryVariants = plan.expandedQueries();
+        if (queryVariants == null || queryVariants.isEmpty()) {
+            queryVariants = List.of(request.query());
+        }
 
-        // Map results
+        // Candidate limits
+        int candidateTopK = Math.min(30, Math.max(request.topK() * 4, request.topK()));
+        int candidateLimit = Math.min(80, Math.max(20, request.topK() * 8));
+
+        // 3. Search each variant, deduplicate by chunk ID
+        LinkedHashMap<UUID, ChunkResult> merged = new LinkedHashMap<>();
+
+        for (String queryVariant : queryVariants) {
+            try {
+                // Embed the variant
+                float[] queryEmbedding = embeddingService.embed(queryVariant);
+                String queryVector = vectorToPgString(queryEmbedding);
+
+                List<Object[]> rows;
+                try {
+                    rows = knowledgeChunkRepository.searchHybrid(
+                            queryVector,
+                            plan.textQuery(),
+                            request.courseCode(),
+                            candidateTopK,
+                            candidateLimit
+                    );
+                } catch (Exception e) {
+                    log.warn("Hybrid RAG search failed, falling back to vector search: {}", e.getMessage());
+                    rows = knowledgeChunkRepository.searchByVector(
+                            queryVector,
+                            request.courseCode(),
+                            candidateTopK
+                    );
+                }
+
+                for (Object[] row : rows) {
+                    KnowledgeChunk chunk = mapRowToChunk(row);
+                    double score = extractScore(row);
+                    ChunkResult cr = new ChunkResult(chunk, score);
+                    // Deduplicate by chunk ID, keeping highest score
+                    ChunkResult existing = merged.get(chunk.getId());
+                    if (existing == null || score > existing.score()) {
+                        merged.put(chunk.getId(), cr);
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Search variant failed, skipping: {} - {}", queryVariant, e.getMessage());
+            }
+        }
+
+        // 4. Rerank and deduplicate
+        List<ChunkResult> candidateChunkResults = new ArrayList<>(merged.values());
+        List<ChunkResult> reranked = ragResultReranker.rerank(
+                request.query(), candidateChunkResults, request.topK());
+
+        // 5. Map to response DTO
         List<SearchResponse.SearchResult> results = new ArrayList<>();
-        for (Object[] row : rows) {
-            KnowledgeChunk chunk = mapRowToChunk(row);
-            double score = extractScore(row);
-
+        for (ChunkResult cr : reranked) {
+            KnowledgeChunk chunk = cr.chunk();
             results.add(new SearchResponse.SearchResult(
-                chunk.getId().toString(),
-                chunk.getSource().getId().toString(),
-                chunk.getCourseCode(),
-                chunk.getSectionTitle(),
-                chunk.getPageFrom(),
-                chunk.getPageTo(),
-                score,
-                chunk.getChunkText()
+                    chunk.getId().toString(),
+                    chunk.getSource().getId().toString(),
+                    chunk.getCourseCode(),
+                    chunk.getSectionTitle(),
+                    chunk.getPageFrom(),
+                    chunk.getPageTo(),
+                    cr.score(),
+                    chunk.getChunkText(),
+                    chunk.getSource() != null ? chunk.getSource().getFileName() : null,
+                    chunk.getSource() != null ? chunk.getSource().getUrl() : null
             ));
         }
 
-        log.info("Search for '{}' in course {} returned {} results",
-            request.query(), request.courseCode(), results.size());
+        log.info("Hybrid search for '{}' in course {} returned {} results ({} variants)",
+                request.query(), request.courseCode(), results.size(), queryVariants.size());
 
         return new SearchResponse(
-            request.query(),
-            request.courseCode(),
-            results
+                request.query(),
+                request.courseCode(),
+                results
         );
     }
 
@@ -96,7 +149,7 @@ public class KnowledgeRetrievalService {
     @SuppressWarnings("unchecked")
     private KnowledgeChunk mapRowToChunk(Object[] row) {
         // Native query returns: id, source_id, course_code, chunk_index, section_title,
-        // chunk_text, metadata_json, page_from, page_to, created_at, embedding, similarity
+        // chunk_text, metadata_json, page_from, page_to, created_at, embedding, file_name, url, similarity
         // We need to reconstruct a KnowledgeChunk from these fields
         KnowledgeChunk chunk = new KnowledgeChunk();
         chunk.setId((UUID) row[0]);
@@ -104,6 +157,8 @@ public class KnowledgeRetrievalService {
         // Create a minimal KnowledgeSource reference with just the ID
         KnowledgeSource source = new KnowledgeSource();
         source.setId((UUID) row[1]);
+        source.setFileName((String) row[11]);
+        source.setUrl((String) row[12]);
         chunk.setSource(source);
 
         chunk.setCourseCode((String) row[2]);
@@ -134,20 +189,22 @@ public class KnowledgeRetrievalService {
         SearchRequest request = new SearchRequest(courseCode, query, topK);
         SearchResponse response = search(request);
         List<ChunkResult> chunkResults = response.results().stream()
-            .map(r -> {
-                KnowledgeChunk chunk = new KnowledgeChunk();
-                chunk.setId(java.util.UUID.fromString(r.chunkId()));
-                chunk.setCourseCode(r.courseCode());
-                chunk.setSectionTitle(r.sectionTitle());
-                chunk.setPageFrom(r.pageFrom());
-                chunk.setPageTo(r.pageTo());
-                chunk.setChunkText(r.text());
-                KnowledgeSource source = new KnowledgeSource();
-                source.setId(java.util.UUID.fromString(r.sourceId()));
-                chunk.setSource(source);
-                return new ChunkResult(chunk, r.score());
-            })
-            .toList();
+                .map(r -> {
+                    KnowledgeChunk chunk = new KnowledgeChunk();
+                    chunk.setId(java.util.UUID.fromString(r.chunkId()));
+                    chunk.setCourseCode(r.courseCode());
+                    chunk.setSectionTitle(r.sectionTitle());
+                    chunk.setPageFrom(r.pageFrom());
+                    chunk.setPageTo(r.pageTo());
+                    chunk.setChunkText(r.text());
+                    KnowledgeSource source = new KnowledgeSource();
+                    source.setId(java.util.UUID.fromString(r.sourceId()));
+                    source.setFileName(r.fileName());
+                    source.setUrl(r.url());
+                    chunk.setSource(source);
+                    return new ChunkResult(chunk, r.score());
+                })
+                .toList();
         return new SearchResult(courseCode, query, chunkResults);
     }
 

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { apiAdminGet, apiAdminPost, apiAdminPut, apiAdminDelete } from '../../lib/api'
 import { getAdminToken } from '../../lib/auth'
 import { useRequireAuth, useApiFetch } from '../../lib/hooks'
@@ -11,6 +11,18 @@ import type {
   ItemResponse, ItemRequest,
 } from '../../types/api'
 
+function Spinner() {
+  return (
+    <div className="flex items-center gap-2 text-xs text-clay-text-muted py-4 px-4">
+      <svg className="h-4 w-4 animate-spin text-emerald-400" viewBox="0 0 24 24" fill="none">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+      </svg>
+      Đang tải...
+    </div>
+  )
+}
+
 export function AdminRoadmapsPage() {
   useRequireAuth()
   const token = getAdminToken()!
@@ -18,7 +30,7 @@ export function AdminRoadmapsPage() {
   // Roadmap CRUD
   const [rmDialog, setRmDialog] = useState(false)
   const [rmEdit, setRmEdit] = useState<RoadmapRequest | undefined>(undefined)
-  const [rmEditId, setRmEditId] = useState<number | null>(null)
+  const rmEditIdRef = useRef<number | null>(null)
   const { data: roadmaps, loading, refetch } = useApiFetch(
     () => apiAdminGet<RoadmapResponse[]>('/api/admin/roadmaps', token),
     [token],
@@ -29,18 +41,18 @@ export function AdminRoadmapsPage() {
   const [phases, setPhases] = useState<Record<number, PhaseResponse[]>>({})
   const [phLoading, setPhLoading] = useState<Record<number, boolean>>({})
   const [phDialog, setPhDialog] = useState(false)
-  const [phRoadmapId, setPhRoadmapId] = useState<number | null>(null)
+  const phRoadmapIdRef = useRef<number | null>(null)
   const [phEdit, setPhEdit] = useState<PhaseRequest | undefined>(undefined)
-  const [phEditId, setPhEditId] = useState<number | null>(null)
+  const phEditIdRef = useRef<number | null>(null)
 
   // Item state (per phase)
   const [expandedPhase, setExpandedPhase] = useState<Record<number, boolean>>({})
   const [items, setItems] = useState<Record<number, ItemResponse[]>>({})
   const [itLoading, setItLoading] = useState<Record<number, boolean>>({})
   const [itDialog, setItDialog] = useState(false)
-  const [itPhaseId, setItPhaseId] = useState<number | null>(null)
+  const itPhaseIdRef = useRef<number | null>(null)
   const [itEdit, setItEdit] = useState<ItemRequest | undefined>(undefined)
-  const [itEditId, setItEditId] = useState<number | null>(null)
+  const itEditIdRef = useRef<number | null>(null)
 
   // Fetch phases for a roadmap
   async function toggleExpandRoadmap(rmId: number) {
@@ -89,12 +101,13 @@ export function AdminRoadmapsPage() {
   // --- Roadmap handlers ---
   async function handleRmSubmit(data: RoadmapRequest) {
     try {
-      if (rmEditId) {
-        await apiAdminPut(`/api/admin/roadmaps/${rmEditId}`, token, data)
+      const editId = rmEditIdRef.current
+      if (editId) {
+        await apiAdminPut(`/api/admin/roadmaps/${editId}`, token, data)
       } else {
         await apiAdminPost('/api/admin/roadmaps', token, data)
       }
-      setRmDialog(false); setRmEdit(undefined); setRmEditId(null); refetch()
+      setRmDialog(false); setRmEdit(undefined); rmEditIdRef.current = null; refetch()
     } catch (e) { console.error(e) }
   }
 
@@ -115,21 +128,23 @@ export function AdminRoadmapsPage() {
       markdownContent: rm.markdownContent ?? '',
       isPublic: rm.isPublic,
     })
-    setRmEditId(rm.id)
+    rmEditIdRef.current = rm.id
     setRmDialog(true)
   }
 
   // --- Phase handlers ---
   async function handlePhSubmit(data: PhaseRequest) {
     try {
-      if (phEditId) {
-        await apiAdminPut(`/api/admin/roadmaps/phases/${phEditId}`, token, data)
-      } else if (phRoadmapId) {
-        await apiAdminPost(`/api/admin/roadmaps/${phRoadmapId}/phases`, token, data)
+      const editId = phEditIdRef.current
+      const roadmapId = phRoadmapIdRef.current
+      if (editId) {
+        await apiAdminPut(`/api/admin/roadmaps/phases/${editId}`, token, data)
+      } else if (roadmapId) {
+        await apiAdminPost(`/api/admin/roadmaps/${roadmapId}/phases`, token, data)
       }
-      setPhDialog(false); setPhEdit(undefined); setPhEditId(null); setPhRoadmapId(null)
-      if (phRoadmapId) refreshPhases(phRoadmapId)
-      else if (phEditId && expandedRoadmap) refreshPhases(expandedRoadmap)
+      setPhDialog(false); setPhEdit(undefined); phEditIdRef.current = null; phRoadmapIdRef.current = null
+      if (roadmapId) refreshPhases(roadmapId)
+      else if (editId && expandedRoadmap) refreshPhases(expandedRoadmap)
     } catch (e) { console.error(e) }
   }
 
@@ -145,15 +160,17 @@ export function AdminRoadmapsPage() {
   // --- Item handlers ---
   async function handleItSubmit(data: ItemRequest) {
     try {
-      if (itEditId) {
-        await apiAdminPut(`/api/admin/roadmaps/items/${itEditId}`, token, data)
-      } else if (itPhaseId) {
-        await apiAdminPost(`/api/admin/roadmaps/phases/${itPhaseId}/items`, token, data)
+      const editId = itEditIdRef.current
+      const phaseIdForCreate = itPhaseIdRef.current
+      if (editId) {
+        await apiAdminPut(`/api/admin/roadmaps/items/${editId}`, token, data)
+      } else if (phaseIdForCreate) {
+        await apiAdminPost(`/api/admin/roadmaps/phases/${phaseIdForCreate}/items`, token, data)
       }
-      setItDialog(false); setItEdit(undefined); setItEditId(null); setItPhaseId(null)
-      if (itPhaseId) refreshItems(itPhaseId)
-      else if (itEditId) {
-        const phaseId = Object.entries(items).find(([, v]) => v.some((i) => i.id === itEditId))?.[0]
+      setItDialog(false); setItEdit(undefined); itEditIdRef.current = null; itPhaseIdRef.current = null
+      if (phaseIdForCreate) refreshItems(phaseIdForCreate)
+      else if (editId) {
+        const phaseId = Object.entries(items).find(([, v]) => v.some((i) => i.id === editId))?.[0]
         if (phaseId) refreshItems(Number(phaseId))
       }
     } catch (e) { console.error(e) }
@@ -168,19 +185,6 @@ export function AdminRoadmapsPage() {
     } catch (e) { console.error(e) }
   }
 
-  // --- Shared ---
-  function Spinner() {
-    return (
-      <div className="flex items-center gap-2 text-xs text-clay-text-muted py-4 px-4">
-        <svg className="h-4 w-4 animate-spin text-emerald-400" viewBox="0 0 24 24" fill="none">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-        </svg>
-        Đang tải...
-      </div>
-    )
-  }
-
   return (
     <div className="w-full max-w-[1280px] mx-auto px-[32px] py-[64px]">
       <div className="mb-[32px] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -188,7 +192,7 @@ export function AdminRoadmapsPage() {
           <h1 className="display-sm text-clay-text mb-1">Lộ trình học tập</h1>
           <p className="body-sm text-clay-text-muted">Quản lý lộ trình học tập của sinh viên</p>
         </div>
-        <button onClick={() => { setRmEdit(undefined); setRmEditId(null); setRmDialog(true) }} className="btn-primary self-start text-sm px-4 py-2">
+        <button onClick={() => { setRmEdit(undefined); rmEditIdRef.current = null; setRmDialog(true) }} className="btn-primary self-start text-sm px-4 py-2">
           <svg className="mr-2 h-4 w-4 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
           Tạo lộ trình
         </button>
@@ -263,7 +267,7 @@ export function AdminRoadmapsPage() {
                               </div>
                             </div>
                             <div className="flex gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
-                              <button onClick={() => { setPhEdit({ title: ph.title, description: ph.description ?? '', sortOrder: ph.sortOrder }); setPhEditId(ph.id); setPhRoadmapId(null); setPhDialog(true) }} className="btn-secondary !py-0.5 !px-2 !bg-clay-bg !text-xs">Sửa</button>
+                              <button onClick={() => { setPhEdit({ title: ph.title, description: ph.description ?? '', sortOrder: ph.sortOrder }); phEditIdRef.current = ph.id; phRoadmapIdRef.current = null; setPhDialog(true) }} className="btn-secondary !py-0.5 !px-2 !bg-clay-bg !text-xs">Sửa</button>
                               <button onClick={() => handlePhDelete(ph.id, rm.id)} className="btn-secondary !py-0.5 !px-2 !bg-clay-bg !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Xóa</button>
                             </div>
                           </div>
@@ -288,14 +292,14 @@ export function AdminRoadmapsPage() {
                                         {it.note && <span className="body-sm text-clay-text-muted italic truncate max-w-[150px]">{it.note}</span>}
                                       </div>
                                       <div className="flex gap-2 shrink-0">
-                                        <button onClick={() => { setItEdit({ targetType: it.targetType, targetId: it.targetId, title: it.title ?? '', note: it.note ?? '', sortOrder: it.sortOrder }); setItEditId(it.id); setItPhaseId(null); setItDialog(true) }} className="btn-secondary !py-0.5 !px-2 !bg-clay-surface !text-xs">Sửa</button>
+                                        <button onClick={() => { setItEdit({ targetType: it.targetType, targetId: it.targetId, title: it.title ?? '', note: it.note ?? '', sortOrder: it.sortOrder }); itEditIdRef.current = it.id; itPhaseIdRef.current = null; setItDialog(true) }} className="btn-secondary !py-0.5 !px-2 !bg-clay-surface !text-xs">Sửa</button>
                                         <button onClick={() => handleItDelete(it.id)} className="btn-secondary !py-0.5 !px-2 !bg-clay-surface !text-xs !text-red-400 hover:!bg-red-500/10 border border-red-500/30">Xóa</button>
                                       </div>
                                     </div>
                                   ))}
                                   {/* Add item button */}
                                   <div className="pl-[72px] pr-4 py-2">
-                                    <button onClick={() => { setItEdit(undefined); setItEditId(null); setItPhaseId(ph.id); setItDialog(true) }} className="body-sm text-emerald-400 hover:text-emerald-400/80 transition-colors font-medium">
+                                    <button onClick={() => { setItEdit(undefined); itEditIdRef.current = null; itPhaseIdRef.current = ph.id; setItDialog(true) }} className="body-sm text-emerald-400 hover:text-emerald-400/80 transition-colors font-medium">
                                       + Thêm mục
                                     </button>
                                   </div>
@@ -307,7 +311,7 @@ export function AdminRoadmapsPage() {
                       ))}
                       {/* Add phase button */}
                       <div className="pl-[48px] pr-4 py-3">
-                        <button onClick={() => { setPhEdit(undefined); setPhEditId(null); setPhRoadmapId(rm.id); setPhDialog(true) }} className="body-sm text-emerald-400 hover:text-emerald-400/80 transition-colors font-medium">
+                        <button onClick={() => { setPhEdit(undefined); phEditIdRef.current = null; phRoadmapIdRef.current = rm.id; setPhDialog(true) }} className="body-sm text-emerald-400 hover:text-emerald-400/80 transition-colors font-medium">
                           + Thêm giai đoạn
                         </button>
                       </div>
@@ -321,9 +325,9 @@ export function AdminRoadmapsPage() {
       )}
 
       {/* Dialogs */}
-      <RoadmapDialog open={rmDialog} onClose={() => { setRmDialog(false); setRmEdit(undefined); setRmEditId(null) }} onSubmit={handleRmSubmit} initial={rmEdit} />
-      <PhaseDialog open={phDialog} onClose={() => { setPhDialog(false); setPhEdit(undefined); setPhEditId(null); setPhRoadmapId(null) }} onSubmit={handlePhSubmit} initial={phEdit} />
-      <ItemDialog open={itDialog} onClose={() => { setItDialog(false); setItEdit(undefined); setItEditId(null); setItPhaseId(null) }} onSubmit={handleItSubmit} initial={itEdit} />
+      <RoadmapDialog open={rmDialog} onClose={() => { setRmDialog(false); setRmEdit(undefined); rmEditIdRef.current = null }} onSubmit={handleRmSubmit} initial={rmEdit} />
+      <PhaseDialog open={phDialog} onClose={() => { setPhDialog(false); setPhEdit(undefined); phEditIdRef.current = null; phRoadmapIdRef.current = null }} onSubmit={handlePhSubmit} initial={phEdit} />
+      <ItemDialog open={itDialog} onClose={() => { setItDialog(false); setItEdit(undefined); itEditIdRef.current = null; itPhaseIdRef.current = null }} onSubmit={handleItSubmit} initial={itEdit} />
     </div>
   )
 }

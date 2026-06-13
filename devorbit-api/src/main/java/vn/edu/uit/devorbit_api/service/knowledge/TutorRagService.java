@@ -78,18 +78,19 @@ public class TutorRagService {
                 List.of(), "LOW");
         }
 
-        // Semantic search
-        KnowledgeRetrievalService.SearchResult searchResult = null;
-        if (courseCode != null) {
-            searchResult = knowledgeRetrievalService.search(courseCode, message, DEFAULT_TOP_K);
-        }
+        // Semantic search with hybrid retrieval
+        KnowledgeRetrievalService.SearchResult searchResult =
+            knowledgeRetrievalService.search(courseCode, message, DEFAULT_TOP_K);
 
-        // Build context for LLM
+        // Build context for LLM with scores
         StringBuilder context = new StringBuilder();
         if (searchResult != null && !searchResult.chunks().isEmpty()) {
             context.append("Context từ tài liệu khóa học:\n\n");
             for (KnowledgeRetrievalService.ChunkResult chunk : searchResult.chunks()) {
-                context.append("[").append(chunk.chunk().getSectionTitle()).append("]\n");
+                String sectionTitle = chunk.chunk().getSectionTitle() != null
+                    ? chunk.chunk().getSectionTitle() : "Không có tiêu đề";
+                context.append(String.format("[%s | score=%.3f]\n",
+                    sectionTitle, chunk.score()));
                 context.append(chunk.chunk().getChunkText()).append("\n\n");
             }
         }

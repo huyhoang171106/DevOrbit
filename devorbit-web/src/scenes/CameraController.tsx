@@ -27,7 +27,10 @@ export function CameraController({
   const mouseRef = useRef({ x: 0, y: 0 })
   const timeRef = useRef(0)
   const prefersReduced = useRef(false)
-  const targetPos = useRef(new THREE.Vector3())
+  const targetPos = useRef<THREE.Vector3 | null>(null)
+  if (targetPos.current === null) {
+    targetPos.current = new THREE.Vector3()
+  }
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -49,6 +52,7 @@ export function CameraController({
 
     const t = timeRef.current
     const tp = targetPos.current
+    if (!tp) return
     const mx = mouseRef.current.x * 8
     const my = mouseRef.current.y * 4
 

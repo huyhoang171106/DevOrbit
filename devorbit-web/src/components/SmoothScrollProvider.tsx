@@ -66,11 +66,16 @@ export function SmoothScrollProvider({ children, lerp = 0.08 }: Props) {
         tickerRef.current = null
       }
 
-      // Remove scroll listener from Lenis
+      // Remove scroll listener from Lenis and clear global reference
       const inst = (window as any).__lenis
-      if (inst && scrollRef.current) {
-        inst.off('scroll', scrollRef.current)
-        scrollRef.current = null
+      if (inst) {
+        if (scrollRef.current) {
+          inst.off('scroll', scrollRef.current)
+          scrollRef.current = null
+        }
+        if ((window as any).__lenis === inst) {
+          ;(window as any).__lenis = null
+        }
       }
     }
   }, [])
@@ -84,7 +89,7 @@ export function SmoothScrollProvider({ children, lerp = 0.08 }: Props) {
         // Capture Lenis instance as soon as it mounts
         if (el && typeof el === 'object') {
           const instance = el.__lenis ?? el.lenis ?? el
-          if (instance && instance.on && !(window as any).__lenis) {
+          if (instance && instance.on) {
             ;(window as any).__lenis = instance
           }
         }

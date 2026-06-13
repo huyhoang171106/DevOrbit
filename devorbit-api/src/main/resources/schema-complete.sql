@@ -273,6 +273,10 @@ create index if not exists idx_course_tutorials_course on course_tutorials(cours
 insert into admin_users (username, password_hash, active)
 values ('admin', '$2b$12$3IpxxJtwI/zV8hYwQc8W9eWRkf.l0yocc3Di5FvA65J0QiJ395WSe', true)
 on conflict (username) do nothing;
+-- huyhoang admin account
+insert into admin_users (username, password_hash, active)
+values ('huyhoang', '$2b$12$SrwfaUH3F7a9IMizpKhFauugZGdyCvyp2.iFdz6z5JjkUQgaDAlAm', true)
+on conflict (username) do nothing;
 
 insert into courses (mamh, tenmh, sotc, lt, th, loaimonhoc)
 values

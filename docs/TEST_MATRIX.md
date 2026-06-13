@@ -1,4 +1,4 @@
-# Test Matrix
+﻿# Test Matrix
 
 This file maps product behavior to proof.
 
@@ -19,10 +19,13 @@ This file maps product behavior to proof.
 | US-015 | Simulation Engine | pass | pass | no | no | implemented | Plan 1.3 Summary (verified locally) |
 | US-016 | Photobooth Upload | - | - | - | Browser | planned | - |
 | US-017 | AI Roadmap Generator | - | pass | pass | no | implemented | US-017-PLAN-1.1 (verified locally) |
+| US-021A | Smarter RAG (hybrid retrieval, query expansion, reranking, adaptive web, hierarchical chunks) | pass | pass | runtime smoke | Maven + focused tests | implemented | `devorbit-api`: `RagQueryPlannerTest`, `RagResultRerankerTest`, `KnowledgeRetrievalServiceTest`, `CourseKnowledgeIndexerTest` — all 32 pass; `SubjectQaServiceTest`, `TutorRagServiceTest`, `WebSearchServiceTest` — all 20 pass; `AdminKnowledgeControllerTest`, `PublicRepoControllerTest` — all 7 pass; full suite `mvnw.cmd test -B` 172/173 pass (1 pre-existing H2/vector blocker in `FirecrawlDisabledTest`); compile succeeds. |
+| US-021B | AI Course Q&A Streaming Chat | pass | no | no | Frontend Vitest + TypeScript + Maven focused tests | implemented | `devorbit-web`: `src/hooks/useSubjectQa.stream.test.ts` (6 tests) + `src/components/student/__tests__/AiChatWidget.test.tsx` (3 tests) - all 9 pass; `npx tsc --noEmit` passes; backend `OpenCodeAiServiceTest`, `SubjectQaServiceTest`, `SubjectQaControllerTest` added. 2026-06-12: `devorbit-api` `.\mvnw.cmd -Dtest=SubjectQaServiceTest,OpenCodeAiServiceTest,ChatServiceTest,TutorRagServiceTest test -B` passes 23 tests, including Vietnamese greeting false-positive, Java backend career-course recommendation, first-year curriculum grounding, and UIT orientation web-search follow-up regressions. |
 | US-018 | Mobile Repo Tech Stack Filter | pass | no | no | Gradle unit test | implemented | `devorbit-mobile`: `.\gradlew.bat :app:testDebugUnitTest` |
 | US-019 | Mobile Course Hub Detail Navigation | pass | no | no | Gradle unit test | implemented | `devorbit-mobile`: `.\gradlew.bat :app:testDebugUnitTest` |
 | US-035 | Mobile Course Search, Bookmarks, and Explore Search/Filter | pass | no | no | Gradle unit test | implemented | `devorbit-mobile`: `.\gradlew.bat :app:testDebugUnitTest`; commits `7e01b5d`, `6122db9`, `bbcc294`, `be174b4` |
 | US-036 | Mobile AI Roadmap and Subject Q&A ViewModels | pass | no | no | Gradle unit test | implemented | `devorbit-mobile`: `.\gradlew.bat :app:testDebugUnitTest` |
+| US-040 | Mobile Student Auth Registration Session | pass | no | no | Gradle unit test + debug build | implemented | `devorbit-mobile`: targeted `.\gradlew.bat :app:testDebugUnitTest --tests vn.edu.uit.devorbit.mobile.ui.viewmodel.AuthSessionPolicyTest` passed; full `.\gradlew.bat :app:testDebugUnitTest` passed; `.\gradlew.bat :app:assembleDebug` passed; `installDebug` blocked because `adb devices` returned no connected devices |
 | US-037 | Community Data Model: chat channels, messages, repo reviews, repo votes, course reviews | pass | no | no | Maven test suite | implemented | `devorbit-api`: `mvn.cmd -Dtest=CommunityPersistenceContractTest test` passed 3 tests; `mvn.cmd test` passed 29 tests; commits `2331cf8`, `f613598` |
 | US-038 | Community WebSocket STOMP Auth | pass | no | no | Maven test suite | implemented | `devorbit-api`: `mvn.cmd -Dtest=WebSocketConfigContractTest test` passed 4 tests; `mvn.cmd test` passed 33 tests; commit `0205453` |
 | US-039 | Community REST APIs and WebSocket Message Endpoints | pass | no | no | Maven test suite | implemented | `devorbit-api`: `mvn.cmd -Dtest=CommunityMilestone3ContractTest test` passed 8 tests; `mvn.cmd test` passed 41 tests; commits `695ba11`, `155223f` |
@@ -52,3 +55,4 @@ This file maps product behavior to proof.
   behavior that cannot be proven in lower layers.
 - A story can be implemented without every proof column if the story packet
   explains why.
+

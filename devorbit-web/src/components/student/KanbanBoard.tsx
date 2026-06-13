@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useRef, forwardRef } from 'react'
-import { motion } from 'framer-motion'
+import { m as motion } from 'framer-motion'
 import {
   DndContext,
   DragOverlay,
@@ -118,10 +118,12 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
   const [showGradMenu, setShowGradMenu] = useState(false)
   const [specialtyChoice, setSpecialtyChoice] = useState<string | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const savedSemesterMapRef = useRef<string | null>(null)
 
   // Load saved assignments from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem('devorbit_kanban_semester_map')
+    savedSemesterMapRef.current = saved
     if (saved) {
       try {
         const parsed = JSON.parse(saved) as SemesterMap
@@ -132,9 +134,13 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
   }, [])
 
   const recommendedIds = useMemo(
-    () => new Set(
-      nodes.filter(n => selectedElectiveCodes.has(n.code.toUpperCase())).map(n => n.id)
-    ),
+    () => {
+      const ids = new Set<number>()
+      for (const node of nodes) {
+        if (selectedElectiveCodes.has(node.code.toUpperCase())) ids.add(node.id)
+      }
+      return ids
+    },
     [selectedElectiveCodes, nodes],
   )
 
@@ -158,6 +164,17 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
     for (const n of nodes) map.set(n.id, n)
     return map
   }, [nodes])
+
+  const nodeByCode = useMemo(() => {
+    const map = new Map<string, GraphNode>()
+    for (const node of nodes) map.set(node.code.toUpperCase(), node)
+    return map
+  }, [nodes])
+
+  const coSoNganhCodeSet = useMemo(
+    () => new Set(CO_SO_NGANH_COURSES),
+    [],
+  )
 
   // Group nodes by semester
   const columns = useMemo(() => {
@@ -196,7 +213,7 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
       const skipCodes = getEngSkipCodes(englishLevel)
       for (const engCode of ['ENG01', 'ENG02', 'ENG03']) {
         if (!skipCodes.has(engCode)) continue
-        const engNode = nodes.find(n => n.code.toUpperCase() === engCode)
+        const engNode = nodeByCode.get(engCode)
         if (engNode) {
           if (semesterMap[engNode.id] === null) {
             total += creditMap.get(engNode.id) ?? getCurriculumCredits(engCode) ?? 4
@@ -205,7 +222,7 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
       }
     }
     return total
-  }, [columns, nodes, semesterMap, creditMap, englishLevel])
+  }, [columns, nodeByCode, semesterMap, creditMap, englishLevel])
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 18 } }),
@@ -492,14 +509,16 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
 
   const handleSave = useCallback(() => {
     const hash = hashSemesterMap(semesterMap)
-    localStorage.setItem('devorbit_kanban_semester_map', JSON.stringify(semesterMap))
+    const serialized = JSON.stringify(semesterMap)
+    localStorage.setItem('devorbit_kanban_semester_map', serialized)
+    savedSemesterMapRef.current = serialized
     setSavedMapHash(hash)
     setSaveMessage('Đã lưu lộ trình')
     setTimeout(() => setSaveMessage(null), 2000)
   }, [semesterMap])
 
   const handleLoad = useCallback(() => {
-    const saved = localStorage.getItem('devorbit_kanban_semester_map')
+    const saved = savedSemesterMapRef.current
     if (!saved) {
       setSaveMessage('Chưa có lộ trình đã lưu')
       setTimeout(() => setSaveMessage(null), 2000)
@@ -531,13 +550,13 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
             <span className={`text-[14px] font-bold tabular-nums ${
               (() => {
                 let c = 0
-                for (const code of selectedElectiveCodes) if (CO_SO_NGANH_COURSES.includes(code)) c += ELECTIVE_CREDITS[code] ?? 3
+                for (const code of selectedElectiveCodes) if (coSoNganhCodeSet.has(code)) c += ELECTIVE_CREDITS[code] ?? 3
                 return c >= 12
               })() ? 'text-emerald-400' : 'text-amber-400'
             }`}>
               {(() => {
                 let c = 0
-                for (const code of selectedElectiveCodes) if (CO_SO_NGANH_COURSES.includes(code)) c += ELECTIVE_CREDITS[code] ?? 3
+                for (const code of selectedElectiveCodes) if (coSoNganhCodeSet.has(code)) c += ELECTIVE_CREDITS[code] ?? 3
                 return c
               })()} / 12 TC
             </span>
@@ -546,13 +565,13 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
             <span className={`text-[14px] font-bold tabular-nums ${
               (() => {
                 let c = 0
-                for (const code of selectedElectiveCodes) if (!CO_SO_NGANH_COURSES.includes(code)) c += ELECTIVE_CREDITS[code] ?? 3
+                for (const code of selectedElectiveCodes) if (!coSoNganhCodeSet.has(code)) c += ELECTIVE_CREDITS[code] ?? 3
                 return c >= 16
               })() ? 'text-emerald-400' : 'text-amber-400'
             }`}>
               {(() => {
                 let c = 0
-                for (const code of selectedElectiveCodes) if (!CO_SO_NGANH_COURSES.includes(code)) c += ELECTIVE_CREDITS[code] ?? 3
+                for (const code of selectedElectiveCodes) if (!coSoNganhCodeSet.has(code)) c += ELECTIVE_CREDITS[code] ?? 3
                 return c
               })()} / 16 TC
             </span>
@@ -765,7 +784,7 @@ export function KanbanBoard({ nodes, links, selectedElectiveCodes, creditMap }: 
                 const skipCodes = getEngSkipCodes(englishLevel)
                 let engTotal = 0
                 for (const code of skipCodes) {
-                  const node = nodes.find(n => n.code.toUpperCase() === code)
+                  const node = nodeByCode.get(code)
                   engTotal += creditMap.get(node?.id ?? -1) ?? getCurriculumCredits(code) ?? 4
                 }
                 return engTotal

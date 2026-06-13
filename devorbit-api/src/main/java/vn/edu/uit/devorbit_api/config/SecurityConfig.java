@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,7 +25,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
+    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173}")
     private String allowedOrigins;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
@@ -42,6 +43,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/admin/auth/**").permitAll()
                 .requestMatchers("/api/courses/**").permitAll()
                 .requestMatchers("/api/repos/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/ai/subject-qa/query", "/api/ai/subject-qa/stream").permitAll()
+                .requestMatchers("/api/ai/subject-qa/**").permitAll()
                 .requestMatchers("/api/ai/**").authenticated()
                 .requestMatchers("/api/discovery/**").permitAll()
                 .requestMatchers("/api/tech-stacks/**").permitAll()
@@ -68,6 +71,11 @@ public class SecurityConfig {
                 }));
 
         return http.build();
+    }
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return web -> web.ignoring().requestMatchers("/api/ai/subject-qa/**");
     }
 
     @Bean

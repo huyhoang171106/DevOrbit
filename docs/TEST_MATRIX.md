@@ -16,6 +16,7 @@ This file maps product behavior to proof.
 
 | Story | Contract | Unit | Integration | E2E | Platform | Status | Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| US-041 | Course Library Pagination Visibility | pass | no | page-level jsdom | TypeScript + Vite build | implemented | `devorbit-web`: targeted test 1/1, full Vitest suite 143/143, `npx tsc --noEmit`, and `npm run build` passed on 2026-06-13. |
 | US-015 | Simulation Engine | pass | pass | no | no | implemented | Plan 1.3 Summary (verified locally) |
 | US-016 | Photobooth Upload | - | - | - | Browser | planned | - |
 | US-017 | AI Roadmap Generator | - | pass | pass | no | implemented | US-017-PLAN-1.1 (verified locally) |

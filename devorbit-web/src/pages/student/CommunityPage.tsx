@@ -9,11 +9,12 @@ import {
   CaretDown,
   SignIn,
 } from '@phosphor-icons/react'
-import { useChannels, useChannelMessages } from '../../hooks/useCommunity'
+import { useChannels, useChannelMessages, useInvalidateChannelMessages, useCurrentStudent } from '../../hooks/useCommunity'
 import { useCommunitySocket } from '../../hooks/useCommunitySocket'
 import { isStudentAuthenticated } from '../../lib/auth'
 import { useNavigate } from 'react-router-dom'
-import type { ChatChannelResponse, ChatMessageResponse } from '../../types/api'
+import { Avatar } from '../../components/shared/Avatar'
+import type { ChannelPresenceResponse, ChatChannelResponse, ChatMessageResponse, OnlineMemberResponse } from '../../types/api'
 
 const CHANNEL_GROUP_LABELS: Record<string, string> = {
   GENERAL: 'Chung',
@@ -244,6 +245,7 @@ function ChatArea({
   onLoadMore,
   onSend,
   authenticated,
+  currentUserId,
 }: {
   channel: ChatChannelResponse | null
   messages: ChatMessageResponse[]
@@ -253,6 +255,7 @@ function ChatArea({
   onLoadMore: () => void
   onSend: (content: string) => void
   authenticated: boolean
+  currentUserId: number | null
 }) {
   const [input, setInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -338,26 +341,51 @@ function ChatArea({
           </div>
         )}
 
-        {messages.map((msg) => (
-          <div key={msg.id} className="flex gap-3 group">
-            <div className="shrink-0 h-8 w-8 rounded-full bg-orbit-accent/10 border border-orbit-accent/20 flex items-center justify-center">
-              <span className="text-[11px] font-bold text-orbit-accent">
-                {msg.senderName.charAt(0).toUpperCase()}
-              </span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-baseline gap-2">
-                <span className="text-[13px] font-bold text-orbit-text">{msg.senderName}</span>
-                <span className="text-[10px] text-orbit-text-muted">
-                  {new Date(msg.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-                </span>
+        {messages.map((msg) => {
+          const isMine = currentUserId !== null && msg.studentId === currentUserId
+          const msgDate = new Date(msg.createdAt)
+          const today = new Date()
+          const yesterday = new Date(today)
+          yesterday.setDate(yesterday.getDate() - 1)
+
+          const isToday = msgDate.toDateString() === today.toDateString()
+          const isYesterday = msgDate.toDateString() === yesterday.toDateString()
+
+          let timeLabel: string
+          if (isToday) {
+            timeLabel = `Today, ${msgDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
+          } else if (isYesterday) {
+            timeLabel = `Yesterday, ${msgDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
+          } else {
+            timeLabel = `${msgDate.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short' })}, ${msgDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
+          }
+
+          return (
+            <div key={msg.id} className={`flex gap-3 group ${isMine ? 'flex-row-reverse' : ''}`}>
+              {!isMine && (
+                <div className="shrink-0 h-8 w-8 rounded-full bg-orbit-accent/10 border border-orbit-accent/20 flex items-center justify-center">
+                  <span className="text-[11px] font-bold text-orbit-accent">
+                    {msg.senderName.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
+              <div className={`flex-1 min-w-0 ${isMine ? 'flex flex-col items-end' : ''}`}>
+                {!isMine && (
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-[13px] font-bold text-orbit-text">{msg.senderName}</span>
+                    <span className="text-[10px] text-orbit-text-muted">{timeLabel}</span>
+                  </div>
+                )}
+                <p className={`text-[14px] mt-0.5 leading-relaxed whitespace-pre-wrap break-words ${isMine ? 'bg-orbit-accent/20 text-orbit-text border border-orbit-accent/20 rounded-2xl px-3 py-2 max-w-[75%] text-right' : 'text-orbit-text-secondary'}`}>
+                  {msg.content}
+                </p>
+                {isMine && (
+                  <span className="text-[10px] text-orbit-text-muted mt-0.5">{timeLabel}</span>
+                )}
               </div>
-              <p className="text-[14px] text-orbit-text-secondary mt-0.5 leading-relaxed whitespace-pre-wrap break-words">
-                {msg.content}
-              </p>
             </div>
-          </div>
-        ))}
+          )
+        })}
         <div ref={messagesEndRef} />
       </div>
 
@@ -395,18 +423,46 @@ function ChatArea({
   )
 }
 
-function OnlineMembers() {
+export function OnlineMembers({ members, connected }: { members: OnlineMemberResponse[]; connected: boolean }) {
   return (
     <div className="h-full flex flex-col overflow-hidden min-h-0">
       <div className="shrink-0 px-4 py-4 border-b border-orbit-border">
-        <h2 className="font-heading text-sm font-bold text-orbit-text tracking-wide">Đang hoạt động</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="font-heading text-sm font-bold text-orbit-text tracking-wide">Đang hoạt động</h2>
+          {connected && members.length > 0 && (
+            <span className="ml-auto text-[11px] font-bold text-orbit-accent bg-orbit-accent/10 px-2 py-0.5 rounded-full">
+              {members.length} online
+            </span>
+          )}
+        </div>
       </div>
       <div className="flex-1 overflow-y-auto scrollbar-thin min-h-0 px-4 py-4">
-        <div className="flex flex-col items-center justify-center h-full text-orbit-text-secondary">
-          <UsersThree className="h-10 w-10 mb-3 opacity-20" />
-          <p className="text-[13px] text-center font-medium">Tính năng đang phát triển</p>
-          <p className="text-[11px] text-center mt-1">Danh sách thành viên online sẽ sớm xuất hiện</p>
-        </div>
+        {!connected ? (
+          <div className="flex flex-col items-center justify-center h-full text-orbit-text-secondary">
+            <Spinner className="h-6 w-6 text-orbit-accent animate-spin mb-3" />
+            <p className="text-[13px] text-center font-medium">Đang kết nối lại...</p>
+          </div>
+        ) : members.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-orbit-text-secondary">
+            <UsersThree className="h-10 w-10 mb-3 opacity-20" />
+            <p className="text-[13px] text-center font-medium">Chưa có ai online trong kênh này</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {members.map((m) => (
+              <div key={m.studentCode} className="flex items-center gap-3 group">
+                <div className="relative shrink-0">
+                  <Avatar name={m.displayName} size={32} />
+                  <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-500 border-2 border-orbit-bg" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-bold text-orbit-text truncate">{m.displayName}</p>
+                  <p className="text-[10px] text-orbit-text-muted">{m.studentCode}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -425,9 +481,12 @@ export function CommunityPage() {
   const [search, setSearch] = useState('')
   const [subscribedIds, setSubscribedIds] = useState<Set<number>>(() => getSubscribedIds())
   const [confirm, setConfirm] = useState<{ id: number; name: string } | null>(null)
+  const [onlineMembers, setOnlineMembers] = useState<OnlineMemberResponse[]>([])
+  const invalidateChannelMessages = useInvalidateChannelMessages()
 
   const { data: fetchedPage, isLoading: messagesLoading, isFetching: messagesFetching } =
     useChannelMessages(activeChannel?.id ?? null, page)
+  const { data: currentStudent } = useCurrentStudent()
 
   const activeChannelRef = useRef(activeChannel)
   activeChannelRef.current = activeChannel
@@ -439,11 +498,23 @@ export function CommunityPage() {
     }
   }, [])
 
-  const { sendMessage } = useCommunitySocket({
+  const handlePresence = useCallback((presence: ChannelPresenceResponse) => {
+    const current = activeChannelRef.current
+    if (current && presence.channelId === current.id) {
+      setOnlineMembers(presence.members)
+    }
+  }, [])
+
+  const { sendMessage, connected } = useCommunitySocket({
     channelId: activeChannel?.id ?? null,
     enabled: authenticated,
     onMessage: handleRealtimeMessage,
+    onPresence: handlePresence,
   })
+
+  useEffect(() => {
+    setOnlineMembers([])
+  }, [activeChannel?.id])
 
   useEffect(() => {
     if (channels.length === 0) return
@@ -478,6 +549,9 @@ export function CommunityPage() {
       setPage(0)
       setAllMessages([])
       setTotalPages(1)
+      if (activeChannel?.id != null) {
+        invalidateChannelMessages(activeChannel.id)
+      }
     }
   }
 
@@ -567,11 +641,12 @@ export function CommunityPage() {
                 onLoadMore={handleLoadMore}
                 onSend={handleSendMessage}
                 authenticated={authenticated}
+                currentUserId={currentStudent?.id ?? null}
               />
             </div>
 
             <div className="w-[260px] shrink-0 border-l border-orbit-border hidden xl:block min-h-0">
-              <OnlineMembers />
+              <OnlineMembers members={onlineMembers} connected={connected} />
             </div>
           </div>
         </div>

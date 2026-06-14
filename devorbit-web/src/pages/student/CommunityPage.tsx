@@ -9,7 +9,7 @@ import {
   CaretDown,
   SignIn,
 } from '@phosphor-icons/react'
-import { useChannels, useChannelMessages, useInvalidateChannelMessages } from '../../hooks/useCommunity'
+import { useChannels, useChannelMessages, useInvalidateChannelMessages, useCurrentStudent } from '../../hooks/useCommunity'
 import { useCommunitySocket } from '../../hooks/useCommunitySocket'
 import { isStudentAuthenticated } from '../../lib/auth'
 import { useNavigate } from 'react-router-dom'
@@ -245,6 +245,7 @@ function ChatArea({
   onLoadMore,
   onSend,
   authenticated,
+  currentUserId,
 }: {
   channel: ChatChannelResponse | null
   messages: ChatMessageResponse[]
@@ -254,6 +255,7 @@ function ChatArea({
   onLoadMore: () => void
   onSend: (content: string) => void
   authenticated: boolean
+  currentUserId: number | null
 }) {
   const [input, setInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -339,26 +341,38 @@ function ChatArea({
           </div>
         )}
 
-        {messages.map((msg) => (
-          <div key={msg.id} className="flex gap-3 group">
-            <div className="shrink-0 h-8 w-8 rounded-full bg-orbit-accent/10 border border-orbit-accent/20 flex items-center justify-center">
-              <span className="text-[11px] font-bold text-orbit-accent">
-                {msg.senderName.charAt(0).toUpperCase()}
-              </span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-baseline gap-2">
-                <span className="text-[13px] font-bold text-orbit-text">{msg.senderName}</span>
-                <span className="text-[10px] text-orbit-text-muted">
-                  {new Date(msg.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-                </span>
+        {messages.map((msg) => {
+          const isMine = currentUserId !== null && msg.studentId === currentUserId
+          return (
+            <div key={msg.id} className={`flex gap-3 group ${isMine ? 'flex-row-reverse' : ''}`}>
+              {!isMine && (
+                <div className="shrink-0 h-8 w-8 rounded-full bg-orbit-accent/10 border border-orbit-accent/20 flex items-center justify-center">
+                  <span className="text-[11px] font-bold text-orbit-accent">
+                    {msg.senderName.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
+              <div className={`flex-1 min-w-0 ${isMine ? 'flex flex-col items-end' : ''}`}>
+                {!isMine && (
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-[13px] font-bold text-orbit-text">{msg.senderName}</span>
+                    <span className="text-[10px] text-orbit-text-muted">
+                      {new Date(msg.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                )}
+                <p className={`text-[14px] mt-0.5 leading-relaxed whitespace-pre-wrap break-words ${isMine ? 'bg-orbit-accent/20 text-orbit-text border border-orbit-accent/20 rounded-2xl px-3 py-2 max-w-[75%] text-right' : 'text-orbit-text-secondary'}`}>
+                  {msg.content}
+                </p>
+                {isMine && (
+                  <span className="text-[10px] text-orbit-text-muted mt-0.5">
+                    {new Date(msg.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                )}
               </div>
-              <p className="text-[14px] text-orbit-text-secondary mt-0.5 leading-relaxed whitespace-pre-wrap break-words">
-                {msg.content}
-              </p>
             </div>
-          </div>
-        ))}
+          )
+        })}
         <div ref={messagesEndRef} />
       </div>
 
@@ -459,6 +473,7 @@ export function CommunityPage() {
 
   const { data: fetchedPage, isLoading: messagesLoading, isFetching: messagesFetching } =
     useChannelMessages(activeChannel?.id ?? null, page)
+  const { data: currentStudent } = useCurrentStudent()
 
   const activeChannelRef = useRef(activeChannel)
   activeChannelRef.current = activeChannel
@@ -613,6 +628,7 @@ export function CommunityPage() {
                 onLoadMore={handleLoadMore}
                 onSend={handleSendMessage}
                 authenticated={authenticated}
+                currentUserId={currentStudent?.id ?? null}
               />
             </div>
 

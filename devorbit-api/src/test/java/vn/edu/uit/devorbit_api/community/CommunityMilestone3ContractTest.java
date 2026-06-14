@@ -83,6 +83,7 @@ class CommunityMilestone3ContractTest {
         CourseRepository courseRepository = mock(CourseRepository.class);
         TechStackRepository techStackRepository = mock(TechStackRepository.class);
         CommunityMessageRepository messageRepository = mock(CommunityMessageRepository.class);
+        NotificationRepository notificationRepository = mock(NotificationRepository.class);
         StudentUserRepository studentUserRepository = mock(StudentUserRepository.class);
 
         Course course = Course.builder().id(10L).maMH("SE104").tenMH("Nhap mon CNPM").build();
@@ -111,6 +112,7 @@ class CommunityMilestone3ContractTest {
     void sendMessagePersistsStudentMessageAndReturnsResponse() {
         ChatChannelRepository channelRepository = mock(ChatChannelRepository.class);
         CommunityMessageRepository messageRepository = mock(CommunityMessageRepository.class);
+        NotificationRepository notificationRepository = mock(NotificationRepository.class);
         StudentUserRepository studentUserRepository = mock(StudentUserRepository.class);
         CourseRepository courseRepository = mock(CourseRepository.class);
         TechStackRepository techStackRepository = mock(TechStackRepository.class);
@@ -119,6 +121,7 @@ class CommunityMilestone3ContractTest {
         StudentUser student = StudentUser.builder().id(5L).studentCode("24520554").fullName("Nguyen Van A").email("a@gm.uit.edu.vn").build();
         when(channelRepository.findById(2L)).thenReturn(Optional.of(channel));
         when(studentUserRepository.findByStudentCode("24520554")).thenReturn(Optional.of(student));
+        when(notificationRepository.findByIsReadFalseOrderByCreatedAtDesc()).thenReturn(List.of());
         when(messageRepository.save(any(CommunityMessage.class))).thenAnswer(invocation -> {
             CommunityMessage message = invocation.getArgument(0);
             message.setId(99L);
@@ -169,7 +172,7 @@ class CommunityMilestone3ContractTest {
         when(repoReviewRepository.findByRepoIdAndStudentId(3L, 5L)).thenReturn(Optional.empty());
         when(repoReviewRepository.save(any(RepoReview.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        SocialService service = new SocialService(eventPublisher(), repoReviewRepository, repoVoteRepository, courseReviewRepository,
+SocialService service = new SocialService(eventPublisher(), repoReviewRepository, repoVoteRepository, courseReviewRepository,
                 githubRepoRepository, courseRepository, studentUserRepository);
 
         var review = service.upsertRepoReview("24520554", 3L, new ReviewRequest(5, "Rat huu ich"));
@@ -205,7 +208,7 @@ class CommunityMilestone3ContractTest {
         when(courseReviewRepository.findByCourseIdOrderByUpdatedAtDesc(4L)).thenReturn(List.of(
                 CourseReview.builder().id(12L).course(course).student(student).rating(4).comment("On").build()));
 
-        SocialService service = new SocialService(eventPublisher(), repoReviewRepository, repoVoteRepository, courseReviewRepository,
+SocialService service = new SocialService(eventPublisher(), repoReviewRepository, repoVoteRepository, courseReviewRepository,
                 githubRepoRepository, courseRepository, studentUserRepository);
 
         assertThat(service.getRepoSocialInfo(3L).voteScore()).isEqualTo(2);
@@ -217,6 +220,7 @@ class CommunityMilestone3ContractTest {
     void messageHistoryUsesPagination() {
         ChatChannelRepository channelRepository = mock(ChatChannelRepository.class);
         CommunityMessageRepository messageRepository = mock(CommunityMessageRepository.class);
+        NotificationRepository notificationRepository = mock(NotificationRepository.class);
         StudentUserRepository studentUserRepository = mock(StudentUserRepository.class);
         CourseRepository courseRepository = mock(CourseRepository.class);
         TechStackRepository techStackRepository = mock(TechStackRepository.class);

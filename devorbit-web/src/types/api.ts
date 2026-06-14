@@ -286,6 +286,17 @@ export type ChatMessageResponse = {
   createdAt: string
 }
 
+export type OnlineMemberResponse = {
+  studentId: number | null
+  studentCode: string
+  displayName: string
+}
+
+export type ChannelPresenceResponse = {
+  channelId: number
+  members: OnlineMemberResponse[]
+}
+
 export type PaginatedMessagesResponse = {
   content: ChatMessageResponse[]
   totalPages: number

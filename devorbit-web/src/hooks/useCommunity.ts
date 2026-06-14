@@ -58,7 +58,8 @@ export function useChannelMessages(channelId: number | null, page: number, size:
         `/api/student/community/channels/${channelId}/messages?page=${page}&size=${size}`,
       ),
     enabled: channelId !== null,
-    staleTime: 30 * 1000,
+    placeholderData: (prev) => prev,
+    staleTime: 0,
     gcTime: 5 * 60 * 1000,
   })
 }

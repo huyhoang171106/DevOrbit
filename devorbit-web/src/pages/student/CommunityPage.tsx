@@ -343,6 +343,23 @@ function ChatArea({
 
         {messages.map((msg) => {
           const isMine = currentUserId !== null && msg.studentId === currentUserId
+          const msgDate = new Date(msg.createdAt)
+          const today = new Date()
+          const yesterday = new Date(today)
+          yesterday.setDate(yesterday.getDate() - 1)
+
+          const isToday = msgDate.toDateString() === today.toDateString()
+          const isYesterday = msgDate.toDateString() === yesterday.toDateString()
+
+          let timeLabel: string
+          if (isToday) {
+            timeLabel = `Today, ${msgDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
+          } else if (isYesterday) {
+            timeLabel = `Yesterday, ${msgDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
+          } else {
+            timeLabel = `${msgDate.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short' })}, ${msgDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
+          }
+
           return (
             <div key={msg.id} className={`flex gap-3 group ${isMine ? 'flex-row-reverse' : ''}`}>
               {!isMine && (
@@ -356,18 +373,14 @@ function ChatArea({
                 {!isMine && (
                   <div className="flex items-baseline gap-2">
                     <span className="text-[13px] font-bold text-orbit-text">{msg.senderName}</span>
-                    <span className="text-[10px] text-orbit-text-muted">
-                      {new Date(msg.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-                    </span>
+                    <span className="text-[10px] text-orbit-text-muted">{timeLabel}</span>
                   </div>
                 )}
                 <p className={`text-[14px] mt-0.5 leading-relaxed whitespace-pre-wrap break-words ${isMine ? 'bg-orbit-accent/20 text-orbit-text border border-orbit-accent/20 rounded-2xl px-3 py-2 max-w-[75%] text-right' : 'text-orbit-text-secondary'}`}>
                   {msg.content}
                 </p>
                 {isMine && (
-                  <span className="text-[10px] text-orbit-text-muted mt-0.5">
-                    {new Date(msg.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-                  </span>
+                  <span className="text-[10px] text-orbit-text-muted mt-0.5">{timeLabel}</span>
                 )}
               </div>
             </div>

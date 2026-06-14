@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import vn.edu.uit.devorbit_api.dto.publicapi.SubjectQaRequest;
 import vn.edu.uit.devorbit_api.dto.publicapi.SubjectQaResponse;
 import vn.edu.uit.devorbit_api.dto.publicapi.RoadmapRecommendationResponse;
@@ -71,6 +72,9 @@ class SubjectQaServiceTest {
     @Mock
     private KnowledgeRetrievalService knowledgeRetrievalService;
 
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
     private SubjectQaService service;
 
     @BeforeEach
@@ -88,7 +92,8 @@ class SubjectQaServiceTest {
             courseKnowledgeBootstrapService,
             knowledgeRetrievalService,
             new ObjectMapper(),
-            Runnable::run
+            Runnable::run,
+            eventPublisher
         );
     }
 

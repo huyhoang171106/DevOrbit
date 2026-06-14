@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.Locale;
+
 /**
  * Keeps the Knowledge RAG storage available in environments where SQL
  * migrations are not applied automatically.
@@ -21,6 +23,45 @@ public class KnowledgeSchemaInitializer {
     @Value("${devorbit.knowledge.schema-init.enabled:true}")
     private boolean enabled;
 
+    /**
+     * Ensures the embedding column exists and has the correct dimension (4096).
+     * Used by tests and startup initialization.
+     */
+    public void ensureEmbeddingColumn() {
+        try {
+            String embeddingType = currentEmbeddingColumnType();
+            if (embeddingType == null) {
+                jdbcTemplate.execute("ALTER TABLE knowledge_chunks ADD COLUMN embedding extensions.vector(4096)");
+                return;
+            }
+
+            if (!isVector4096(embeddingType)) {
+                jdbcTemplate.execute("DROP INDEX IF EXISTS idx_knowledge_chunks_embedding");
+                jdbcTemplate.execute("ALTER TABLE knowledge_chunks ALTER COLUMN embedding TYPE extensions.vector(4096) USING NULL");
+            }
+        } catch (Exception e) {
+            log.warn("ensureEmbeddingColumn failed: {}", e.getMessage());
+        }
+    }
+
+    private String currentEmbeddingColumnType() {
+        return jdbcTemplate.query("""
+            SELECT format_type(a.atttypid, a.atttypmod)
+            FROM pg_attribute a
+            JOIN pg_class c ON c.oid = a.attrelid
+            JOIN pg_namespace n ON n.oid = c.relnamespace
+            WHERE n.nspname = 'public'
+              AND c.relname = 'knowledge_chunks'
+              AND a.attname = 'embedding'
+              AND NOT a.attisdropped
+            """, rs -> rs.next() ? rs.getString(1) : null);
+    }
+
+    private boolean isVector4096(String columnType) {
+        return columnType != null
+                && columnType.toLowerCase(Locale.ROOT).replace(" ", "").endsWith("vector(4096)");
+    }
+
     @PostConstruct
     public void initialize() {
         if (!enabled) {
@@ -28,7 +69,16 @@ public class KnowledgeSchemaInitializer {
         }
 
         try {
-            jdbcTemplate.execute("CREATE EXTENSION IF NOT EXISTS vector");
+            jdbcTemplate.execute("CREATE SCHEMA IF NOT EXISTS extensions");
+            jdbcTemplate.execute("CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA extensions");
+            jdbcTemplate.execute("""
+                DO $$
+                BEGIN
+                    IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'vector') THEN
+                        ALTER EXTENSION vector SET SCHEMA extensions;
+                    END IF;
+                END $$
+                """);
             jdbcTemplate.execute("""
                 CREATE TABLE IF NOT EXISTS knowledge_sources (
                     id UUID PRIMARY KEY,
@@ -59,7 +109,7 @@ public class KnowledgeSchemaInitializer {
                     page_to INT,
                     chunk_kind VARCHAR(30) NOT NULL DEFAULT 'DETAIL',
                     parent_chunk_id UUID,
-                    embedding vector(4096),
+                    embedding extensions.vector(4096),
                     created_at TIMESTAMP DEFAULT NOW()
                 )
                 """);
@@ -81,14 +131,9 @@ public class KnowledgeSchemaInitializer {
                 """);
             jdbcTemplate.execute("""
                 ALTER TABLE knowledge_chunks
-                    ADD COLUMN IF NOT EXISTS embedding vector(4096)
+                    ADD COLUMN IF NOT EXISTS embedding extensions.vector(4096)
                 """);
-            jdbcTemplate.execute("DROP INDEX IF EXISTS idx_knowledge_chunks_embedding");
-            jdbcTemplate.execute("""
-                ALTER TABLE knowledge_chunks
-                    ALTER COLUMN embedding TYPE vector(4096)
-                    USING NULL
-                """);
+            ensureEmbeddingColumn();
             // Generated search_text column for PostgreSQL FTS (only on PostgreSQL)
             try {
                 jdbcTemplate.execute("""

@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import vn.edu.uit.devorbit_api.entity.GithubRepo;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.List;
 @Repository
@@ -20,6 +21,10 @@ public interface GithubRepoRepository extends JpaRepository<GithubRepo, Long> {
 
     @EntityGraph(attributePaths = {"techStacks", "course"})
     List<GithubRepo> findByCourseIdAndActiveTrue(Long courseId);
+
+    /** Batch fetch repos for multiple courses — replaces N+1 loop */
+    @EntityGraph(attributePaths = {"techStacks", "course"})
+    List<GithubRepo> findByCourseIdInAndActiveTrue(Collection<Long> courseIds);
 
     Optional<GithubRepo> findByGithubUrlAndCourseId(String githubUrl, Long courseId);
 

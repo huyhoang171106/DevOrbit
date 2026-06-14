@@ -69,7 +69,9 @@ if "%FIREWORKS_API_KEY%"=="" (
 ) else (
     echo FIREWORKS_API_KEY loaded
 )
-echo Starting DevOrbit API...
+echo Starting DevOrbit API with JVM tuning...
+set MAVEN_OPTS=-Xms256m -Xmx512m -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -Xlog:gc*:file=target/gc.log:time,uptimemillis,tags
+
 echo.
 
 call .\mvnw.cmd spring-boot:run -Dmaven.test.skip=true

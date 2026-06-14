@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
+import reactor.netty.resources.ConnectionProvider;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -32,16 +33,24 @@ public class AiConfig {
     /**
      * WebClient bean with timeout configuration for LLM API calls.
      * Connect timeout: 10 seconds
-     * Read timeout: 30 seconds
+     * Read timeout: 90 seconds
      */
     @Bean
     public WebClient aiWebClient() {
-        HttpClient httpClient = HttpClient.create()
+        ConnectionProvider pool = ConnectionProvider.builder("ai-webclient-pool")
+            .maxConnections(50)
+            .maxIdleTime(Duration.ofSeconds(30))
+            .maxLifeTime(Duration.ofMinutes(5))
+            .pendingAcquireTimeout(Duration.ofSeconds(30))
+            .evictInBackground(Duration.ofSeconds(60))
+            .build();
+
+        HttpClient httpClient = HttpClient.create(pool)
             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
-            .responseTimeout(Duration.ofSeconds(30))
+            .responseTimeout(Duration.ofSeconds(90))
             .doOnConnected(conn ->
-                conn.addHandlerLast(new ReadTimeoutHandler(30, TimeUnit.SECONDS))
-                    .addHandlerLast(new WriteTimeoutHandler(30, TimeUnit.SECONDS))
+                conn.addHandlerLast(new ReadTimeoutHandler(90, TimeUnit.SECONDS))
+                    .addHandlerLast(new WriteTimeoutHandler(90, TimeUnit.SECONDS))
             );
 
         return WebClient.builder()

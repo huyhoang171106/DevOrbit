@@ -2,22 +2,78 @@ import { useEffect, useRef, useCallback, useState } from 'react'
 import { Client, type IMessage } from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
 import { getStudentToken } from '../lib/auth'
-import type { ChatMessageResponse } from '../types/api'
+import type { ChannelPresenceResponse, ChatMessageResponse } from '../types/api'
 
 type UseCommunitySocketOptions = {
   channelId: number | null
   enabled: boolean
   onMessage: (msg: ChatMessageResponse) => void
+  onPresence?: (presence: ChannelPresenceResponse) => void
 }
 
-export function useCommunitySocket({ channelId, enabled, onMessage }: UseCommunitySocketOptions) {
+export function useCommunitySocket({ channelId, enabled, onMessage, onPresence }: UseCommunitySocketOptions) {
   const clientRef = useRef<Client | null>(null)
-  const subscriptionRef = useRef<{ id: string; channelId: number } | null>(null)
+  const messageSubscriptionRef = useRef<{ id: string; channelId: number } | null>(null)
+  const presenceSubscriptionRef = useRef<{ id: string; channelId: number } | null>(null)
   const onMessageRef = useRef(onMessage)
+  const onPresenceRef = useRef(onPresence)
   const channelIdRef = useRef(channelId)
   channelIdRef.current = channelId
   onMessageRef.current = onMessage
+  onPresenceRef.current = onPresence
   const [error, setError] = useState<string | null>(null)
+  const [connected, setConnected] = useState(false)
+
+  const unsubscribeCurrent = useCallback((client: Client) => {
+    if (messageSubscriptionRef.current) {
+      try {
+        client.unsubscribe(messageSubscriptionRef.current.id)
+      } catch (e) {
+        console.error('[WS] unsubscribe error', e)
+      }
+      messageSubscriptionRef.current = null
+    }
+
+    if (presenceSubscriptionRef.current) {
+      try {
+        client.unsubscribe(presenceSubscriptionRef.current.id)
+      } catch (e) {
+        console.error('[WS] presence unsubscribe error', e)
+      }
+      presenceSubscriptionRef.current = null
+    }
+  }, [])
+
+  const doSubscribe = useCallback((client: Client, cid: number) => {
+    if (
+      messageSubscriptionRef.current?.channelId === cid &&
+      presenceSubscriptionRef.current?.channelId === cid
+    ) {
+      return
+    }
+
+    unsubscribeCurrent(client)
+
+    const messageSub = client.subscribe(`/topic/channel/${cid}`, (message: IMessage) => {
+      try {
+        const data: ChatMessageResponse = JSON.parse(message.body)
+        onMessageRef.current(data)
+      } catch (e) {
+        console.error('[WS] parse message error', e)
+      }
+    })
+    messageSubscriptionRef.current = { id: messageSub.id, channelId: cid }
+
+    const presenceSub = client.subscribe(`/topic/channel/${cid}/presence`, (message: IMessage) => {
+      try {
+        const data: ChannelPresenceResponse = JSON.parse(message.body)
+        onPresenceRef.current?.(data)
+      } catch (e) {
+        console.error('[WS] parse presence error', e)
+      }
+    })
+    presenceSubscriptionRef.current = { id: presenceSub.id, channelId: cid }
+  }, [unsubscribeCurrent])
 
   useEffect(() => {
     if (!enabled) return
@@ -35,6 +91,7 @@ export function useCommunitySocket({ channelId, enabled, onMessage }: UseCommuni
       heartbeatOutgoing: 10000,
       onConnect: () => {
         clientRef.current = client
+        setConnected(true)
         setError(null)
         const cid = channelIdRef.current
         if (cid !== null) {
@@ -42,11 +99,14 @@ export function useCommunitySocket({ channelId, enabled, onMessage }: UseCommuni
         }
       },
       onDisconnect: () => {
-        subscriptionRef.current = null
+        messageSubscriptionRef.current = null
+        presenceSubscriptionRef.current = null
+        setConnected(false)
       },
       onStompError: (frame) => {
         console.error('[STOMP Error]', frame)
-        setError('Kết nối thất bại')
+        setError('Ket noi that bai')
+        setConnected(false)
       },
     })
 
@@ -56,33 +116,11 @@ export function useCommunitySocket({ channelId, enabled, onMessage }: UseCommuni
     return () => {
       client.deactivate()
       clientRef.current = null
-      subscriptionRef.current = null
+      messageSubscriptionRef.current = null
+      presenceSubscriptionRef.current = null
+      setConnected(false)
     }
-  }, [enabled])
-
-  const doSubscribe = useCallback((client: Client, cid: number) => {
-    if (subscriptionRef.current) {
-      const prev = subscriptionRef.current
-      if (prev.channelId === cid) return
-      try {
-        client.unsubscribe(prev.id)
-      } catch (e) {
-        console.error('[WS] unsubscribe error', e)
-      }
-      subscriptionRef.current = null
-    }
-
-    const sub = client.subscribe(`/topic/channel/${cid}`, (message: IMessage) => {
-      try {
-        const data: ChatMessageResponse = JSON.parse(message.body)
-        onMessageRef.current(data)
-      } catch (e) {
-        console.error('[WS] parse message error', e)
-      }
-    })
-
-    subscriptionRef.current = { id: sub.id, channelId: cid }
-  }, [])
+  }, [doSubscribe, enabled])
 
   useEffect(() => {
     if (!clientRef.current || !clientRef.current.connected || channelId === null) return
@@ -92,7 +130,7 @@ export function useCommunitySocket({ channelId, enabled, onMessage }: UseCommuni
   const sendMessage = useCallback((channelId: number, content: string) => {
     const client = clientRef.current
     if (!client || !client.connected) {
-      console.error('[WS] cannot send — client not connected')
+      console.error('[WS] cannot send - client not connected')
       return false
     }
 
@@ -108,5 +146,5 @@ export function useCommunitySocket({ channelId, enabled, onMessage }: UseCommuni
     }
   }, [])
 
-  return { sendMessage, error }
+  return { sendMessage, error, connected }
 }

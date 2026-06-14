@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
+import reactor.netty.resources.ConnectionProvider;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -36,7 +37,15 @@ public class AiConfig {
      */
     @Bean
     public WebClient aiWebClient() {
-        HttpClient httpClient = HttpClient.create()
+        ConnectionProvider pool = ConnectionProvider.builder("ai-webclient-pool")
+            .maxConnections(50)
+            .maxIdleTime(Duration.ofSeconds(30))
+            .maxLifeTime(Duration.ofMinutes(5))
+            .pendingAcquireTimeout(Duration.ofSeconds(30))
+            .evictInBackground(Duration.ofSeconds(60))
+            .build();
+
+        HttpClient httpClient = HttpClient.create(pool)
             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
             .responseTimeout(Duration.ofSeconds(90))
             .doOnConnected(conn ->

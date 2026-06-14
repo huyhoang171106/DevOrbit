@@ -1,10 +1,11 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiStudentGet, apiGet } from '../lib/api'
 import type {
   ChatChannelResponse,
   PaginatedMessagesResponse,
   RepoSocialInfoResponse,
   ReviewSummaryResponse,
+  StudentProfileResponse,
 } from '../types/api'
 
 const CHANNELS_CACHE_KEY = 'devorbit-channels-cache'
@@ -57,9 +58,25 @@ export function useChannelMessages(channelId: number | null, page: number, size:
       apiStudentGet<PaginatedMessagesResponse>(
         `/api/student/community/channels/${channelId}/messages?page=${page}&size=${size}`,
       ),
-    enabled: channelId !== null,
-    staleTime: 30 * 1000,
+    enabled: channelId !== null && channelId > 0,
+    staleTime: 0,
     gcTime: 5 * 60 * 1000,
+  })
+}
+
+export function useInvalidateChannelMessages() {
+  const queryClient = useQueryClient()
+  return (channelId: number) => {
+    queryClient.invalidateQueries({ queryKey: ['community', 'messages', channelId] })
+  }
+}
+
+export function useCurrentStudent() {
+  return useQuery<StudentProfileResponse>({
+    queryKey: ['student', 'me'],
+    queryFn: () => apiStudentGet<StudentProfileResponse>('/api/student/me'),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
   })
 }
 

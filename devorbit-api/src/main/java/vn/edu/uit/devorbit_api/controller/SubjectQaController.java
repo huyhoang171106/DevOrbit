@@ -19,12 +19,16 @@ public class SubjectQaController {
 
     private final SubjectQaService subjectQaService;
 
-    /**
-     * Ask the AI Course Assistant a question and get a conversational response.
-     */
     @PostMapping("/query")
-    public SubjectQaResponse query(@RequestBody @Valid SubjectQaRequest request) {
-        return subjectQaService.processQuery(request);
+    public org.springframework.http.ResponseEntity<SubjectQaResponse> query(@RequestBody @Valid SubjectQaRequest request) {
+        long start = System.currentTimeMillis();
+        SubjectQaResponse response = subjectQaService.processQuery(request);
+        long elapsed = System.currentTimeMillis() - start;
+
+        return org.springframework.http.ResponseEntity.ok()
+            .header("X-Response-Time", elapsed + "ms")
+            .header("Cache-Control", "no-cache, no-store, must-revalidate")
+            .body(response);
     }
 
     /**

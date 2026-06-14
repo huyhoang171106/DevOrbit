@@ -5,6 +5,7 @@ import type {
   PaginatedMessagesResponse,
   RepoSocialInfoResponse,
   ReviewSummaryResponse,
+  StudentProfileResponse,
 } from '../types/api'
 
 const CHANNELS_CACHE_KEY = 'devorbit-channels-cache'
@@ -68,6 +69,15 @@ export function useInvalidateChannelMessages() {
   return (channelId: number) => {
     queryClient.invalidateQueries({ queryKey: ['community', 'messages', channelId] })
   }
+}
+
+export function useCurrentStudent() {
+  return useQuery<StudentProfileResponse>({
+    queryKey: ['student', 'me'],
+    queryFn: () => apiStudentGet<StudentProfileResponse>('/api/student/me'),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  })
 }
 
 export function useRepoSocialInfo(repoId: number | undefined) {

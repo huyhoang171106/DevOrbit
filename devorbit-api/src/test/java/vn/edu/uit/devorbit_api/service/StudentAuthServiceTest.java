@@ -7,6 +7,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import vn.edu.uit.devorbit_api.dto.student.*;
@@ -41,6 +42,7 @@ class StudentAuthServiceTest {
     @Mock(lenient = true) private LoginRateLimitService loginRateLimitService;
     @Mock(lenient = true) private RevokedTokenStore revokedTokenStore;
     @Mock(lenient = true) private HttpServletRequest httpRequest;
+    @Mock(lenient = true) private ApplicationEventPublisher eventPublisher;
 
     private PasswordEncoder passwordEncoder;
     private StudentAuthService service;
@@ -53,7 +55,7 @@ class StudentAuthServiceTest {
         service = new StudentAuthService(
                 studentUserRepository, otpRepository, jwtService,
                 passwordEncoder, emailService, otpRateLimitService,
-                loginRateLimitService, revokedTokenStore);
+                loginRateLimitService, revokedTokenStore, eventPublisher);
         when(httpRequest.getRemoteAddr()).thenReturn("127.0.0.1");
     }
 

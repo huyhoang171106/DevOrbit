@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import vn.edu.uit.devorbit_api.dto.publicapi.CourseSummaryResponse;
 import vn.edu.uit.devorbit_api.entity.Course;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,6 +41,9 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
      * Generated SQL: SELECT * FROM courses WHERE mamh = ?
      */
     Optional<Course> findByMaMH(String maMH);
+
+    /** Batch fetch courses by multiple codes — replaces N+1 loop */
+    List<Course> findByMaMHIn(Collection<String> maMHs);
 
     /**
      * Find all courses that have this course as a prerequisite.

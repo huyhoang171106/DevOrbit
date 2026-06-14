@@ -1,6 +1,7 @@
 package vn.edu.uit.devorbit_api.community;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -27,6 +28,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class CommunityMilestone3ContractTest {
+
+    private ApplicationEventPublisher eventPublisher() {
+        return mock(ApplicationEventPublisher.class);
+    }
+
+    private NotificationRepository notificationRepository() {
+        return mock(NotificationRepository.class);
+    }
 
     @Test
     void communityControllerExposesRestAndStompMappings() throws Exception {
@@ -84,6 +93,8 @@ class CommunityMilestone3ContractTest {
         when(channelRepository.save(any(ChatChannel.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         CommunityChatService service = new CommunityChatService(
+                eventPublisher(),
+                notificationRepository(),
                 channelRepository, messageRepository, studentUserRepository, courseRepository, techStackRepository);
 
         service.syncChannels();
@@ -115,6 +126,8 @@ class CommunityMilestone3ContractTest {
         });
 
         CommunityChatService service = new CommunityChatService(
+                eventPublisher(),
+                notificationRepository(),
                 channelRepository, messageRepository, studentUserRepository, courseRepository, techStackRepository);
 
         var response = service.sendMessage("24520554", 2L, new ChatMessageRequest("Xin chao"));
@@ -156,7 +169,7 @@ class CommunityMilestone3ContractTest {
         when(repoReviewRepository.findByRepoIdAndStudentId(3L, 5L)).thenReturn(Optional.empty());
         when(repoReviewRepository.save(any(RepoReview.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        SocialService service = new SocialService(repoReviewRepository, repoVoteRepository, courseReviewRepository,
+        SocialService service = new SocialService(eventPublisher(), repoReviewRepository, repoVoteRepository, courseReviewRepository,
                 githubRepoRepository, courseRepository, studentUserRepository);
 
         var review = service.upsertRepoReview("24520554", 3L, new ReviewRequest(5, "Rat huu ich"));
@@ -192,7 +205,7 @@ class CommunityMilestone3ContractTest {
         when(courseReviewRepository.findByCourseIdOrderByUpdatedAtDesc(4L)).thenReturn(List.of(
                 CourseReview.builder().id(12L).course(course).student(student).rating(4).comment("On").build()));
 
-        SocialService service = new SocialService(repoReviewRepository, repoVoteRepository, courseReviewRepository,
+        SocialService service = new SocialService(eventPublisher(), repoReviewRepository, repoVoteRepository, courseReviewRepository,
                 githubRepoRepository, courseRepository, studentUserRepository);
 
         assertThat(service.getRepoSocialInfo(3L).voteScore()).isEqualTo(2);
@@ -215,6 +228,8 @@ class CommunityMilestone3ContractTest {
                 .thenReturn(new PageImpl<>(List.of(message)));
 
         CommunityChatService service = new CommunityChatService(
+                eventPublisher(),
+                notificationRepository(),
                 channelRepository, messageRepository, studentUserRepository, courseRepository, techStackRepository);
 
         assertThat(service.getMessages(2L, 0, 50).getContent()).hasSize(1);

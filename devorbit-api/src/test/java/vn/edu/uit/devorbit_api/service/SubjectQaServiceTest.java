@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import vn.edu.uit.devorbit_api.dto.publicapi.SubjectQaRequest;
 import vn.edu.uit.devorbit_api.dto.publicapi.SubjectQaResponse;
 import vn.edu.uit.devorbit_api.dto.publicapi.RoadmapRecommendationResponse;
@@ -15,6 +16,7 @@ import vn.edu.uit.devorbit_api.entity.GithubRepo;
 import vn.edu.uit.devorbit_api.entity.KnowledgeChunk;
 import vn.edu.uit.devorbit_api.repository.ChatMessageRepository;
 import vn.edu.uit.devorbit_api.repository.ChatSessionRepository;
+import vn.edu.uit.devorbit_api.repository.CourseRelationshipRepository;
 import vn.edu.uit.devorbit_api.repository.CourseRepository;
 import vn.edu.uit.devorbit_api.repository.GithubRepoRepository;
 import vn.edu.uit.devorbit_api.service.ai.CrawlerService;
@@ -71,6 +73,12 @@ class SubjectQaServiceTest {
     @Mock
     private KnowledgeRetrievalService knowledgeRetrievalService;
 
+    @Mock
+    private CourseRelationshipRepository courseRelationshipRepository;
+
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
     private SubjectQaService service;
 
     @BeforeEach
@@ -88,7 +96,9 @@ class SubjectQaServiceTest {
             courseKnowledgeBootstrapService,
             knowledgeRetrievalService,
             new ObjectMapper(),
-            Runnable::run
+            Runnable::run,
+            eventPublisher,
+            courseRelationshipRepository
         );
     }
 
@@ -172,9 +182,10 @@ class SubjectQaServiceTest {
             .githubUrl("https://github.com/example/se104-project")
             .description("A linked SE104 project")
             .stars(3)
+            .course(course)
             .build();
-        when(courseRepository.findByMaMH("SE104")).thenReturn(Optional.of(course));
-        when(githubRepoRepository.findByCourseIdAndActiveTrue(104L)).thenReturn(List.of(repo));
+        when(courseRepository.findByMaMHIn(List.of("SE104"))).thenReturn(List.of(course));
+        when(githubRepoRepository.findByCourseIdInAndActiveTrue(List.of(104L))).thenReturn(List.of(repo));
         when(webSearchService.search(query)).thenReturn(new WebSearchResponse(
             "success",
             List.of(new WebSearchResponse.WebSearchResult(
@@ -241,8 +252,8 @@ class SubjectQaServiceTest {
             .loaiMonHoc("BAT_BUOC")
             .description("Môn học nhập môn về công nghệ phần mềm")
             .build();
-        when(courseRepository.findByMaMH("SE104")).thenReturn(Optional.of(course));
-        when(githubRepoRepository.findByCourseIdAndActiveTrue(104L)).thenReturn(List.of());
+        when(courseRepository.findByMaMHIn(List.of("SE104"))).thenReturn(List.of(course));
+        when(githubRepoRepository.findByCourseIdInAndActiveTrue(List.of(104L))).thenReturn(List.of());
         when(knowledgeRetrievalService.search("SE104", query, 5))
             .thenReturn(new KnowledgeRetrievalService.SearchResult("SE104", query, List.of()));
         when(webSearchService.search(query)).thenReturn(new WebSearchResponse("success", List.of()));
@@ -253,7 +264,7 @@ class SubjectQaServiceTest {
         assertThat(response.answer()).isEqualTo("SE104 answer");
         assertThat(response.type()).isEqualTo("SEARCH");
         assertThat(response.relevantNodeIds()).containsExactly(104L);
-        verify(courseRepository).findByMaMH("SE104");
+        verify(courseRepository).findByMaMHIn(List.of("SE104"));
         verify(openCodeAiService).generateCompletion(any(), eq(query));
     }
 
@@ -396,8 +407,8 @@ class SubjectQaServiceTest {
             .tenMH("Nhap mon cong nghe phan mem")
             .loaiMonHoc("CO_SO_NGANH")
             .build();
-        when(courseRepository.findByMaMH("SE104")).thenReturn(Optional.of(course));
-        when(githubRepoRepository.findByCourseIdAndActiveTrue(104L)).thenReturn(List.of());
+        when(courseRepository.findByMaMHIn(List.of("SE104"))).thenReturn(List.of(course));
+        when(githubRepoRepository.findByCourseIdInAndActiveTrue(List.of(104L))).thenReturn(List.of());
         when(webSearchService.search(query)).thenReturn(new WebSearchResponse(
             "success",
             List.of(new WebSearchResponse.WebSearchResult(
@@ -444,8 +455,8 @@ class SubjectQaServiceTest {
             .tenMH("Nhap mon cong nghe phan mem")
             .loaiMonHoc("CO_SO_NGANH")
             .build();
-        when(courseRepository.findByMaMH("SE104")).thenReturn(Optional.of(course));
-        when(githubRepoRepository.findByCourseIdAndActiveTrue(104L)).thenReturn(List.of());
+        when(courseRepository.findByMaMHIn(List.of("SE104"))).thenReturn(List.of(course));
+        when(githubRepoRepository.findByCourseIdInAndActiveTrue(List.of(104L))).thenReturn(List.of());
         // RAG returns empty
         when(knowledgeRetrievalService.search("SE104", query, 5))
             .thenReturn(new KnowledgeRetrievalService.SearchResult("SE104", query, List.of()));
@@ -485,8 +496,8 @@ class SubjectQaServiceTest {
             .tenMH("Nhap mon cong nghe phan mem")
             .loaiMonHoc("CO_SO_NGANH")
             .build();
-        when(courseRepository.findByMaMH("SE104")).thenReturn(Optional.of(course));
-        when(githubRepoRepository.findByCourseIdAndActiveTrue(104L)).thenReturn(List.of());
+        when(courseRepository.findByMaMHIn(List.of("SE104"))).thenReturn(List.of(course));
+        when(githubRepoRepository.findByCourseIdInAndActiveTrue(List.of(104L))).thenReturn(List.of());
         // RAG returns a high-score chunk
         KnowledgeChunk chunk = new KnowledgeChunk();
         chunk.setCourseCode("SE104");

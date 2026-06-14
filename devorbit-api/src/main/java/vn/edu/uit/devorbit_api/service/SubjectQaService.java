@@ -52,9 +52,37 @@ public class SubjectQaService {
     private final ObjectMapper objectMapper;
     private final Executor subjectQaStreamExecutor;
     private final ApplicationEventPublisher eventPublisher;
+    private final CourseRelationshipRepository courseRelationshipRepository;
 
     private static final Logger log = LoggerFactory.getLogger(SubjectQaService.class);
     private static final Pattern COURSE_CODE_PATTERN = Pattern.compile("\\b([A-Z]{2,4}\\d{2,4})\\b");
+
+    // In-memory session summaries for cross-turn context
+    private final Map<UUID, String> sessionSummaries = Collections.synchronizedMap(new LinkedHashMap<>());
+
+    // Per-session web search counter for rate limiting
+    private final Map<UUID, Integer> sessionSearchCounts = Collections.synchronizedMap(new LinkedHashMap<>());
+    private static final int MAX_SEARCHES_PER_SESSION = 3;
+
+    // Flag for Fireworks embedding degradation
+    private volatile boolean embeddingDegraded = false;
+    private long embeddingDegradedSince = 0;
+    private static final long EMBEDDING_DEGRADED_COOLDOWN_MS = 60_000; // reset after 1 min
+
+    // Response cache: normalizedQuery → cached answer (bounded, expires after 15 min)
+    private final Map<String, CachedQaResponse> responseCache = Collections.synchronizedMap(
+        new LinkedHashMap<>() {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<String, CachedQaResponse> eldest) {
+                return size() > 200; // max 200 entries
+            }
+        });
+
+    private record CachedQaResponse(String answer, long timestamp) {
+        boolean isExpired() {
+            return System.currentTimeMillis() - timestamp > 900_000; // 15 min
+        }
+    }
 
     public SubjectQaService(
             CourseRepository courseRepository,
@@ -70,7 +98,8 @@ public class SubjectQaService {
             KnowledgeRetrievalService knowledgeRetrievalService,
             ObjectMapper objectMapper,
             @Qualifier("subjectQaStreamExecutor") Executor subjectQaStreamExecutor,
-            ApplicationEventPublisher eventPublisher) {
+            ApplicationEventPublisher eventPublisher,
+            CourseRelationshipRepository courseRelationshipRepository) {
         this.courseRepository = courseRepository;
         this.githubRepoRepository = githubRepoRepository;
         this.chatSessionRepository = chatSessionRepository;
@@ -85,6 +114,42 @@ public class SubjectQaService {
         this.objectMapper = objectMapper;
         this.subjectQaStreamExecutor = subjectQaStreamExecutor;
         this.eventPublisher = eventPublisher;
+        this.courseRelationshipRepository = courseRelationshipRepository;
+    }
+
+    // Defer warmup to AFTER server accepts requests (was blocking startup for 45s)
+    @org.springframework.context.event.EventListener(org.springframework.boot.context.event.ApplicationReadyEvent.class)
+    public void warmUpCaches() {
+        log.info("SubjectQaService: starting deferred warmup (server already accepting requests)...");
+        try {
+            List<CourseSummaryResponse> popular = courseRepository.findAllWithRepoCountSortedByRepoCount();
+            int indexed = 0;
+            int limit = Math.min(popular.size(), 10);
+            for (int i = 0; i < limit; i++) {
+                String code = popular.get(i).code();
+                try {
+                    Course course = courseRepository.findByMaMH(code).orElse(null);
+                    if (course != null) {
+                        List<GithubRepo> repos = githubRepoRepository.findByCourseIdAndActiveTrue(course.getId());
+                        courseKnowledgeBootstrapService.ensureCourseIndexed(course, repos);
+                        indexed++;
+                        // Delay 2s between requests to avoid Fireworks 429
+                        if (i < limit - 1) {
+                            Thread.sleep(2000);
+                        }
+                    }
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    log.info("SubjectQaService: warmup interrupted");
+                    break;
+                } catch (Exception e) {
+                    log.warn("SubjectQaService: pre-index failed for {}, skipping: {}", code, e.getMessage());
+                }
+            }
+            log.info("SubjectQaService: warmup complete ({} popular courses pre-indexed)", indexed);
+        } catch (Exception e) {
+            log.warn("SubjectQaService: warmup failed, caches will build on first request: {}", e.getMessage());
+        }
     }
 
     // ─── Progress Sink ───
@@ -150,6 +215,76 @@ public class SubjectQaService {
             return preparation.directResponse();
         }
 
+        // Check response cache before LLM call
+        String cacheKey = buildCacheKey(request.message(), preparation.relevantNodeIds());
+        CachedQaResponse cached = responseCache.get(cacheKey);
+        if (cached != null && !cached.isExpired()) {
+            log.info("SubjectQaService: cache HIT for '{}'", request.message());
+            String answer = cached.answer();
+            saveAiResponseBestEffort(preparation.session(), answer, preparation.sources());
+            // Store session summary for cross-turn context
+            Set<String> summaryCodes = new LinkedHashSet<>();
+            if (preparation.relevantNodeIds() != null) {
+                for (Long id : preparation.relevantNodeIds()) {
+                    courseRepository.findById(id).ifPresent(c -> {
+                        if (c.getMaMH() != null) summaryCodes.add(c.getMaMH());
+                    });
+                }
+            }
+            updateSessionSummary(preparation.sessionId(), preparation.userMessage(), answer, summaryCodes);
+            List<String> followUps = buildSuggestedFollowUps(null, preparation.relevantNodeIds());
+            double confidence = computeConfidenceScore(
+                preparation.queryType(), preparation.relevantNodeIds(), preparation.sources(),
+                null, null, null
+            );
+            return new SubjectQaResponse(
+                answer,
+                preparation.sessionId() != null ? preparation.sessionId() : UUID.randomUUID(),
+                preparation.relevantNodeIds(),
+                new ArrayList<>(preparation.sources()),
+                preparation.queryType(),
+                List.copyOf(preparation.searchResults()),
+                null,
+                followUps,
+                confidence
+            );
+        }
+        log.info("SubjectQaService: cache MISS for '{}'", request.message());
+
+        // Quick fact mode: skip LLM for simple factual queries (credits, type, semester)
+        String quickAnswer = tryQuickFact(request.message(), preparation.systemPrompt());
+        if (quickAnswer != null) {
+            log.info("SubjectQaService: quick fact HIT for '{}'", request.message());
+            String answer = quickAnswer;
+            responseCache.put(cacheKey, new CachedQaResponse(answer, System.currentTimeMillis()));
+            saveAiResponseBestEffort(preparation.session(), answer, preparation.sources());
+            Set<String> summaryCodes = new LinkedHashSet<>();
+            if (preparation.relevantNodeIds() != null) {
+                for (Long id : preparation.relevantNodeIds()) {
+                    courseRepository.findById(id).ifPresent(c -> {
+                        if (c.getMaMH() != null) summaryCodes.add(c.getMaMH());
+                    });
+                }
+            }
+            updateSessionSummary(preparation.sessionId(), preparation.userMessage(), answer, summaryCodes);
+            List<String> followUps = buildSuggestedFollowUps(null, preparation.relevantNodeIds());
+            double confidence = computeConfidenceScore(
+                preparation.queryType(), preparation.relevantNodeIds(), preparation.sources(),
+                null, null, null
+            );
+            return new SubjectQaResponse(
+                answer,
+                preparation.sessionId() != null ? preparation.sessionId() : UUID.randomUUID(),
+                preparation.relevantNodeIds(),
+                new ArrayList<>(preparation.sources()),
+                preparation.queryType(),
+                List.copyOf(preparation.searchResults()),
+                null,
+                followUps,
+                confidence
+            );
+        }
+
         // Generate LLM response
         String answer = openCodeAiService.generateCompletion(preparation.systemPrompt(), preparation.userMessage());
         if (answer == null || answer.isBlank()) {
@@ -164,8 +299,41 @@ public class SubjectQaService {
                 + "Mình sẽ không bịa thêm thông tin. Bạn hãy thử hỏi lại với mã môn cụ thể hoặc câu hỏi hẹp hơn.";
         }
 
+        // Run self-critique on SEARCH/DIRECT responses to catch hallucination/issues
+        // Only for queries with reasonable length (not greeting) and when answer is substantial
+        if ("SEARCH".equals(preparation.queryType()) || "DIRECT".equals(preparation.queryType())) {
+            try {
+                String critiqueResult = runResponseCritique(request.message(), preparation.systemPrompt(), answer);
+                if (critiqueResult != null) {
+                    answer += "\n\n---\n" + critiqueResult;
+                }
+            } catch (Exception e) {
+                log.warn("SubjectQaService: critique failed, using original response: {}", e.getMessage());
+            }
+        }
+
+        // Store in response cache
+        responseCache.put(cacheKey, new CachedQaResponse(answer, System.currentTimeMillis()));
+
         saveAiResponseBestEffort(preparation.session(), answer, preparation.sources());
 
+        // Store session summary for cross-turn context
+        Set<String> summaryCodes = new LinkedHashSet<>();
+        if (preparation.relevantNodeIds() != null) {
+            for (Long id : preparation.relevantNodeIds()) {
+                courseRepository.findById(id).ifPresent(c -> {
+                    if (c.getMaMH() != null) summaryCodes.add(c.getMaMH());
+                });
+            }
+        }
+        updateSessionSummary(preparation.sessionId(), preparation.userMessage(), answer, summaryCodes);
+
+        List<String> followUps = buildSuggestedFollowUps(
+            null, preparation.relevantNodeIds());
+        double confidence = computeConfidenceScore(
+            preparation.queryType(), preparation.relevantNodeIds(), preparation.sources(),
+            preparation.systemPrompt(), null, null
+        );
         return new SubjectQaResponse(
             answer,
             preparation.sessionId() != null ? preparation.sessionId() : UUID.randomUUID(),
@@ -173,7 +341,9 @@ public class SubjectQaService {
             new ArrayList<>(preparation.sources()),
             preparation.queryType(),
             List.copyOf(preparation.searchResults()),
-            null
+            null,
+            followUps,
+            confidence
         );
     }
 
@@ -300,6 +470,22 @@ public class SubjectQaService {
     private void completeStream(SseEmitter emitter, SubjectQaPreparation preparation, String finalAnswer) {
         saveAiResponseBestEffort(preparation.session(), finalAnswer, preparation.sources());
 
+        // Store session summary for cross-turn context
+        Set<String> summaryCodes = new LinkedHashSet<>();
+        if (preparation.relevantNodeIds() != null) {
+            for (Long id : preparation.relevantNodeIds()) {
+                courseRepository.findById(id).ifPresent(c -> {
+                    if (c.getMaMH() != null) summaryCodes.add(c.getMaMH());
+                });
+            }
+        }
+        updateSessionSummary(preparation.sessionId(), preparation.userMessage(), finalAnswer, summaryCodes);
+
+        List<String> followUps = buildSuggestedFollowUps(null, preparation.relevantNodeIds());
+        double confidence = computeConfidenceScore(
+            preparation.queryType(), preparation.relevantNodeIds(), preparation.sources(),
+            null, null, null
+        );
         SubjectQaResponse response = new SubjectQaResponse(
             finalAnswer,
             preparation.sessionId() != null ? preparation.sessionId() : UUID.randomUUID(),
@@ -307,7 +493,9 @@ public class SubjectQaService {
             new ArrayList<>(preparation.sources()),
             preparation.queryType(),
             List.copyOf(preparation.searchResults()),
-            null
+            null,
+            followUps,
+            confidence
         );
         emit(emitter, SubjectQaStreamEvent.complete(response));
         emitter.complete();
@@ -367,6 +555,8 @@ public class SubjectQaService {
                 List.of(),
                 "DIRECT",
                 List.of(),
+                null,
+                null,
                 null
             );
             return new SubjectQaPreparation(userMessage, sessionId, session, direct, List.of(), Set.of(), List.of(), "DIRECT", null, null);
@@ -387,6 +577,8 @@ public class SubjectQaService {
                 List.of(),
                 "DIRECT",
                 List.of(),
+                null,
+                null,
                 null
             );
             return new SubjectQaPreparation(userMessage, sessionId, session, direct, List.of(), Set.of(), List.of(), "DIRECT", null, null);
@@ -401,6 +593,8 @@ public class SubjectQaService {
                 List.of(),
                 "DIRECT",
                 List.of(),
+                null,
+                null,
                 null
             );
             return new SubjectQaPreparation(userMessage, sessionId, session, direct, List.of(), Set.of(), List.of(), "DIRECT", null, null);
@@ -409,16 +603,24 @@ public class SubjectQaService {
         // 3. Build DB Context
         List<Long> relevantNodeIds = new ArrayList<>();
         StringBuilder dbContext = new StringBuilder();
-
         sink.emit(SubjectQaStreamEvent.status("devorbit_context", "Đang kiểm tra dữ liệu DevOrbit"));
 
-        for (String code : detectedCodes) {
+        // Batch fetch courses + repos (replaces N+1 per-code loop)
+        if (!detectedCodes.isEmpty()) {
             try {
-                Optional<Course> courseOpt = courseRepository.findByMaMH(code);
-                if (courseOpt.isPresent()) {
-                    Course course = courseOpt.get();
-                    relevantNodeIds.add(course.getId());
+                long dbStart = System.currentTimeMillis();
+                List<Course> courses = courseRepository.findByMaMHIn(new ArrayList<>(detectedCodes));
+                Map<Long, List<GithubRepo>> reposByCourseId = githubRepoRepository
+                    .findByCourseIdInAndActiveTrue(courses.stream().map(Course::getId).toList())
+                    .stream()
+                    .filter(r -> r.getCourse() != null)
+                    .collect(java.util.stream.Collectors.groupingBy(r -> r.getCourse().getId()));
+                log.info("SubjectQaService: batch DB fetch {} courses + {} repos in {}ms",
+                    courses.size(), reposByCourseId.values().stream().mapToInt(List::size).sum(),
+                    System.currentTimeMillis() - dbStart);
 
+                for (Course course : courses) {
+                    relevantNodeIds.add(course.getId());
                     dbContext.append(String.format("=== MÔN HỌC: %s (%s) ===\n", course.getTenMH(), course.getMaMH()));
                     dbContext.append(String.format("- Số tín chỉ: %d (LT: %d, TH: %d)\n", course.getSoTC(), course.getLt(), course.getTh()));
                     dbContext.append(String.format("- Loại môn học: %s\n", course.getLoaiMonHoc()));
@@ -436,9 +638,9 @@ public class SubjectQaService {
                         dbContext.append(String.format("- Các chủ đề học tập: %s\n", course.getTopics().toString()));
                     }
 
-                    List<GithubRepo> repos = githubRepoRepository.findByCourseIdAndActiveTrue(course.getId());
+                    List<GithubRepo> repos = reposByCourseId.getOrDefault(course.getId(), List.of());
                     courseKnowledgeBootstrapService.ensureCourseIndexed(course, repos);
-                    if (repos != null && !repos.isEmpty()) {
+                    if (!repos.isEmpty()) {
                         dbContext.append("- Repository GitHub đã liên kết với môn học trên DevOrbit:\n");
                         for (GithubRepo repo : repos) {
                             dbContext.append(String.format("  * [%s](%s) - %s (Stars: %d)\n",
@@ -448,12 +650,13 @@ public class SubjectQaService {
                     dbContext.append("\n");
                 }
             } catch (Exception e) {
-                log.warn("SubjectQaService: DB error building course context for {}, continuing without it: {}", code, e.getMessage());
+                log.warn("SubjectQaService: batch DB fetch failed, falling back: {}", e.getMessage());
             }
         }
 
         // 4. Determine if web search is needed
         String normalizedIntent = normalizeForIntent(userMessage);
+        String questionType = classifyQuestionType(userMessage, normalizedIntent);
         boolean needsSearch = normalizedIntent.contains("lam sao") ||
                               normalizedIntent.contains("hoc tot") ||
                               normalizedIntent.contains("kinh nghiem") ||
@@ -474,65 +677,189 @@ public class SubjectQaService {
                               normalizedIntent.contains("diem chuan") ||
                               normalizedIntent.contains("xet tuyen");
 
-        // 5. Build semantic context (local RAG)
-        sink.emit(SubjectQaStreamEvent.status("rag", "Đang tìm trong Knowledge RAG"));
-        SemanticKnowledgeContext semanticContext = buildSemanticKnowledgeContext(userMessage, detectedCodes);
+        // 5+6. Parallel RAG + Web search when intent requires web
+        SemanticKnowledgeContext semanticContext;
+        boolean shouldUseWeb = needsSearch;
+        WebSearchResponse searchResponse = null;
+        boolean parallelAttemptedWeb = false;
 
-        // 6. Adaptive web
-        boolean shouldUseWeb = needsSearch || (!semanticContext.hasChunks() && !detectedCodes.isEmpty());
+        if (needsSearch) {
+            parallelAttemptedWeb = true;
+            // PARALLEL: RAG + Web search concurrently via CompletableFuture
+            long parallelStart = System.currentTimeMillis();
+            log.info("SubjectQaService: parallel RAG + Web search for '{}'",
+                userMessage.substring(0, Math.min(40, userMessage.length())));
+
+            boolean skipRagInParallel = detectedCodes.isEmpty();
+            java.util.concurrent.CompletableFuture<SemanticKnowledgeContext> ragFuture =
+                skipRagInParallel
+                    ? java.util.concurrent.CompletableFuture.completedFuture(
+                        new SemanticKnowledgeContext("(skipped — no course codes)", false, 0.0))
+                    : java.util.concurrent.CompletableFuture.supplyAsync(() -> {
+                        sink.emit(SubjectQaStreamEvent.status("rag", "Đang tìm trong Knowledge RAG"));
+                        return buildSemanticKnowledgeContext(userMessage, detectedCodes);
+                    }, java.util.concurrent.Executors.newCachedThreadPool(r -> new Thread(r, "parallel-rag")));
+
+            java.util.concurrent.CompletableFuture<WebSearchResponse> webFuture =
+                java.util.concurrent.CompletableFuture.supplyAsync(() -> {
+                    sink.emit(SubjectQaStreamEvent.status("web_search", "Đang tìm nguồn web liên quan"));
+                    try {
+                        return webSearchService.search(userMessage);
+                    } catch (Exception e) {
+                        log.warn("SubjectQaService: parallel web search failed: {}", e.getMessage());
+                        return null;
+                    }
+                }, java.util.concurrent.Executors.newCachedThreadPool(r -> new Thread(r, "parallel-web")));
+
+            try {
+                java.util.concurrent.CompletableFuture.allOf(ragFuture, webFuture).join();
+                semanticContext = ragFuture.join();
+                searchResponse = webFuture.join();
+                long parallelMs = System.currentTimeMillis() - parallelStart;
+                log.info("SubjectQaService: parallel RAG + Web completed in {}ms (RAG chunks={}, Web results={})",
+                    parallelMs,
+                    semanticContext.hasChunks(),
+                    searchResponse != null && searchResponse.web() != null ? searchResponse.web().size() : 0);
+            } catch (Exception e) {
+                log.warn("SubjectQaService: parallel execution failed, falling back: {}", e.getMessage());
+                semanticContext = new SemanticKnowledgeContext("(parallel execution failed)", false, 0.0);
+            }
+        } else {
+            // SEQUENTIAL: RAG only, unless no codes and no search intent (lazy RAG)
+            boolean shouldSkipRag = detectedCodes.isEmpty() && !needsSearch;
+            if (shouldSkipRag) {
+                log.info("SubjectQaService: lazy RAG — skipping (no codes, no search intent)");
+                semanticContext = new SemanticKnowledgeContext("(skipped — no relevant course context for RAG)", false, 0.0);
+            } else {
+                sink.emit(SubjectQaStreamEvent.status("rag", "Đang tìm trong Knowledge RAG"));
+                semanticContext = buildSemanticKnowledgeContext(userMessage, detectedCodes);
+            }
+        }
+
+        // 6. Adaptive web (sequential path)
+        if (!needsSearch) {
+            shouldUseWeb = !semanticContext.hasChunks() && !detectedCodes.isEmpty();
+        }
+
+        // Rate limit: max 3 web searches per session
+        if (shouldUseWeb && sessionId != null) {
+            int current = sessionSearchCounts.getOrDefault(sessionId, 0);
+            if (current >= MAX_SEARCHES_PER_SESSION) {
+                log.info("SubjectQaService: session {} reached search limit ({}), skipping web search", sessionId, MAX_SEARCHES_PER_SESSION);
+                shouldUseWeb = false;
+            }
+        }
 
         Set<String> sources = new LinkedHashSet<>();
         List<WebSearchResponse.WebSearchResult> searchResults = List.of();
         StringBuilder webContext = new StringBuilder();
         String queryType = "DIRECT";
 
-        if (shouldUseWeb) {
-            queryType = "SEARCH";
+        // Web search: parallel path already attempted, sequential path only if not tried yet
+        if (shouldUseWeb && !parallelAttemptedWeb) {
+            // Sequential path: fetch web search now
             sink.emit(SubjectQaStreamEvent.status("web_search", "Đang tìm nguồn web liên quan"));
             try {
-                WebSearchResponse searchResponse = webSearchService.search(userMessage);
-                if (searchResponse != null && searchResponse.web() != null) {
-                    searchResults = searchResponse.web().stream()
-                        .filter(java.util.Objects::nonNull)
-                        .limit(5)
-                        .collect(Collectors.toList());
+                searchResponse = webSearchService.search(userMessage);
+            } catch (Exception e) {
+                log.warn("SubjectQaService: web search failed, continuing without web context: {}", e.getMessage());
+            }
+        }
+        // Process web search results (both parallel and sequential paths)
+        if (shouldUseWeb && searchResponse != null) {
+            queryType = "SEARCH";
+            if (searchResponse.web() != null) {
+                searchResults = searchResponse.web().stream()
+                    .filter(java.util.Objects::nonNull)
+                    .limit(5)
+                    .collect(Collectors.toList());
 
-                    if (semanticContext.hasChunks()) {
-                        webContext.append("Nguồn web này được dùng để bổ sung, không thay thế Knowledge RAG nội bộ.\n");
+                if (semanticContext.hasChunks()) {
+                    webContext.append("Nguồn web này được dùng để bổ sung, không thay thế Knowledge RAG nội bộ.\n");
+                }
+
+                boolean needsDetailedWebDocs = needsDetailedWebDocs(userMessage);
+                int scrapedCount = 0;
+                for (WebSearchResponse.WebSearchResult result : searchResults) {
+                    if (result.url() == null || result.url().isBlank()) {
+                        continue;
                     }
 
-                    boolean needsDetailedWebDocs = needsDetailedWebDocs(userMessage);
-                    int scrapedCount = 0;
-                    for (WebSearchResponse.WebSearchResult result : searchResults) {
-                        if (result.url() == null || result.url().isBlank()) {
-                            continue;
+                    sources.add(result.url());
+                    appendSearchResultContext(webContext, result);
+                    sink.emit(SubjectQaStreamEvent.searchResult(result));
+
+                    if (scrapedCount < 2 && shouldScrapeWebResult(result, needsDetailedWebDocs)) {
+                        String host = extractHost(result.url());
+                        sink.emit(SubjectQaStreamEvent.status("web_read", "Đang đọc nguồn web: " + host));
+                        String scrapedText = scrapeWithFirecrawl(result.url());
+                        if (scrapedText != null && !scrapedText.isBlank()) {
+                            webContext.append(String.format("--- Firecrawl mở rộng nguồn: %s ---\n", result.url()));
+                            webContext.append(scrapedText).append("\n\n");
                         }
-
-                        sources.add(result.url());
-                        appendSearchResultContext(webContext, result);
-
-                        // Emit search_result immediately after adding to context
-                        sink.emit(SubjectQaStreamEvent.searchResult(result));
-
-                        if (scrapedCount < 2 && shouldScrapeWebResult(result, needsDetailedWebDocs)) {
-                            String host = extractHost(result.url());
-                            sink.emit(SubjectQaStreamEvent.status("web_read", "Đang đọc nguồn web: " + host));
-
-                            String scrapedText = scrapeWithFirecrawl(result.url());
-                            if (scrapedText != null && !scrapedText.isBlank()) {
-                                webContext.append(String.format("--- Firecrawl mở rộng nguồn: %s ---\n", result.url()));
-                                webContext.append(scrapedText).append("\n\n");
-                            }
-                            scrapedCount++;
-                        }
+                        scrapedCount++;
                     }
                 }
-            } catch (Exception e) {
-                log.warn("SubjectQaService: web search/crawl failed, continuing without web context: {}", e.getMessage());
+            }
+            // Increment session search counter
+            if (sessionId != null) {
+                sessionSearchCounts.merge(sessionId, 1, Integer::sum);
             }
         }
 
+        // Set query type if web was attempted (even if results are empty)
+        if (shouldUseWeb) {
+            queryType = "SEARCH";
+        }
+
         String ragContext = semanticContext.text();
+
+        // 7a. Build data availability summary for gap detection
+        StringBuilder availability = new StringBuilder();
+        availability.append("=== TÌNH TRẠNG DỮ LIỆU (Data Availability) ===\n");
+        boolean hasDb = dbContext.length() > 0;
+        boolean hasRag = ragContext != null && !ragContext.isBlank()
+            && !ragContext.contains("Không tìm thấy chunk");
+        boolean hasWeb = webContext.length() > 0;
+        // Check repos for detected courses
+        boolean hasRepos = false;
+        if (relevantNodeIds != null) {
+            for (Long id : relevantNodeIds) {
+                if (!githubRepoRepository.findByCourseIdAndActiveTrue(id).isEmpty()) {
+                    hasRepos = true;
+                    break;
+                }
+            }
+        }
+        // Check if embedding service is degraded
+        boolean isEmbeddingDown = embeddingDegraded &&
+            (System.currentTimeMillis() - embeddingDegradedSince) < EMBEDDING_DEGRADED_COOLDOWN_MS;
+        if (!embeddingDegraded && hasRag) {
+            // Check cooldown: reset flag after the cooldown period
+            // (flag stays set until first request finds it working again)
+        }
+        if (!isEmbeddingDown && !hasRag && ragContext == null) {
+            // RAG was never queried — reset degraded flag to try again
+            embeddingDegraded = false;
+        }
+
+        availability.append("  + Thông tin môn học từ DB: ").append(hasDb ? "CÓ" : "KHÔNG CÓ").append("\n");
+        availability.append("  + Repository GitHub: ").append(hasRepos ? "CÓ" : "KHÔNG CÓ").append("\n");
+        availability.append("  + Knowledge RAG (tri thức nội bộ): ").append(hasRag ? "CÓ" : "KHÔNG CÓ");
+        if (isEmbeddingDown && !hasRag) {
+            availability.append(" (API embedding tạm thời gián đoạn, thử lại sau)");
+        }
+        availability.append("\n");
+        availability.append("  + Kết quả tìm kiếm web: ").append(hasWeb ? "CÓ" : "KHÔNG CÓ").append("\n");
+        availability.append("HƯỚNG DẪN: Nếu một loại dữ liệu KHÔNG CÓ, tuyệt đối không bịa đặt thông tin thuộc loại đó. ");
+        availability.append("Ví dụ: nếu Repository GitHub KHÔNG CÓ, đừng nói 'có repo XYZ'. ");
+        availability.append("Nếu không có dữ liệu nào (tất cả KHÔNG CÓ), hãy nói rõ DevOrbit không có dữ liệu và hỏi user mã môn cụ thể.\n");
+
+        // Detect user year from message for adaptive depth
+        String userYearInstruction = detectUserYear(userMessage, normalizedIntent);
+
+        // Detect multi-part question structure for structured responses
+        String multiPartInstruction = detectMultiPartQuery(userMessage);
 
         // 7. Build prompts
         String systemPrompt = "Bạn là Trợ lý Cố vấn Học tập thông minh tại hệ thống DevOrbit dành cho sinh viên trường Đại học Công nghệ Thông tin (UIT).\n" +
@@ -543,14 +870,27 @@ public class SubjectQaService {
                 ragContext + "\n" +
                 "Thông tin bổ trợ thu thập từ các bài viết/diễn đàn (sử dụng để tư vấn kinh nghiệm học tập):\n" +
                 webContext.toString() + "\n" +
+                availability.toString() + "\n" +
+                (userYearInstruction != null ? userYearInstruction + "\n" : "") +
+                (multiPartInstruction != null ? multiPartInstruction + "\n" : "") +
+                (questionType != null ? questionType + "\n" : "") +
                 "Quy tắc khi viết câu trả lời:\n" +
-                "1. Trả lời bằng tiếng Việt chi tiết, cấu trúc rõ ràng, sử dụng định dạng Markdown.\n" +
-                "2. Khi nhắc đến bất kỳ mã môn học nào (ví dụ: SE104, MA006), hãy viết HOA ĐÚNG mã môn để giao diện người dùng tự động render thành thẻ liên kết.\n" +
-                "3. Chỉ dẫn link repository GitHub hoặc tài liệu thật sự xuất hiện trong ngữ cảnh để sinh viên truy cập.\n" +
-                "4. Không bịa đặt mã môn học hoặc thông tin điểm số nằm ngoài ngữ cảnh.\n" +
-                "5. Không tự nhận DevOrbit có ngân hàng đề thi, bài giảng, đồ án tiêu biểu, nhãn điểm A/A+, bộ lọc điểm số, hay mục tài nguyên học tập nếu các thứ đó không xuất hiện trong ngữ cảnh.\n" +
-                "6. Nếu ngữ cảnh không có dữ liệu thật, hãy nói rõ DevOrbit hiện chỉ có thể tra cứu môn học, đề cương/tiêu chí đánh giá khi có trong DB, và repository GitHub đã liên kết theo môn; sau đó hỏi lại mã môn học hoặc repo cụ thể.\n";
+                "1. Bắt đầu bằng 1-2 dòng tóm tắt ngắn (Tóm tắt: ...) để người đọc nắm ý chính ngay.\n" +
+                "2. Trả lời bằng tiếng Việt chi tiết, cấu trúc rõ ràng, sử dụng định dạng Markdown.\n" +
+                "3. Khi nhắc đến bất kỳ mã môn học nào (ví dụ: SE104, MA006), hãy viết HOA ĐÚNG mã môn để giao diện người dùng tự động render thành thẻ liên kết.\n" +
+                "4. Chỉ dẫn link repository GitHub hoặc tài liệu thật sự xuất hiện trong ngữ cảnh để sinh viên truy cập.\n" +
+                "5. Không bịa đặt mã môn học hoặc thông tin điểm số nằm ngoài ngữ cảnh.\n" +
+                "6. Không tự nhận DevOrbit có ngân hàng đề thi, bài giảng, đồ án tiêu biểu, nhãn điểm A/A+, bộ lọc điểm số, hay mục tài nguyên học tập nếu các thứ đó không xuất hiện trong ngữ cảnh.\n" +
+                "7. Nếu ngữ cảnh không có dữ liệu thật, hãy nói rõ DevOrbit hiện chỉ có thể tra cứu môn học, đề cương/tiêu chí đánh giá khi có trong DB, và repository GitHub đã liên kết theo môn; sau đó hỏi lại mã môn học hoặc repo cụ thể.\n";
 
+
+        // Inject session memory for cross-turn continuity
+        if (sessionId != null) {
+            String prevSummary = sessionSummaries.get(sessionId);
+            if (prevSummary != null) {
+                systemPrompt += "\nGhi nhớ phiên trước: " + prevSummary + "\n";
+            }
+        }
         String fallbackSystemPrompt = buildCompactSystemPrompt(dbContext, ragContext, webContext);
 
         return new SubjectQaPreparation(
@@ -646,7 +986,15 @@ public class SubjectQaService {
                     }
                 }
             } catch (Exception e) {
-                log.warn("SubjectQaService: semantic retrieval failed for course {}: {}", courseCode, e.getMessage());
+                String msg = e.getMessage();
+                if (msg != null && (msg.contains("429") || msg.contains("RATE_LIMIT") || msg.contains("rate limit"))) {
+                    if (!embeddingDegraded) {
+                        embeddingDegraded = true;
+                        embeddingDegradedSince = System.currentTimeMillis();
+                        log.warn("SubjectQaService: Fireworks embedding RATE LIMITED detected, degrading RAG");
+                    }
+                }
+                log.warn("SubjectQaService: semantic retrieval failed for course {}: {}", courseCode, msg);
             }
         }
 
@@ -848,6 +1196,145 @@ public class SubjectQaService {
             normalized.contains("nam thu nhat");
     }
 
+    /**
+     * Run a lightweight self-critique on the response to catch hallucinations,
+     * contradictions, or missing context. Returns a correction note or null.
+     */
+    /**
+     * Try to answer simple factual queries without calling the LLM.
+     * Detects keywords like "tin chi", "loai", "may tin chi" and extracts
+     * the answer directly from the system prompt (which contains DB context).
+     * Returns null if the query is not a quick fact (falls through to LLM).
+     */
+    private String tryQuickFact(String userMessage, String systemPrompt) {
+        if (userMessage == null || systemPrompt == null) return null;
+        String normalized = normalizeForIntent(userMessage);
+        if (normalized.isEmpty()) return null;
+
+        // Must contain exactly one course code (detected via regex in the normalized msg)
+        java.util.regex.Matcher codeMatcher = COURSE_CODE_PATTERN.matcher(userMessage.toUpperCase());
+        if (!codeMatcher.find()) return null;
+        String courseCode = codeMatcher.group(1);
+        // If there are more codes, this is not simple
+        if (codeMatcher.find()) return null;
+
+        // Detect factual keywords
+        boolean askCredits = normalized.contains("tin chi") || normalized.contains("may tc")
+            || normalized.contains("so tc") || normalized.contains("may tin");
+        boolean askType = normalized.contains("loai") || normalized.contains("loai mon");
+        boolean askSemester = normalized.contains("hoc ky") || normalized.contains("semester");
+        boolean askManagement = normalized.contains("quan ly") || normalized.contains("don vi");
+        boolean askDescription = normalized.contains("tom tat") || normalized.contains("mieu ta")
+            || normalized.contains("noi dung") || normalized.contains("description");
+        boolean askObjectives = normalized.contains("muc tieu") || normalized.contains("muc dich");
+        boolean askGrading = normalized.contains("danh gia") || normalized.contains("tinh diem")
+            || normalized.contains("diem so") || normalized.contains("diem chu");
+        boolean askTopics = normalized.contains("chu de") || normalized.contains("topic")
+            || normalized.contains("noi dung chinh");
+
+        if (!askCredits && !askType && !askSemester && !askManagement
+            && !askDescription && !askObjectives && !askGrading && !askTopics) return null;
+
+        // Try to extract from systemPrompt (which contains the DB context)
+        // Format: "=== MÔN HỌC: mã (tên) ===" followed by "- Số tín chỉ: ..." etc.
+        String[] lines = systemPrompt.split("\n");
+        String credits = null, type = null, semester = null, mgmtUnit = null;
+        String courseDesc = null, objectives = null, grading = null, topics = null;
+        boolean inCourseBlock = false;
+        for (String line : lines) {
+            if (line.contains("=== MÔN HỌC:") && line.contains(courseCode)) {
+                inCourseBlock = true;
+                continue;
+            }
+            if (inCourseBlock && line.startsWith("===") && !line.contains(courseCode)) {
+                break;
+            }
+            if (inCourseBlock) {
+                if (line.contains("Số tín chỉ")) credits = line.trim();
+                if (line.contains("Loại môn")) type = line.trim();
+                if (line.contains("Semester")) semester = line.trim();
+                if (line.contains("Đơn vị quản lý")) mgmtUnit = line.trim();
+                if (line.contains("Tóm tắt:") || line.contains("Description:")) courseDesc = line.trim();
+                if (line.contains("Mục tiêu")) objectives = line.trim();
+                if (line.contains("đánh giá") || line.contains("tính điểm")) grading = line.trim();
+                if (line.contains("chủ đề") || line.contains("Topics")) topics = line.trim();
+            }
+        }
+
+        if (credits == null && type == null && semester == null
+            && mgmtUnit == null && courseDesc == null && objectives == null
+            && grading == null && topics == null) return null;
+
+        // Ensure at least one ASKED field has data
+        boolean hasAnyRequestedData =
+            (askCredits && credits != null)
+            || (askType && type != null)
+            || (askSemester && semester != null)
+            || (askManagement && mgmtUnit != null)
+            || (askDescription && courseDesc != null)
+            || (askObjectives && objectives != null)
+            || (askGrading && grading != null)
+            || (askTopics && topics != null);
+        if (!hasAnyRequestedData) return null;
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("**").append(courseCode).append("** — Thông tin nhanh:\n\n");
+        if (askCredits && credits != null) sb.append(credits).append("\n");
+        if (askType && type != null) sb.append(type).append("\n");
+        if (askSemester && semester != null) sb.append(semester).append("\n");
+        if (askManagement && mgmtUnit != null) sb.append(mgmtUnit).append("\n");
+        if (askDescription && courseDesc != null) sb.append(courseDesc).append("\n");
+        if (askObjectives && objectives != null) sb.append(objectives).append("\n");
+        if (askGrading && grading != null) sb.append(grading).append("\n");
+        if (askTopics && topics != null) sb.append(topics).append("\n");
+        sb.append("\n(Dữ liệu từ DevOrbit — trả lời nhanh, không qua AI)");
+        return sb.toString();
+    }
+
+    private String runResponseCritique(String userMessage, String systemPrompt, String response) {
+        if (response == null || response.length() < 100) return null;
+        if (response.length() > 3000) response = response.substring(0, 2997) + "...";
+        if (systemPrompt.length() > 1500) {
+            systemPrompt = systemPrompt.substring(0, 1497) + "...";
+        }
+
+        String critiquePrompt = "Bạn là người kiểm tra chất lượng câu trả lời. "
+            + "Kiểm tra câu trả lời AI dưới đây dựa trên ngữ cảnh hệ thống.\n\n"
+            + "=== NGỮ CẢNH HỆ THỐNG (Trích) ===\n"
+            + systemPrompt + "\n\n"
+            + "=== CÂU TRẢ LỜI CẦN KIỂM TRA ===\n"
+            + response + "\n\n"
+            + "=== NHIỆM VỤ ===\n"
+            + "1. Câu trả lời có khẳng định thông tin KHÔNG CÓ trong ngữ cảnh không? (Hallucination)\n"
+            + "2. Câu trả lời có bỏ sót thông tin quan trọng từ ngữ cảnh không?\n"
+            + "3. Câu trả lời có đúng trọng tâm câu hỏi không?\n"
+            + "4. Nếu có repository GitHub, câu trả lời có trích dẫn link không?\n\n"
+            + "Chỉ trả lời bằng MỘT DÒNG: 'OK' nếu không có vấn đề, hoặc '📝 Lưu ý: [vấn đề ngắn gọn]' nếu cần bổ sung.";
+
+        String critiqueResult = openCodeAiService.generateCompletion(critiquePrompt, "");
+        if (critiqueResult != null && !critiqueResult.isBlank()
+            && !critiqueResult.contains("OK")
+            && critiqueResult.contains("Lưu ý")) {
+            log.info("SubjectQaService: critique suggests improvement: {}", critiqueResult);
+            return critiqueResult;
+        }
+        return null;
+    }
+
+    /**
+     * Build a normalized cache key from the user message and course node IDs.
+     * Same message + same courses = cache hit.
+     */
+    private String buildCacheKey(String message, List<Long> nodeIds) {
+        String normalized = normalizeForIntent(message);
+        if (nodeIds != null && !nodeIds.isEmpty()) {
+            List<Long> sorted = new ArrayList<>(nodeIds);
+            Collections.sort(sorted);
+            return normalized + "::" + sorted.toString();
+        }
+        return normalized;
+    }
+
     private String normalizeForIntent(String message) {
         if (message == null) {
             return "";
@@ -860,6 +1347,311 @@ public class SubjectQaService {
             .replaceAll("[^a-z0-9\\s]", " ")
             .replaceAll("\\s+", " ")
             .trim();
+    }
+
+    /**
+     * Build proactive follow-up suggestions based on course graph relationships.
+     * Queries prerequisites, downstream courses, complementary courses, and repos.
+     */
+    private List<String> buildSuggestedFollowUps(Set<String> courseCodes, List<Long> nodeIds) {
+        if ((courseCodes == null || courseCodes.isEmpty()) && (nodeIds == null || nodeIds.isEmpty())) {
+            return List.of();
+        }
+
+        List<String> suggestions = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+
+        // Resolve all Course entities from codes + IDs
+        Set<Course> courses = new LinkedHashSet<>();
+        if (courseCodes != null) {
+            for (String code : courseCodes) {
+                courseRepository.findByMaMH(code).ifPresent(courses::add);
+            }
+        }
+        if (nodeIds != null) {
+            for (Long id : nodeIds) {
+                courseRepository.findById(id).ifPresent(courses::add);
+            }
+        }
+
+        // If multiple courses found, suggest comparison (highest priority)
+        if (courses.size() >= 2 && suggestions.size() < 3) {
+            List<String> codes = courses.stream()
+                .map(Course::getMaMH)
+                .filter(c -> c != null && !c.isBlank())
+                .limit(3)
+                .toList();
+            if (codes.size() >= 2) {
+                suggestions.add("🔄 So sánh " + String.join(" với ", codes) + "?");
+            }
+        }
+
+        for (Course course : courses) {
+            String code = course.getMaMH();
+            String ten = course.getTenMH();
+            if (code == null || code.isBlank()) continue;
+
+            // 1. Repos — GitHub repo (highest data availability)
+            if (seen.add("repo_" + code) && suggestions.size() < 3) {
+                List<GithubRepo> repos = githubRepoRepository.findByCourseIdAndActiveTrue(course.getId());
+                if (!repos.isEmpty()) {
+                    suggestions.add("💻 " + code + " có repository GitHub nào hay không?");
+                }
+            }
+
+            // 2. Prerequisites từ DB
+            if (seen.add("preq_" + code) && suggestions.size() < 3) {
+                List<CourseRelationship> rels = courseRelationshipRepository
+                    .findByCourseIdOrRelatedCourseIdOrderByCreatedAtAsc(course.getId(), course.getId());
+                List<String> prereqs = rels.stream()
+                    .filter(r -> r.getRelationType() == CourseRelationType.PREREQUISITE
+                        && r.getCourse().getId().equals(course.getId()))
+                    .map(r -> r.getRelatedCourse().getMaMH())
+                    .filter(c -> c != null && !c.isBlank())
+                    .toList();
+                if (!prereqs.isEmpty()) {
+                    suggestions.add("📚 " + code + " cần học những môn tiên quyết nào?");
+                }
+            }
+
+            // 3. Downstream — môn học cần môn này
+            if (seen.add("down_" + code) && suggestions.size() < 3) {
+                List<Course> downstream = courseRepository.findDownstreamCourses(course.getId());
+                if (!downstream.isEmpty()) {
+                    suggestions.add("🔗 " + code + " là tiên quyết cho môn nào?");
+                }
+            }
+
+            // 4. Complementary — môn liên quan
+            if (seen.add("comp_" + code) && suggestions.size() < 3) {
+                List<CourseRelationship> rels = courseRelationshipRepository
+                    .findByCourseIdOrRelatedCourseIdOrderByCreatedAtAsc(course.getId(), course.getId());
+                List<String> comps = rels.stream()
+                    .filter(r -> r.getRelationType() == CourseRelationType.COMPLEMENTARY
+                        || r.getRelationType() == CourseRelationType.COREQUISITE)
+                    .map(r -> {
+                        if (r.getCourse().getId().equals(course.getId()))
+                            return r.getRelatedCourse().getMaMH();
+                        return r.getCourse().getMaMH();
+                    })
+                    .filter(c -> c != null && !c.isBlank())
+                    .limit(2)
+                    .toList();
+                if (!comps.isEmpty()) {
+                    suggestions.add("🔄 So sánh " + code + " với " + String.join(", ", comps) + "?");
+                }
+            }
+
+            // 5. Fallback: more diverse suggestions when graph data is sparse
+            // Generates topic-based follow-ups as 2nd+ suggestion
+            if (suggestions.size() == 1 && suggestions.size() < 3) {
+                if (ten != null && !ten.isBlank()) {
+                    String lower = ten.toLowerCase();
+                    if (lower.contains("cấu trúc") || lower.contains("giải thuật") || lower.contains("data structure")) {
+                        suggestions.add("📝 " + code + " học bằng ngôn ngữ nào tốt nhất?");
+                    } else if (lower.contains("cơ sở") || lower.contains("database")) {
+                        suggestions.add("🗄️ Học " + code + " cần cài công cụ gì?");
+                    } else {
+                        suggestions.add("📖 " + code + " có đề cương chi tiết không?");
+                    }
+                }
+            }
+
+            // 6. Generic fallback if still no follow-ups
+            if (suggestions.isEmpty()) {
+                suggestions.add("📖 " + code + " có đề cương chi tiết không?");
+            }
+        }
+
+        // Cap at 3 and ensure diversity
+        if (suggestions.size() > 3) {
+            suggestions = suggestions.subList(0, 3);
+        }
+        return suggestions;
+    }
+
+    /**
+     * Store a brief summary of what was discussed in this session
+     * so the chatbot can reference it on the next user turn.
+     */
+    void updateSessionSummary(UUID sessionId, String userMessage, String answer, Set<String> detectedCodes) {
+        if (sessionId == null) return;
+        try {
+            String codes = (detectedCodes != null && !detectedCodes.isEmpty())
+                ? String.join(", ", detectedCodes)
+                : "";
+            String brief;
+            if (!codes.isEmpty()) {
+                // Truncate user message to first 80 chars for topic context
+                String topic = userMessage.length() > 80
+                    ? userMessage.substring(0, 77) + "..."
+                    : userMessage;
+                brief = "User hỏi về mã " + codes + " - " + topic.trim();
+            } else {
+                brief = "User hỏi: " + (userMessage.length() > 100
+                    ? userMessage.substring(0, 97) + "..."
+                    : userMessage);
+            }
+            if (brief.length() > 200) {
+                brief = brief.substring(0, 197) + "...";
+            }
+            sessionSummaries.put(sessionId, brief);
+            log.debug("Session summary updated for {}: {}", sessionId, brief);
+        } catch (Exception e) {
+            log.warn("Failed to update session summary: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Compute confidence score (0.0–1.0) based on data coverage.
+     * Higher score = more data sources confirmed the answer.
+     */
+    private double computeConfidenceScore(
+        String queryType, List<Long> nodeIds, Set<String> sources,
+        String dbContext, String ragContext, StringBuilder webContext) {
+        double score = 0.0;
+        int factors = 0;
+
+        // 1. Course data from DB (strongest signal)
+        if (nodeIds != null && !nodeIds.isEmpty()) {
+            score += 0.4;
+        }
+        factors++;
+
+        // 2. Direct response (no web search needed) = confident in internal data
+        if ("DIRECT".equals(queryType)) {
+            score += 0.2;
+        }
+        factors++;
+
+        // 3. Repos exist for found courses (looked up via relevantNodeIds)
+        if (nodeIds != null && !nodeIds.isEmpty()) {
+            boolean hasRepos = false;
+            for (Long id : nodeIds) {
+                if (!githubRepoRepository.findByCourseIdAndActiveTrue(id).isEmpty()) {
+                    hasRepos = true;
+                    break;
+                }
+            }
+            if (hasRepos) score += 0.15;
+        }
+        factors++;
+
+        // 4. RAG content available (embedding search returned real chunks)
+        if (ragContext != null && !ragContext.isBlank()
+            && !ragContext.contains("Không tìm thấy chunk")) {
+            score += 0.15;
+        }
+        factors++;
+
+        // 5. Web search found real results with URLs
+        if (sources != null && !sources.isEmpty()) {
+            score += 0.1;
+        }
+        factors++;
+
+        return factors > 0 ? Math.min(1.0, score) : 0.5;
+    }
+
+    /**
+     * Classify the user's question into a type for response structuring.
+     * Injects a hint into the system prompt so LLM tailors its format.
+     */
+    private String classifyQuestionType(String rawMessage, String normalizedMsg) {
+        if (normalizedMsg == null || normalizedMsg.isBlank()) return null;
+        if (isGreeting(rawMessage)) return "📌 LOẠI CÂU HỎI: LỜI CHÀO. Hãy trả lời thân thiện, giới thiệu ngắn gọn khả năng của DevOrbit.";
+        if (asksForRoadmap(rawMessage)) return "📌 LOẠI CÂU HỎI: ĐỊNH HƯỚNG / LỘ TRÌNH. Hãy đưa ra lộ trình học tập theo thứ tự ưu tiên, kèm mã môn cụ thể.";
+        if (asksForFirstYearCurriculum(rawMessage)) return "📌 LOẠI CÂU HỎI: CHƯƠNG TRÌNH ĐÀO TẠO. Liệt kê các môn học theo học kỳ, kèm mã môn và số tín chỉ.";
+        // COMPARISON: contains "so sanh", "vs", compare keywords
+        String norm = normalizedMsg.toLowerCase();
+        if (norm.contains("so sanh") || norm.contains(" vs ") || norm.contains("khac nhau")) {
+            return "📌 LOẠI CÂU HỎI: SO SÁNH. Trả lời dạng bảng so sánh (| Môn | Số TC | Loại | ... |). Kết luận môn nào phù hợp hơn tùy mục tiêu.";
+        }
+        // MULTI-CODE detected: likely factual or comparison
+        long codeCount = COURSE_CODE_PATTERN.matcher(rawMessage.toUpperCase()).results().count();
+        if (codeCount >= 2) {
+            return "📌 LOẠI CÂU HỎI: TRA CỨU NHIỀU MÔN. Trả lời từng môn riêng biệt, có thể kèm so sánh nếu phù hợp.";
+        }
+        if (codeCount == 1) {
+            return "📌 LOẠI CÂU HỎI: TRA CỨU MÔN HỌC. Trả lời chi tiết thông tin môn học, repository, và hướng dẫn học tập.";
+        }
+        return null;
+    }
+
+    /**
+     * Detect user year from message and return adaptive depth instruction.
+     * Năm 1-2: focus on fundamentals. Năm 3-4: advanced topics, career.
+     */
+    private String detectUserYear(String rawMessage, String normalizedMessage) {
+        if (normalizedMessage == null) return null;
+        String msg = normalizedMessage.toLowerCase();
+        int year = 0;
+
+        // Match patterns: "nam 2", "nam 3", "nam 4", "năm hai", etc.
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("n[aă]m\\s*(\\d+|[h2b3b4b])")
+            .matcher(msg);
+        if (m.find()) {
+            String val = m.group(1);
+            switch (val) {
+                case "2": year = 2; break;
+                case "3": year = 3; break;
+                case "4": year = 4; break;
+                case "5": year = 5; break;
+            }
+        }
+
+        // Also check raw message (user might write in English: "year 2")
+        if (year == 0) {
+            java.util.regex.Matcher m2 = java.util.regex.Pattern.compile("year\\s*(\\d+)")
+                .matcher(rawMessage.toLowerCase());
+            if (m2.find()) {
+                try { year = Integer.parseInt(m2.group(1)); } catch (Exception e) {}
+            }
+        }
+
+        if (year == 0) return null;
+
+        if (year <= 2) {
+            return "📌 SINH VIÊN NĂM " + year + " (mới): Hãy giải thích khái niệm cơ bản, tập trung vào kiến thức nền tảng và môn tiên quyết. "
+                + "Đưa ra lời khuyên học tập thực tế. Tránh đi sâu vào chủ đề nâng cao.";
+        } else {
+            return "📌 SINH VIÊN NĂM " + year + " (cuối): Có thể đi sâu vào chủ đề nâng cao, đồ án, và định hướng nghề nghiệp. "
+                + "Nhấn mạnh môn học nào quan trọng cho lập trình thực tế và cơ hội việc làm. "
+                + "Có thể gợi ý repository GitHub làm portfolio.";
+        }
+    }
+
+    /**
+     * Detect if the user message contains multiple distinct sub-questions
+     * (numbered, bulleted, or separated by question marks) and return
+     * a system instruction to structure the response per-part.
+     */
+    private String detectMultiPartQuery(String rawMessage) {
+        if (rawMessage == null || rawMessage.isBlank()) return null;
+        String msg = rawMessage.trim();
+
+        // Pattern 1: Numbered list like (1), (2), (3) or 1., 2., 3.
+        java.util.regex.Matcher numMatcher = java.util.regex.Pattern.compile(
+            "(?:\\(\\d+\\)|\\d+\\.)\\s*").matcher(msg);
+        int count = 0;
+        while (numMatcher.find()) count++;
+
+        // Pattern 2: Question marks (each ? is a separate question)
+        int qCount = msg.length() - msg.replace("?", "").length();
+        if (msg.endsWith("?")) qCount = Math.max(qCount - 1, 1); // trailing ? often just punctuation
+        qCount = Math.min(qCount, 5); // cap at 5
+
+        int total = Math.max(count, qCount);
+
+        if (total >= 2) {
+            return "📌 CÂU HỎI GỒM " + total + " PHẦN. Hãy trả lời TỪNG PHẦN riêng biệt "
+                + "với heading ### (1), ### (2) v.v. Rõ ràng, dễ đọc.";
+        }
+        if (total == 1 && msg.contains(",")) {
+            // Single question with multiple subjects — could be comparison
+            return null; // let LLM handle naturally
+        }
+        return null;
     }
 
     private String buildGroundedGreeting() {
@@ -899,7 +1691,9 @@ public class SubjectQaService {
                     sources,
                     "ROADMAP",
                     List.of(),
-                    roadmap
+                    roadmap,
+                    null,
+                    null
                 );
             }
         } catch (Exception e) {
@@ -913,6 +1707,8 @@ public class SubjectQaService {
             sources,
             "DIRECT",
             List.of(),
+            null,
+            null,
             null
         );
     }

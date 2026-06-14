@@ -58,7 +58,7 @@ export function useChannelMessages(channelId: number | null, page: number, size:
       apiStudentGet<PaginatedMessagesResponse>(
         `/api/student/community/channels/${channelId}/messages?page=${page}&size=${size}`,
       ),
-    enabled: channelId !== null,
+    enabled: channelId !== null && channelId > 0,
     staleTime: 0,
     gcTime: 5 * 60 * 1000,
   })

@@ -13,7 +13,8 @@ import { useChannels, useChannelMessages } from '../../hooks/useCommunity'
 import { useCommunitySocket } from '../../hooks/useCommunitySocket'
 import { isStudentAuthenticated } from '../../lib/auth'
 import { useNavigate } from 'react-router-dom'
-import type { ChatChannelResponse, ChatMessageResponse } from '../../types/api'
+import { Avatar } from '../../components/shared/Avatar'
+import type { ChannelPresenceResponse, ChatChannelResponse, ChatMessageResponse, OnlineMemberResponse } from '../../types/api'
 
 const CHANNEL_GROUP_LABELS: Record<string, string> = {
   GENERAL: 'Chung',
@@ -395,18 +396,46 @@ function ChatArea({
   )
 }
 
-function OnlineMembers() {
+export function OnlineMembers({ members, connected }: { members: OnlineMemberResponse[]; connected: boolean }) {
   return (
     <div className="h-full flex flex-col overflow-hidden min-h-0">
       <div className="shrink-0 px-4 py-4 border-b border-orbit-border">
-        <h2 className="font-heading text-sm font-bold text-orbit-text tracking-wide">Đang hoạt động</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="font-heading text-sm font-bold text-orbit-text tracking-wide">Đang hoạt động</h2>
+          {connected && members.length > 0 && (
+            <span className="ml-auto text-[11px] font-bold text-orbit-accent bg-orbit-accent/10 px-2 py-0.5 rounded-full">
+              {members.length} online
+            </span>
+          )}
+        </div>
       </div>
       <div className="flex-1 overflow-y-auto scrollbar-thin min-h-0 px-4 py-4">
-        <div className="flex flex-col items-center justify-center h-full text-orbit-text-secondary">
-          <UsersThree className="h-10 w-10 mb-3 opacity-20" />
-          <p className="text-[13px] text-center font-medium">Tính năng đang phát triển</p>
-          <p className="text-[11px] text-center mt-1">Danh sách thành viên online sẽ sớm xuất hiện</p>
-        </div>
+        {!connected ? (
+          <div className="flex flex-col items-center justify-center h-full text-orbit-text-secondary">
+            <Spinner className="h-6 w-6 text-orbit-accent animate-spin mb-3" />
+            <p className="text-[13px] text-center font-medium">Đang kết nối lại...</p>
+          </div>
+        ) : members.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-orbit-text-secondary">
+            <UsersThree className="h-10 w-10 mb-3 opacity-20" />
+            <p className="text-[13px] text-center font-medium">Chưa có ai online trong kênh này</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {members.map((m) => (
+              <div key={m.studentCode} className="flex items-center gap-3 group">
+                <div className="relative shrink-0">
+                  <Avatar name={m.displayName} size={32} />
+                  <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-500 border-2 border-orbit-bg" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-bold text-orbit-text truncate">{m.displayName}</p>
+                  <p className="text-[10px] text-orbit-text-muted">{m.studentCode}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -425,6 +454,7 @@ export function CommunityPage() {
   const [search, setSearch] = useState('')
   const [subscribedIds, setSubscribedIds] = useState<Set<number>>(() => getSubscribedIds())
   const [confirm, setConfirm] = useState<{ id: number; name: string } | null>(null)
+  const [onlineMembers, setOnlineMembers] = useState<OnlineMemberResponse[]>([])
 
   const { data: fetchedPage, isLoading: messagesLoading, isFetching: messagesFetching } =
     useChannelMessages(activeChannel?.id ?? null, page)
@@ -439,11 +469,23 @@ export function CommunityPage() {
     }
   }, [])
 
-  const { sendMessage } = useCommunitySocket({
+  const handlePresence = useCallback((presence: ChannelPresenceResponse) => {
+    const current = activeChannelRef.current
+    if (current && presence.channelId === current.id) {
+      setOnlineMembers(presence.members)
+    }
+  }, [])
+
+  const { sendMessage, connected } = useCommunitySocket({
     channelId: activeChannel?.id ?? null,
     enabled: authenticated,
     onMessage: handleRealtimeMessage,
+    onPresence: handlePresence,
   })
+
+  useEffect(() => {
+    setOnlineMembers([])
+  }, [activeChannel?.id])
 
   useEffect(() => {
     if (channels.length === 0) return
@@ -571,7 +613,7 @@ export function CommunityPage() {
             </div>
 
             <div className="w-[260px] shrink-0 border-l border-orbit-border hidden xl:block min-h-0">
-              <OnlineMembers />
+              <OnlineMembers members={onlineMembers} connected={connected} />
             </div>
           </div>
         </div>

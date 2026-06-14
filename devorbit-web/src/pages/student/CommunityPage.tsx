@@ -9,7 +9,7 @@ import {
   CaretDown,
   SignIn,
 } from '@phosphor-icons/react'
-import { useChannels, useChannelMessages } from '../../hooks/useCommunity'
+import { useChannels, useChannelMessages, useInvalidateChannelMessages } from '../../hooks/useCommunity'
 import { useCommunitySocket } from '../../hooks/useCommunitySocket'
 import { isStudentAuthenticated } from '../../lib/auth'
 import { useNavigate } from 'react-router-dom'
@@ -455,6 +455,7 @@ export function CommunityPage() {
   const [subscribedIds, setSubscribedIds] = useState<Set<number>>(() => getSubscribedIds())
   const [confirm, setConfirm] = useState<{ id: number; name: string } | null>(null)
   const [onlineMembers, setOnlineMembers] = useState<OnlineMemberResponse[]>([])
+  const invalidateChannelMessages = useInvalidateChannelMessages()
 
   const { data: fetchedPage, isLoading: messagesLoading, isFetching: messagesFetching } =
     useChannelMessages(activeChannel?.id ?? null, page)
@@ -520,6 +521,9 @@ export function CommunityPage() {
       setPage(0)
       setAllMessages([])
       setTotalPages(1)
+      if (activeChannel?.id != null) {
+        invalidateChannelMessages(activeChannel.id)
+      }
     }
   }
 

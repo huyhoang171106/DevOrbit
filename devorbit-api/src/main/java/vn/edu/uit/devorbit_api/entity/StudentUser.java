@@ -49,4 +49,8 @@ public class StudentUser {
     @Column(name = "email_verified", nullable = false)
     @Builder.Default
     private boolean emailVerified = false;
+
+    /** URL to the student's avatar image */
+    @Column
+    private String avatar;
 }

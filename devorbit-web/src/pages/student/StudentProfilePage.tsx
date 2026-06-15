@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { m as motion } from 'framer-motion'
-import { BookOpen, GithubLogo, BookmarkSimple, Trash, ArrowSquareOut } from '@phosphor-icons/react'
-import { apiStudentGet, apiStudentDelete } from '../../lib/api'
+import { BookOpen, GithubLogo, BookmarkSimple, Trash, ArrowSquareOut, Camera, CheckCircle } from '@phosphor-icons/react'
+import { apiStudentGet, apiStudentDelete, apiStudentPatch } from '../../lib/api'
 import { isStudentAuthenticated } from '../../lib/auth'
 import { Avatar } from '../../components/shared/Avatar'
 import type { StudentProfileResponse, StudentBookmark } from '../../types/api'
@@ -11,6 +11,10 @@ export function StudentProfilePage() {
   const [profile, setProfile] = useState<StudentProfileResponse | null>(null)
   const [bookmarks, setBookmarks] = useState<StudentBookmark[]>([])
   const [loading, setLoading] = useState(true)
+  const [uploading, setUploading] = useState(false)
+  const [uploadSuccess, setUploadSuccess] = useState(false)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!isStudentAuthenticated()) return
@@ -32,6 +36,50 @@ export function StudentProfilePage() {
     } catch {
       // silently fail
     }
+  }
+
+  function handleAvatarClick() {
+    fileInputRef.current?.click()
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) return
+
+    // Create preview
+    const reader = new FileReader()
+    reader.onload = () => {
+      setPreviewUrl(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  async function confirmAvatarUpload() {
+    const file = fileInputRef.current?.files?.[0]
+    if (!file || !previewUrl) return
+
+    setUploading(true)
+    try {
+      // Use the preview URL (data URL) as the avatar URL
+      const updated = await apiStudentPatch<StudentProfileResponse>('/api/student/me/avatar', { avatar: previewUrl })
+      setProfile(updated)
+      setPreviewUrl(null)
+      setUploadSuccess(true)
+      setTimeout(() => setUploadSuccess(false), 2000)
+    } catch (err) {
+      console.error('Failed to update avatar', err)
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  function cancelAvatarUpload() {
+    setPreviewUrl(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   if (loading) {
@@ -66,7 +114,30 @@ export function StudentProfilePage() {
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10 pb-10 border-b border-orbit-border mb-10"
         >
-          <Avatar name={profile.fullName} size={128} className="ring-4 ring-orbit-accent/20 rounded-full" />
+          {/* Avatar with upload overlay */}
+          <div className="relative w-[128px] h-[128px] group cursor-pointer" onClick={handleAvatarClick}>
+            <div className="absolute inset-0 rounded-full overflow-hidden">
+              <Avatar
+                name={profile.fullName}
+                size={128}
+                src={profile.avatar}
+                className="ring-4 ring-orbit-accent/20 transition-all duration-300 group-hover:scale-105 group-hover:brightness-50"
+              />
+            </div>
+            {/* Hover overlay */}
+            <div className="absolute inset-0 rounded-full bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 gap-2">
+              <Camera className="h-8 w-8 text-white scale-75 group-hover:scale-100 transition-transform duration-300" weight="fill" />
+              <span className="text-white text-[11px] font-bold tracking-wide">Đổi ảnh</span>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+          </div>
+
           <div className="text-center md:text-left">
             <h1 className="font-heading text-3xl md:text-4xl font-black text-orbit-text tracking-tight">
               {profile.fullName}
@@ -84,10 +155,73 @@ export function StudentProfilePage() {
                 <span>bookmarks</span>
               </div>
             </div>
+            {uploadSuccess && (
+              <div className="mt-3 text-[12px] text-emerald-400 font-medium flex items-center gap-1.5">
+                <CheckCircle className="h-4 w-4" weight="fill" />
+                Đã cập nhật ảnh đại diện
+              </div>
+            )}
+            {uploadSuccess && (
+              <div className="mt-3 text-[12px] text-emerald-400 font-medium flex items-center gap-1.5">
+                <CheckCircle className="h-4 w-4" weight="fill" />
+                Đã cập nhật ảnh đại diện
+              </div>
+            )}
           </div>
         </motion.div>
 
-        {/* Bookmarks Section — GitHub-style repo cards */}
+        {/* Avatar preview modal */}
+        {previewUrl && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-orbit-surface border border-orbit-border rounded-2xl p-6 max-w-sm w-full shadow-2xl"
+            >
+              <h3 className="font-heading text-sm font-bold text-orbit-text mb-4 text-center">
+                Xác nhận ảnh đại diện
+              </h3>
+              <div className="flex justify-center mb-6">
+                <img
+                  src={previewUrl}
+                  alt="Preview"
+                  className="w-32 h-32 rounded-full object-cover ring-4 ring-orbit-accent/20"
+                />
+              </div>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={cancelAvatarUpload}
+                  className="px-4 py-2 rounded-xl text-[12px] font-bold text-orbit-text-muted hover:text-orbit-text border border-orbit-border hover:border-orbit-accent/30 transition-colors"
+                  disabled={uploading}
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={confirmAvatarUpload}
+                  disabled={uploading}
+                  className="px-4 py-2 rounded-xl text-[12px] font-bold text-white bg-orbit-accent hover:bg-orbit-accent/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+                >
+                  {uploading ? (
+                    <>
+                      <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Đang tải...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="h-4 w-4" weight="fill" />
+                      Lưu
+                    </>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Bookmarks Section */}
         <div>
           <div className="flex items-center justify-between mb-6">
             <h2 className="font-heading text-xl font-bold text-orbit-text tracking-tight">

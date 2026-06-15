@@ -2,6 +2,9 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getAdminToken } from './adminAuth'
 
+const cache = new Map<string, { data: unknown; expiry: number }>()
+const CACHE_TTL = 300_000 // 5 min
+
 export function useRequireAdminAuth() {
   const navigate = useNavigate()
   const token = getAdminToken()
@@ -16,6 +19,7 @@ export function useRequireAdminAuth() {
 export function useAdminFetch<T>(
   fetchFn: (token: string) => Promise<T>,
   deps: unknown[],
+  cacheKey?: string,
 ) {
   const [data, setData] = useState<T | null>(null)
   const [loading, setLoading] = useState(true)
@@ -27,10 +31,24 @@ export function useAdminFetch<T>(
 
   const refetch = useCallback(async () => {
     if (!token) return
+
+    // Check cache
+    if (cacheKey) {
+      const cached = cache.get(cacheKey)
+      if (cached && Date.now() < cached.expiry) {
+        setData(cached.data as T)
+        setLoading(false)
+        return
+      }
+    }
+
     setLoading(true)
     setError(null)
     try {
       const result = await fetchRef.current(token)
+      if (cacheKey) {
+        cache.set(cacheKey, { data: result, expiry: Date.now() + CACHE_TTL })
+      }
       setData(result)
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'An error occurred')

@@ -96,3 +96,36 @@ Normal
 
 proposed
 
+---
+
+### Missing Harness Capability
+
+#### Title
+
+Keep documented CodeGraph and wiki tooling available
+
+#### Discovered While
+
+US-041 Course Library Pagination Visibility
+
+#### Current Pain
+
+`AGENTS.md` requires CodeGraph MCP tools and repository-local debugging skills,
+but the tools were unavailable, `.agents/skills/` did not exist, and
+`.codebase-wiki/` was not initialized. Impact analysis required rebuilding a
+GitNexus index through the CLI.
+
+#### Suggested Improvement
+
+Provision the documented MCP tools and skill files with the repository, add a
+non-mutating index sync command, and initialize the codebase wiki so required
+workflows are executable without fallback discovery.
+
+#### Risk
+
+Tiny
+
+#### Status
+
+proposed
+

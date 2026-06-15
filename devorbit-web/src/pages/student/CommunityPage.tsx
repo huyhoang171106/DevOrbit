@@ -8,6 +8,7 @@ import {
   MagnifyingGlass,
   CaretDown,
   SignIn,
+  ArrowDown,
 } from '@phosphor-icons/react'
 import { useChannels, useChannelMessages, useInvalidateChannelMessages, useCurrentStudent } from '../../hooks/useCommunity'
 import { useCommunitySocket } from '../../hooks/useCommunitySocket'
@@ -236,6 +237,8 @@ function ChannelList({
   )
 }
 
+const MESSAGE_BATCH_SIZE = 50 // Render this many messages at a time
+
 function ChatArea({
   channel,
   messages,
@@ -260,12 +263,29 @@ function ChatArea({
   const [input, setInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const prevMessagesLength = useRef(0)
   const autoScrollRef = useRef(true)
+  const prevMessagesLength = useRef(0)
+  const [visibleRange, setVisibleRange] = useState({ start: 0, end: MESSAGE_BATCH_SIZE })
 
+  // Format time label
+  const formatTime = (date: Date) => {
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+    const isToday = date.toDateString() === today.toDateString()
+    const isYesterday = date.toDateString() === yesterday.toDateString()
+    const time = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+    if (isToday) return `Today, ${time}`
+    if (isYesterday) return `Yesterday, ${time}`
+    return `${date.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short' })}, ${time}`
+  }
+
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (autoScrollRef.current && messages.length > prevMessagesLength.current) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+      // Reset visible range when at bottom
+      setVisibleRange({ start: Math.max(0, messages.length - MESSAGE_BATCH_SIZE), end: messages.length })
     }
     prevMessagesLength.current = messages.length
   }, [messages.length])
@@ -276,9 +296,23 @@ function ChatArea({
     const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100
     autoScrollRef.current = atBottom
 
-    if (el.scrollTop < 50 && page < totalPages - 1 && !loadingMessages) {
+    // Load more when scrolled near top
+    if (el.scrollTop < 150 && page < totalPages - 1 && !loadingMessages) {
       onLoadMore()
     }
+
+    // Calculate visible range for virtualization
+    const scrollTop = el.scrollTop
+    const buffer = 200 // Extra buffer above and below visible area
+    const startIndex = Math.max(0, Math.floor((scrollTop - buffer) / 72) - 5)
+    const visibleCount = Math.ceil(el.clientHeight / 72) + 10
+    const endIndex = Math.min(messages.length, startIndex + visibleCount + 10)
+    setVisibleRange({ start: startIndex, end: endIndex })
+  }
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    autoScrollRef.current = true
   }
 
   const handleSend = () => {
@@ -304,6 +338,9 @@ function ChatArea({
     )
   }
 
+  // Calculate total height for scroll
+  const totalHeight = messages.length * 72
+
   return (
     <div className="h-full flex flex-col min-h-0">
       <div className="shrink-0 px-6 py-4 border-b border-orbit-border flex items-center gap-3">
@@ -312,13 +349,18 @@ function ChatArea({
           <h2 className="font-heading text-sm font-bold text-orbit-text">{channel.name}</h2>
           <p className="text-[11px] text-orbit-text-muted">{CHANNEL_GROUP_LABELS[channel.type]}</p>
         </div>
+        <span className="ml-auto text-[11px] text-orbit-text-muted">
+          {messages.length} tin nhắn
+        </span>
       </div>
 
+      {/* Messages container with virtualized rendering */}
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto scrollbar-thin px-6 py-4 space-y-3 min-h-0"
+        className="flex-1 overflow-y-auto scrollbar-thin px-6 py-4 min-h-0"
       >
+        {/* Load more at top */}
         {page < totalPages - 1 && (
           <div className="flex justify-center py-2">
             {loadingMessages ? (
@@ -341,52 +383,68 @@ function ChatArea({
           </div>
         )}
 
-        {messages.map((msg) => {
-          const isMine = currentUserId !== null && msg.studentId === currentUserId
-          const msgDate = new Date(msg.createdAt)
-          const today = new Date()
-          const yesterday = new Date(today)
-          yesterday.setDate(yesterday.getDate() - 1)
+        {/* Virtualized messages container */}
+        <div style={{ height: totalHeight, position: 'relative' }}>
+          {messages.map((msg, index) => {
+            // Skip messages outside visible range
+            if (index < visibleRange.start || index >= visibleRange.end) {
+              return null
+            }
 
-          const isToday = msgDate.toDateString() === today.toDateString()
-          const isYesterday = msgDate.toDateString() === yesterday.toDateString()
+            const isMine = currentUserId !== null && msg.studentId === currentUserId
+            const msgDate = new Date(msg.createdAt)
+            const timeLabel = formatTime(msgDate)
 
-          let timeLabel: string
-          if (isToday) {
-            timeLabel = `Today, ${msgDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
-          } else if (isYesterday) {
-            timeLabel = `Yesterday, ${msgDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
-          } else {
-            timeLabel = `${msgDate.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short' })}, ${msgDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`
-          }
-
-          return (
-            <div key={msg.id} className={`flex gap-3 group ${isMine ? 'flex-row-reverse' : ''}`}>
-              {!isMine && (
-                <div className="shrink-0 h-8 w-8 rounded-full bg-orbit-accent/10 border border-orbit-accent/20 flex items-center justify-center">
-                  <span className="text-[11px] font-bold text-orbit-accent">
-                    {msg.senderName.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-              )}
-              <div className={`flex-1 min-w-0 ${isMine ? 'flex flex-col items-end' : ''}`}>
+            return (
+              <div
+                key={msg.id}
+                style={{
+                  position: 'absolute',
+                  top: index * 72,
+                  left: 0,
+                  right: 0,
+                  height: 72,
+                }}
+                className={`flex gap-3 ${isMine ? 'flex-row-reverse' : ''}`}
+              >
                 {!isMine && (
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-[13px] font-bold text-orbit-text">{msg.senderName}</span>
-                    <span className="text-[10px] text-orbit-text-muted">{timeLabel}</span>
+                  <div className="shrink-0 h-8 w-8 rounded-full bg-orbit-accent/10 border border-orbit-accent/20 flex items-center justify-center">
+                    <span className="text-[11px] font-bold text-orbit-accent">
+                      {msg.senderName.charAt(0).toUpperCase()}
+                    </span>
                   </div>
                 )}
-                <p className={`text-[14px] mt-0.5 leading-relaxed whitespace-pre-wrap break-words ${isMine ? 'bg-orbit-accent/20 text-orbit-text border border-orbit-accent/20 rounded-2xl px-3 py-2 max-w-[75%] text-right' : 'text-orbit-text-secondary'}`}>
-                  {msg.content}
-                </p>
-                {isMine && (
-                  <span className="text-[10px] text-orbit-text-muted mt-0.5">{timeLabel}</span>
-                )}
+                <div className={`flex-1 min-w-0 ${isMine ? 'flex flex-col items-end' : ''}`}>
+                  {!isMine && (
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-[13px] font-bold text-orbit-text">{msg.senderName}</span>
+                      <span className="text-[10px] text-orbit-text-muted">{timeLabel}</span>
+                    </div>
+                  )}
+                  <p className={`text-[14px] leading-relaxed whitespace-pre-wrap break-words ${isMine ? 'bg-orbit-accent/20 text-orbit-text border border-orbit-accent/20 rounded-2xl px-3 py-2 max-w-[75%] text-right' : 'text-orbit-text-secondary'}`}>
+                    {msg.content}
+                  </p>
+                  {isMine && (
+                    <span className="text-[10px] text-orbit-text-muted mt-0.5">{timeLabel}</span>
+                  )}
+                </div>
               </div>
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
+
         <div ref={messagesEndRef} />
+
+        {/* Scroll to bottom button */}
+        {!autoScrollRef.current && messages.length > 0 && (
+          <button
+            onClick={scrollToBottom}
+            className="sticky bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 bg-orbit-accent/90 text-white text-[12px] font-bold rounded-full shadow-lg hover:bg-orbit-accent transition-colors z-10"
+          >
+            <ArrowDown className="h-4 w-4" weight="bold" />
+            Cuộn xuống
+          </button>
+        )}
       </div>
 
       <div className="shrink-0 px-4 py-3 border-t border-orbit-border">

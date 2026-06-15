@@ -9,7 +9,6 @@ import type { CandidateReviewRequest } from '../../../types/admin'
 
 export function RepoCandidatesTab() {
   const token = getAdminToken()
-  const [reviewer, setReviewer] = useState('all')
   const [approvalDialog, setApprovalDialog] = useState<{ candidate: RepoCandidate } | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
   const [reviewForm, setReviewForm] = useState<CandidateReviewRequest>({
@@ -22,8 +21,8 @@ export function RepoCandidatesTab() {
   const techStacks = reviewForm.techStacks ?? []
 
   const { data: candidates, loading, error, refetch } = useAdminFetch(
-    (t) => adminApi.getCandidates(t, reviewer === 'all' ? undefined : reviewer),
-    [reviewer],
+    (t) => adminApi.getCandidates(t),
+    [],
   )
 
   const handleApprove = async (candidate: RepoCandidate) => {
@@ -67,15 +66,7 @@ export function RepoCandidatesTab() {
   if (actionError) return <AdminErrorBanner message={actionError} onRetry={() => setActionError(null)} />
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <label className="label mb-0">Người duyệt:</label>
-        <select value={reviewer} onChange={(e) => setReviewer(e.target.value)} className="input-field w-auto">
-          <option value="all">Tất cả</option>
-          <option value="unassigned">Chưa phân công</option>
-        </select>
-      </div>
-
+    <div>
       <div className="glass-card overflow-hidden border border-orbit-border">
         <table className="w-full">
           <thead>
@@ -95,15 +86,17 @@ export function RepoCandidatesTab() {
             )}
             {candidates?.map((candidate) => (
               <tr key={candidate.id} className="transition-colors hover:bg-orbit-surface/30">
-                <td className="px-4 py-3 text-sm">
-                  <span className="font-medium text-ink-primary">{candidate.githubName}</span>
+                <td className="px-4 py-3 text-sm text-center">
+                  <a href={candidate.githubUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-ink-primary hover:text-orbit-accent transition-colors">
+                    {candidate.githubName}
+                  </a>
                   <span className="block text-xs text-ink-muted">{candidate.githubOwner}</span>
                 </td>
-                <td className="px-4 py-3 text-sm text-ink-secondary">{candidate.courseCode}</td>
-                <td className="px-4 py-3 text-sm text-ink-secondary">{candidate.primaryLanguage ?? '-'}</td>
-                <td className="px-4 py-3 text-sm text-ink-secondary">{candidate.stars}</td>
-                <td className="px-4 py-3 text-sm text-right">
-                  <div className="flex justify-end gap-2">
+                <td className="px-4 py-3 text-sm text-center text-ink-secondary">{candidate.courseCode}</td>
+                <td className="px-4 py-3 text-sm text-center text-ink-secondary">{candidate.primaryLanguage ?? '-'}</td>
+                <td className="px-4 py-3 text-sm text-center text-ink-secondary">{candidate.stars}</td>
+                <td className="px-4 py-3 text-sm text-center">
+                  <div className="flex justify-center gap-2">
                     <button
                       onClick={() => { setApprovalDialog({ candidate }); setReviewForm({ description: '', techStacks: [], reviewNote: '' }) }}
                       className="btn-ghost text-xs text-green-400 hover:text-green-300"

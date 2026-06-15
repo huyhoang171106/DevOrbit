@@ -66,8 +66,8 @@ export function TechStackPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-orbit-border bg-orbit-surface/50">
-                <th className="px-4 py-3 text-left text-xs font-medium text-ink-secondary uppercase">Tên</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-ink-secondary uppercase">Thao tác</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-ink-secondary uppercase">Tên</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-ink-secondary uppercase">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-clay-border">
@@ -78,9 +78,11 @@ export function TechStackPage() {
               )}
               {techStacks.map((ts: TechStackAdmin) => (
                 <tr key={ts.id} className="transition-colors hover:bg-orbit-surface/30">
-                  <td className="px-4 py-3 text-sm font-medium text-ink-primary">{ts.name}</td>
-                  <td className="px-4 py-3 text-sm text-right">
-                    <button onClick={() => handleDelete(ts.id)} className="btn-ghost text-xs text-red-400">Xoá</button>
+                  <td className="px-4 py-3 text-sm text-center font-medium text-ink-primary">{ts.name}</td>
+                  <td className="px-4 py-3 text-sm text-center">
+                    <div className="flex items-center justify-center">
+                      <button onClick={() => handleDelete(ts.id)} className="btn-ghost text-xs text-red-400">Xoá</button>
+                    </div>
                   </td>
                 </tr>
               ))}

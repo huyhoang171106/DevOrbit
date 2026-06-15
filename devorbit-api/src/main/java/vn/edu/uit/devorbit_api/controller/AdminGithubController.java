@@ -62,4 +62,11 @@ public class AdminGithubController {
     public List<String> getScanLogs() {
         return githubScanService.getScanLogs();
     }
+
+    /** Clear the scan logs */
+    @DeleteMapping("/scan-logs")
+    public ResponseEntity<Void> clearScanLogs() {
+        githubScanService.clearLogs();
+        return ResponseEntity.noContent().build();
+    }
 }

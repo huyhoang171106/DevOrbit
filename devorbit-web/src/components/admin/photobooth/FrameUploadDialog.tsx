@@ -7,11 +7,12 @@ interface FrameUploadDialogProps {
 
 export function FrameUploadDialog({ onUpload, onClose }: FrameUploadDialogProps) {
   const [displayName, setDisplayName] = useState('')
-  const [photoCount, setPhotoCount] = useState(1)
+  const [photoCountStr, setPhotoCountStr] = useState('1')
   const [file, setFile] = useState<File | null>(null)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    const photoCount = Math.max(1, Math.min(6, Number(photoCountStr) || 1))
     onUpload({ displayName: displayName.trim() || 'Frame mới', photoCount }, file)
   }
 
@@ -41,8 +42,11 @@ export function FrameUploadDialog({ onUpload, onClose }: FrameUploadDialogProps)
             <label className="label">Số ảnh</label>
             <input
               type="number"
-              value={photoCount}
-              onChange={(e) => setPhotoCount(Math.max(1, Number(e.target.value)))}
+              value={photoCountStr}
+              onChange={(e) => {
+                const v = e.target.value
+                if (v === '' || /^\d+$/.test(v)) setPhotoCountStr(v)
+              }}
               className="input-field"
               min={1}
               max={6}

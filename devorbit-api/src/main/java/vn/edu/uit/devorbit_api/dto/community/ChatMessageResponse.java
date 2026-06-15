@@ -5,6 +5,7 @@ public record ChatMessageResponse(
         Long channelId,
         Long studentId,
         String senderName,
+        String senderAvatar,
         String content,
         String createdAt
 ) {

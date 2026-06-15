@@ -3,7 +3,7 @@ import { adminApi } from '../lib/adminApi'
 import { getAdminToken } from '../lib/auth'
 import type { AdminNotification } from '../types/admin'
 
-export function useNotifications(pollInterval = 15000) {
+export function useNotifications(enabled = false, pollInterval = 15000) {
   const [notifications, setNotifications] = useState<AdminNotification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -26,11 +26,31 @@ export function useNotifications(pollInterval = 15000) {
     }
   }, [token])
 
+  const fetchCountOnly = useCallback(async () => {
+    if (!token) return
+    try {
+      const countRes = await adminApi.getUnreadNotificationCount(token)
+      setUnreadCount(countRes.count)
+    } catch { /* ignore */ }
+  }, [token])
+
+  // Fetch count every 60s even when closed (for badge)
   useEffect(() => {
+    fetchCountOnly()
+    const interval = setInterval(fetchCountOnly, 60000)
+    return () => clearInterval(interval)
+  }, [fetchCountOnly])
+
+  // Full fetch + poll only when dropdown is open
+  useEffect(() => {
+    if (!enabled) {
+      setLoading(false)
+      return
+    }
     fetchAll()
     const interval = setInterval(fetchAll, pollInterval)
     return () => clearInterval(interval)
-  }, [fetchAll, pollInterval])
+  }, [fetchAll, pollInterval, enabled])
 
   const markAsRead = useCallback(async (id: number) => {
     if (!token) return

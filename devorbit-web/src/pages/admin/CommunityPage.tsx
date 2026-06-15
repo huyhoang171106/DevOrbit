@@ -12,6 +12,7 @@ import type { ChatChannelResponse } from '../../types/api'
 export function CommunityPage() {
   const token = getAdminToken()
   const [selectedChannel, setSelectedChannel] = useState<ChatChannelResponse | null>(null)
+  const [search, setSearch] = useState('')
 
   const { data: channels, loading: loadingChannels, error: channelsError, refetch: refetchChannels } = useAdminFetch(
     (t) => adminApi.getChannels(t),
@@ -26,6 +27,11 @@ export function CommunityPage() {
   const filteredMessages = selectedChannel
     ? (messages ?? []).filter((m) => m.channelName === selectedChannel.name)
     : (messages ?? [])
+
+  const q = search.trim().toLowerCase()
+  const searchedMessages = q
+    ? filteredMessages.filter((m) => m.content.toLowerCase().includes(q) || m.studentName.toLowerCase().includes(q))
+    : filteredMessages
 
   const handleDelete = async (id: number) => {
     if (!token || !confirm('Xoá tin nhắn này?')) return
@@ -51,10 +57,17 @@ export function CommunityPage() {
           />
         </div>
         <div className="flex-1">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Tìm tin nhắn..."
+            className="w-full mb-4 bg-orbit-bg border border-orbit-border rounded-2xl px-3 py-2 text-[13px] text-orbit-text outline-none focus:border-orbit-accent/60 placeholder:text-orbit-text-muted"
+          />
           {loadingMessages && <AdminSpinner text="Đang tải tin nhắn..." />}
           {messagesError && <AdminErrorBanner message={messagesError} onRetry={refetchMessages} />}
           {!loadingMessages && (
-            <MessageTable messages={filteredMessages} onDelete={handleDelete} />
+            <MessageTable messages={searchedMessages} onDelete={handleDelete} />
           )}
         </div>
       </div>

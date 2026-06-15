@@ -2,9 +2,9 @@ import { useEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { apiGet } from '../../lib/api'
 import { useCourseList } from '../../hooks/useCourseList'
 import { CourseCard } from '../../components/student/CourseCard'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import type { RepoSummary } from '../../types/api'
-import { searchCourses, searchRepos } from '../../lib/repoSearch'
+import { hasExactCourseMatch, searchCourses, searchRepos } from '../../lib/repoSearch'
 import { MagnifyingGlass, Graph, Funnel, X, GraduationCap, BookOpen, CaretLeft, CaretRight, Code } from '@phosphor-icons/react'
 import { BlurReveal } from '../../motion/primitives/BlurReveal'
 import { FadeReveal } from '../../motion/primitives/FadeReveal'
@@ -13,9 +13,9 @@ import { SectionTransition } from '../../motion/primitives/SectionTransition'
 import { ParallaxLayer } from '../../motion/primitives/ParallaxLayer'
 
 const PAGE_SIZE = 30
-const MAX_REPO_RESULTS = 12
 
 export function CourseListPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const { data: courses = [], isLoading: loading, error: queryError } = useCourseList()
   const [allRepos, setAllRepos] = useState<RepoSummary[]>([])
   const [reposLoading, setReposLoading] = useState(false)
@@ -25,15 +25,47 @@ export function CourseListPage() {
   const reposFetched = useRef(false)
 
   // Debounce search by 200ms to avoid re-filtering on every keystroke
+  const pageParam = Number(searchParams.get('page'))
+  const [page, setPage] = useState(
+    Number.isInteger(pageParam) && pageParam > 0 ? pageParam - 1 : 0,
+  )
+
+  useEffect(() => {
+    const urlPage = Number.isInteger(pageParam) && pageParam > 0 ? pageParam - 1 : 0
+    setPage((current) => current === urlPage ? current : urlPage)
+  }, [pageParam])
+
+  const changePage = useCallback((nextPage: number, replace = false) => {
+    setPage(nextPage)
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current)
+      if (nextPage === 0) next.delete('page')
+      else next.set('page', String(nextPage + 1))
+      return next
+    }, { replace })
+  }, [setSearchParams])
+
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value
     setSearchQuery(val)
+    changePage(0, true)
     if (searchTimer.current) clearTimeout(searchTimer.current)
     searchTimer.current = setTimeout(() => setDebouncedQuery(val), 200)
-  }, [])
+  }, [changePage])
+
+  const submitSearch = useCallback(() => {
+    if (searchTimer.current) clearTimeout(searchTimer.current)
+    setDebouncedQuery(searchQuery.trim())
+  }, [searchQuery])
+
+  const clearSearch = useCallback(() => {
+    if (searchTimer.current) clearTimeout(searchTimer.current)
+    setSearchQuery('')
+    setDebouncedQuery('')
+    changePage(0, true)
+  }, [changePage])
 
   useEffect(() => () => { if (searchTimer.current) clearTimeout(searchTimer.current) }, [])
-  const [page, setPage] = useState(0)
 
   // Fetch all repos lazily when user first searches
   useEffect(() => {
@@ -52,10 +84,15 @@ export function CourseListPage() {
     return searchCourses(courses, debouncedQuery, allRepos)
   }, [courses, debouncedQuery, allRepos])
 
+  const exactCourseMatch = useMemo(
+    () => hasExactCourseMatch(courses, debouncedQuery),
+    [courses, debouncedQuery],
+  )
+
   const matchedRepos = useMemo(() => {
-    if (!debouncedQuery.trim() || allRepos.length === 0) return []
+    if (!debouncedQuery.trim() || exactCourseMatch || allRepos.length === 0) return []
     return searchRepos(allRepos, debouncedQuery)
-  }, [allRepos, debouncedQuery])
+  }, [allRepos, debouncedQuery, exactCourseMatch])
 
   const hasSearch = debouncedQuery.trim().length > 0
   const showRepos = hasSearch && matchedRepos.length > 0
@@ -63,16 +100,20 @@ export function CourseListPage() {
   const hasAnyResult = showCourses || showRepos
   const searchResultCount = matchedCourses.length + matchedRepos.length
 
-  const sortedCourses = useMemo(() =>
-    matchedCourses.toSorted((a, b) => b.repoCount - a.repoCount),
-    [matchedCourses]
+  const sortedCourses = useMemo(
+    () => hasSearch ? matchedCourses : matchedCourses.toSorted((a, b) => b.repoCount - a.repoCount),
+    [hasSearch, matchedCourses],
   )
-
-  // Reset page on search
-  useEffect(() => { setPage(0) }, [searchQuery])
 
   const totalPages = Math.ceil(sortedCourses.length / PAGE_SIZE)
   const paged = sortedCourses.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+  const courseListPath = searchParams.size > 0
+    ? `/courses?${searchParams.toString()}`
+    : '/courses'
+
+  useEffect(() => {
+    if (totalPages > 0 && page >= totalPages) changePage(totalPages - 1, true)
+  }, [changePage, page, totalPages])
 
   if (loading) {
     return (
@@ -151,25 +192,44 @@ export function CourseListPage() {
 
           {/* Search + CTA row */}
           <div className="flex flex-col lg:flex-row gap-5 items-stretch lg:items-center">
-            <div className="relative flex-1 max-w-xl group">
+            <div className="relative flex-1 max-w-2xl group">
               <div className="absolute -inset-1 bg-gradient-to-r from-orbit-accent/20 to-emerald-500/20 rounded-3xl blur opacity-0 group-focus-within:opacity-100 transition duration-500" />
-              <div className="relative flex items-center">
-                <MagnifyingGlass className="absolute left-5 h-5 w-5 text-orbit-text-muted group-focus-within:text-orbit-accent transition-colors duration-300" weight="regular" />
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm môn học và repo theo tên, mã, ngôn ngữ..."
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  className="w-full bg-orbit-surface/80 backdrop-blur-xl border border-orbit-border rounded-3xl py-5 pl-14 pr-14 text-orbit-text placeholder:text-orbit-text-muted/50 focus:outline-none focus:border-orbit-accent/40 focus:ring-4 focus:ring-orbit-accent/5 transition-all text-[15px]"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => { setSearchQuery(''); setDebouncedQuery(''); }}
-                    className="absolute right-5 h-8 w-8 rounded-full bg-orbit-elevated border border-orbit-border flex items-center justify-center text-orbit-text-muted hover:text-orbit-text hover:border-orbit-accent/30 transition-all"
-                  >
-                    <X className="h-4 w-4" weight="bold" />
-                  </button>
-                )}
+              <div className="relative flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="relative flex-1">
+                  <MagnifyingGlass className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-orbit-text-muted group-focus-within:text-orbit-accent transition-colors duration-300" weight="regular" />
+                  <input
+                    type="text"
+                    role="searchbox"
+                    placeholder="Tìm kiếm môn học và repo theo tên, mã, ngôn ngữ..."
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault()
+                        submitSearch()
+                      }
+                    }}
+                    className="w-full bg-orbit-surface/80 backdrop-blur-xl border border-orbit-border rounded-3xl py-5 pl-14 pr-14 text-orbit-text placeholder:text-orbit-text-muted/50 focus:outline-none focus:border-orbit-accent/40 focus:ring-4 focus:ring-orbit-accent/5 transition-all text-[15px]"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      aria-label="Xóa tìm kiếm"
+                      onClick={clearSearch}
+                      className="absolute right-5 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-orbit-elevated border border-orbit-border flex items-center justify-center text-orbit-text-muted hover:text-orbit-text hover:border-orbit-accent/30 transition-all"
+                    >
+                      <X className="h-4 w-4" weight="bold" />
+                    </button>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={submitSearch}
+                  className="btn-primary w-full sm:w-auto shrink-0 px-6 py-5 text-[12px]"
+                >
+                  <MagnifyingGlass className="h-4 w-4" weight="bold" />
+                  Tìm kiếm
+                </button>
               </div>
             </div>
 
@@ -203,11 +263,11 @@ export function CourseListPage() {
               <h3 className="text-[14px] font-black text-orbit-text uppercase tracking-[0.12em]">Môn học phù hợp</h3>
               <span className="px-2.5 py-0.5 rounded-full bg-orbit-accent/10 border border-orbit-accent/15 text-[10px] font-bold text-orbit-accent">{matchedCourses.length}</span>
             </div>
-            <StaggerReveal stagger={0.04} y={20}>
+            <StaggerReveal key={`${page}-${debouncedQuery}`} stagger={0.04} y={20}>
               <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                 {paged.map((c) => (
                   <StaggerItem key={c.id}>
-                    <CourseCard course={c} />
+                    <CourseCard course={c} courseListPath={courseListPath} />
                   </StaggerItem>
                 ))}
               </div>
@@ -217,7 +277,7 @@ export function CourseListPage() {
             {totalPages > 1 && (
               <div className="mt-12 flex items-center justify-center gap-3">
                 <button
-                  onClick={() => setPage(p => Math.max(0, p - 1))}
+                  onClick={() => changePage(Math.max(0, page - 1))}
                   disabled={page === 0}
                   className="btn-secondary px-4 py-3 disabled:opacity-30"
                 >
@@ -242,7 +302,7 @@ export function CourseListPage() {
                   return (
                     <button
                       key={pageNum}
-                      onClick={() => setPage(pageNum)}
+                      onClick={() => changePage(pageNum)}
                       className={`px-4 py-3 rounded-xl text-[12px] font-bold transition-all ${
                         isCurrent
                           ? 'bg-orbit-accent text-white shadow-glow'
@@ -255,7 +315,7 @@ export function CourseListPage() {
                 })}
 
                 <button
-                  onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                  onClick={() => changePage(Math.min(totalPages - 1, page + 1))}
                   disabled={page >= totalPages - 1}
                   className="btn-secondary px-4 py-3 disabled:opacity-30"
                 >
@@ -275,21 +335,22 @@ export function CourseListPage() {
               <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/15 text-[10px] font-bold text-indigo-400">{matchedRepos.length}</span>
             </div>
             <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-              {matchedRepos.slice(0, MAX_REPO_RESULTS).map((r) => (
+              {matchedRepos.map((r) => (
                 <RepoSearchCard key={r.id} repo={r} />
               ))}
             </div>
-            {reposLoading && (
-              <div className="mt-6 flex items-center justify-center gap-3 text-orbit-text-muted">
-                <div className="h-3 w-3 rounded-full border border-orbit-accent/30 border-t-transparent animate-spin" />
-                <span className="text-[12px]">Đang tải thêm dữ liệu repo...</span>
-              </div>
-            )}
+          </div>
+        )}
+
+        {hasSearch && reposLoading && (
+          <div className="mb-14 flex items-center justify-center gap-3 text-orbit-text-muted">
+            <div className="h-3 w-3 rounded-full border border-orbit-accent/30 border-t-transparent animate-spin" />
+            <span className="text-[12px]">Đang tìm thêm trong dữ liệu repo...</span>
           </div>
         )}
 
         {/* ─── EMPTY STATE ─── */}
-        {!hasAnyResult && !loading && (
+        {!hasAnyResult && !loading && !reposLoading && (
           <div className="orbit-card p-16 md:p-24 text-center border-dashed border-2 border-orbit-accent/10">
             <div className="h-20 w-20 rounded-2xl bg-orbit-surface border border-orbit-border flex items-center justify-center mx-auto mb-8">
               {hasSearch ? <MagnifyingGlass className="h-10 w-10 text-orbit-text-muted" weight="light" /> : <BookOpen className="h-10 w-10 text-orbit-text-muted" weight="light" />}
@@ -305,7 +366,7 @@ export function CourseListPage() {
             </p>
             {hasSearch && (
               <button
-                onClick={() => setSearchQuery('')}
+                onClick={clearSearch}
                 className="btn-primary text-[12px]"
               >
                 <X className="h-4 w-4" weight="bold" />

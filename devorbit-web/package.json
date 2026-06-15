@@ -36,6 +36,7 @@
     "react-force-graph-2d": "^1.29.1",
     "react-redux": "^9.3.0",
     "react-router-dom": "^7.0.0",
+    "react-window": "^2.2.7",
     "sockjs-client": "^1.6.1",
     "three": "^0.184.0",
     "zustand": "^5.0.13"
@@ -46,6 +47,7 @@
     "@testing-library/react": "^16.1.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@types/react-window": "^1.8.8",
     "@types/sockjs-client": "^1.5.4",
     "@vitejs/plugin-react": "^4.3.0",
     "@vitejs/plugin-react-swc": "^4.3.1",

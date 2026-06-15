@@ -15,7 +15,6 @@ import vn.edu.uit.devorbit_api.dto.student.StudentLoginRequest;
 import vn.edu.uit.devorbit_api.dto.student.StudentProfileResponse;
 import vn.edu.uit.devorbit_api.dto.student.StudentRegisterRequest;
 import vn.edu.uit.devorbit_api.dto.student.UpdateAvatarRequest;
-import vn.edu.uit.devorbit_api.dto.student.UpdateAvatarRequest;
 import vn.edu.uit.devorbit_api.entity.Otp;
 import vn.edu.uit.devorbit_api.entity.OtpPurpose;
 import vn.edu.uit.devorbit_api.entity.StudentUser;
@@ -111,7 +110,6 @@ public class StudentAuthService {
                 .emailVerified(false)
                 .build());
 
-        // rate limit by email for register
         otpRateLimitService.check("EMAIL_VERIFICATION:" + student.getEmail());
 
         String otpCode = generateOtp();
@@ -236,21 +234,6 @@ public class StudentAuthService {
         String token = jwtService.generateToken(student.getStudentCode(), "STUDENT");
         return new StudentAuthResponse(token, student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail(), student.getAvatar());
     }
-
-    // ───────── LOGOUT ─────────
-
-    // ───────── UPDATE AVATAR ─────────
-
-    @Transactional
-    public StudentProfileResponse updateAvatar(String studentCode, UpdateAvatarRequest request) {
-        StudentUser student = studentUserRepository.findByStudentCode(studentCode)
-                .orElseThrow(() -> new UnauthorizedException("Student not found"));
-        student.setAvatar(request.avatar());
-        studentUserRepository.save(student);
-        return new StudentProfileResponse(student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail(), student.getAvatar());
-    }
-
-    // ───────── LOGOUT ─────────
 
     // ───────── UPDATE AVATAR ─────────
 

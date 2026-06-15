@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiStudentGet, apiGet } from '../lib/api'
 import type {
   ChatChannelResponse,
+  ChatMessageResponse,
   PaginatedMessagesResponse,
   RepoSocialInfoResponse,
   ReviewSummaryResponse,
@@ -9,6 +10,8 @@ import type {
 } from '../types/api'
 
 const CHANNELS_CACHE_KEY = 'devorbit-channels-cache'
+const MESSAGES_CACHE_KEY = 'devorbit-messages-cache'
+const MESSAGES_CACHE_TTL = 10 * 60 * 1000 // 10 minutes
 
 function getCachedChannels(): ChatChannelResponse[] | undefined {
   try {
@@ -30,6 +33,59 @@ function setCachedChannels(data: ChatChannelResponse[]) {
     localStorage.setItem(CHANNELS_CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }))
   } catch {}
 }
+
+// ─── Messages cache ───────────────────────────────────────────────────────────
+
+type CachedMessages = {
+  messages: ChatMessageResponse[]
+  totalPages: number
+  fetchedAt: number
+}
+
+function getMessagesCacheKey(channelId: number): string {
+  return `${MESSAGES_CACHE_KEY}-${channelId}`
+}
+
+export function getCachedMessages(channelId: number): CachedMessages | null {
+  try {
+    const raw = localStorage.getItem(getMessagesCacheKey(channelId))
+    if (!raw) return null
+    const parsed: CachedMessages = JSON.parse(raw)
+    if (Date.now() - parsed.fetchedAt > MESSAGES_CACHE_TTL) {
+      localStorage.removeItem(getMessagesCacheKey(channelId))
+      return null
+    }
+    return parsed
+  } catch {
+    return null
+  }
+}
+
+export function setCachedMessages(channelId: number, messages: ChatMessageResponse[], totalPages: number) {
+  try {
+    localStorage.setItem(
+      getMessagesCacheKey(channelId),
+      JSON.stringify({ messages, totalPages, fetchedAt: Date.now() }),
+    )
+  } catch {}
+}
+
+// ─── Parallel fetch all pages ──────────────────────────────────────────────────
+
+export async function fetchAllMessages(channelId: number, totalPages: number, size: number = 50): Promise<ChatMessageResponse[]> {
+  const pageRequests = Array.from({ length: totalPages }, (_, i) =>
+    apiStudentGet<PaginatedMessagesResponse>(
+      `/api/student/community/channels/${channelId}/messages?page=${i}&size=${size}`,
+    ),
+  )
+  const results = await Promise.all(pageRequests)
+  // Server returns pages newest-first, so reverse each and flatten
+  return results
+    .map((r) => [...r.content].reverse())
+    .flat()
+}
+
+// ─── Hooks ────────────────────────────────────────────────────────────────────
 
 const FALLBACK_CHANNELS: ChatChannelResponse[] = [
   { id: -1, channelId: 'general', name: 'General', type: 'GENERAL', referenceId: null },

@@ -18,12 +18,15 @@ export function useCommunitySocket({ channelId, enabled, onMessage, onPresence }
   const onMessageRef = useRef(onMessage)
   const onPresenceRef = useRef(onPresence)
   const channelIdRef = useRef(channelId)
+  const enabledRef = useRef(enabled)
   channelIdRef.current = channelId
   onMessageRef.current = onMessage
   onPresenceRef.current = onPresence
+  enabledRef.current = enabled
   const [error, setError] = useState<string | null>(null)
   const [connected, setConnected] = useState(false)
 
+  // Keep refs up-to-date without re-creating the client
   const unsubscribeCurrent = useCallback((client: Client) => {
     if (messageSubscriptionRef.current) {
       try {
@@ -44,6 +47,7 @@ export function useCommunitySocket({ channelId, enabled, onMessage, onPresence }
     }
   }, [])
 
+  // Stable callback — uses refs, no reactive deps
   const doSubscribe = useCallback((client: Client, cid: number) => {
     if (
       messageSubscriptionRef.current?.channelId === cid &&
@@ -75,11 +79,27 @@ export function useCommunitySocket({ channelId, enabled, onMessage, onPresence }
     presenceSubscriptionRef.current = { id: presenceSub.id, channelId: cid }
   }, [unsubscribeCurrent])
 
+  // ── Effect 1: create + activate client once ──────────────────────────────────
   useEffect(() => {
-    if (!enabled) return
+    if (!enabled) {
+      clientRef.current?.deactivate()
+      clientRef.current = null
+      setConnected(false)
+      return
+    }
 
     const token = getStudentToken()
     if (!token) return
+
+    // Re-use existing connection if already active
+    if (clientRef.current?.connected) {
+      setConnected(true)
+      const cid = channelIdRef.current
+      if (cid !== null) {
+        doSubscribe(clientRef.current, cid)
+      }
+      return
+    }
 
     const client = new Client({
       webSocketFactory: () => new SockJS('/ws/community'),
@@ -90,7 +110,6 @@ export function useCommunitySocket({ channelId, enabled, onMessage, onPresence }
       heartbeatIncoming: 10000,
       heartbeatOutgoing: 10000,
       onConnect: () => {
-        clientRef.current = client
         setConnected(true)
         setError(null)
         const cid = channelIdRef.current
@@ -99,8 +118,6 @@ export function useCommunitySocket({ channelId, enabled, onMessage, onPresence }
         }
       },
       onDisconnect: () => {
-        messageSubscriptionRef.current = null
-        presenceSubscriptionRef.current = null
         setConnected(false)
       },
       onStompError: (frame) => {
@@ -115,17 +132,21 @@ export function useCommunitySocket({ channelId, enabled, onMessage, onPresence }
 
     return () => {
       client.deactivate()
-      clientRef.current = null
-      messageSubscriptionRef.current = null
-      presenceSubscriptionRef.current = null
-      setConnected(false)
+      // Only null out if this is the same client instance (not replaced by reconnect)
+      if (clientRef.current === client) {
+        clientRef.current = null
+        messageSubscriptionRef.current = null
+        presenceSubscriptionRef.current = null
+      }
     }
-  }, [doSubscribe, enabled])
+  }, [enabled]) // intentionally empty deps — client is created once
 
+  // ── Effect 2: re-subscribe when channelId changes (no reconnect) ──────────────
   useEffect(() => {
-    if (!clientRef.current || !clientRef.current.connected || channelId === null) return
-    doSubscribe(clientRef.current, channelId)
-  }, [channelId, doSubscribe])
+    const client = clientRef.current
+    if (!client?.connected || channelId === null) return
+    doSubscribe(client, channelId)
+  }, [channelId])
 
   const sendMessage = useCallback((channelId: number, content: string) => {
     const client = clientRef.current
@@ -133,7 +154,6 @@ export function useCommunitySocket({ channelId, enabled, onMessage, onPresence }
       console.error('[WS] cannot send - client not connected')
       return false
     }
-
     try {
       client.publish({
         destination: `/app/chat.send/${channelId}`,

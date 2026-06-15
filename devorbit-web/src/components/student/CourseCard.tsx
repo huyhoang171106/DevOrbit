@@ -3,13 +3,21 @@ import type { CourseSummary } from '../../types/api'
 import { getCourseColor, colorMap } from '../../lib/colors'
 import { BookOpen, ArrowRight, Stack } from '@phosphor-icons/react'
 
-export function CourseCard({ course }: { course: CourseSummary; index?: number }) {
+export function CourseCard({
+  course,
+  courseListPath = '/courses',
+}: {
+  course: CourseSummary
+  courseListPath?: string
+  index?: number
+}) {
   const themeColor = getCourseColor(course.code)
   const colors = colorMap[themeColor as keyof typeof colorMap]
 
   return (
     <Link
       to={`/courses/${course.id}`}
+      state={{ courseListPath }}
       className="group relative flex flex-col h-full orbit-card cursor-pointer overflow-hidden"
     >
       <div className="absolute -top-20 -right-20 w-40 h-40 bg-orbit-accent/5 blur-[80px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700" />

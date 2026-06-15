@@ -16,6 +16,9 @@ This file maps product behavior to proof.
 
 | Story | Contract | Unit | Integration | E2E | Platform | Status | Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| US-043 | Course List Navigation State | pass | no | page-level jsdom | TypeScript + Vite build | implemented | `devorbit-web`: browser Back and `Danh mục` preserve the originating page in 23/23 targeted tests; full Vitest suite 162/162 with `--maxWorkers=1`, TypeScript, and build passed on 2026-06-14. |
+| US-042 | Course Library Search Relevance | pass | no | page-level jsdom | TypeScript + Vite build | implemented | `devorbit-web`: exact ranking without result locking, phrase, OR keyword, word-boundary, and typing-prefix regressions included in 23/23 targeted tests; full Vitest suite 162/162 with `--maxWorkers=1`, `npx tsc --noEmit`, and `npm run build` passed on 2026-06-14. |
+| US-041 | Course Library Pagination and Repository Filter Visibility | pass | no | page-level jsdom | TypeScript + Vite build | implemented | `devorbit-web`: targeted course list/detail tests 2/2, full Vitest suite 144/144, `npx tsc --noEmit`, and `npm run build` passed on 2026-06-13. |
 | US-015 | Simulation Engine | pass | pass | no | no | implemented | Plan 1.3 Summary (verified locally) |
 | US-016 | Photobooth Upload | - | - | - | Browser | planned | - |
 | US-017 | AI Roadmap Generator | - | pass | pass | no | implemented | US-017-PLAN-1.1 (verified locally) |

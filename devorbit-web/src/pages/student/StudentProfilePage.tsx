@@ -120,11 +120,12 @@ export function StudentProfilePage() {
               name={profile.fullName}
               size={128}
               src={profile.avatar}
-              className="ring-4 ring-orbit-accent/20 rounded-full transition-opacity"
+              className="ring-4 ring-orbit-accent/20 rounded-full transition-all duration-300 group-hover:scale-105 group-hover:brightness-50"
             />
             {/* Hover overlay */}
-            <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <Camera className="h-8 w-8 text-white" weight="fill" />
+            <div className="absolute inset-0 rounded-full bg-black/60 flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 gap-2">
+              <Camera className="h-8 w-8 text-white scale-75 group-hover:scale-100 transition-transform duration-300" weight="fill" />
+              <span className="text-white text-[11px] font-bold tracking-wide">Đổi ảnh</span>
             </div>
             <input
               ref={fileInputRef}

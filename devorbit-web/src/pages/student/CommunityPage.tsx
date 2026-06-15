@@ -387,13 +387,9 @@ function ChatArea({
                 }}
                 className={`flex gap-3 ${isMine ? 'flex-row-reverse' : ''}`}
               >
-                {!isMine && (
-                  <div className="shrink-0 h-8 w-8 rounded-full bg-orbit-accent/10 border border-orbit-accent/20 flex items-center justify-center">
-                    <span className="text-[11px] font-bold text-orbit-accent">
-                      {msg.senderName.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                )}
+                <div className="shrink-0">
+                  <Avatar name={msg.senderName} size={32} src={msg.senderAvatar} />
+                </div>
                 <div className={`flex-1 min-w-0 ${isMine ? 'flex flex-col items-end' : ''}`}>
                   {!isMine && (
                     <div className="flex items-baseline gap-2">
@@ -490,7 +486,7 @@ export function OnlineMembers({ members, connected }: { members: OnlineMemberRes
             {members.map((m) => (
               <div key={m.studentCode} className="flex items-center gap-3 group">
                 <div className="relative shrink-0">
-                  <Avatar name={m.displayName} size={32} />
+                  <Avatar name={m.displayName} size={32} src={m.avatar} />
                   <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-500 border-2 border-orbit-bg" />
                 </div>
                 <div className="flex-1 min-w-0">

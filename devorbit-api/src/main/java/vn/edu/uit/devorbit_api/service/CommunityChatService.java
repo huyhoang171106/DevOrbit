@@ -32,7 +32,9 @@ public class CommunityChatService {
 
     @Transactional
     public List<ChatChannelResponse> getChannels() {
-        syncChannels();
+        if (channelRepository.count() == 0) {
+            syncChannels();
+        }
         return channelRepository.findAllByOrderByTypeAscNameAsc()
                 .stream()
                 .map(this::toChannelResponse)
@@ -113,6 +115,7 @@ public class CommunityChatService {
                 message.getChannel().getId(),
                 message.getStudent().getId(),
                 message.getStudent().getFullName(),
+                message.getStudent().getAvatar(),
                 message.getContent(),
                 message.getCreatedAt() != null ? message.getCreatedAt().toString() : null);
     }

@@ -13,8 +13,8 @@ afterEach(() => {
 describe('OnlineMembers', () => {
   test('renders online members for the active channel', () => {
     const members: OnlineMemberResponse[] = [
-      { studentId: 1, studentCode: '24520554', displayName: 'Bao Nguyen' },
-      { studentId: 2, studentCode: '24520001', displayName: 'An Tran' },
+      { studentId: 1, studentCode: '24520554', displayName: 'Bao Nguyen', avatar: null },
+      { studentId: 2, studentCode: '24520001', displayName: 'An Tran', avatar: null },
     ]
 
     render(<OnlineMembers members={members} connected={true} />)

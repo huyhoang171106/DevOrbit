@@ -17,7 +17,7 @@ export function buildApiUrl(baseUrl: string, path: string): string {
 }
 
 type RequestOptions = {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
   token?: string
   body?: unknown
 }
@@ -97,6 +97,12 @@ export const apiStudentDelete = (path: string) => {
   const token = getStudentToken()
   if (!token) throw new Error('Not authenticated')
   return request<void>(path, { method: 'DELETE', token })
+}
+
+export const apiStudentPatch = <T>(path: string, body: unknown) => {
+  const token = getStudentToken()
+  if (!token) throw new Error('Not authenticated')
+  return request<T>(path, { method: 'PATCH', token, body })
 }
 
 // --- Admin API (authenticated) ---

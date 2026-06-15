@@ -47,11 +47,17 @@ export function RecentActivity({ stats }: RecentActivityProps) {
         }}
       />
       <RecentSection
-        title="Bài nộp gần đây"
+        title="Repo chờ duyệt"
         items={stats.recentSubmissions}
         render={(item: unknown) => {
-          const s = item as { githubUrl?: string; courseName?: string }
-          return <span className="truncate block">{s.courseName || 'Repo'}</span>
+          const s = item as { githubUrl?: string; courseName?: string; status?: string }
+          const repoName = s.githubUrl?.replace(/^https?:\/\/github\.com\//, '').replace(/\.git$/, '') || s.courseName || 'Repo'
+          return (
+            <a href={s.githubUrl} target="_blank" rel="noopener noreferrer" className="hover:text-orbit-accent transition-colors">
+              {repoName}
+              <span className="text-ink-muted"> · {s.courseName || '?'}</span>
+            </a>
+          )
         }}
       />
     </div>

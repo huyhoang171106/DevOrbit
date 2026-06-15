@@ -54,7 +54,7 @@ public class GithubRepoService {
             throw new NotFoundException("Repo not found: " + repoId);
         }
         // Fire async refresh in background — cached response returns immediately
-        self.asyncRefreshLastPushedAt(repoId);
+        try { self.asyncRefreshLastPushedAt(repoId); } catch (Exception ignored) {}
         return mapToRepoSummary(repo);
     }
 
@@ -68,7 +68,7 @@ public class GithubRepoService {
         // Fire async refresh for any repos needing GitHub data
         for (var repo : githubRepoRepository.findByCourseIdAndActiveTrue(courseId)) {
             if (repo.getLastPushedAt() == null || repo.getLastPushedAt().isBlank()) {
-                self.asyncRefreshLastPushedAt(repo.getId());
+                try { self.asyncRefreshLastPushedAt(repo.getId()); } catch (Exception ignored) {}
             }
         }
         return responses;
@@ -85,7 +85,7 @@ public class GithubRepoService {
         // Async refresh in background
         for (var repo : repos) {
             if (repo.getLastPushedAt() == null || repo.getLastPushedAt().isBlank()) {
-                self.asyncRefreshLastPushedAt(repo.getId());
+                try { self.asyncRefreshLastPushedAt(repo.getId()); } catch (Exception ignored) {}
             }
         }
         return responses;

@@ -57,14 +57,14 @@ public class CommunityPresenceService {
     private OnlineMemberResponse toOnlineMember(String studentCode) {
         return studentUserRepository.findByStudentCode(studentCode)
                 .map(this::toOnlineMember)
-                .orElseGet(() -> new OnlineMemberResponse(null, studentCode, studentCode));
+                .orElseGet(() -> new OnlineMemberResponse(null, studentCode, studentCode, null));
     }
 
     private OnlineMemberResponse toOnlineMember(StudentUser student) {
         String displayName = student.getFullName() == null || student.getFullName().isBlank()
                 ? student.getStudentCode()
                 : student.getFullName();
-        return new OnlineMemberResponse(student.getId(), student.getStudentCode(), displayName);
+        return new OnlineMemberResponse(student.getId(), student.getStudentCode(), displayName, student.getAvatar());
     }
 
     private String subscriptionKey(String sessionId, String subscriptionId) {

@@ -61,7 +61,7 @@ export function ReviewsPage() {
     const q = search.trim().toLowerCase()
     let filtered = q
       ? courseReviews.filter(
-          (r) => r.studentName.toLowerCase().includes(q) || r.courseName.toLowerCase().includes(q)
+          (r) => r.studentName.toLowerCase().includes(q) || r.courseName.toLowerCase().includes(q) || (r.comment && r.comment.toLowerCase().includes(q))
         )
       : courseReviews
     const sorted = [...filtered]
@@ -82,7 +82,7 @@ export function ReviewsPage() {
     const q = search.trim().toLowerCase()
     let filtered = q
       ? repoReviews.filter(
-          (r) => r.studentName.toLowerCase().includes(q) || r.repoName.toLowerCase().includes(q)
+          (r) => r.studentName.toLowerCase().includes(q) || r.repoName.toLowerCase().includes(q) || (r.comment && r.comment.toLowerCase().includes(q))
         )
       : repoReviews
     const sorted = [...filtered]
@@ -177,7 +177,7 @@ export function ReviewsPage() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Tìm theo tên sinh viên, tên môn học..."
+          placeholder="Tìm theo tên sinh viên, môn học, nội dung..."
           className="flex-1 min-w-[200px] bg-orbit-bg border border-orbit-border rounded-2xl px-3 py-2 text-[13px] text-orbit-text outline-none focus:border-orbit-accent/60 placeholder:text-orbit-text-muted"
         />
       </div>

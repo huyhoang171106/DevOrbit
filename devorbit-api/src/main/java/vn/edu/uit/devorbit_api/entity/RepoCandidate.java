@@ -2,6 +2,8 @@ package vn.edu.uit.devorbit_api.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import java.time.LocalDateTime;
 
 /**
  * REPO CANDIDATE = a GitHub repo discovered by scanning, waiting for admin review.
@@ -87,4 +89,8 @@ public class RepoCandidate {
     /** Admin assigned to review this candidate */
     @Column(name = "assigned_reviewer", length = 50)
     private String assignedReviewer;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 }

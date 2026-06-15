@@ -86,23 +86,34 @@ public class GithubScanService {
         Course course = courseRepository.findById(courseId)
             .orElseThrow(() -> new BadRequestException("Course not found: " + courseId));
 
-        String json = webClient.get()
-            .uri(uriBuilder -> uriBuilder
-                .path("/search/repositories")
-                .queryParam("q", query)
-                .queryParam("per_page", 100)
-                .build())
-            .retrieve()
-            .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-                resp -> resp.bodyToMono(String.class)
-                    .map(body -> new BadRequestException("GitHub API error (" + resp.statusCode() + "): " + body)))
-            .bodyToMono(String.class)
-            .block(Duration.ofSeconds(30));
+        addLog("Scanning " + course.getMaMH() + " với query: " + query);
+
+        String json;
+        try {
+            json = webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                    .path("/search/repositories")
+                    .queryParam("q", query)
+                    .queryParam("per_page", 100)
+                    .build())
+                .retrieve()
+                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                    resp -> resp.bodyToMono(String.class)
+                        .map(body -> new BadRequestException("GitHub API error (" + resp.statusCode() + "): " + body)))
+                .bodyToMono(String.class)
+                .block(Duration.ofSeconds(30));
+        } catch (Exception e) {
+            String msg = e.getMessage();
+            if (msg != null && msg.length() > 120) msg = msg.substring(0, 120) + "...";
+            addLog("!! Lỗi: " + (msg != null ? msg : e.getClass().getSimpleName()));
+            throw e;
+        }
 
         JsonNode root;
         try {
             root = objectMapper.readTree(json);
         } catch (JsonProcessingException e) {
+            addLog("!! Lỗi: Phản hồi GitHub không hợp lệ");
             throw new BadRequestException("Invalid GitHub API response");
         }
         JsonNode items = root.path("items");
@@ -134,6 +145,8 @@ public class GithubScanService {
             // Skip forks for better quality
             if (item.path("fork").asBoolean(false)) continue;
 
+            addLog("  + " + fullName);
+
             // Add to set to avoid duplicates within the same scan result or subsequent variations
             existingUrls.add(htmlUrl);
 
@@ -164,6 +177,7 @@ public class GithubScanService {
             results.add(RepoCandidateResponse.from(saved));
         }
 
+        addLog("Hoàn tất: " + results.size() + " repo mới cho " + course.getMaMH());
         return results;
     }
 

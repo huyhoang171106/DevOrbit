@@ -2057,3 +2057,5 @@ INSERT INTO "public"."github_repos" ("id", "repo_name", "description", "github_u
 (264, '24521736_Lab5_IT008', 'Bài tập thực hành Lab 5 Lập trình trực quan', 'https://github.com/DonThuanUIT-24521736/24521736_Lab5_IT008', null, 'IT008', '24521736_Lab5_IT008', 'C#', true, (SELECT stt FROM courses WHERE mamh = 'IT008'), 0), 
 (265, 'IT012', 'To chuc cau truc may tinh UIT', 'https://github.com/locluclak/IT012', null, 'IT012', 'IT012', 'Assembly', true, (SELECT stt FROM courses WHERE mamh = 'IT012'), 0), 
 (266, 'IT002-OOP', 'Lập trình hướng đối tượng - Đại học Công nghệ Thông tin (UIT)', 'https://github.com/doxuantu110/IT002-OOP', null, 'IT002', 'IT002-OOP', 'C++', true, (SELECT stt FROM courses WHERE mamh = 'IT002'), 0) ON CONFLICT (id) DO NOTHING;
+
+SELECT setval('github_repos_id_seq', (SELECT COALESCE(MAX(id), 1) FROM github_repos));

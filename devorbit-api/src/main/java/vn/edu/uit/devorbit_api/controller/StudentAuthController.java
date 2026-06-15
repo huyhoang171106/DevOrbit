@@ -13,6 +13,8 @@ import vn.edu.uit.devorbit_api.dto.student.StudentAuthResponse;
 import vn.edu.uit.devorbit_api.dto.student.StudentLoginRequest;
 import vn.edu.uit.devorbit_api.dto.student.StudentProfileResponse;
 import vn.edu.uit.devorbit_api.dto.student.StudentRegisterRequest;
+import vn.edu.uit.devorbit_api.dto.student.UpdateAvatarRequest;
+import vn.edu.uit.devorbit_api.dto.student.UpdateAvatarRequest;
 import vn.edu.uit.devorbit_api.entity.OtpPurpose;
 import vn.edu.uit.devorbit_api.exception.BadRequestException;
 import vn.edu.uit.devorbit_api.service.StudentAuthService;
@@ -116,5 +118,11 @@ public class StudentAuthController {
     @GetMapping("/me")
     public StudentProfileResponse me(@AuthenticationPrincipal String studentCode) {
         return studentAuthService.me(studentCode);
+    }
+
+    @PatchMapping("/me/avatar")
+    public StudentProfileResponse updateAvatar(@AuthenticationPrincipal String studentCode,
+                                                @RequestBody @Valid UpdateAvatarRequest request) {
+        return studentAuthService.updateAvatar(studentCode, request);
     }
 }

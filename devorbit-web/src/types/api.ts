@@ -102,6 +102,7 @@ export type StudentProfileResponse = {
   studentCode: string
   fullName: string
   email: string
+  avatar: string | null
 }
 
 export type OtpVerificationRequest = {
@@ -282,6 +283,7 @@ export type ChatMessageResponse = {
   channelId: number
   studentId: number
   senderName: string
+  senderAvatar: string | null
   content: string
   createdAt: string
 }
@@ -290,6 +292,7 @@ export type OnlineMemberResponse = {
   studentId: number | null
   studentCode: string
   displayName: string
+  avatar: string | null
 }
 
 export type ChannelPresenceResponse = {

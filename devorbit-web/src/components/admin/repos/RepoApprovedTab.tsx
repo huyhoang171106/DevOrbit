@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { adminApi } from '../../../lib/adminApi'
 import { useAdminFetch } from '../../../lib/adminHooks'
 import { AdminSpinner } from '../shared/AdminSpinner'
@@ -22,7 +22,26 @@ export function RepoApprovedTab() {
   const { data: courses } = useAdminFetch(
     (t) => adminApi.getCourses(t),
     [],
+    'courses',
   )
+
+  const [searchQuery, setSearchQuery] = useState('')
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'alpha-asc' | 'alpha-desc'>('newest')
+
+  const filteredRepos = useMemo(() => {
+    if (!repos) return []
+    const q = searchQuery.toLowerCase().trim()
+    let filtered = q ? repos.filter((r) => r.displayName.toLowerCase().includes(q)) : [...repos]
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'newest': return b.id - a.id
+        case 'oldest': return a.id - b.id
+        case 'alpha-asc': return (a.displayName || '').localeCompare(b.displayName || '')
+        case 'alpha-desc': return (b.displayName || '').localeCompare(a.displayName || '')
+      }
+    })
+    return filtered
+  }, [repos, searchQuery, sortBy])
 
   const handleEdit = (repo: RepoSummary) => {
     setEditingRepo(repo)
@@ -51,6 +70,22 @@ export function RepoApprovedTab() {
 
   return (
     <div>
+      <div className="flex items-center gap-3 mb-4">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="input-field flex-1"
+          placeholder="Tìm theo tên repo..."
+        />
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)} className="input-field w-auto">
+          <option value="newest">Mới nhất</option>
+          <option value="oldest">Cũ nhất</option>
+          <option value="alpha-asc">A-Z</option>
+          <option value="alpha-desc">Z-A</option>
+        </select>
+      </div>
+
       <div className="glass-card overflow-hidden border border-orbit-border">
         <table className="w-full">
           <thead>
@@ -63,23 +98,27 @@ export function RepoApprovedTab() {
             </tr>
           </thead>
           <tbody className="divide-y divide-clay-border">
-            {(!repos || repos.length === 0) && (
+            {filteredRepos.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-10 text-center body-sm text-ink-secondary">Không có approved repos</td>
+                <td colSpan={5} className="px-4 py-10 text-center body-sm text-ink-secondary">
+                  {searchQuery.trim() ? 'Không tìm thấy repo phù hợp' : 'Không có approved repos'}
+                </td>
               </tr>
             )}
-            {repos?.map((repo) => (
+            {filteredRepos.map((repo) => (
               <tr key={repo.id} className="transition-colors hover:bg-orbit-surface/30">
-                <td className="px-4 py-3 text-sm">
-                  <span className="font-medium text-ink-primary">{repo.displayName}</span>
+                <td className="px-4 py-3 text-sm text-center">
+                  <a href={repo.githubUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-ink-primary hover:text-orbit-accent transition-colors">
+                    {repo.displayName}
+                  </a>
                 </td>
-                <td className="px-4 py-3 text-sm text-ink-secondary">{repo.courseName ?? '-'}</td>
-                <td className="px-4 py-3 text-sm text-ink-secondary">{repo.primaryLanguage ?? '-'}</td>
-                <td className="px-4 py-3 text-sm text-ink-secondary">{repo.stars ?? '-'}</td>
-                <td className="px-4 py-3 text-sm text-right">
-                  <div className="flex justify-end gap-2">
-                    <button onClick={() => handleEdit(repo)} className="btn-ghost text-xs">Sửa</button>
-                    <button onClick={() => handleDeactivate(repo.id)} className="btn-ghost text-xs text-red-400">Vô hiệu</button>
+                <td className="px-4 py-3 text-sm text-center text-ink-secondary">{repo.courseName ?? '-'}</td>
+                <td className="px-4 py-3 text-sm text-center text-ink-secondary">{repo.primaryLanguage ?? '-'}</td>
+                <td className="px-4 py-3 text-sm text-center text-ink-secondary">{repo.stars ?? '-'}</td>
+                <td className="px-4 py-3 text-sm text-center">
+                  <div className="flex justify-center gap-2">
+                    <button onClick={() => handleEdit(repo)} className="btn-ghost text-xs whitespace-nowrap">Sửa</button>
+                    <button onClick={() => handleDeactivate(repo.id)} className="btn-ghost text-xs whitespace-nowrap text-red-400">Vô hiệu</button>
                   </div>
                 </td>
               </tr>

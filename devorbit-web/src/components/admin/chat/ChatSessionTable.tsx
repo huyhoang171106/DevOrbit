@@ -16,11 +16,11 @@ export function ChatSessionTable({ sessions, selectedSessionId, onSelect }: Chat
   }
 
   return (
-    <div className="glass-card overflow-hidden">
+    <div className="glass-card" onWheel={(e) => e.stopPropagation()}>
       <div className="px-4 py-3 border-b border-orbit-border">
         <h3 className="text-sm font-semibold text-ink-primary">Phiên</h3>
       </div>
-      <div className="divide-y divide-clay-border/50">
+      <div className="divide-y divide-clay-border/50 max-h-[600px] overflow-y-auto overscroll-contain" style={{ scrollbarWidth: 'thin', scrollbarColor: '#52525b transparent' }}>
         {sessions.map((session) => (
           <button
             key={session.id}

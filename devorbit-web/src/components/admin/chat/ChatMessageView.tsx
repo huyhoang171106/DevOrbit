@@ -23,7 +23,7 @@ export function ChatMessageView({ messages, loading }: ChatMessageViewProps) {
   }
 
   return (
-    <div className="glass-card overflow-hidden">
+    <div className="glass-card" onWheel={(e) => e.stopPropagation()}>
       <div className="px-4 py-3 border-b border-orbit-border">
         <h3 className="text-sm font-semibold text-ink-primary">Hội thoại</h3>
       </div>

@@ -49,6 +49,7 @@ create table if not exists student_users (
     password_hash   varchar(255) not null,
     active          boolean      not null default true,
     email_verified  boolean      not null default false,
+    avatar          text,
     created_at      timestamp    not null default now()
 );
 

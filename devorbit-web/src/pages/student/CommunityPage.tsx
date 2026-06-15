@@ -10,12 +10,13 @@ import {
   SignIn,
   ArrowDown,
 } from '@phosphor-icons/react'
-import { useChannels, useChannelMessages, useInvalidateChannelMessages, useCurrentStudent } from '../../hooks/useCommunity'
+import { useChannels, useInvalidateChannelMessages, useCurrentStudent, getCachedMessages, setCachedMessages } from '../../hooks/useCommunity'
+import { apiStudentGet } from '../../lib/api'
 import { useCommunitySocket } from '../../hooks/useCommunitySocket'
 import { isStudentAuthenticated } from '../../lib/auth'
 import { useNavigate } from 'react-router-dom'
 import { Avatar } from '../../components/shared/Avatar'
-import type { ChannelPresenceResponse, ChatChannelResponse, ChatMessageResponse, OnlineMemberResponse } from '../../types/api'
+import type { ChannelPresenceResponse, ChatChannelResponse, ChatMessageResponse, OnlineMemberResponse, PaginatedMessagesResponse } from '../../types/api'
 
 const CHANNEL_GROUP_LABELS: Record<string, string> = {
   GENERAL: 'Chung',
@@ -243,9 +244,6 @@ function ChatArea({
   channel,
   messages,
   loadingMessages,
-  page,
-  totalPages,
-  onLoadMore,
   onSend,
   authenticated,
   currentUserId,
@@ -253,9 +251,6 @@ function ChatArea({
   channel: ChatChannelResponse | null
   messages: ChatMessageResponse[]
   loadingMessages: boolean
-  page: number
-  totalPages: number
-  onLoadMore: () => void
   onSend: (content: string) => void
   authenticated: boolean
   currentUserId: number | null
@@ -295,11 +290,6 @@ function ChatArea({
     const el = containerRef.current
     const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100
     autoScrollRef.current = atBottom
-
-    // Load more when scrolled near top
-    if (el.scrollTop < 150 && page < totalPages - 1 && !loadingMessages) {
-      onLoadMore()
-    }
 
     // Calculate visible range for virtualization
     const scrollTop = el.scrollTop
@@ -360,19 +350,9 @@ function ChatArea({
         onScroll={handleScroll}
         className="flex-1 overflow-y-auto scrollbar-thin px-6 py-4 min-h-0"
       >
-        {/* Load more at top */}
-        {page < totalPages - 1 && (
-          <div className="flex justify-center py-2">
-            {loadingMessages ? (
-              <Spinner className="h-4 w-4 text-orbit-accent animate-spin" />
-            ) : (
-              <button
-                onClick={onLoadMore}
-                className="text-[11px] text-orbit-accent hover:underline font-medium"
-              >
-                Tải tin nhắn cũ hơn
-              </button>
-            )}
+        {loadingMessages && messages.length === 0 && (
+          <div className="flex justify-center py-8">
+            <Spinner className="h-5 w-5 text-orbit-accent animate-spin" />
           </div>
         )}
 
@@ -532,9 +512,10 @@ export function CommunityPage() {
 
   const { data: channels = [], isLoading: channelsLoading } = useChannels()
   const [activeChannel, setActiveChannel] = useState<ChatChannelResponse | null>(null)
-  const [page, setPage] = useState(0)
   const [allMessages, setAllMessages] = useState<ChatMessageResponse[]>([])
   const [totalPages, setTotalPages] = useState(1)
+  const [messagesLoading, setMessagesLoading] = useState(false)
+  const [messagesFetching, setMessagesFetching] = useState(false)
 
   const [search, setSearch] = useState('')
   const [subscribedIds, setSubscribedIds] = useState<Set<number>>(() => getSubscribedIds())
@@ -542,17 +523,71 @@ export function CommunityPage() {
   const [onlineMembers, setOnlineMembers] = useState<OnlineMemberResponse[]>([])
   const invalidateChannelMessages = useInvalidateChannelMessages()
 
-  const { data: fetchedPage, isLoading: messagesLoading, isFetching: messagesFetching } =
-    useChannelMessages(activeChannel?.id ?? null, page)
   const { data: currentStudent } = useCurrentStudent()
 
   const activeChannelRef = useRef(activeChannel)
   activeChannelRef.current = activeChannel
 
+  // ─── Load messages: cache-first + parallel fetch all pages ─────────────────
+  const loadChannelMessages = useCallback(async (ch: ChatChannelResponse) => {
+    const cached = getCachedMessages(ch.id)
+    if (cached) {
+      // Show cached immediately
+      setAllMessages(cached.messages)
+      setTotalPages(cached.totalPages)
+    }
+
+    setMessagesLoading(cached === null)
+    setMessagesFetching(true)
+
+    try {
+      // Always fetch page 0 to get totalPages, then fetch all remaining pages in parallel
+      const firstPage = await apiStudentGet<PaginatedMessagesResponse>(
+        `/api/student/community/channels/${ch.id}/messages?page=0&size=50`,
+      )
+      const tp = firstPage.totalPages ?? 1
+
+      if (cached?.totalPages === tp) {
+        // Cache is still fresh, no need to re-fetch
+        setMessagesLoading(false)
+        setMessagesFetching(false)
+        return
+      }
+
+      let msgs: ChatMessageResponse[]
+      if (tp <= 1) {
+        msgs = [...firstPage.content].reverse()
+      } else {
+        // Fetch all pages in parallel
+        const pageRequests = Array.from({ length: tp }, (_, i) =>
+          apiStudentGet<PaginatedMessagesResponse>(
+            `/api/student/community/channels/${ch.id}/messages?page=${i}&size=50`,
+          ),
+        )
+        const settled = await Promise.allSettled(pageRequests)
+        msgs = settled
+          .map((r) => (r.status === 'fulfilled' ? [...r.value.content].reverse() : []))
+          .flat()
+      }
+      setAllMessages(msgs)
+      setTotalPages(tp)
+      setCachedMessages(ch.id, msgs, tp)
+    } catch (err) {
+      console.error('[Community] failed to load messages', err)
+    } finally {
+      setMessagesLoading(false)
+      setMessagesFetching(false)
+    }
+  }, [])
+
   const handleRealtimeMessage = useCallback((msg: ChatMessageResponse) => {
     const current = activeChannelRef.current
     if (current && msg.channelId === current.id) {
-      setAllMessages((prev) => [...prev, msg])
+      setAllMessages((prev) => {
+        // Avoid duplicate (in case optimistic add already inserted it)
+        if (prev.some((m) => m.id === msg.id)) return prev
+        return [...prev, msg]
+      })
     }
   }, [])
 
@@ -588,34 +623,23 @@ export function CommunityPage() {
     })
   }, [channels])
 
+  // Load messages when active channel changes
   useEffect(() => {
-    if (fetchedPage) {
-      const { content, totalPages } = fetchedPage
-      const ordered = [...content].reverse()
-      if (page === 0) {
-        setAllMessages(ordered)
-      } else {
-        setAllMessages((prev) => [...ordered, ...prev])
-      }
-      setTotalPages(totalPages)
+    if (activeChannel) {
+      loadChannelMessages(activeChannel)
     }
-  }, [fetchedPage, page])
+  }, [activeChannel?.id])
 
   const handleChannelSelect = (ch: ChatChannelResponse) => {
     if (ch.id !== activeChannel?.id) {
-      setActiveChannel(ch)
-      setPage(0)
-      setAllMessages([])
-      setTotalPages(1)
-      if (activeChannel?.id != null) {
+      if (activeChannel?.id != null && activeChannel.id > 0) {
+        // Cache current messages before switching
+        setCachedMessages(activeChannel.id, allMessages, totalPages)
         invalidateChannelMessages(activeChannel.id)
       }
-    }
-  }
-
-  const handleLoadMore = () => {
-    if (page < totalPages - 1) {
-      setPage((p) => p + 1)
+      setActiveChannel(ch)
+      setAllMessages([])
+      setTotalPages(1)
     }
   }
 
@@ -630,7 +654,6 @@ export function CommunityPage() {
     if (activeChannel?.id === confirm.id) {
       const general = channels.find((ch) => ch.type === 'GENERAL') || channels[0]
       setActiveChannel(general)
-      setPage(0)
       setAllMessages([])
       setTotalPages(1)
     }
@@ -694,9 +717,6 @@ export function CommunityPage() {
                 channel={activeChannel}
                 messages={allMessages}
                 loadingMessages={messagesLoading || messagesFetching}
-                page={page}
-                totalPages={totalPages}
-                onLoadMore={handleLoadMore}
                 onSend={handleSendMessage}
                 authenticated={authenticated}
                 currentUserId={currentStudent?.id ?? null}

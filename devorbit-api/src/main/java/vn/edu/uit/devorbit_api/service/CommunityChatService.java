@@ -115,6 +115,7 @@ public class CommunityChatService {
                 message.getChannel().getId(),
                 message.getStudent().getId(),
                 message.getStudent().getFullName(),
+                message.getStudent().getAvatar(),
                 message.getContent(),
                 message.getCreatedAt() != null ? message.getCreatedAt().toString() : null);
     }

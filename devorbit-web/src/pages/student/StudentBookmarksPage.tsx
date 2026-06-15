@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { apiStudentGet, apiStudentDelete } from '../../lib/api'
-import { isStudentAuthenticated, clearStudentToken } from '../../lib/auth'
+import { isStudentAuthenticated } from '../../lib/auth'
 import type { StudentBookmark } from '../../types/api'
 
 export function StudentBookmarksPage() {
@@ -29,11 +29,6 @@ export function StudentBookmarksPage() {
     }
   }
 
-  function handleLogout() {
-    clearStudentToken()
-    navigate('/courses')
-  }
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-[96px]">
@@ -58,10 +53,7 @@ export function StudentBookmarksPage() {
             Các mục học tập bạn đã lưu.
           </p>
         </div>
-        <button onClick={handleLogout} className="btn-secondary text-[13px] self-start sm:self-auto">
-          Đăng xuất
-        </button>
-      </div>
+    </div>
 
       {bookmarks.length === 0 ? (
         <div className="glass-card p-[48px] text-center">

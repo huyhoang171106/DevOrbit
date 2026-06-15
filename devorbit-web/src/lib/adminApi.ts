@@ -106,6 +106,8 @@ export const adminApi = {
     apiAdminPost<{ message: string }>('/api/admin/github/scan-all', token, {}),
   getScanLogs: (token: string) =>
     apiAdminGet<string[]>('/api/admin/github/scan-logs', token),
+  clearScanLogs: (token: string) =>
+    apiAdminDelete('/api/admin/github/scan-logs', token),
 
   // --- Repos: Candidates ---
   getCandidates: (token: string, reviewer?: string) =>

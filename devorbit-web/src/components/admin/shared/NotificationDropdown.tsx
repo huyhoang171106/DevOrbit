@@ -21,8 +21,8 @@ function notificationIcon(type: string) {
 
 export function NotificationDropdown() {
   const navigate = useNavigate()
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications()
   const [open, setOpen] = useState(false)
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications(open)
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -57,7 +57,7 @@ export function NotificationDropdown() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-[380px] max-h-[480px] rounded-2xl border border-orbit-border/50 bg-orbit-surface shadow-diffusion overflow-hidden z-50">
+        <div className="absolute right-0 top-full mt-2 w-[380px] max-h-[calc(100vh-100px)] rounded-2xl border border-orbit-border/50 bg-orbit-surface shadow-diffusion z-50" onWheel={(e) => e.stopPropagation()} style={{ overflow: 'clip' }}>
           <div className="flex items-center justify-between px-4 py-3 border-b border-orbit-border/30">
             <span className="text-[13px] font-bold text-orbit-text">Thông báo</span>
             {unreadCount > 0 && (
@@ -71,7 +71,7 @@ export function NotificationDropdown() {
             )}
           </div>
 
-          <div className="overflow-y-auto max-h-[380px]">
+          <div className="overflow-y-auto max-h-[380px] overscroll-contain" style={{ scrollbarWidth: 'thin', scrollbarColor: '#52525b transparent' }}>
             {notifications.length === 0 ? (
               <div className="px-4 py-8 text-center">
                 <Bell className="h-8 w-8 mx-auto mb-2 text-zinc-500" weight="light" />
@@ -90,7 +90,7 @@ export function NotificationDropdown() {
                     {notificationIcon(n.type)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className={`text-[13px] leading-relaxed ${n.isRead ? 'text-zinc-400' : 'text-zinc-200'}`}>
+                    <p className={`text-[13px] leading-relaxed break-words whitespace-normal ${n.isRead ? 'text-zinc-400' : 'text-zinc-200'}`}>
                       {n.message}
                     </p>
                     <p className="text-[10px] text-zinc-500 mt-1">

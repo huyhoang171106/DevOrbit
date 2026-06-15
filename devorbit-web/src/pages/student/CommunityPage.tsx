@@ -461,7 +461,7 @@ function ChatArea({
   )
 }
 
-export function OnlineMembers({ members, connected, currentStudentId }: { members: OnlineMemberResponse[]; connected: boolean; currentStudentId: number | null }) {
+export function OnlineMembers({ members, connected }: { members: OnlineMemberResponse[]; connected: boolean }) {
   return (
     <div className="h-full flex flex-col overflow-hidden min-h-0">
       <div className="shrink-0 px-4 py-4 border-b border-orbit-border">
@@ -487,7 +487,7 @@ export function OnlineMembers({ members, connected, currentStudentId }: { member
           </div>
         ) : (
           <div className="space-y-2">
-            {members.filter((m) => m.studentId !== currentStudentId).map((m) => (
+            {members.map((m) => (
               <div key={m.studentCode} className="flex items-center gap-3 group">
                 <div className="relative shrink-0">
                   <Avatar name={m.displayName} size={32} />
@@ -724,7 +724,7 @@ export function CommunityPage() {
             </div>
 
             <div className="w-[260px] shrink-0 border-l border-orbit-border hidden xl:block min-h-0">
-              <OnlineMembers members={onlineMembers} connected={connected} currentStudentId={currentStudent?.id ?? null} />
+              <OnlineMembers members={onlineMembers} connected={connected} />
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@ package vn.edu.uit.devorbit_api.service;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.uit.devorbit_api.dto.admin.CandidateReviewRequest;
@@ -26,6 +27,7 @@ public class RepoCandidateService {
     private final GithubRepoRepository githubRepoRepository;
     private final GithubRepoService githubRepoService;
     private final GithubScanService githubScanService;
+    private final CacheManager cacheManager;
 
     @Transactional(readOnly = true)
     public List<RepoCandidateResponse> getPendingCandidates(String reviewer) {
@@ -54,6 +56,7 @@ public class RepoCandidateService {
             ? githubRepoRepository.findByGithubUrlAndCourseId(candidate.getGithubUrl(), candidate.getCourse().getId())
                 .orElseGet(GithubRepo::new)
             : new GithubRepo();
+        repo.setId(null);
 
         repo.setGithubUrl(candidate.getGithubUrl());
         repo.setRepoName(candidate.getGithubName());
@@ -76,6 +79,8 @@ public class RepoCandidateService {
         }
 
         githubRepoRepository.save(repo);
+
+        evictReposCache();
 
         candidate.setReviewNote(request.reviewNote());
         candidate.setStatus(RepoCandidateStatus.APPROVED);
@@ -142,6 +147,13 @@ public class RepoCandidateService {
             idx++;
         }
         repoCandidateRepository.saveAll(unassigned);
+    }
+
+    private void evictReposCache() {
+        for (String name : new String[]{"allRepos", "reposByCourse", "repoById"}) {
+            org.springframework.cache.Cache cache = cacheManager.getCache(name);
+            if (cache != null) cache.clear();
+        }
     }
 
     public List<vn.edu.uit.devorbit_api.dto.admin.ReviewerStatsResponse> getReviewerStats() {

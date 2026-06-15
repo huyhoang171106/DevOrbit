@@ -22,6 +22,7 @@ export function CoursesPage() {
   const { data: courses, loading, error, refetch } = useAdminFetch(
     (t) => adminApi.getCourses(t),
     [],
+    'courses',
   )
 
   const filteredCourses = useMemo(() => {

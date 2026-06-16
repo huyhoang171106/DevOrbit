@@ -2,15 +2,18 @@ package vn.edu.uit.devorbit_api.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.uit.devorbit_api.dto.admin.CommunityMessageAdminResponse;
 import vn.edu.uit.devorbit_api.entity.ChatChannel;
+import vn.edu.uit.devorbit_api.entity.CommunityMessage;
 import vn.edu.uit.devorbit_api.exception.NotFoundException;
 import vn.edu.uit.devorbit_api.repository.ChatChannelRepository;
 import vn.edu.uit.devorbit_api.repository.CommunityMessageRepository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -21,6 +24,7 @@ public class AdminCommunityController {
 
     private final CommunityMessageRepository communityMessageRepo;
     private final ChatChannelRepository chatChannelRepo;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @GetMapping("/channels")
     public ResponseEntity<List<ChatChannel>> listChannels() {
@@ -43,10 +47,11 @@ public class AdminCommunityController {
     @DeleteMapping("/messages/{id}")
     @Transactional
     public ResponseEntity<Void> deleteMessage(@PathVariable Long id) {
-        if (!communityMessageRepo.existsById(id)) {
-            throw new NotFoundException("Community message not found");
-        }
-        communityMessageRepo.deleteById(id);
+        CommunityMessage msg = communityMessageRepo.findById(id)
+                .orElseThrow(() -> new NotFoundException("Community message not found"));
+        Long channelId = msg.getChannel().getId();
+        communityMessageRepo.delete(msg);
+        messagingTemplate.convertAndSend("/topic/channel/" + channelId + "/delete", (Object) Map.of("id", id));
         return ResponseEntity.noContent().build();
     }
 }

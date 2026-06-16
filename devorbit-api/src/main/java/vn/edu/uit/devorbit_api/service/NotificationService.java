@@ -51,9 +51,7 @@ public class NotificationService {
 
     @Transactional
     public void markAllAsRead() {
-        List<Notification> unread = notificationRepo.findByIsReadFalseOrderByCreatedAtDesc();
-        unread.forEach(n -> n.setIsRead(true));
-        notificationRepo.saveAll(unread);
+        notificationRepo.markAllAsRead();
     }
 
     private NotificationResponse toResponse(Notification n) {

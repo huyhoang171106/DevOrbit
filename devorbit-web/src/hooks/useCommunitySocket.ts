@@ -9,19 +9,23 @@ type UseCommunitySocketOptions = {
   enabled: boolean
   onMessage: (msg: ChatMessageResponse) => void
   onPresence?: (presence: ChannelPresenceResponse) => void
+  onDelete?: (id: number) => void
 }
 
-export function useCommunitySocket({ channelId, enabled, onMessage, onPresence }: UseCommunitySocketOptions) {
+export function useCommunitySocket({ channelId, enabled, onMessage, onPresence, onDelete }: UseCommunitySocketOptions) {
   const clientRef = useRef<Client | null>(null)
   const messageSubscriptionRef = useRef<{ id: string; channelId: number } | null>(null)
   const presenceSubscriptionRef = useRef<{ id: string; channelId: number } | null>(null)
+  const deleteSubscriptionRef = useRef<{ id: string; channelId: number } | null>(null)
   const onMessageRef = useRef(onMessage)
   const onPresenceRef = useRef(onPresence)
+  const onDeleteRef = useRef(onDelete)
   const channelIdRef = useRef(channelId)
   const enabledRef = useRef(enabled)
   channelIdRef.current = channelId
   onMessageRef.current = onMessage
   onPresenceRef.current = onPresence
+  onDeleteRef.current = onDelete
   enabledRef.current = enabled
   const [error, setError] = useState<string | null>(null)
   const [connected, setConnected] = useState(false)
@@ -45,13 +49,23 @@ export function useCommunitySocket({ channelId, enabled, onMessage, onPresence }
       }
       presenceSubscriptionRef.current = null
     }
+
+    if (deleteSubscriptionRef.current) {
+      try {
+        client.unsubscribe(deleteSubscriptionRef.current.id)
+      } catch (e) {
+        console.error('[WS] delete unsubscribe error', e)
+      }
+      deleteSubscriptionRef.current = null
+    }
   }, [])
 
   // Stable callback — uses refs, no reactive deps
   const doSubscribe = useCallback((client: Client, cid: number) => {
     if (
       messageSubscriptionRef.current?.channelId === cid &&
-      presenceSubscriptionRef.current?.channelId === cid
+      presenceSubscriptionRef.current?.channelId === cid &&
+      deleteSubscriptionRef.current?.channelId === cid
     ) {
       return
     }
@@ -77,6 +91,16 @@ export function useCommunitySocket({ channelId, enabled, onMessage, onPresence }
       }
     })
     presenceSubscriptionRef.current = { id: presenceSub.id, channelId: cid }
+
+    const deleteSub = client.subscribe(`/topic/channel/${cid}/delete`, (message: IMessage) => {
+      try {
+        const data = JSON.parse(message.body)
+        onDeleteRef.current?.(data.id)
+      } catch (e) {
+        console.error('[WS] parse delete error', e)
+      }
+    })
+    deleteSubscriptionRef.current = { id: deleteSub.id, channelId: cid }
   }, [unsubscribeCurrent])
 
   // ── Effect 1: create + activate client once ──────────────────────────────────
@@ -137,6 +161,7 @@ export function useCommunitySocket({ channelId, enabled, onMessage, onPresence }
         clientRef.current = null
         messageSubscriptionRef.current = null
         presenceSubscriptionRef.current = null
+        deleteSubscriptionRef.current = null
       }
     }
   }, [enabled]) // intentionally empty deps — client is created once

@@ -580,7 +580,6 @@ export function CommunityPage() {
     const current = activeChannelRef.current
     if (current && msg.channelId === current.id) {
       setAllMessages((prev) => {
-        // Avoid duplicate (in case optimistic add already inserted it)
         if (prev.some((m) => m.id === msg.id)) return prev
         return [...prev, msg]
       })
@@ -594,11 +593,26 @@ export function CommunityPage() {
     }
   }, [])
 
+  const handleRealtimeDelete = useCallback((id: number) => {
+    const current = activeChannelRef.current
+    if (current) {
+      setAllMessages((prev) => {
+        const filtered = prev.filter((m) => m.id !== id)
+        setCachedMessages(current.id, filtered, totalPagesRef.current)
+        return filtered
+      })
+    }
+  }, [])
+
+  const totalPagesRef = useRef(totalPages)
+  totalPagesRef.current = totalPages
+
   const { sendMessage, connected } = useCommunitySocket({
     channelId: activeChannel?.id ?? null,
     enabled: authenticated,
     onMessage: handleRealtimeMessage,
     onPresence: handlePresence,
+    onDelete: handleRealtimeDelete,
   })
 
   useEffect(() => {

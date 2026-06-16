@@ -67,12 +67,12 @@ export function useNotifications(enabled = false, pollInterval = 15000) {
 
   const markAllAsRead = useCallback(async () => {
     if (!token) return
+    setNotifications((prev) =>
+      prev.map((n) => ({ ...n, isRead: true }))
+    )
+    setUnreadCount(0)
     try {
       await adminApi.markAllNotificationsRead(token)
-      setNotifications((prev) =>
-        prev.map((n) => ({ ...n, isRead: true }))
-      )
-      setUnreadCount(0)
     } catch {
       // silently fail
     }

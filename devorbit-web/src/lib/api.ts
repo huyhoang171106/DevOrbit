@@ -1,4 +1,4 @@
-import { getStudentToken } from './auth'
+import { getStudentToken, clearStudentToken } from './auth'
 
 export const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? ''
 
@@ -39,11 +39,20 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
   if (!response.ok) {
     const body = await response.text().catch(() => '')
-    throw new Error(body || `Request failed: ${response.status}`)
+    if (response.status === 403 && path.startsWith('/api/student/')) {
+      clearStudentToken()
+      window.location.href = '/student/login'
+    }
+    let message = body || `Yêu cầu thất bại (${response.status})`
+    try {
+      const parsed = JSON.parse(body)
+      if (parsed.error) message = parsed.error
+      if (parsed.detail) message = parsed.detail
+    } catch {}
+    throw new Error(message)
   }
 
-  // DELETE returns 204 No Content — no body to parse
-  if (options.method === 'DELETE' || response.status === 204) {
+  if (response.status === 204) {
     return undefined as T
   }
 
@@ -75,7 +84,7 @@ export const apiUpload = <T>(path: string, formData: FormData): Promise<T> => {
     method: 'POST',
     body: formData,
   }).then(async (res) => {
-    if (!res.ok) throw new Error(`Upload failed: ${res.status}`)
+    if (!res.ok) throw new Error(`Tải lên thất bại (${res.status})`)
     return (await res.json()) as T
   })
 }
@@ -83,25 +92,25 @@ export const apiUpload = <T>(path: string, formData: FormData): Promise<T> => {
 // --- Student API (authenticated) ---
 export const apiStudentGet = <T>(path: string) => {
   const token = getStudentToken()
-  if (!token) throw new Error('Not authenticated')
+  if (!token) throw new Error('Vui lòng đăng nhập')
   return request<T>(path, { token })
 }
 
 export const apiStudentPost = <T>(path: string, body: unknown) => {
   const token = getStudentToken()
-  if (!token) throw new Error('Not authenticated')
+  if (!token) throw new Error('Vui lòng đăng nhập')
   return request<T>(path, { method: 'POST', token, body })
 }
 
 export const apiStudentDelete = (path: string) => {
   const token = getStudentToken()
-  if (!token) throw new Error('Not authenticated')
+  if (!token) throw new Error('Vui lòng đăng nhập')
   return request<void>(path, { method: 'DELETE', token })
 }
 
 export const apiStudentPatch = <T>(path: string, body: unknown) => {
   const token = getStudentToken()
-  if (!token) throw new Error('Not authenticated')
+  if (!token) throw new Error('Vui lòng đăng nhập')
   return request<T>(path, { method: 'PATCH', token, body })
 }
 
@@ -111,5 +120,5 @@ export const apiAdminPost = <T>(path: string, token: string, body: unknown) =>
   request<T>(path, { method: 'POST', token, body })
 export const apiAdminPut = <T>(path: string, token: string, body: unknown) =>
   request<T>(path, { method: 'PUT', token, body })
-export const apiAdminDelete = (path: string, token: string) =>
-  request<void>(path, { method: 'DELETE', token })
+export const apiAdminDelete = <T = void>(path: string, token: string) =>
+  request<T>(path, { method: 'DELETE', token })

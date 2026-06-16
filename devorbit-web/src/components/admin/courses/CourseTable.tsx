@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { CaretUp, CaretDown } from '@phosphor-icons/react'
 import type { CourseSummary } from '../../../types/api'
+import { LOAI_MON_HOC_LABELS } from './CourseFormDialog'
 
 interface CourseTableProps {
   courses: CourseSummary[]
@@ -84,7 +85,7 @@ export function CourseTable({ courses, onEdit, onDelete }: CourseTableProps) {
               <td className="px-4 py-3 text-sm font-medium text-ink-primary text-center">{course.code}</td>
               <td className="px-4 py-3 text-sm text-ink-primary text-center">{course.name}</td>
               <td className="px-4 py-3 text-sm text-ink-secondary text-center">{course.credits ?? '-'}</td>
-              <td className="px-4 py-3 text-sm text-ink-secondary text-center">{course.loaiMonHoc ?? '-'}</td>
+              <td className="px-4 py-3 text-sm text-ink-secondary text-center">{LOAI_MON_HOC_LABELS[course.loaiMonHoc] ?? course.loaiMonHoc ?? '-'}</td>
               <td className="px-4 py-3 text-sm text-center">
                 <div className="flex items-center justify-center gap-2">
                   <button onClick={() => onEdit(course)} className="btn-ghost text-xs px-3 py-1.5">Sửa</button>

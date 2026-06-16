@@ -81,7 +81,13 @@ export async function streamSubjectQa(
 
     if (!response.ok) {
         const body = await response.text().catch(() => '')
-        throw new Error(body || `Streaming request failed: ${response.status}`)
+        let message = body || `Yêu cầu thất bại (${response.status})`
+        try {
+            const parsed = JSON.parse(body)
+            if (parsed.error) message = parsed.error
+            if (parsed.detail) message = parsed.detail
+        } catch {}
+        throw new Error(message)
     }
 
     if (!response.body) {

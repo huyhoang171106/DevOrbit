@@ -12,4 +12,5 @@ import java.util.List;
 public interface CommunityMessageRepository extends JpaRepository<CommunityMessage, Long> {
     Page<CommunityMessage> findByChannelIdOrderByCreatedAtDesc(Long channelId, Pageable pageable);
     List<CommunityMessage> findAllByOrderByCreatedAtDesc();
+    boolean existsByChannelId(Long channelId);
 }

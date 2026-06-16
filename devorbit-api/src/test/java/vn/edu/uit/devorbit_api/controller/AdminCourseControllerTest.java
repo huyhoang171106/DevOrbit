@@ -8,7 +8,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import vn.edu.uit.devorbit_api.dto.admin.AdminCourseUpsertRequest;
+import vn.edu.uit.devorbit_api.dto.admin.CourseDeleteResult;
 import vn.edu.uit.devorbit_api.dto.publicapi.CourseDetailResponse;
+import vn.edu.uit.devorbit_api.repository.StudentUserRepository;
 import vn.edu.uit.devorbit_api.service.CourseService;
 import vn.edu.uit.devorbit_api.service.JwtService;
 import vn.edu.uit.devorbit_api.service.RevokedTokenStore;
@@ -35,6 +37,9 @@ class AdminCourseControllerTest {
 
     @MockitoBean
     private RevokedTokenStore revokedTokenStore;
+
+    @MockitoBean
+    private StudentUserRepository studentUserRepository;
 
     @Test
     void shouldCreateCourse() throws Exception {
@@ -78,7 +83,9 @@ class AdminCourseControllerTest {
 
     @Test
     void shouldDeactivateCourse() throws Exception {
+        when(courseService.deleteCourse(1L)).thenReturn(new CourseDeleteResult(false));
         mockMvc.perform(delete("/api/admin/courses/1"))
-            .andExpect(status().isNoContent());
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.channelDeactivated").value(false));
     }
 }

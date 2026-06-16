@@ -125,7 +125,7 @@ class CourseDeletionLifecycleIT {
                 .setParameter(1, courseId).setParameter(2, studentId).executeUpdate();
 
         // Create ChatChannel for this course
-        em.createNativeQuery("INSERT INTO chat_channels (channel_id, name, type, reference_id, created_at) VALUES ('course-life-test-101', 'Lifecycle Test Course', 'COURSE', ?, CURRENT_TIMESTAMP)")
+        em.createNativeQuery("INSERT INTO chat_channels (channel_id, name, type, reference_id, active, created_at) VALUES ('course-life-test-101', 'Lifecycle Test Course', 'COURSE', ?, true, CURRENT_TIMESTAMP)")
                 .setParameter(1, String.valueOf(courseId)).executeUpdate();
 
         // Get generated channel ID and create CommunityMessage
@@ -211,11 +211,11 @@ class CourseDeletionLifecycleIT {
         assertThat(countBySql("repo_reviews",
                 "repo_id IN (SELECT id FROM github_repos WHERE course_id = " + courseId + ")"))
                 .as("Repo reviews should be removed").isEqualTo(0);
-        assertThat(countBySql("chat_channels", "reference_id = '" + courseId + "'"))
-                .as("Course chat channels should be removed").isEqualTo(0);
-        assertThat(countBySql("community_messages",
-                "channel_id IN (SELECT id FROM chat_channels WHERE reference_id = '" + courseId + "')"))
-                .as("Community messages should be removed").isEqualTo(0);
+        assertThat(countBySql("chat_channels", "reference_id = '" + courseId + "' AND active = true"))
+                .as("Course chat channels should be deactivated (not removed) when messages exist").isEqualTo(0);
+        assertThat(countBySql("chat_channels", "reference_id = '" + courseId + "' AND active = false"))
+                .as("Course chat channel should exist but be inactive").isEqualTo(1);
+        // Community messages preserved because channel is soft-deleted (active=false)
     }
 
     @Test

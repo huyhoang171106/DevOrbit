@@ -77,7 +77,7 @@ export function StudentProfilePage() {
       })
       
       if (!response.ok) {
-        throw new Error(`Upload failed: ${response.status}`)
+        throw new Error(`Tải lên thất bại (${response.status})`)
       }
       
       const updated = await response.json()

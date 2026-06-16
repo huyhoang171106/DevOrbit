@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.uit.devorbit_api.dto.admin.ChatMessageAdminResponse;
 import vn.edu.uit.devorbit_api.dto.admin.ChatSessionAdminResponse;
+import vn.edu.uit.devorbit_api.entity.ChatSession;
 import vn.edu.uit.devorbit_api.repository.ChatMessageRepository;
 import vn.edu.uit.devorbit_api.repository.ChatSessionRepository;
 
@@ -24,14 +25,18 @@ public class AdminChatController {
 
     @GetMapping("/sessions")
     public ResponseEntity<List<ChatSessionAdminResponse>> listSessions() {
-        return ResponseEntity.ok(chatSessionRepo.findAllByOrderByCreatedAtDesc()
-            .stream().map(s -> ChatSessionAdminResponse.builder()
-                .id(s.getId())
-                .studentName(s.getStudent() != null ? s.getStudent().getFullName() : "Unknown")
-                .title(s.getTitle())
-                .messageCount(chatMessageRepo.countBySessionId(s.getId()))
-                .createdAt(s.getCreatedAt())
-                .build())
+        return ResponseEntity.ok(chatSessionRepo.findAllWithStudentAndCount()
+            .stream().map(row -> {
+                ChatSession s = (ChatSession) row[0];
+                long count = (row[1] != null) ? (Long) row[1] : 0L;
+                return ChatSessionAdminResponse.builder()
+                    .id(s.getId())
+                    .studentName(s.getStudent() != null ? s.getStudent().getFullName() : "Unknown")
+                    .title(s.getTitle())
+                    .messageCount(count)
+                    .createdAt(s.getCreatedAt())
+                    .build();
+            })
             .collect(Collectors.toList()));
     }
 

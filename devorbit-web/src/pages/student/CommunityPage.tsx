@@ -509,6 +509,8 @@ export function CommunityPage() {
   const { data: channels = [], isLoading: channelsLoading } = useChannels()
   const [activeChannel, setActiveChannel] = useState<ChatChannelResponse | null>(null)
   const [allMessages, setAllMessages] = useState<ChatMessageResponse[]>([])
+  const allMessagesRef = useRef(allMessages)
+  allMessagesRef.current = allMessages
   const [totalPages, setTotalPages] = useState(1)
   const [messagesLoading, setMessagesLoading] = useState(false)
   const [messagesFetching, setMessagesFetching] = useState(false)
@@ -595,13 +597,10 @@ export function CommunityPage() {
 
   const handleRealtimeDelete = useCallback((id: number) => {
     const current = activeChannelRef.current
-    if (current) {
-      setAllMessages((prev) => {
-        const filtered = prev.filter((m) => m.id !== id)
-        setCachedMessages(current.id, filtered, totalPagesRef.current)
-        return filtered
-      })
-    }
+    if (!current) return
+    const filtered = allMessagesRef.current.filter((m) => m.id !== id)
+    setAllMessages(filtered)
+    setCachedMessages(current.id, filtered, totalPagesRef.current)
   }, [])
 
   const totalPagesRef = useRef(totalPages)

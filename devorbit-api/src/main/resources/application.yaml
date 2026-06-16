@@ -1,8 +1,19 @@
 spring:
   config:
     import: optional:file:.env.properties
+  main:
+    banner-mode: off
+  jmx:
+    enabled: false
+  devtools:
+    restart:
+      enabled: false
   application:
     name: devorbit-api
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
 
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
@@ -19,10 +30,22 @@ spring:
   sql:
     init:
       mode: never
+  web:
+    resources:
+      cache:
+        cachecontrol:
+          max-age: 86400
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/devorbit_db}
     username: ${DATABASE_USERNAME:postgres}
     password: ${DATABASE_PASSWORD:}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 10000
+      idle-timeout: 300000
+      max-lifetime: 600000
+      leak-detection-threshold: 60000
 
   jpa:
     open-in-view: false
@@ -45,6 +68,22 @@ spring:
 
 server:
   port: ${SERVER_PORT:8080}
+  max-http-form-post-size: 10MB
+  compression:
+    enabled: true
+    mime-types: application/json,text/html,text/plain,text/css,application/javascript
+    min-response-size: 1024
+  tomcat:
+    max-http-form-post-size: 10MB
+    max-swallow-size: 10MB
+    max-post-size: 10485760
+    threads:
+      max: 200
+      min-spare: 10
+    accept-count: 100
+    connection-timeout: 10000
+    keep-alive-timeout: 20000
+    max-keep-alive-requests: 100
 
 app:
   cors:
@@ -99,3 +138,8 @@ supabase:
   url: ${SUPABASE_URL:}
   key: ${SUPABASE_KEY:}
   bucket: ${SUPABASE_BUCKET:devorbit}
+
+logging:
+  level:
+    root: WARN
+    vn.edu.uit.devorbit_api: INFO

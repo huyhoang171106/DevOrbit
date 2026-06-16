@@ -5,7 +5,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import java.util.Map;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import vn.edu.uit.devorbit_api.dto.student.ForgotPasswordRequest;
 import vn.edu.uit.devorbit_api.dto.student.OtpVerificationRequest;
 import vn.edu.uit.devorbit_api.dto.student.ResetPasswordRequest;
@@ -14,10 +16,10 @@ import vn.edu.uit.devorbit_api.dto.student.StudentLoginRequest;
 import vn.edu.uit.devorbit_api.dto.student.StudentProfileResponse;
 import vn.edu.uit.devorbit_api.dto.student.StudentRegisterRequest;
 import vn.edu.uit.devorbit_api.dto.student.UpdateAvatarRequest;
-import vn.edu.uit.devorbit_api.dto.student.UpdateAvatarRequest;
 import vn.edu.uit.devorbit_api.entity.OtpPurpose;
 import vn.edu.uit.devorbit_api.exception.BadRequestException;
 import vn.edu.uit.devorbit_api.service.StudentAuthService;
+import vn.edu.uit.devorbit_api.service.SupabaseStorageService;
 
 /**
  * STUDENT AUTH CONTROLLER = register, login, and manage student accounts.
@@ -36,6 +38,7 @@ import vn.edu.uit.devorbit_api.service.StudentAuthService;
 public class StudentAuthController {
 
     private final StudentAuthService studentAuthService;
+    private final SupabaseStorageService supabaseStorageService;
 
     /** Log in with student code + password. Returns JWT token. */
     @PostMapping("/login")
@@ -124,5 +127,13 @@ public class StudentAuthController {
     public StudentProfileResponse updateAvatar(@AuthenticationPrincipal String studentCode,
                                                 @RequestBody @Valid UpdateAvatarRequest request) {
         return studentAuthService.updateAvatar(studentCode, request);
+    }
+
+    @PostMapping(value = "/me/avatar/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public StudentProfileResponse uploadAvatar(@AuthenticationPrincipal String studentCode,
+                                                @RequestParam("file") MultipartFile file) {
+        Map<String, String> uploadResult = supabaseStorageService.upload(file);
+        String avatarUrl = uploadResult.get("url");
+        return studentAuthService.updateAvatar(studentCode, new UpdateAvatarRequest(avatarUrl));
     }
 }

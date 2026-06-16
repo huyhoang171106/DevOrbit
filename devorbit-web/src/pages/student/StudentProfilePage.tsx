@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { m as motion } from 'framer-motion'
 import { BookOpen, GithubLogo, BookmarkSimple, Trash, ArrowSquareOut, Camera, CheckCircle } from '@phosphor-icons/react'
-import { apiStudentGet, apiStudentDelete, apiStudentPatch } from '../../lib/api'
+import { apiStudentGet, apiStudentDelete } from '../../lib/api'
 import { isStudentAuthenticated } from '../../lib/auth'
 import { Avatar } from '../../components/shared/Avatar'
 import type { StudentProfileResponse, StudentBookmark } from '../../types/api'
@@ -63,8 +63,24 @@ export function StudentProfilePage() {
 
     setUploading(true)
     try {
-      // Use the preview URL (data URL) as the avatar URL
-      const updated = await apiStudentPatch<StudentProfileResponse>('/api/student/me/avatar', { avatar: previewUrl })
+      // Upload file to Supabase Storage via the new endpoint
+      const formData = new FormData()
+      formData.append('file', file)
+      
+      const token = localStorage.getItem('devorbit-student-token')
+      const response = await fetch('/api/student/me/avatar/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.status}`)
+      }
+      
+      const updated = await response.json()
       setProfile(updated)
       setPreviewUrl(null)
       setUploadSuccess(true)
@@ -155,12 +171,6 @@ export function StudentProfilePage() {
                 <span>bookmarks</span>
               </div>
             </div>
-            {uploadSuccess && (
-              <div className="mt-3 text-[12px] text-emerald-400 font-medium flex items-center gap-1.5">
-                <CheckCircle className="h-4 w-4" weight="fill" />
-                Đã cập nhật ảnh đại diện
-              </div>
-            )}
             {uploadSuccess && (
               <div className="mt-3 text-[12px] text-emerald-400 font-medium flex items-center gap-1.5">
                 <CheckCircle className="h-4 w-4" weight="fill" />

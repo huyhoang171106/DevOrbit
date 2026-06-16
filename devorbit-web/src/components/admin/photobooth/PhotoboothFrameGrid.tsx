@@ -37,6 +37,7 @@ export function FrameCard({ frame, onEditSlots, onDelete, onRename }: FrameCardP
             src={frame.overlayImage}
             alt={frame.displayName}
             className="w-full h-full object-contain"
+            loading="lazy"
             onError={() => setImgErr(true)}
           />
         ) : (

@@ -12,8 +12,8 @@ import java.util.List;
 public interface ChatChannelRepository extends JpaRepository<ChatChannel, Long> {
     Optional<ChatChannel> findByChannelId(String channelId);
     List<ChatChannel> findAllByOrderByTypeAscNameAsc();
-
+    List<ChatChannel> findByActiveTrueOrderByTypeAscNameAsc();
     List<ChatChannel> findByTypeAndReferenceId(ChatChannelType type, String referenceId);
-
+    Optional<ChatChannel> findByTypeAndReferenceIdAndActiveTrue(ChatChannelType type, String referenceId);
     void deleteByTypeAndReferenceId(ChatChannelType type, String referenceId);
 }

@@ -57,7 +57,7 @@ export const adminApi = {
   createTechStack: (token: string, data: { name: string; category: string }) =>
     apiAdminPost<TechStackAdmin>('/api/admin/techstack', token, data),
   deleteTechStack: (token: string, id: number) =>
-    apiAdminDelete(`/api/admin/techstack/${id}`, token),
+    apiAdminDelete<{ channelDeactivated: boolean }>(`/api/admin/techstack/${id}`, token),
 
   // --- Courses ---
   getCourses: (token: string) =>
@@ -67,7 +67,7 @@ export const adminApi = {
   updateCourse: (token: string, id: number, data: CourseUpsertRequest) =>
     apiAdminPut<CourseDetail>(`/api/admin/courses/${id}`, token, data),
   deleteCourse: (token: string, id: number) =>
-    apiAdminDelete(`/api/admin/courses/${id}`, token),
+    apiAdminDelete<{ channelDeactivated: boolean }>(`/api/admin/courses/${id}`, token),
 
   // --- Course Resources: YouTube ---
   getYoutubePlaylists: (token: string, courseId: number) =>

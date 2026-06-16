@@ -1,0 +1,42 @@
+{
+  "backend": {
+    "javaFiles": 269,
+    "loc": 19164,
+    "flywayMigrations": 20,
+    "packages": {
+      "config": 17,
+      "controller": 21,
+      "dto": 44,
+      "entity": 36,
+      "repository": 30,
+      "service": 44,
+      "exception": 4,
+      "event": 2,
+      "constant": 1
+    }
+  },
+  "frontend": {
+    "tsFiles": 192,
+    "loc": 29513,
+    "pages": {
+      "student": 14,
+      "admin": 11,
+      "galaxy3d": 17
+    },
+    "components": {
+      "admin": 33,
+      "student": 22,
+      "shared": 11,
+      "photobooth": 4,
+      "motion": 6
+    },
+    "hooks": 12,
+    "lib": 16,
+    "types": 6,
+    "utils": 5,
+    "scenes": 5
+  },
+  "screenshots": 7,
+  "totalFiles": 461,
+  "totalLoc": 48677
+}

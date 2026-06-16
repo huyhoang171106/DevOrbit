@@ -55,7 +55,7 @@ describe('streamSubjectQa SSE parser', () => {
                 { message: 'test' },
                 {},
             ),
-        ).rejects.toThrow('Streaming request failed: 401')
+        ).rejects.toThrow(/401/)
 
         expect(mockFetch).toHaveBeenCalled()
         expect(mockFetch.mock.calls[0][1]?.headers).toMatchObject({

@@ -53,5 +53,23 @@ class SupabaseDatabaseHardeningInitializerTest {
         verify(jdbcTemplate).execute("CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA extensions");
         verify(jdbcTemplate).execute(org.mockito.ArgumentMatchers.contains("ALTER EXTENSION vector SET SCHEMA extensions"));
         verify(jdbcTemplate).execute(org.mockito.ArgumentMatchers.contains("Deny direct API access"));
+        verify(jdbcTemplate).execute(org.mockito.ArgumentMatchers.contains("Public read photobooth storage buckets"));
+        verify(jdbcTemplate).execute(org.mockito.ArgumentMatchers.contains("Allow public upload ify4b9_0"));
+        verify(jdbcTemplate).execute(org.mockito.ArgumentMatchers.contains("'notifications'"));
+    }
+
+    @Test
+    void initialize_repairsMissingIndexesAndDuplicatePhotoboothIndex() {
+        when(jdbcTemplate.queryForObject("SELECT current_setting('server_version')", String.class))
+                .thenReturn("17.6");
+        when(jdbcTemplate.queryForObject(eq("SELECT to_regclass(?) IS NOT NULL"), eq(Boolean.class), any(String.class)))
+                .thenReturn(true);
+
+        SupabaseDatabaseHardeningInitializer initializer = new SupabaseDatabaseHardeningInitializer(jdbcTemplate);
+
+        initializer.initialize();
+
+        verify(jdbcTemplate).execute("CREATE INDEX IF NOT EXISTS idx_repo_votes_student ON public.repo_votes(student_id)");
+        verify(jdbcTemplate).execute(org.mockito.ArgumentMatchers.contains("DROP INDEX IF EXISTS public.idx_photobooth_frames_frame_id"));
     }
 }

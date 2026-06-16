@@ -72,6 +72,7 @@ public class SupabaseDatabaseHardeningInitializer {
                 {"idx_course_tools_source_id", "course_tools", "source_id"},
                 {"idx_repo_candidates_course_id", "repo_candidates", "course_id"},
                 {"idx_repo_tech_stacks_tech_stack_id", "repo_tech_stacks", "tech_stack_id"},
+                {"idx_repo_votes_student", "repo_votes", "student_id"},
                 {"idx_tech_stacks_repo_id", "tech_stacks", "repo_id"}
         };
 
@@ -98,11 +99,23 @@ public class SupabaseDatabaseHardeningInitializer {
         executeIfTableExists("photobooth_frames", """
             DROP POLICY IF EXISTS "Public delete photobooth_frames" ON public.photobooth_frames
             """);
+        executeIfTableExists("photobooth_frames", """
+            DROP INDEX IF EXISTS public.idx_photobooth_frames_frame_id
+            """);
         jdbcTemplate.execute("""
             DO $$
             BEGIN
                 IF to_regclass('storage.objects') IS NOT NULL THEN
                     DROP POLICY IF EXISTS "Public read access" ON storage.objects;
+                    DROP POLICY IF EXISTS "Allow public upload ify4b9_0" ON storage.objects;
+                    DROP POLICY IF EXISTS "Allow public read ify4b9_0" ON storage.objects;
+                    DROP POLICY IF EXISTS "Public read photobooth storage buckets" ON storage.objects;
+
+                    CREATE POLICY "Public read photobooth storage buckets"
+                    ON storage.objects
+                    FOR SELECT
+                    TO public
+                    USING (bucket_id IN ('devorbit', 'frame-overlays'));
                 END IF;
             END $$
             """);
@@ -189,6 +202,7 @@ public class SupabaseDatabaseHardeningInitializer {
                     'learning_roadmaps',
                     'note_code_snippets',
                     'notes',
+                    'notifications',
                     'otps',
                     'repo_candidates',
                     'repo_reviews',

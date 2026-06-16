@@ -10,11 +10,28 @@ interface CourseFormDialogProps {
   loading?: boolean
 }
 
+export const LOAI_MON_HOC_OPTIONS: { value: string; label: string }[] = [
+  { value: 'ĐC', label: 'Đại cương' },
+  { value: 'CSNN', label: 'Cơ sở ngành' },
+  { value: 'CSN', label: 'Cơ sở ngành' },
+  { value: 'CN', label: 'Chuyên ngành' },
+  { value: 'LLCT', label: 'Lý luận chính trị' },
+  { value: 'TTTN', label: 'Thực tập tốt nghiệp' },
+  { value: 'TN', label: 'Tốt nghiệp' },
+  { value: 'KLTN', label: 'Khóa luận tốt nghiệp' },
+  { value: 'TU_CHON', label: 'Tự chọn' },
+  { value: 'BT', label: 'Bắt buộc' },
+]
+
+export const LOAI_MON_HOC_LABELS: Record<string, string> = Object.fromEntries(
+  LOAI_MON_HOC_OPTIONS.map((o) => [o.value, o.label]),
+)
+
 const emptyForm: CourseUpsertRequest = {
   code: '',
   name: '',
   credits: 0,
-  subjectType: 'CHUYEN_NGANH',
+  subjectType: 'CN',
   isOpen: true,
   managementUnit: '',
   description: '',
@@ -29,7 +46,7 @@ export function CourseFormDialog({ open, onClose, onSubmit, initial, loading }: 
         code: initial.code,
         name: initial.name,
         credits: initial.credits ?? 0,
-        subjectType: initial.loaiMonHoc ?? 'CHUYEN_NGANH',
+        subjectType: initial.loaiMonHoc ?? 'CN',
         isOpen: true,
         managementUnit: '',
         description: initial.description ?? '',
@@ -114,9 +131,9 @@ export function CourseFormDialog({ open, onClose, onSubmit, initial, loading }: 
                 onChange={(e) => handleChange('subjectType', e.target.value)}
                 className="input-field"
               >
-                <option value="DAI_CUONG">Đại cương</option>
-                <option value="CO_SO">Cơ sở</option>
-                <option value="CHUYEN_NGANH">Chuyên ngành</option>
+                {LOAI_MON_HOC_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
               </select>
             </div>
             <div>

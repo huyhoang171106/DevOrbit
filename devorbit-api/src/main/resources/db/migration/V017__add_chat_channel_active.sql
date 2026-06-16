@@ -1,0 +1,1 @@
+ALTER TABLE chat_channels ADD COLUMN active BOOLEAN NOT NULL DEFAULT true;

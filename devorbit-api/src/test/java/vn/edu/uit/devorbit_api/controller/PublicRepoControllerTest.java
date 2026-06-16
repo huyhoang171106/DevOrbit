@@ -7,6 +7,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import vn.edu.uit.devorbit_api.dto.publicapi.RepoSummaryResponse;
 import vn.edu.uit.devorbit_api.dto.publicapi.TechStackResponse;
+import vn.edu.uit.devorbit_api.repository.StudentUserRepository;
 import vn.edu.uit.devorbit_api.service.GithubRepoService;
 import vn.edu.uit.devorbit_api.service.JwtService;
 import vn.edu.uit.devorbit_api.service.RevokedTokenStore;
@@ -32,6 +33,9 @@ class PublicRepoControllerTest {
 
     @MockitoBean
     private RevokedTokenStore revokedTokenStore;
+
+    @MockitoBean
+    private StudentUserRepository studentUserRepository;
 
     @Test
     void shouldReturnRepoById() throws Exception {

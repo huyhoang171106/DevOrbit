@@ -3,6 +3,7 @@ package vn.edu.uit.devorbit_api.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import vn.edu.uit.devorbit_api.dto.admin.AdminCourseUpsertRequest;
+import vn.edu.uit.devorbit_api.dto.admin.CourseDeleteResult;
 import vn.edu.uit.devorbit_api.dto.publicapi.CourseDetailResponse;
 import vn.edu.uit.devorbit_api.dto.publicapi.CourseSummaryResponse;
 import vn.edu.uit.devorbit_api.entity.*;
@@ -78,6 +79,8 @@ public class CourseService {
     private final CourseAssessmentRepository courseAssessmentRepository;
     private final CourseReferenceRepository courseReferenceRepository;
     private final CourseToolRepository courseToolRepository;
+    private final CommunityChatService communityChatService;
+    private final CommunityMessageRepository communityMessageRepository;
 
     // =====================================================================
     // LIST METHODS
@@ -183,7 +186,9 @@ public class CourseService {
                 .gradingCriteria(request.gradingCriteria())
                 .topics(request.topics())
                 .build();
-        return mapToDetail(courseRepository.save(course));
+        Course saved = courseRepository.save(course);
+        communityChatService.createChannel(ChatChannelType.COURSE, String.valueOf(saved.getId()), saved.getTenMH());
+        return mapToDetail(saved);
     }
 
     /**
@@ -218,7 +223,7 @@ public class CourseService {
      */
     @Transactional
     @CacheEvict(value = "courses", allEntries = true)
-    public void deleteCourse(Long id) {
+    public CourseDeleteResult deleteCourse(Long id) {
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Course not found: " + id));
 
@@ -231,8 +236,8 @@ public class CourseService {
         // 1b. Notes for this course
         noteRepository.deleteByTargetTypeAndTargetId(NoteTargetType.COURSE, id);
 
-        // 1c. Chat channel for this course (community_messages cascade via DB FK)
-        chatChannelRepository.deleteByTypeAndReferenceId(ChatChannelType.COURSE, String.valueOf(id));
+        // Note: 1c. Chat channel cleanup is deferred to step 5 (end of method)
+        //       to support soft-delete when messages exist
 
         // 1d. RAG / knowledge data keyed by business key (courseCode / maMH)
         try {
@@ -292,7 +297,23 @@ public class CourseService {
 
         // 4. Delete the course itself
         courseRepository.delete(course);
+
+        // 5. Soft-delete chat channels with messages, hard-delete empty ones
+        var channels = chatChannelRepository.findByTypeAndReferenceId(ChatChannelType.COURSE, String.valueOf(id));
+        boolean channelDeactivated = false;
+        if (!channels.isEmpty()) {
+            var channel = channels.get(0);
+            if (communityMessageRepository.existsByChannelId(channel.getId())) {
+                channel.setActive(false);
+                chatChannelRepository.save(channel);
+                channelDeactivated = true;
+            } else {
+                chatChannelRepository.delete(channel);
+            }
+        }
+
         log.info("deleteCourse: course id={} code={} deleted with all dependents", id, courseCode);
+        return new CourseDeleteResult(channelDeactivated);
     }
 
     // =====================================================================

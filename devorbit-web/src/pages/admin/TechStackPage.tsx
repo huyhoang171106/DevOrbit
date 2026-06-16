@@ -33,9 +33,13 @@ export function TechStackPage() {
   }
 
   const handleDelete = async (id: number) => {
-    if (!token || !confirm('Xoá nhãn công nghệ này?')) return
+    if (!token) return
+    if (!confirm('Xoá nhãn công nghệ này?\nTin nhắn trong kênh chat liên quan sẽ bị vô hiệu hoá.')) return
     try {
-      await adminApi.deleteTechStack(token, id)
+      const result = await adminApi.deleteTechStack(token, id)
+      if (result?.channelDeactivated) {
+        alert('Nhãn công nghệ đã được xoá. Kênh chat liên quan đã bị vô hiệu hoá do có dữ liệu tin nhắn.')
+      }
       refetch()
     } catch (e) {
       console.error(e)

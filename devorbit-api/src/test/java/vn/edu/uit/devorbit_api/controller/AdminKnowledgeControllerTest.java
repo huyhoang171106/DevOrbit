@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import vn.edu.uit.devorbit_api.dto.knowledge.*;
 import vn.edu.uit.devorbit_api.entity.KnowledgeChunk;
 import vn.edu.uit.devorbit_api.entity.KnowledgeSource;
+import vn.edu.uit.devorbit_api.repository.StudentUserRepository;
 import vn.edu.uit.devorbit_api.service.JwtService;
 import vn.edu.uit.devorbit_api.service.RevokedTokenStore;
 import vn.edu.uit.devorbit_api.service.knowledge.*;
@@ -37,6 +38,8 @@ class AdminKnowledgeControllerTest {
     private KnowledgeEmbeddingService embeddingService;
     @MockitoBean
     private KnowledgeRetrievalService retrievalService;
+    @MockitoBean
+    private StudentUserRepository studentUserRepository;
     @MockitoBean
     private FirecrawlKnowledgeImporter firecrawlKnowledgeImporter;
     @MockitoBean

@@ -36,6 +36,8 @@ const CHANNEL_INITIAL_LIMIT: Record<string, number> = {
   TECH_STACK: 0,
 }
 
+const DELETED_NOTICE = "Tin nhắn này đã bị admin xóa vì nghi ngờ vi phạm tiêu chuẩn cộng đồng"
+
 function ConfirmDialog({ show, title, message, onConfirm, onCancel }: {
   show: boolean; title: string; message: string; onConfirm: () => void; onCancel: () => void
 }) {
@@ -372,6 +374,7 @@ function ChatArea({
             }
 
             const isMine = currentUserId !== null && msg.studentId === currentUserId
+            const isDeleted = msg.content === DELETED_NOTICE
             const msgDate = new Date(msg.createdAt)
             const timeLabel = formatTime(msgDate)
 
@@ -397,7 +400,7 @@ function ChatArea({
                       <span className="text-[10px] text-orbit-text-muted">{timeLabel}</span>
                     </div>
                   )}
-                  <p className={`text-[14px] leading-relaxed whitespace-pre-wrap break-words ${isMine ? 'bg-orbit-accent/20 text-orbit-text border border-orbit-accent/20 rounded-2xl px-3 py-2 max-w-[75%] text-right' : 'text-orbit-text-secondary'}`}>
+                  <p className={`text-[14px] leading-relaxed whitespace-pre-wrap break-words ${isDeleted ? 'bg-transparent text-orbit-text-muted border border-dashed border-gray-500/30 rounded-2xl px-3 py-2' : isMine ? 'bg-orbit-accent/20 text-orbit-text border border-orbit-accent/20 rounded-2xl px-3 py-2 max-w-[75%] text-right' : 'text-orbit-text-secondary'}`}>
                     {msg.content}
                   </p>
                   {isMine && (
@@ -588,7 +591,12 @@ export function CommunityPage() {
     const current = activeChannelRef.current
     if (current && msg.channelId === current.id) {
       setAllMessages((prev) => {
-        if (prev.some((m) => m.id === msg.id)) return prev
+        const idx = prev.findIndex((m) => m.id === msg.id)
+        if (idx >= 0) {
+          const next = [...prev]
+          next[idx] = msg
+          return next
+        }
         return [...prev, msg]
       })
     }
@@ -601,14 +609,6 @@ export function CommunityPage() {
     }
   }, [])
 
-  const handleRealtimeDelete = useCallback((id: number) => {
-    const current = activeChannelRef.current
-    if (!current) return
-    const filtered = allMessagesRef.current.filter((m) => m.id !== id)
-    setAllMessages(filtered)
-    setCachedMessages(current.id, filtered, totalPagesRef.current)
-  }, [])
-
   const totalPagesRef = useRef(totalPages)
   totalPagesRef.current = totalPages
 
@@ -617,7 +617,6 @@ export function CommunityPage() {
     enabled: authenticated,
     onMessage: handleRealtimeMessage,
     onPresence: handlePresence,
-    onDelete: handleRealtimeDelete,
   })
 
   // Always show current user in online members list (like Discord)

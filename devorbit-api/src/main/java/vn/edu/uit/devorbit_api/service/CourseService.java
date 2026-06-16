@@ -5,11 +5,13 @@ import vn.edu.uit.devorbit_api.dto.admin.AdminCourseUpsertRequest;
 import vn.edu.uit.devorbit_api.dto.publicapi.CourseDetailResponse;
 import vn.edu.uit.devorbit_api.dto.publicapi.CourseSummaryResponse;
 import vn.edu.uit.devorbit_api.entity.Course;
+import vn.edu.uit.devorbit_api.entity.GithubRepo;
 import vn.edu.uit.devorbit_api.exception.NotFoundException;
-import vn.edu.uit.devorbit_api.repository.CourseRepository;
+import vn.edu.uit.devorbit_api.repository.*;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
@@ -51,6 +53,13 @@ import java.util.List;
 public class CourseService {
     private final CourseRepository courseRepository;
     private final GithubRepoService githubRepoService;
+    private final CourseTutorialRepository courseTutorialRepository;
+    private final CourseYoutubePlaylistRepository courseYoutubePlaylistRepository;
+    private final CourseArticleRepository courseArticleRepository;
+    private final CourseRelationshipRepository courseRelationshipRepository;
+    private final GithubRepoRepository githubRepoRepository;
+    private final RepoCandidateRepository repoCandidateRepository;
+    private final CourseReviewRepository courseReviewRepository;
 
     // =====================================================================
     // LIST METHODS
@@ -178,14 +187,38 @@ public class CourseService {
     }
 
     /**
-     * Delete a course from the database.
-     * Throws NotFoundException if the course doesn't exist.
-     * Returns nothing (void) — the controller returns HTTP 204 No Content.
+     * Delete a course and all owned dependents atomically.
+     *
+     * Cleanup order respects FK constraints:
+     *   1. Child entities that reference course_id
+     *   2. ManyToMany join rows (repo_tech_stacks via GithubRepo)
+     *   3. GithubRepos
+     *   4. The Course itself
+     *
+     * @Transactional ensures atomicity — any failure rolls back everything.
      */
+    @Transactional
     @CacheEvict(value = "courses", allEntries = true)
     public void deleteCourse(Long id) {
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Course not found: " + id));
+
+        // 1. Clean up child entities with FK to course
+        courseTutorialRepository.deleteByCourseId(id);
+        courseYoutubePlaylistRepository.deleteByCourseId(id);
+        courseArticleRepository.deleteByCourseId(id);
+        courseRelationshipRepository.deleteByCourseIdOrRelatedCourseId(id, id);
+        courseReviewRepository.deleteByCourseId(id);
+        repoCandidateRepository.deleteByCourseId(id);
+
+        // 2. Clean up GithubRepos: remove ManyToMany join rows first, then repos
+        List<GithubRepo> repos = githubRepoRepository.findByCourseId(id);
+        for (GithubRepo repo : repos) {
+            repo.getTechStacks().clear(); // Remove repo_tech_stacks join rows
+            githubRepoRepository.delete(repo);
+        }
+
+        // 3. Delete the course itself
         courseRepository.delete(course);
     }
 

@@ -11,6 +11,7 @@ import vn.edu.uit.devorbit_api.dto.community.ChatMessageRequest;
 import vn.edu.uit.devorbit_api.dto.community.ChatMessageResponse;
 import vn.edu.uit.devorbit_api.entity.*;
 import vn.edu.uit.devorbit_api.event.NotificationEvent;
+import vn.edu.uit.devorbit_api.exception.BadRequestException;
 import vn.edu.uit.devorbit_api.exception.NotFoundException;
 import vn.edu.uit.devorbit_api.repository.*;
 
@@ -32,10 +33,8 @@ public class CommunityChatService {
 
     @Transactional
     public List<ChatChannelResponse> getChannels() {
-        if (channelRepository.count() == 0) {
-            syncChannels();
-        }
-        return channelRepository.findAllByOrderByTypeAscNameAsc()
+        syncChannels();
+        return channelRepository.findByActiveTrueOrderByTypeAscNameAsc()
                 .stream()
                 .map(this::toChannelResponse)
                 .toList();
@@ -66,9 +65,43 @@ public class CommunityChatService {
     }
 
     @Transactional
+    public void createChannel(ChatChannelType type, String referenceId, String name) {
+        String channelId = switch (type) {
+            case COURSE -> "course-" + slug(referenceId);
+            case TECH_STACK -> "tech-" + slug(name);
+            case GENERAL -> slug(name);
+        };
+        if (channelRepository.findByChannelId(channelId).isEmpty()) {
+            channelRepository.save(ChatChannel.builder()
+                    .channelId(channelId)
+                    .name(name)
+                    .type(type)
+                    .referenceId(referenceId)
+                    .active(true)
+                    .build());
+        }
+    }
+
+    @Transactional
+    public void deactivateByReference(ChatChannelType type, String referenceId) {
+        channelRepository.findByTypeAndReferenceId(type, referenceId)
+                .forEach(channel -> {
+                    channel.setActive(false);
+                    channelRepository.save(channel);
+                });
+    }
+
+    public boolean channelHasMessages(Long channelId) {
+        return messageRepository.existsByChannelId(channelId);
+    }
+
+    @Transactional
     public ChatMessageResponse sendMessage(String studentCode, Long channelId, ChatMessageRequest request) {
         ChatChannel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new NotFoundException("Channel not found"));
+        if (!channel.isActive()) {
+            throw new BadRequestException("Channel is not active");
+        }
         StudentUser student = studentUserRepository.findByStudentCode(studentCode)
                 .orElseThrow(() -> new NotFoundException("Student not found"));
 

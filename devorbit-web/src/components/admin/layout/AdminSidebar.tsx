@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import {
-  BookOpen, UsersThree, ChatDots, Camera, Tag,
+  BookOpen, UsersThree, ChatCircle, ChatDots, Camera, Tag,
   GitBranch, Star, Link, GearSix, CaretDown, CaretLeft, CaretRight, Cube,
   SignOut, UserCircle,
 } from '@phosphor-icons/react'
@@ -34,7 +34,7 @@ const NAV_GROUPS = [
 
 const NAV_ITEMS = [
   { to: '/admin/students', icon: UsersThree, label: 'Sinh viên' },
-  { to: '/admin/community', icon: UsersThree, label: 'Cộng đồng' },
+  { to: '/admin/community', icon: ChatCircle, label: 'Cộng đồng' },
   { to: '/admin/chat', icon: ChatDots, label: 'AI Chat' },
   { to: '/admin/photobooth', icon: Camera, label: 'Photobooth' },
   { to: '/admin/techstack', icon: Tag, label: 'Tech Stack' },

@@ -238,7 +238,7 @@ export function CourseListPage() {
               className="btn-secondary group shrink-0 text-[12px] px-8 py-5 will-change-transform"
             >
               <Graph className="h-5 w-5" weight="regular" />
-              Sơ đồ kiến thức
+              Sắp xếp lộ trình
             </Link>
           </div>
         </header>

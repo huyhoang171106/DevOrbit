@@ -457,7 +457,7 @@ function ChatArea({
   )
 }
 
-export function OnlineMembers({ members, connected }: { members: OnlineMemberResponse[]; connected: boolean }) {
+export function OnlineMembers({ members, connected, currentUserId }: { members: OnlineMemberResponse[]; connected: boolean; currentUserId?: number | null }) {
   return (
     <div className="h-full flex flex-col overflow-hidden min-h-0">
       <div className="shrink-0 px-4 py-4 border-b border-orbit-border">
@@ -483,18 +483,24 @@ export function OnlineMembers({ members, connected }: { members: OnlineMemberRes
           </div>
         ) : (
           <div className="space-y-2">
-            {members.map((m) => (
-              <div key={m.studentCode} className="flex items-center gap-3 group">
-                <div className="relative shrink-0">
-                  <Avatar name={m.displayName} size={32} src={m.avatar} />
-                  <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-500 border-2 border-orbit-bg" />
+            {members.map((m) => {
+              const isMe = currentUserId != null && m.studentId === currentUserId
+              return (
+                <div key={m.studentCode} className="flex items-center gap-3 group">
+                  <div className="relative shrink-0">
+                    <Avatar name={m.displayName} size={32} src={m.avatar} />
+                    <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-500 border-2 border-orbit-bg" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-bold text-orbit-text truncate">
+                      {m.displayName}
+                      {isMe && <span className="ml-1.5 text-[10px] font-normal text-orbit-text-muted">(Bạn)</span>}
+                    </p>
+                    <p className="text-[10px] text-orbit-text-muted">{m.studentCode}</p>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-bold text-orbit-text truncate">{m.displayName}</p>
-                  <p className="text-[10px] text-orbit-text-muted">{m.studentCode}</p>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>
@@ -600,6 +606,17 @@ export function CommunityPage() {
     onMessage: handleRealtimeMessage,
     onPresence: handlePresence,
   })
+
+  // Always show current user in online members list (like Discord)
+  const displayMembers = currentStudent && authenticated
+    ? (() => {
+        const me = { studentId: currentStudent.id, studentCode: currentStudent.studentCode, displayName: currentStudent.fullName, avatar: currentStudent.avatar }
+        if (onlineMembers.some((m) => m.studentId === currentStudent.id)) {
+          return onlineMembers
+        }
+        return [me, ...onlineMembers]
+      })()
+    : onlineMembers
 
   useEffect(() => {
     setOnlineMembers([])
@@ -720,7 +737,7 @@ export function CommunityPage() {
             </div>
 
             <div className="w-[260px] shrink-0 border-l border-orbit-border hidden xl:block min-h-0">
-              <OnlineMembers members={onlineMembers} connected={connected} />
+              <OnlineMembers members={displayMembers} connected={connected} currentUserId={currentStudent?.id} />
             </div>
           </div>
         </div>

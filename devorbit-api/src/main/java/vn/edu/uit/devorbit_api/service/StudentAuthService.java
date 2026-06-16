@@ -193,6 +193,9 @@ public class StudentAuthService {
         var studentOpt = studentUserRepository.findByStudentCode(request.studentCode().trim());
         if (studentOpt.isPresent()) {
             StudentUser student = studentOpt.get();
+            if (!student.isActive()) {
+                return "";
+            }
             otpRateLimitService.check("PASSWORD_RESET:" + student.getEmail());
 
             otpRepository.deleteByEmailAndPurpose(student.getEmail(), OtpPurpose.PASSWORD_RESET);
@@ -226,6 +229,10 @@ public class StudentAuthService {
 
         StudentUser student = studentUserRepository.findByEmail(email)
                 .orElseThrow(() -> new BadRequestException("Người dùng không tồn tại."));
+
+        if (!student.isActive()) {
+            throw new BadRequestException("Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.");
+        }
 
         student.setPasswordHash(passwordEncoder.encode(request.newPassword()));
         studentUserRepository.save(student);

@@ -22,6 +22,10 @@ public interface GithubRepoRepository extends JpaRepository<GithubRepo, Long> {
     @EntityGraph(attributePaths = {"techStacks", "course"})
     List<GithubRepo> findByCourseIdAndActiveTrue(Long courseId);
 
+    /** All repos for a course (active + inactive) — use for cascade cleanup */
+    @EntityGraph(attributePaths = {"techStacks"})
+    List<GithubRepo> findByCourseId(Long courseId);
+
     /** Batch fetch repos for multiple courses — replaces N+1 loop */
     @EntityGraph(attributePaths = {"techStacks", "course"})
     List<GithubRepo> findByCourseIdInAndActiveTrue(Collection<Long> courseIds);

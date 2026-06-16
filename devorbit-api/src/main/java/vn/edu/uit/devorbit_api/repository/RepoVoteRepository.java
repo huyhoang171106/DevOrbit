@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import vn.edu.uit.devorbit_api.entity.RepoVote;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -13,4 +14,8 @@ public interface RepoVoteRepository extends JpaRepository<RepoVote, Long> {
 
     @Query("SELECT COALESCE(SUM(v.voteValue), 0) FROM RepoVote v WHERE v.repo.id = :repoId")
     Integer sumVoteValueByRepoId(Long repoId);
+
+    void deleteByRepoId(Long repoId);
+
+    void deleteByRepoIdIn(List<Long> repoIds);
 }

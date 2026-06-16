@@ -9,6 +9,7 @@ import vn.edu.uit.devorbit_api.entity.*;
 import vn.edu.uit.devorbit_api.event.NotificationEvent;
 import vn.edu.uit.devorbit_api.exception.BadRequestException;
 import vn.edu.uit.devorbit_api.exception.NotFoundException;
+import vn.edu.uit.devorbit_api.exception.UnauthorizedException;
 import vn.edu.uit.devorbit_api.repository.*;
 
 import java.util.List;
@@ -29,6 +30,9 @@ public class SocialService {
     public ReviewResponse upsertRepoReview(String studentCode, Long repoId, ReviewRequest request) {
         GithubRepo repo = githubRepoRepository.findById(repoId)
                 .orElseThrow(() -> new NotFoundException("Repository not found"));
+        if (!repo.isActive()) {
+            throw new NotFoundException("Repository not found");
+        }
         StudentUser student = findStudent(studentCode);
         RepoReview review = repoReviewRepository.findByRepoIdAndStudentId(repoId, student.getId())
                 .orElseGet(() -> RepoReview.builder().repo(repo).student(student).build());
@@ -45,6 +49,9 @@ public class SocialService {
 
     @Transactional
     public void deleteRepoReview(String studentCode, Long repoId) {
+        githubRepoRepository.findById(repoId)
+                .filter(GithubRepo::isActive)
+                .orElseThrow(() -> new NotFoundException("Repository not found"));
         StudentUser student = findStudent(studentCode);
         repoReviewRepository.findByRepoIdAndStudentId(repoId, student.getId())
                 .ifPresent(repoReviewRepository::delete);
@@ -54,6 +61,9 @@ public class SocialService {
     public RepoVoteResponse voteRepo(String studentCode, Long repoId, RepoVoteRequest request) {
         GithubRepo repo = githubRepoRepository.findById(repoId)
                 .orElseThrow(() -> new NotFoundException("Repository not found"));
+        if (!repo.isActive()) {
+            throw new NotFoundException("Repository not found");
+        }
         StudentUser student = findStudent(studentCode);
         int value = request.voteValue();
         if (value < -1 || value > 1) {
@@ -76,6 +86,7 @@ public class SocialService {
 
     public RepoSocialInfoResponse getRepoSocialInfo(Long repoId) {
         githubRepoRepository.findById(repoId)
+                .filter(GithubRepo::isActive)
                 .orElseThrow(() -> new NotFoundException("Repository not found"));
         return new RepoSocialInfoResponse(
                 repoId,

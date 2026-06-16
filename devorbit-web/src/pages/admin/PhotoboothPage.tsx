@@ -30,8 +30,7 @@ export function PhotoboothPage() {
     setError(null)
     try {
       const list = await frameService.list()
-      const normalized = await Promise.all(list.map(normalizeStoredFrameSlots))
-      setFrames(normalized)
+      setFrames(list)
     } catch (e: any) {
       setError(e?.message || 'Tải frame thất bại')
     }

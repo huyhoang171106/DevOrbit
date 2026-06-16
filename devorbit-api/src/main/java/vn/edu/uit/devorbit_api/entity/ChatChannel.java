@@ -35,6 +35,10 @@ public class ChatChannel {
     @Column(name = "reference_id", length = 50)
     private String referenceId;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean active = true;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

@@ -10,6 +10,7 @@ import vn.edu.uit.devorbit_api.dto.publicapi.CourseSummaryResponse;
 import vn.edu.uit.devorbit_api.service.CourseService;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * ADMIN COURSE CONTROLLER = CRUD endpoints for managing courses.
@@ -74,8 +75,8 @@ public class AdminCourseController {
      * Returns HTTP 204 (No Content) on success.
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        courseService.deleteCourse(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Map<String, Object>> delete(@PathVariable Long id) {
+        var result = courseService.deleteCourse(id);
+        return ResponseEntity.ok(Map.of("channelDeactivated", result.channelDeactivated()));
     }
 }

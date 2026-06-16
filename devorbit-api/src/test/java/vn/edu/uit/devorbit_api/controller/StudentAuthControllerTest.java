@@ -11,6 +11,7 @@ import vn.edu.uit.devorbit_api.dto.student.StudentProfileResponse;
 import vn.edu.uit.devorbit_api.service.JwtService;
 import vn.edu.uit.devorbit_api.service.RevokedTokenStore;
 import vn.edu.uit.devorbit_api.service.StudentAuthService;
+import vn.edu.uit.devorbit_api.service.SupabaseStorageService;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -34,9 +35,12 @@ class StudentAuthControllerTest {
     @MockitoBean
     private RevokedTokenStore revokedTokenStore;
 
+    @MockitoBean
+    private SupabaseStorageService supabaseStorageService;
+
     @Test
     void shouldLoginSuccessfully() throws Exception {
-        StudentAuthResponse response = new StudentAuthResponse("student-jwt-token", 1L, "24520554", "Nguyen Van A", "24520554@gm.uit.edu.vn");
+        StudentAuthResponse response = new StudentAuthResponse("student-jwt-token", 1L, "24520554", "Nguyen Van A", "24520554@gm.uit.edu.vn", null);
         when(studentAuthService.login(any(), any())).thenReturn(response);
 
         mockMvc.perform(post("/api/student/login")
@@ -54,7 +58,7 @@ class StudentAuthControllerTest {
 
     @Test
     void shouldRegisterSuccessfully() throws Exception {
-        StudentProfileResponse response = new StudentProfileResponse(1L, "24520554", "Nguyen Van A", "24520554@gm.uit.edu.vn");
+        StudentProfileResponse response = new StudentProfileResponse(1L, "24520554", "Nguyen Van A", "24520554@gm.uit.edu.vn", null);
         when(studentAuthService.register(any())).thenReturn(response);
 
         mockMvc.perform(post("/api/student/register")
@@ -74,7 +78,7 @@ class StudentAuthControllerTest {
 
     @Test
     void shouldVerifyOtpSuccessfully() throws Exception {
-        StudentAuthResponse response = new StudentAuthResponse("student-jwt-token", 1L, "24520554", "Nguyen Van A", "24520554@gm.uit.edu.vn");
+        StudentAuthResponse response = new StudentAuthResponse("student-jwt-token", 1L, "24520554", "Nguyen Van A", "24520554@gm.uit.edu.vn", null);
         when(studentAuthService.verifyOtp(any())).thenReturn(response);
 
         mockMvc.perform(post("/api/student/verify-otp")
@@ -106,8 +110,25 @@ class StudentAuthControllerTest {
     }
 
     @Test
+    void forgotPasswordShouldNeverLeakEmail() throws Exception {
+        // Service returns the real email (student exists)
+        when(studentAuthService.forgotPassword(any())).thenReturn("24520554@gm.uit.edu.vn");
+
+        mockMvc.perform(post("/api/student/forgot-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "studentCode": "24520554"
+                            }
+                        """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Nếu tài khoản tồn tại, mã OTP đã được gửi đến email của bạn"))
+                .andExpect(jsonPath("$.email").doesNotExist());
+    }
+
+    @Test
     void shouldResetPasswordSuccessfully() throws Exception {
-        StudentAuthResponse response = new StudentAuthResponse("student-jwt-token", 1L, "24520554", "Nguyen Van A", "24520554@gm.uit.edu.vn");
+        StudentAuthResponse response = new StudentAuthResponse("student-jwt-token", 1L, "24520554", "Nguyen Van A", "24520554@gm.uit.edu.vn", null);
         when(studentAuthService.resetPassword(any())).thenReturn(response);
 
         mockMvc.perform(post("/api/student/reset-password")

@@ -88,11 +88,8 @@ public class StudentAuthController {
      */
     @PostMapping("/forgot-password")
     public Map<String, String> forgotPassword(@RequestBody @Valid ForgotPasswordRequest request) {
-        String email = studentAuthService.forgotPassword(request);
-        if (email.isEmpty()) {
-            return Map.of("message", "Nếu tài khoản tồn tại, mã OTP đã được gửi đến email của bạn");
-        }
-        return Map.of("email", email, "message", "Mã OTP đã được gửi đến email của bạn");
+        studentAuthService.forgotPassword(request);
+        return Map.of("message", "Nếu tài khoản tồn tại, mã OTP đã được gửi đến email của bạn");
     }
 
     /**

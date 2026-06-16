@@ -11,6 +11,7 @@ import vn.edu.uit.devorbit_api.config.JwtProperties;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 
@@ -69,6 +70,10 @@ public class JwtService {
         Claims claims = parseToken(token);
         String type = claims.get("type", String.class);
         return type != null ? type : "USER";
+    }
+
+    public Instant extractExpiration(String token) {
+        return parseToken(token).getExpiration().toInstant();
     }
 
     public boolean isTokenValid(String token) {

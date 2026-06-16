@@ -133,6 +133,22 @@ class StudentAuthServiceTest {
         verify(emailService).sendPasswordResetOtp(eq("24520554@gm.uit.edu.vn"), any(), anyInt());
     }
 
+    @Test
+    void forgotPassword_returnsEmptyForInactiveAccount() {
+        StudentUser inactive = StudentUser.builder()
+                .id(1L).studentCode("24520554").fullName("Nguyen Van A")
+                .email("24520554@gm.uit.edu.vn").passwordHash("hash").active(false).build();
+
+        when(studentUserRepository.findByStudentCode("24520554")).thenReturn(Optional.of(inactive));
+
+        String result = service.forgotPassword(new ForgotPasswordRequest("24520554"));
+
+        assertThat(result).isEmpty();
+        verify(otpRateLimitService).check("FORGOT_PASSWORD:24520554");
+        verifyNoInteractions(otpRepository);
+        verifyNoInteractions(emailService);
+    }
+
     // ─── RESET PASSWORD ────────────────────────────────
 
     @Test
@@ -163,6 +179,29 @@ class StudentAuthServiceTest {
         assertThatThrownBy(() -> service.resetPassword(req))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessageContaining("OTP");
+    }
+
+    @Test
+    void resetPassword_rejectsInactiveAccount() {
+        Otp validOtp = Otp.builder()
+                .email("24520554@gm.uit.edu.vn")
+                .purpose(OtpPurpose.PASSWORD_RESET)
+                .otpCode("123456")
+                .expiresAt(LocalDateTime.now().plusMinutes(10))
+                .build();
+
+        StudentUser inactive = StudentUser.builder()
+                .id(1L).studentCode("24520554").fullName("Nguyen Van A")
+                .email("24520554@gm.uit.edu.vn").passwordHash("hash").active(false).build();
+
+        when(otpRepository.findTopByEmailAndPurposeOrderByCreatedAtDesc("24520554@gm.uit.edu.vn", OtpPurpose.PASSWORD_RESET))
+                .thenReturn(Optional.of(validOtp));
+        when(studentUserRepository.findByEmail("24520554@gm.uit.edu.vn")).thenReturn(Optional.of(inactive));
+
+        ResetPasswordRequest req = new ResetPasswordRequest("24520554@gm.uit.edu.vn", "123456", "newPassword123");
+        assertThatThrownBy(() -> service.resetPassword(req))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("vô hiệu hóa");
     }
 
     // ─── RESEND OTP ────────────────────────────────────

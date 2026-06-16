@@ -32,6 +32,7 @@ public class AdminNoteService {
     public void delete(Long id) {
         Note entity = noteRepo.findById(id)
                 .orElseThrow(() -> new NotFoundException("Note not found: " + id));
+        snippetRepo.deleteByNoteId(id);
         noteRepo.delete(entity);
     }
 

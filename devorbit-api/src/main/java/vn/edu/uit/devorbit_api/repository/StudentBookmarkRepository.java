@@ -13,4 +13,8 @@ public interface StudentBookmarkRepository extends JpaRepository<StudentBookmark
     Optional<StudentBookmark> findByStudentIdAndTargetTypeAndTargetId(Long studentId, String targetType, Long targetId);
     boolean existsByStudentIdAndTargetTypeAndTargetId(Long studentId, String targetType, Long targetId);
     void deleteByStudentIdAndTargetTypeAndTargetId(Long studentId, String targetType, Long targetId);
+
+    void deleteByTargetTypeAndTargetId(String targetType, Long targetId);
+
+    void deleteByTargetTypeAndTargetIdIn(String targetType, List<Long> targetIds);
 }

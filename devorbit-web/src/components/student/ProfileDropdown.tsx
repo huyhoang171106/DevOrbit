@@ -62,7 +62,7 @@ export function ProfileDropdown() {
         className="outline-none cursor-pointer rounded-full ring-2 ring-transparent hover:ring-white/20 transition-[ring] duration-200"
         title={profile.fullName}
       >
-        <Avatar name={profile.fullName} size={40} />
+        <Avatar name={profile.fullName} size={40} src={profile.avatar} />
       </button>
 
       <AnimatePresence>
@@ -76,7 +76,7 @@ export function ProfileDropdown() {
           >
             <div className="p-5 pb-3 border-b border-orbit-border">
               <div className="flex items-center gap-4">
-                <Avatar name={profile.fullName} size={48} />
+                <Avatar name={profile.fullName} size={48} src={profile.avatar} />
                 <div className="min-w-0">
                   <p className="text-[15px] font-bold text-orbit-text truncate">
                     {profile.fullName}

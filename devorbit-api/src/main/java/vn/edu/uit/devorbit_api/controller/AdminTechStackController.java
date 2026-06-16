@@ -1,6 +1,7 @@
 package vn.edu.uit.devorbit_api.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,9 +30,11 @@ public class AdminTechStackController {
 
     @GetMapping
     public ResponseEntity<List<AdminTechStackResponse>> list() {
-        return ResponseEntity.ok(techStackRepo.findAllDistinctOrderByName()
-            .stream().map(this::toResponse)
-            .collect(Collectors.toList()));
+        return ResponseEntity.ok()
+            .cacheControl(CacheControl.noCache().mustRevalidate())
+            .body(techStackRepo.findAllDistinctOrderByName()
+                .stream().map(this::toResponse)
+                .collect(Collectors.toList()));
     }
 
     @PostMapping

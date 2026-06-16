@@ -1,6 +1,7 @@
 package vn.edu.uit.devorbit_api.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -56,14 +57,16 @@ public class AdminStatsController {
                 .build())
             .collect(Collectors.toList());
 
-        return ResponseEntity.ok(AdminStatsResponse.builder()
-            .totalStudents(studentRepo.count())
-            .totalCourses(courseRepo.count())
-            .totalRepos(githubRepoRepo.countByActiveTrue())
-            .pendingCandidates(repoCandidateRepo.countByStatus(RepoCandidateStatus.NEW))
-            .recentStudents(recentStudents)
-            .recentCourseReviews(recentReviews)
-            .recentSubmissions(recentSubmissions)
-            .build());
+        return ResponseEntity.ok()
+            .cacheControl(CacheControl.noCache().mustRevalidate())
+            .body(AdminStatsResponse.builder()
+                .totalStudents(studentRepo.count())
+                .totalCourses(courseRepo.count())
+                .totalRepos(githubRepoRepo.countByActiveTrue())
+                .pendingCandidates(repoCandidateRepo.countByStatus(RepoCandidateStatus.NEW))
+                .recentStudents(recentStudents)
+                .recentCourseReviews(recentReviews)
+                .recentSubmissions(recentSubmissions)
+                .build());
     }
 }

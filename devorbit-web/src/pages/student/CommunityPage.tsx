@@ -428,7 +428,7 @@ function ChatArea({
 
       <div className="shrink-0 px-4 py-3 border-t border-orbit-border">
         {authenticated ? (
-          <div className="flex items-end gap-2">
+          <div className="flex items-center gap-2">
             <div className="flex-1 relative">
               <textarea
                 value={input}

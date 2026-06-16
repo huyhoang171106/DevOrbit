@@ -2,10 +2,14 @@ package vn.edu.uit.devorbit_api.service;
 
 import lombok.RequiredArgsConstructor;
 import vn.edu.uit.devorbit_api.dto.admin.AdminCourseUpsertRequest;
+import vn.edu.uit.devorbit_api.dto.admin.CourseDeleteResult;
 import vn.edu.uit.devorbit_api.dto.publicapi.CourseDetailResponse;
 import vn.edu.uit.devorbit_api.dto.publicapi.CourseSummaryResponse;
+import vn.edu.uit.devorbit_api.entity.ChatChannelType;
 import vn.edu.uit.devorbit_api.entity.Course;
 import vn.edu.uit.devorbit_api.exception.NotFoundException;
+import vn.edu.uit.devorbit_api.repository.ChatChannelRepository;
+import vn.edu.uit.devorbit_api.repository.CommunityMessageRepository;
 import vn.edu.uit.devorbit_api.repository.CourseRepository;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -51,6 +55,9 @@ import java.util.List;
 public class CourseService {
     private final CourseRepository courseRepository;
     private final GithubRepoService githubRepoService;
+    private final CommunityChatService communityChatService;
+    private final ChatChannelRepository chatChannelRepository;
+    private final CommunityMessageRepository communityMessageRepository;
 
     // =====================================================================
     // LIST METHODS
@@ -156,7 +163,9 @@ public class CourseService {
                 .gradingCriteria(request.gradingCriteria())
                 .topics(request.topics())
                 .build();
-        return mapToDetail(courseRepository.save(course));
+        Course saved = courseRepository.save(course);
+        communityChatService.createChannel(ChatChannelType.COURSE, String.valueOf(saved.getId()), saved.getTenMH());
+        return mapToDetail(saved);
     }
 
     /**
@@ -183,10 +192,21 @@ public class CourseService {
      * Returns nothing (void) — the controller returns HTTP 204 No Content.
      */
     @CacheEvict(value = "courses", allEntries = true)
-    public void deleteCourse(Long id) {
+    public CourseDeleteResult deleteCourse(Long id) {
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Course not found: " + id));
         courseRepository.delete(course);
+        var channels = chatChannelRepository.findByTypeAndReferenceId(ChatChannelType.COURSE, String.valueOf(id));
+        if (!channels.isEmpty()) {
+            var channel = channels.get(0);
+            if (communityMessageRepository.existsByChannelId(channel.getId())) {
+                channel.setActive(false);
+                chatChannelRepository.save(channel);
+                return new CourseDeleteResult(true);
+            }
+            chatChannelRepository.delete(channel);
+        }
+        return new CourseDeleteResult(false);
     }
 
     // =====================================================================

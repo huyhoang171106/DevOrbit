@@ -18,15 +18,14 @@ import vn.edu.uit.devorbit_api.entity.Course;
 import vn.edu.uit.devorbit_api.entity.GithubRepo;
 import vn.edu.uit.devorbit_api.entity.TechStack;
 import vn.edu.uit.devorbit_api.exception.NotFoundException;
-import vn.edu.uit.devorbit_api.repository.CourseRepository;
-import vn.edu.uit.devorbit_api.repository.GithubRepoRepository;
-import vn.edu.uit.devorbit_api.repository.TechStackRepository;
+import vn.edu.uit.devorbit_api.repository.*;
 
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
+import vn.edu.uit.devorbit_api.entity.NoteTargetType;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +35,10 @@ public class GithubRepoService {
     private final TechStackRepository techStackRepository;
     private final CourseRepository courseRepository;
     private final GithubScanService githubScanService;
+    private final StudentBookmarkRepository studentBookmarkRepository;
+    private final NoteRepository noteRepository;
+    private final RepoVoteRepository repoVoteRepository;
+    private final RepoReviewRepository repoReviewRepository;
 
     // Self-inject for proxy-aware @Cacheable + @Async from same class
     @Autowired @Lazy
@@ -136,9 +139,16 @@ public class GithubRepoService {
     public void deleteApprovedRepo(Long repoId) {
         GithubRepo repo = githubRepoRepository.findById(repoId)
                 .orElseThrow(() -> new NotFoundException("Repo not found: " + repoId));
+
+        // Clean up user-facing dependents before soft-delete
+        studentBookmarkRepository.deleteByTargetTypeAndTargetId("REPO", repoId);
+        noteRepository.deleteByTargetTypeAndTargetId(NoteTargetType.REPO, repoId);
+        repoVoteRepository.deleteByRepoId(repoId);
+        repoReviewRepository.deleteByRepoId(repoId);
+
         repo.setActive(false);
         githubRepoRepository.save(repo);
-        log.info("deleteApprovedRepo: deactivated repo id={}", repoId);
+        log.info("deleteApprovedRepo: deactivated repo id={} with cleaned dependents", repoId);
     }
 
     // =====================================================================

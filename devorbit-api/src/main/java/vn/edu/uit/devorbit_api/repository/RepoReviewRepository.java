@@ -16,4 +16,8 @@ public interface RepoReviewRepository extends JpaRepository<RepoReview, Long> {
 
     @Query("SELECT AVG(r.rating) FROM RepoReview r WHERE r.repo.id = :repoId")
     Double averageRatingByRepoId(Long repoId);
+
+    void deleteByRepoId(Long repoId);
+
+    void deleteByRepoIdIn(List<Long> repoIds);
 }

@@ -1,16 +1,22 @@
 package vn.edu.uit.devorbit_api.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import vn.edu.uit.devorbit_api.dto.admin.AdminCourseUpsertRequest;
+import vn.edu.uit.devorbit_api.dto.admin.CourseDeleteResult;
 import vn.edu.uit.devorbit_api.dto.publicapi.CourseDetailResponse;
 import vn.edu.uit.devorbit_api.dto.publicapi.CourseSummaryResponse;
-import vn.edu.uit.devorbit_api.entity.Course;
+import vn.edu.uit.devorbit_api.entity.*;
 import vn.edu.uit.devorbit_api.exception.NotFoundException;
-import vn.edu.uit.devorbit_api.repository.CourseRepository;
+import vn.edu.uit.devorbit_api.repository.*;
+import org.springframework.dao.InvalidDataAccessResourceUsageException;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * COURSE SERVICE = the BUSINESS LOGIC layer for course operations.
@@ -48,9 +54,33 @@ import java.util.List;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CourseService {
     private final CourseRepository courseRepository;
     private final GithubRepoService githubRepoService;
+    private final CourseTutorialRepository courseTutorialRepository;
+    private final CourseYoutubePlaylistRepository courseYoutubePlaylistRepository;
+    private final CourseArticleRepository courseArticleRepository;
+    private final CourseRelationshipRepository courseRelationshipRepository;
+    private final GithubRepoRepository githubRepoRepository;
+    private final RepoCandidateRepository repoCandidateRepository;
+    private final CourseReviewRepository courseReviewRepository;
+    private final StudentBookmarkRepository studentBookmarkRepository;
+    private final NoteRepository noteRepository;
+    private final RepoVoteRepository repoVoteRepository;
+    private final RepoReviewRepository repoReviewRepository;
+    private final ChatChannelRepository chatChannelRepository;
+    private final KnowledgeChunkRepository knowledgeChunkRepository;
+    private final KnowledgeSourceRepository knowledgeSourceRepository;
+    private final CourseSyllabusRepository courseSyllabusRepository;
+    private final CourseObjectiveRepository courseObjectiveRepository;
+    private final CourseOutcomeRepository courseOutcomeRepository;
+    private final CourseSessionRepository courseSessionRepository;
+    private final CourseAssessmentRepository courseAssessmentRepository;
+    private final CourseReferenceRepository courseReferenceRepository;
+    private final CourseToolRepository courseToolRepository;
+    private final CommunityChatService communityChatService;
+    private final CommunityMessageRepository communityMessageRepository;
 
     // =====================================================================
     // LIST METHODS
@@ -156,7 +186,9 @@ public class CourseService {
                 .gradingCriteria(request.gradingCriteria())
                 .topics(request.topics())
                 .build();
-        return mapToDetail(courseRepository.save(course));
+        Course saved = courseRepository.save(course);
+        communityChatService.createChannel(ChatChannelType.COURSE, String.valueOf(saved.getId()), saved.getTenMH());
+        return mapToDetail(saved);
     }
 
     /**
@@ -178,15 +210,110 @@ public class CourseService {
     }
 
     /**
-     * Delete a course from the database.
-     * Throws NotFoundException if the course doesn't exist.
-     * Returns nothing (void) — the controller returns HTTP 204 No Content.
+     * Delete a course and all owned dependents atomically.
+     *
+     * Cleanup order respects FK constraints:
+     *   1. Non-FK / business-key dependents (bookmarks, notes, RAG, channels)
+     *   2. Child entities with FK to course
+     *   3. Repo-scoped dependents (votes, reviews, bookmarks, notes)
+     *   4. GithubRepos (including ManyToMany join rows)
+     *   5. The Course itself
+     *
+     * @Transactional ensures atomicity — any failure rolls back everything.
      */
+    @Transactional
     @CacheEvict(value = "courses", allEntries = true)
-    public void deleteCourse(Long id) {
+    public CourseDeleteResult deleteCourse(Long id) {
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Course not found: " + id));
+
+        String courseCode = course.getMaMH();
+
+        // 1. Clean up non-FK / business-key dependents that reference the course
+        // 1a. StudentBookmarks for this course
+        studentBookmarkRepository.deleteByTargetTypeAndTargetId("COURSE", id);
+
+        // 1b. Notes for this course
+        noteRepository.deleteByTargetTypeAndTargetId(NoteTargetType.COURSE, id);
+
+        // Note: 1c. Chat channel cleanup is deferred to step 5 (end of method)
+        //       to support soft-delete when messages exist
+
+        // 1d. RAG / knowledge data keyed by business key (courseCode / maMH)
+        try {
+            knowledgeChunkRepository.deleteByCourseCode(courseCode);
+        } catch (InvalidDataAccessResourceUsageException e) {
+            log.warn("deleteCourse: knowledge_chunks table not available (expected in some test envs): {}", e.getMessage());
+        }
+        courseSyllabusRepository.deleteByCourseCode(courseCode);
+        courseObjectiveRepository.deleteByCourseCode(courseCode);
+        courseOutcomeRepository.deleteByCourseCode(courseCode);
+        courseSessionRepository.deleteByCourseCode(courseCode);
+        courseAssessmentRepository.deleteByCourseCode(courseCode);
+        courseReferenceRepository.deleteByCourseCode(courseCode);
+        courseToolRepository.deleteByCourseCode(courseCode);
+
+        // 1e. Remove orphaned KnowledgeSources that have no remaining chunks
+        try {
+            List<UUID> orphanedSourceIds = knowledgeSourceRepository.findAll().stream()
+                    .filter(ks -> knowledgeChunkRepository.findBySourceIdOrderByChunkIndexAsc(ks.getId()).isEmpty())
+                    .map(KnowledgeSource::getId)
+                    .toList();
+            if (!orphanedSourceIds.isEmpty()) {
+                knowledgeSourceRepository.deleteAllById(orphanedSourceIds);
+                log.info("deleteCourse: removed {} orphaned knowledge sources for course {}", orphanedSourceIds.size(), courseCode);
+            }
+        } catch (InvalidDataAccessResourceUsageException e) {
+            log.warn("deleteCourse: knowledge_chunks table not available for orphan check (expected in some test envs): {}", e.getMessage());
+        }
+
+        // 2. Clean up child entities with FK to course
+        courseTutorialRepository.deleteByCourseId(id);
+        courseYoutubePlaylistRepository.deleteByCourseId(id);
+        courseArticleRepository.deleteByCourseId(id);
+        courseRelationshipRepository.deleteByCourseIdOrRelatedCourseId(id, id);
+        courseReviewRepository.deleteByCourseId(id);
+        repoCandidateRepository.deleteByCourseId(id);
+
+        // 3. Clean up GithubRepos and their scoped dependents
+        List<GithubRepo> repos = githubRepoRepository.findByCourseId(id);
+        if (!repos.isEmpty()) {
+            List<Long> repoIds = repos.stream().map(GithubRepo::getId).toList();
+
+            // 3a. Repo-scoped dependents (non-FK relationships)
+            studentBookmarkRepository.deleteByTargetTypeAndTargetIdIn("REPO", repoIds);
+            noteRepository.deleteByTargetTypeAndTargetIdIn(NoteTargetType.REPO, repoIds);
+
+            // 3b. Repo-scoped dependents with DB FK (ON DELETE CASCADE exists, clean explicitly for consistency)
+            repoVoteRepository.deleteByRepoIdIn(repoIds);
+            repoReviewRepository.deleteByRepoIdIn(repoIds);
+
+            // 3c. Remove ManyToMany join rows then delete repos
+            for (GithubRepo repo : repos) {
+                repo.getTechStacks().clear();
+                githubRepoRepository.delete(repo);
+            }
+        }
+
+        // 4. Delete the course itself
         courseRepository.delete(course);
+
+        // 5. Soft-delete chat channels with messages, hard-delete empty ones
+        var channels = chatChannelRepository.findByTypeAndReferenceId(ChatChannelType.COURSE, String.valueOf(id));
+        boolean channelDeactivated = false;
+        if (!channels.isEmpty()) {
+            var channel = channels.get(0);
+            if (communityMessageRepository.existsByChannelId(channel.getId())) {
+                channel.setActive(false);
+                chatChannelRepository.save(channel);
+                channelDeactivated = true;
+            } else {
+                chatChannelRepository.delete(channel);
+            }
+        }
+
+        log.info("deleteCourse: course id={} code={} deleted with all dependents", id, courseCode);
+        return new CourseDeleteResult(channelDeactivated);
     }
 
     // =====================================================================

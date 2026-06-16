@@ -6,6 +6,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import vn.edu.uit.devorbit_api.dto.admin.CommunityMessageAdminResponse;
+import vn.edu.uit.devorbit_api.dto.community.ChatMessageResponse;
 import vn.edu.uit.devorbit_api.entity.ChatChannel;
 import vn.edu.uit.devorbit_api.entity.CommunityMessage;
 import vn.edu.uit.devorbit_api.exception.NotFoundException;
@@ -13,7 +14,6 @@ import vn.edu.uit.devorbit_api.repository.ChatChannelRepository;
 import vn.edu.uit.devorbit_api.repository.CommunityMessageRepository;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -50,8 +50,17 @@ public class AdminCommunityController {
         CommunityMessage msg = communityMessageRepo.findById(id)
                 .orElseThrow(() -> new NotFoundException("Community message not found"));
         Long channelId = msg.getChannel().getId();
-        communityMessageRepo.delete(msg);
-        messagingTemplate.convertAndSend("/topic/channel/" + channelId + "/delete", (Object) Map.of("id", id));
-        return ResponseEntity.noContent().build();
+        msg.setContent("Tin nhắn này đã bị admin xóa vì nghi ngờ vi phạm tiêu chuẩn cộng đồng");
+        communityMessageRepo.save(msg);
+        ChatMessageResponse resp = new ChatMessageResponse(
+                msg.getId(),
+                msg.getChannel().getId(),
+                msg.getStudent().getId(),
+                msg.getStudent().getFullName(),
+                msg.getStudent().getAvatar(),
+                msg.getContent(),
+                msg.getCreatedAt() != null ? msg.getCreatedAt().toString() : null);
+        messagingTemplate.convertAndSend("/topic/channel/" + channelId, resp);
+        return ResponseEntity.ok().build();
     }
 }

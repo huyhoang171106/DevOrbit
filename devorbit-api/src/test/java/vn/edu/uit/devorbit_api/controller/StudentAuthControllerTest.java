@@ -8,6 +8,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import vn.edu.uit.devorbit_api.dto.student.StudentAuthResponse;
 import vn.edu.uit.devorbit_api.dto.student.StudentProfileResponse;
+import vn.edu.uit.devorbit_api.repository.StudentUserRepository;
 import vn.edu.uit.devorbit_api.service.JwtService;
 import vn.edu.uit.devorbit_api.service.RevokedTokenStore;
 import vn.edu.uit.devorbit_api.service.StudentAuthService;
@@ -37,6 +38,9 @@ class StudentAuthControllerTest {
 
     @MockitoBean
     private SupabaseStorageService supabaseStorageService;
+
+    @MockitoBean
+    private StudentUserRepository studentUserRepository;
 
     @Test
     void shouldLoginSuccessfully() throws Exception {

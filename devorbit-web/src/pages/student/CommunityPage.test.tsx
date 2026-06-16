@@ -36,4 +36,17 @@ describe('OnlineMembers', () => {
 
     expect(screen.getByText('Đang kết nối lại...')).toBeInTheDocument()
   })
+
+  test('shows "(Bạn)" label next to current user', () => {
+    const members: OnlineMemberResponse[] = [
+      { studentId: 1, studentCode: '24520554', displayName: 'Bao Nguyen', avatar: null },
+      { studentId: 2, studentCode: '24520001', displayName: 'An Tran', avatar: null },
+    ]
+
+    render(<OnlineMembers members={members} connected={true} currentUserId={1} />)
+
+    expect(screen.getByText('(Bạn)')).toBeInTheDocument()
+    expect(screen.getByText('An Tran')).toBeInTheDocument()
+    expect(screen.queryByText('(Bạn)', { selector: 'span' })).toBeInTheDocument()
+  })
 })

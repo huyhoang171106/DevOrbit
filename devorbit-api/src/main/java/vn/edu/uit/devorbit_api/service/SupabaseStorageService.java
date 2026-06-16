@@ -47,6 +47,13 @@ public class SupabaseStorageService {
     }
 
     public Map<String, String> upload(MultipartFile file) {
+        if (supabaseUrl == null || supabaseUrl.isBlank() || supabaseKey == null || supabaseKey.isBlank()) {
+            throw new BadRequestException("Supabase Storage is not configured. Set SUPABASE_URL and SUPABASE_KEY in .env");
+        }
+        if (bucketName == null || bucketName.isBlank()) {
+            throw new BadRequestException("Supabase bucket name is not configured. Set SUPABASE_BUCKET in .env");
+        }
+
         validateFile(file);
 
         String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
@@ -73,10 +80,13 @@ public class SupabaseStorageService {
 
         } catch (WebClientResponseException e) {
             log.error("Supabase Storage upload failed: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
-            throw new RuntimeException("Failed to upload file to Supabase Storage: " + e.getMessage(), e);
+            if (e.getStatusCode().value() == 403) {
+                throw new BadRequestException("Supabase Storage: bucket not found or missing storage policies. Please create the 'devorbit' bucket in Supabase Dashboard with public access.");
+            }
+            throw new BadRequestException("Supabase Storage upload failed: " + e.getMessage());
         } catch (IOException e) {
             log.error("Failed to read file bytes", e);
-            throw new RuntimeException("Failed to upload file to Supabase Storage", e);
+            throw new BadRequestException("Failed to read uploaded file");
         }
     }
 

@@ -1,10 +1,13 @@
 package vn.edu.uit.devorbit_api.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import vn.edu.uit.devorbit_api.exception.BadRequestException;
 
 import java.io.IOException;
@@ -16,6 +19,7 @@ import java.util.UUID;
 @Service
 public class SupabaseStorageService {
 
+    private static final Logger log = LoggerFactory.getLogger(SupabaseStorageService.class);
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     private static final Set<String> ALLOWED_MIME_TYPES = Set.of(
         "image/png", "image/jpeg", "image/webp", "image/gif"
@@ -48,10 +52,12 @@ public class SupabaseStorageService {
         String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
         String uploadUrl = String.format("%s/storage/v1/object/%s/%s", supabaseUrl, bucketName, fileName);
 
+        log.info("Uploading file '{}' to Supabase Storage: {}", file.getOriginalFilename(), uploadUrl);
+
         try {
             byte[] fileBytes = file.getBytes();
             
-            webClient.post()
+            String response = webClient.post()
                     .uri(uploadUrl)
                     .header("Authorization", "Bearer " + supabaseKey)
                     .header("apikey", supabaseKey)
@@ -62,9 +68,14 @@ public class SupabaseStorageService {
                     .block();
 
             String publicUrl = String.format("%s/storage/v1/object/public/%s/%s", supabaseUrl, bucketName, fileName);
+            log.info("File uploaded successfully. Public URL: {}", publicUrl);
             return Map.of("url", publicUrl);
 
+        } catch (WebClientResponseException e) {
+            log.error("Supabase Storage upload failed: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
+            throw new RuntimeException("Failed to upload file to Supabase Storage: " + e.getMessage(), e);
         } catch (IOException e) {
+            log.error("Failed to read file bytes", e);
             throw new RuntimeException("Failed to upload file to Supabase Storage", e);
         }
     }

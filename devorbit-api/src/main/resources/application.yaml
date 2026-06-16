@@ -10,6 +10,10 @@ spring:
       enabled: false
   application:
     name: devorbit-api
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
 
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
@@ -64,11 +68,15 @@ spring:
 
 server:
   port: ${SERVER_PORT:8080}
+  max-http-form-post-size: 10MB
   compression:
     enabled: true
     mime-types: application/json,text/html,text/plain,text/css,application/javascript
     min-response-size: 1024
   tomcat:
+    max-http-form-post-size: 10MB
+    max-swallow-size: 10MB
+    max-post-size: 10485760
     threads:
       max: 200
       min-spare: 10

@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -54,7 +53,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/photobooth/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers("/api/student/login", "/api/student/register", "/api/student/verify-otp",
                     "/api/student/forgot-password", "/api/student/reset-password", "/api/student/resend-otp").permitAll()
-                .requestMatchers("/api/student/**").authenticated()
+                .requestMatchers("/api/student/**").hasAuthority("ROLE_STUDENT")
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
                 .anyRequest().denyAll())
@@ -72,11 +71,6 @@ public class SecurityConfig {
                 }));
 
         return http.build();
-    }
-
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return web -> web.ignoring().requestMatchers("/api/ai/subject-qa/**");
     }
 
     @Bean

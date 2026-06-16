@@ -259,7 +259,8 @@ public class StudentAuthService {
         if (token != null && !token.isEmpty()) {
             try {
                 String jti = jwtService.extractJti(token);
-                revokedTokenStore.revoke(jti);
+                var expiresAt = jwtService.extractExpiration(token);
+                revokedTokenStore.revoke(jti, expiresAt);
             } catch (Exception ignored) {}
         }
     }

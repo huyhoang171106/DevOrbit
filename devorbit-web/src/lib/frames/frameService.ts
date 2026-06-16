@@ -20,7 +20,7 @@ function mapStored(row: any): StoredFrame {
 
 function getToken(): string {
   const token = getAdminToken();
-  if (!token) throw new Error("Unauthorized");
+  if (!token) throw new Error("Vui lòng đăng nhập");
   return token;
 }
 
@@ -72,7 +72,7 @@ async function uploadFrameImage(frameId: string, file: File): Promise<string | n
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
     }).then(async (res) => {
-      if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
+      if (!res.ok) throw new Error(`Tải lên thất bại (${res.status})`);
       return (await res.json()) as { url?: string };
     });
     return result?.url ?? null;

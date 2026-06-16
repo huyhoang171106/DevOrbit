@@ -15,6 +15,8 @@ public interface CourseReviewRepository extends JpaRepository<CourseReview, Long
     List<CourseReview> findAllByOrderByCreatedAtDesc();
     List<CourseReview> findTop10ByOrderByCreatedAtDesc();
 
+    void deleteByCourseId(Long courseId);
+
     @Query("SELECT AVG(r.rating) FROM CourseReview r WHERE r.course.id = :courseId")
     Double averageRatingByCourseId(Long courseId);
 }

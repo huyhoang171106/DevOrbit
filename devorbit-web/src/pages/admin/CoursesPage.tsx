@@ -64,9 +64,13 @@ export function CoursesPage() {
   }
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Xoá môn học này?')) return
+    const msg = 'Xoá môn học này?\nTin nhắn trong kênh chat liên quan sẽ bị vô hiệu hoá.';
+    if (!confirm(msg)) return
     try {
-      await adminApi.deleteCourse(token!, id)
+      const result = await adminApi.deleteCourse(token!, id)
+      if (result?.channelDeactivated) {
+        alert('Môn học đã được xoá. Kênh chat liên quan đã bị vô hiệu hoá do có dữ liệu tin nhắn.')
+      }
       refetch()
     } catch (e) {
       console.error(e)

@@ -25,6 +25,10 @@ fun RepoDetailScreen(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
+    val description = repo.safeDescription
+    val githubUrl = repo.safeGithubUrl
+    val primaryLanguage = repo.safePrimaryLanguage
+    val techStacks = repo.safeTechStacks
 
     Column(
         modifier = Modifier
@@ -48,9 +52,9 @@ fun RepoDetailScreen(
 
         Spacer(Modifier.height(12.dp))
 
-        if (repo.description.isNotBlank()) {
+        if (description.isNotBlank()) {
             Text(
-                text = repo.description,
+                text = description,
                 style = CosmicTheme.typography.body,
                 color = CosmicTheme.colors.textSecondary
             )
@@ -62,13 +66,13 @@ fun RepoDetailScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (repo.primaryLanguage.isNotBlank()) {
+            if (primaryLanguage.isNotBlank()) {
                 Surface(
                     shape = RoundedCornerShape(8.dp),
                     color = CosmicTheme.colors.plasma.copy(alpha = 0.12f)
                 ) {
                     Text(
-                        text = repo.primaryLanguage,
+                        text = primaryLanguage,
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                         style = CosmicTheme.typography.label,
                         color = CosmicTheme.colors.plasma
@@ -83,7 +87,7 @@ fun RepoDetailScreen(
         }
 
         // Tech stacks
-        if (repo.techStacks.isNotEmpty()) {
+        if (techStacks.isNotEmpty()) {
             Spacer(Modifier.height(24.dp))
             Text(
                 "Tech stacks",
@@ -96,7 +100,7 @@ fun RepoDetailScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                repo.techStacks.forEach { techStack ->
+                techStacks.forEach { techStack ->
                     Surface(
                         shape = RoundedCornerShape(8.dp),
                         color = CosmicTheme.colors.nebula,
@@ -118,7 +122,9 @@ fun RepoDetailScreen(
         // GitHub button
         Button(
             onClick = {
-                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(repo.githubUrl)))
+                if (githubUrl.isNotBlank()) {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(githubUrl)))
+                }
             },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),

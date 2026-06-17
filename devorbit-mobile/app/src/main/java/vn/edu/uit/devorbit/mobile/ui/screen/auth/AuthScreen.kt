@@ -61,6 +61,8 @@ fun AuthScreen(
                 state = registerState,
                 onFieldChange = viewModel::updateRegisterField,
                 onRegister = viewModel::register,
+                onVerifyOtp = viewModel::verifyOtp,
+                onResendOtp = viewModel::resendOtp,
                 onSwitchToLogin = { showRegister = false; viewModel.switchToLogin() }
             )
         } else {
@@ -178,9 +180,81 @@ private fun RegisterContent(
     state: vn.edu.uit.devorbit.mobile.ui.viewmodel.RegisterUiState,
     onFieldChange: (String, String) -> Unit,
     onRegister: () -> Unit,
+    onVerifyOtp: () -> Unit,
+    onResendOtp: () -> Unit,
     onSwitchToLogin: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
+
+    if (state.isAwaitingOtp) {
+        Text(
+            "Xac thuc email",
+            style = CosmicTheme.typography.display,
+            color = CosmicTheme.colors.plasma
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            "Nhap ma OTP da gui den ${state.registeredEmail.ifBlank { state.email }}",
+            style = CosmicTheme.typography.body,
+            color = CosmicTheme.colors.textSecondary,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = state.otpCode,
+            onValueChange = { onFieldChange("otpCode", it) },
+            label = { Text("OTP") },
+            leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null, tint = CosmicTheme.colors.plasma) },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus(); onVerifyOtp() }),
+            colors = authFieldColors()
+        )
+
+        if (state.error != null) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(state.error, color = CosmicTheme.colors.supernova, style = CosmicTheme.typography.label)
+        }
+        if (state.message != null) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(state.message, color = CosmicTheme.colors.nebula, style = CosmicTheme.typography.label)
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Button(
+            onClick = onVerifyOtp,
+            enabled = !state.isLoading && state.otpCode.length == 6,
+            modifier = Modifier.fillMaxWidth().height(50.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = CosmicTheme.colors.plasma)
+        ) {
+            if (state.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = CosmicTheme.colors.void,
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text("Xac thuc", style = CosmicTheme.typography.body, fontWeight = FontWeight.Bold)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+        TextButton(
+            onClick = onResendOtp,
+            enabled = !state.isLoading
+        ) {
+            Text("Gui lai ma OTP", color = CosmicTheme.colors.plasma)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        TextButton(onClick = onSwitchToLogin) {
+            Text("Quay lai dang nhap", color = CosmicTheme.colors.plasma)
+        }
+        return
+    }
 
     if (state.isSuccess) {
         Text(

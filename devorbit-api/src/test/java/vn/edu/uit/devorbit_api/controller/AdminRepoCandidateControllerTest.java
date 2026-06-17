@@ -8,7 +8,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import vn.edu.uit.devorbit_api.dto.admin.CandidateReviewRequest;
 import vn.edu.uit.devorbit_api.dto.admin.RepoCandidateResponse;
+<<<<<<< HEAD
 import vn.edu.uit.devorbit_api.repository.StudentUserRepository;
+=======
+import vn.edu.uit.devorbit_api.repository.AdminUserRepository;
+import vn.edu.uit.devorbit_api.repository.StudentUserRepository;
+>>>>>>> master
 import vn.edu.uit.devorbit_api.service.JwtService;
 import vn.edu.uit.devorbit_api.service.RepoCandidateService;
 import vn.edu.uit.devorbit_api.service.RevokedTokenStore;
@@ -38,9 +43,18 @@ class AdminRepoCandidateControllerTest {
     @MockitoBean
     private RevokedTokenStore revokedTokenStore;
 
+<<<<<<< HEAD
     @MockitoBean
     private StudentUserRepository studentUserRepository;
 
+=======
+    @MockitoBean
+    private StudentUserRepository studentUserRepository;
+
+    @MockitoBean
+    private AdminUserRepository adminUserRepository;
+
+>>>>>>> master
     private RepoCandidateResponse makeCandidateResponse(Long id, String status) {
         return new RepoCandidateResponse(
             id, "owner", "repo", "https://github.com/owner/repo", status,

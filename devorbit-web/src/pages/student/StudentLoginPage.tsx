@@ -126,7 +126,11 @@ export function StudentLoginPage() {
     setError('')
     setLoading(true)
     try {
-      await apiPost('/api/student/resend-otp', { email })
+      if (mode === 'forgot' && forgotStep === 2) {
+        await apiPost('/api/student/forgot-password', { studentCode })
+      } else {
+        await apiPost('/api/student/resend-otp', { email })
+      }
       startCountdown()
     } catch {
       setError('Gửi lại mã OTP thất bại.')
@@ -235,8 +239,8 @@ export function StudentLoginPage() {
     if (mode === 'forgot') {
       if (forgotStep === 1) {
         try {
-          const res = await apiPost<{ email: string }>('/api/student/forgot-password', { studentCode })
-          setEmail(res.email)
+          await apiPost<{ message: string }>('/api/student/forgot-password', { studentCode })
+          setEmail('')
           setForgotStep(2)
           startCountdown()
         } catch (e) {
@@ -253,7 +257,7 @@ export function StudentLoginPage() {
         }
         try {
           const res = await apiPost<StudentAuthResponse>('/api/student/reset-password', {
-            email, otpCode, newPassword: password,
+            studentCode, otpCode, newPassword: password,
           })
           saveStudentToken(res.token)
           navigate('/')
@@ -307,7 +311,7 @@ export function StudentLoginPage() {
           </h1>
           {(mode === 'otp' || (mode === 'forgot' && forgotStep === 2)) && (
             <p className="body-sm text-ink/60 mt-[4px]">
-              Mã OTP đã được gửi đến <strong>{email}</strong>
+              Mã OTP đã được gửi đến <strong>{mode === 'forgot' ? 'email của tài khoản' : email}</strong>
             </p>
           )}
         </div>

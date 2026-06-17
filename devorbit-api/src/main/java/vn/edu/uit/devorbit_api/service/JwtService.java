@@ -95,6 +95,10 @@ public class JwtService {
         return parseToken(token).getExpiration().toInstant();
     }
 
+    public Instant extractExpiration(String token) {
+        return parseToken(token).getExpiration().toInstant();
+    }
+
     public boolean isTokenValid(String token) {
         try {
             parseToken(token);

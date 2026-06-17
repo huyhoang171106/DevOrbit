@@ -258,8 +258,6 @@ function ChannelList({
   )
 }
 
-const MESSAGE_BATCH_SIZE = 50 // Render this many messages at a time
-
 function ChatArea({
   channel,
   messages,
@@ -280,12 +278,10 @@ function ChatArea({
   const containerRef = useRef<HTMLDivElement>(null)
   const autoScrollRef = useRef(true)
   const prevMessagesLength = useRef(0)
-  const [visibleRange, setVisibleRange] = useState({ start: 0, end: MESSAGE_BATCH_SIZE })
 
-  // Reset scroll and virtualization state when channel changes
+  // Reset auto-scroll when channel changes
   useEffect(() => {
     autoScrollRef.current = true
-    setVisibleRange({ start: 0, end: MESSAGE_BATCH_SIZE })
     prevMessagesLength.current = 0
   }, [channel?.id])
 
@@ -302,12 +298,10 @@ function ChatArea({
     return `${date.toLocaleDateString('vi-VN', { day: '2-digit', month: 'short' })}, ${time}`
   }
 
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll to bottom on new messages
   useEffect(() => {
-    if (autoScrollRef.current && messages.length > prevMessagesLength.current) {
+    if (autoScrollRef.current && messages.length > prevMessagesLength.current && messages.length > 0) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-      // Reset visible range when at bottom
-      setVisibleRange({ start: Math.max(0, messages.length - MESSAGE_BATCH_SIZE), end: messages.length })
     }
     prevMessagesLength.current = messages.length
   }, [messages.length])
@@ -315,16 +309,7 @@ function ChatArea({
   const handleScroll = () => {
     if (!containerRef.current) return
     const el = containerRef.current
-    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100
-    autoScrollRef.current = atBottom
-
-    // Calculate visible range for virtualization
-    const scrollTop = el.scrollTop
-    const buffer = 200 // Extra buffer above and below visible area
-    const startIndex = Math.max(0, Math.floor((scrollTop - buffer) / 72) - 5)
-    const visibleCount = Math.ceil(el.clientHeight / 72) + 10
-    const endIndex = Math.min(messages.length, startIndex + visibleCount + 10)
-    setVisibleRange({ start: startIndex, end: endIndex })
+    autoScrollRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 100
   }
 
   const scrollToBottom = () => {
@@ -356,9 +341,6 @@ function ChatArea({
     )
   }
 
-  // Calculate total height for scroll
-  const totalHeight = messages.length * 72
-
   return (
     <div className="h-full flex flex-col min-h-0">
       <div className="shrink-0 px-6 py-4 border-b border-orbit-border flex items-center gap-3">
@@ -379,7 +361,7 @@ function ChatArea({
         </span>
       </div>
 
-      {/* Messages container with virtualized rendering */}
+      {/* Messages container — natural flow scrolling */}
       <div
         ref={containerRef}
         onScroll={handleScroll}
@@ -398,14 +380,8 @@ function ChatArea({
           </div>
         )}
 
-        {/* Virtualized messages container */}
-        <div style={{ height: totalHeight, position: 'relative' }}>
-          {messages.map((msg, index) => {
-            // Skip messages outside visible range
-            if (index < visibleRange.start || index >= visibleRange.end) {
-              return null
-            }
-
+        <div className="flex flex-col">
+          {messages.map((msg) => {
             const isMine = currentUserId !== null && msg.studentId === currentUserId
             const msgDate = new Date(msg.createdAt)
             const timeLabel = formatTime(msgDate)
@@ -413,16 +389,9 @@ function ChatArea({
             return (
               <div
                 key={msg.id}
-                style={{
-                  position: 'absolute',
-                  top: index * 72,
-                  left: 0,
-                  right: 0,
-                  height: 72,
-                }}
-                className={`flex gap-3 ${isMine ? 'flex-row-reverse' : ''} ${msg.sending ? 'opacity-60' : ''}`}
+                className={`flex gap-3 px-6 py-1 ${isMine ? 'flex-row-reverse' : ''} ${msg.sending ? 'opacity-60' : ''}`}
               >
-                <div className="shrink-0">
+                <div className="shrink-0 mt-0.5">
                   <Avatar name={msg.senderName} size={32} src={msg.senderAvatar} />
                 </div>
                 <div className={`flex-1 min-w-0 ${isMine ? 'flex flex-col items-end' : ''}`}>
@@ -564,9 +533,13 @@ export function CommunityPage() {
 
   const activeChannelRef = useRef(activeChannel)
   activeChannelRef.current = activeChannel
+  // Request id counter — ignore stale async responses when switching channels rapidly
+  const loadReqIdRef = useRef(0)
 
   // ─── Load messages: cache-first + parallel fetch all pages ─────────────────
   const loadChannelMessages = useCallback(async (ch: ChatChannelResponse) => {
+    const requestId = ++loadReqIdRef.current
+
     const cached = getCachedMessages(ch.id)
     if (cached) {
       // Show cached immediately
@@ -582,6 +555,9 @@ export function CommunityPage() {
       const firstPage = await apiStudentGet<PaginatedMessagesResponse>(
         `/api/student/community/channels/${ch.id}/messages?page=0&size=50`,
       )
+      // Stale? Ignore
+      if (requestId !== loadReqIdRef.current) return
+
       const tp = firstPage.totalPages ?? 1
 
       let msgs: ChatMessageResponse[]
@@ -595,10 +571,14 @@ export function CommunityPage() {
           ),
         )
         const settled = await Promise.allSettled(pageRequests)
+        // Stale before all pages settled? Ignore
+        if (requestId !== loadReqIdRef.current) return
         msgs = settled
           .map((r) => (r.status === 'fulfilled' ? [...r.value.content].reverse() : []))
           .flat()
       }
+      // Final stale check before committing state
+      if (requestId !== loadReqIdRef.current) return
       setAllMessages(msgs)
       setTotalPages(tp)
       setCachedMessages(ch.id, msgs, tp)

@@ -1,10 +1,11 @@
 import { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { m as motion } from 'framer-motion'
-import { BookOpen, GithubLogo, BookmarkSimple, Trash, ArrowSquareOut, Camera, CheckCircle } from '@phosphor-icons/react'
+import { BookOpen, GithubLogo, BookmarkSimple, Trash, ArrowSquareOut, Camera, CheckCircle, Gear } from '@phosphor-icons/react'
 import { apiStudentGet, apiStudentDelete } from '../../lib/api'
 import { isStudentAuthenticated } from '../../lib/auth'
 import { Avatar } from '../../components/shared/Avatar'
+import { ProfileSettingsModal } from '../../components/student/ProfileSettingsModal'
 import type { StudentProfileResponse, StudentBookmark } from '../../types/api'
 
 export function StudentProfilePage() {
@@ -14,6 +15,7 @@ export function StudentProfilePage() {
   const [uploading, setUploading] = useState(false)
   const [uploadSuccess, setUploadSuccess] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -155,9 +157,18 @@ export function StudentProfilePage() {
           </div>
 
           <div className="text-center md:text-left">
-            <h1 className="font-heading text-3xl md:text-4xl font-black text-orbit-text tracking-tight">
-              {profile.fullName}
-            </h1>
+            <div className="flex items-center gap-3 justify-center md:justify-start">
+              <h1 className="font-heading text-3xl md:text-4xl font-black text-orbit-text tracking-tight">
+                {profile.fullName}
+              </h1>
+              <button
+                onClick={() => setSettingsOpen(true)}
+                className="p-2 rounded-xl text-orbit-text-muted hover:text-orbit-accent hover:bg-orbit-accent/10 transition-colors"
+                title="Cài đặt tài khoản"
+              >
+                <Gear className="h-5 w-5" weight="fill" />
+              </button>
+            </div>
             <p className="text-[15px] text-orbit-accent font-mono font-medium mt-1">
               @{profile.studentCode}
             </p>
@@ -316,6 +327,13 @@ export function StudentProfilePage() {
           )}
         </div>
       </div>
+
+      <ProfileSettingsModal
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        profile={profile}
+        onProfileUpdate={setProfile}
+      />
     </div>
   )
 }

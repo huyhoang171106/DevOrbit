@@ -20,10 +20,10 @@ data class CourseSearchFilterState(
 
     companion object {
         val subjectFilters = listOf(
-            CourseSubjectFilter("Tat ca", null),
-            CourseSubjectFilter("Dai cuong", "DAI_CUONG"),
-            CourseSubjectFilter("Co so", "CO_SO"),
-            CourseSubjectFilter("Chuyen nganh", "CHUYEN_NGANH")
+            CourseSubjectFilter("Tất cả", null),
+            CourseSubjectFilter("Đại cương", "DAI_CUONG"),
+            CourseSubjectFilter("Cơ sở", "CO_SO"),
+            CourseSubjectFilter("Chuyên ngành", "CHUYEN_NGANH")
         )
     }
 }

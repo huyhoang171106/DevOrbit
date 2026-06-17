@@ -9,6 +9,7 @@ data class CourseEntity(
     val maMH: String,
     val tenMH: String,
     val credits: Int,
+    val repoCount: Int = 0,
     val description: String?,
     val lastUpdated: Long = System.currentTimeMillis()
 )

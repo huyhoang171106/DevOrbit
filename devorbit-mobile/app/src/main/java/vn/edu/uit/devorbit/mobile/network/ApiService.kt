@@ -51,6 +51,12 @@ interface ApiService {
     @POST("/api/student/register")
     suspend fun register(@Body body: Map<String, String>): Map<String, Any>
 
+    @POST("/api/student/verify-otp")
+    suspend fun verifyOtp(@Body body: Map<String, String>): Map<String, Any>
+
+    @POST("/api/student/resend-otp")
+    suspend fun resendOtp(@Body body: Map<String, String>): Map<String, Any>
+
     @GET("/api/student/me")
     suspend fun getStudentProfile(): Map<String, Any>
 

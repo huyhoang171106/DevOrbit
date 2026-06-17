@@ -183,8 +183,7 @@ public class OpenCodeAiService {
             .onErrorResume(e -> {
                 if (!emittedAnyDelta.get()) {
                     log.warn("Streaming LLM call failed before first token: {}", e.getMessage());
-                    String fallback = generateCompletion(systemPrompt, userMessage);
-                    return Flux.just(fallback);
+                    return generateCompletionAsync(systemPrompt, userMessage).flatMapMany(Flux::just);
                 }
                 log.error("Streaming LLM call failed after at least one delta: {}", e.getMessage());
                 return Flux.error(e);
@@ -192,7 +191,7 @@ public class OpenCodeAiService {
 
         return stream.switchIfEmpty(Flux.defer(() -> {
             log.warn("Streaming LLM returned no deltas, falling back to one-shot");
-            return Flux.just(generateCompletion(systemPrompt, userMessage));
+            return generateCompletionAsync(systemPrompt, userMessage).flatMapMany(Flux::just);
         }));
     }
 

@@ -7,10 +7,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import vn.edu.uit.devorbit_api.dto.publicapi.RepoSummaryResponse;
 import vn.edu.uit.devorbit_api.dto.publicapi.TechStackResponse;
-<<<<<<< HEAD
-=======
 import vn.edu.uit.devorbit_api.repository.AdminUserRepository;
->>>>>>> master
 import vn.edu.uit.devorbit_api.repository.StudentUserRepository;
 import vn.edu.uit.devorbit_api.service.GithubRepoService;
 import vn.edu.uit.devorbit_api.service.JwtService;
@@ -41,12 +38,9 @@ class PublicRepoControllerTest {
     @MockitoBean
     private StudentUserRepository studentUserRepository;
 
-<<<<<<< HEAD
-=======
     @MockitoBean
     private AdminUserRepository adminUserRepository;
 
->>>>>>> master
     @Test
     void shouldReturnRepoById() throws Exception {
         when(githubRepoService.getApprovedRepoById(1L)).thenReturn(

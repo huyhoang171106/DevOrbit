@@ -8,10 +8,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
-<<<<<<< HEAD
-=======
 import org.springframework.dao.DataIntegrityViolationException;
->>>>>>> master
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import vn.edu.uit.devorbit_api.dto.student.*;
@@ -245,11 +242,7 @@ class StudentAuthServiceTest {
                 .thenReturn(Optional.of(validOtp));
         when(studentUserRepository.findByEmail("24520554@gm.uit.edu.vn")).thenReturn(Optional.of(inactive));
 
-<<<<<<< HEAD
-        ResetPasswordRequest req = new ResetPasswordRequest("24520554@gm.uit.edu.vn", "123456", "newPassword123");
-=======
         ResetPasswordRequest req = new ResetPasswordRequest("24520554@gm.uit.edu.vn", null, "123456", "newPassword123");
->>>>>>> master
         assertThatThrownBy(() -> service.resetPassword(req))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessageContaining("vô hiệu hóa");

@@ -4,10 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
-<<<<<<< HEAD
-=======
 import org.springframework.dao.DataIntegrityViolationException;
->>>>>>> master
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -73,11 +70,7 @@ public class StudentAuthService {
         }
 
         loginRateLimitService.onSuccess(request.studentCode(), ip);
-<<<<<<< HEAD
-        String token = jwtService.generateToken(student.getStudentCode(), "STUDENT");
-=======
         String token = jwtService.generateToken(student.getStudentCode(), "STUDENT", student.getTokenVersion());
->>>>>>> master
         return new StudentAuthResponse(token, student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail(), student.getAvatar());
     }
 
@@ -130,6 +123,7 @@ public class StudentAuthService {
 
         otpRateLimitService.check("EMAIL_VERIFICATION:" + student.getEmail());
 
+        // rate limit by email for register
         otpRateLimitService.check("EMAIL_VERIFICATION:" + student.getEmail());
 
         String otpCode = generateOtp();
@@ -172,11 +166,7 @@ public class StudentAuthService {
             "/admin/students"
         ));
 
-<<<<<<< HEAD
-        String token = jwtService.generateToken(student.getStudentCode(), "STUDENT");
-=======
         String token = jwtService.generateToken(student.getStudentCode(), "STUDENT", student.getTokenVersion());
->>>>>>> master
         return new StudentAuthResponse(token, student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail(), student.getAvatar());
     }
 
@@ -261,21 +251,11 @@ public class StudentAuthService {
             throw new BadRequestException("Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.");
         }
 
-        if (!student.isActive()) {
-            throw new BadRequestException("Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.");
-        }
-
         student.setPasswordHash(passwordEncoder.encode(request.newPassword()));
         student.setTokenVersion(student.getTokenVersion() + 1);
         studentUserRepository.save(student);
         otpRepository.delete(otp);
 
-<<<<<<< HEAD
-        String token = jwtService.generateToken(student.getStudentCode(), "STUDENT");
-        return new StudentAuthResponse(token, student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail(), student.getAvatar());
-    }
-
-=======
         String token = jwtService.generateToken(student.getStudentCode(), "STUDENT", student.getTokenVersion());
         return new StudentAuthResponse(token, student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail(), student.getAvatar());
     }
@@ -292,7 +272,6 @@ public class StudentAuthService {
         throw new BadRequestException("Email hoặc tên đăng nhập là bắt buộc");
     }
 
->>>>>>> master
     // ───────── UPDATE AVATAR ─────────
 
     @Transactional

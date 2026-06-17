@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { getStudentToken, clearStudentToken } from './auth'
-=======
 import { getStudentToken, clearStudentToken, clearAdminToken } from './auth'
->>>>>>> master
 
 export const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? ''
 
@@ -53,11 +49,6 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
   if (!response.ok) {
     const body = await response.text().catch(() => '')
-<<<<<<< HEAD
-    if (response.status === 403 && path.startsWith('/api/student/')) {
-      clearStudentToken()
-      window.location.href = '/student/login'
-=======
     const authFailed = response.status === 401 || response.status === 403
     if (authFailed && (options.authScope === 'student' || path.startsWith('/api/student/'))) {
       clearStudentToken()
@@ -66,7 +57,6 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     if (authFailed && (options.authScope === 'admin' || (path.startsWith('/api/admin/') && !path.startsWith('/api/admin/auth/login')))) {
       clearAdminToken()
       redirectTo('/admin/login')
->>>>>>> master
     }
     let message = body || `Yêu cầu thất bại (${response.status})`
     try {
@@ -110,8 +100,6 @@ export const apiUpload = <T>(path: string, formData: FormData): Promise<T> => {
     body: formData,
   }).then(async (res) => {
     if (!res.ok) throw new Error(`Tải lên thất bại (${res.status})`)
-<<<<<<< HEAD
-=======
     return (await res.json()) as T
   })
 }
@@ -132,7 +120,6 @@ export const apiStudentUpload = <T>(path: string, formData: FormData): Promise<T
       const body = await res.text().catch(() => '')
       throw new Error(body || `Tải lên thất bại (${res.status})`)
     }
->>>>>>> master
     return (await res.json()) as T
   })
 }
@@ -141,29 +128,18 @@ export const apiStudentUpload = <T>(path: string, formData: FormData): Promise<T
 export const apiStudentGet = <T>(path: string) => {
   const token = getStudentToken()
   if (!token) throw new Error('Vui lòng đăng nhập')
-<<<<<<< HEAD
-  return request<T>(path, { token })
-=======
   return request<T>(path, { token, authScope: 'student' })
->>>>>>> master
 }
 
 export const apiStudentPost = <T>(path: string, body: unknown) => {
   const token = getStudentToken()
   if (!token) throw new Error('Vui lòng đăng nhập')
-<<<<<<< HEAD
-  return request<T>(path, { method: 'POST', token, body })
-=======
   return request<T>(path, { method: 'POST', token, authScope: 'student', body })
->>>>>>> master
 }
 
 export const apiStudentDelete = (path: string) => {
   const token = getStudentToken()
   if (!token) throw new Error('Vui lòng đăng nhập')
-<<<<<<< HEAD
-  return request<void>(path, { method: 'DELETE', token })
-=======
   return request<void>(path, { method: 'DELETE', token, authScope: 'student' })
 }
 
@@ -171,13 +147,6 @@ export const apiStudentPatch = <T>(path: string, body: unknown) => {
   const token = getStudentToken()
   if (!token) throw new Error('Vui lòng đăng nhập')
   return request<T>(path, { method: 'PATCH', token, authScope: 'student', body })
->>>>>>> master
-}
-
-export const apiStudentPatch = <T>(path: string, body: unknown) => {
-  const token = getStudentToken()
-  if (!token) throw new Error('Vui lòng đăng nhập')
-  return request<T>(path, { method: 'PATCH', token, body })
 }
 
 // --- Admin API (authenticated) ---
@@ -185,12 +154,6 @@ export const apiAdminGet = <T>(path: string, token: string) => request<T>(path, 
 export const apiAdminPost = <T>(path: string, token: string, body: unknown) =>
   request<T>(path, { method: 'POST', token, authScope: 'admin', body })
 export const apiAdminPut = <T>(path: string, token: string, body: unknown) =>
-<<<<<<< HEAD
-  request<T>(path, { method: 'PUT', token, body })
-export const apiAdminDelete = <T = void>(path: string, token: string) =>
-  request<T>(path, { method: 'DELETE', token })
-=======
   request<T>(path, { method: 'PUT', token, authScope: 'admin', body })
 export const apiAdminDelete = <T = void>(path: string, token: string) =>
   request<T>(path, { method: 'DELETE', token, authScope: 'admin' })
->>>>>>> master

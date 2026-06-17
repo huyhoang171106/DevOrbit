@@ -8,6 +8,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import vn.edu.uit.devorbit_api.dto.admin.CandidateReviewRequest;
 import vn.edu.uit.devorbit_api.dto.admin.RepoCandidateResponse;
+import vn.edu.uit.devorbit_api.repository.AdminUserRepository;
 import vn.edu.uit.devorbit_api.repository.StudentUserRepository;
 import vn.edu.uit.devorbit_api.service.JwtService;
 import vn.edu.uit.devorbit_api.service.RepoCandidateService;
@@ -40,6 +41,9 @@ class AdminRepoCandidateControllerTest {
 
     @MockitoBean
     private StudentUserRepository studentUserRepository;
+
+    @MockitoBean
+    private AdminUserRepository adminUserRepository;
 
     private RepoCandidateResponse makeCandidateResponse(Long id, String status) {
         return new RepoCandidateResponse(

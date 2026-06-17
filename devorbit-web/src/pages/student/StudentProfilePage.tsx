@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { m as motion } from 'framer-motion'
 import { BookOpen, GithubLogo, BookmarkSimple, Trash, ArrowSquareOut, Camera, CheckCircle } from '@phosphor-icons/react'
-import { apiStudentGet, apiStudentDelete } from '../../lib/api'
+import { apiStudentGet, apiStudentDelete, apiStudentUpload } from '../../lib/api'
 import { isStudentAuthenticated } from '../../lib/auth'
 import { Avatar } from '../../components/shared/Avatar'
 import type { StudentProfileResponse, StudentBookmark } from '../../types/api'
@@ -17,7 +17,10 @@ export function StudentProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    if (!isStudentAuthenticated()) return
+    if (!isStudentAuthenticated()) {
+      setLoading(false)
+      return
+    }
     Promise.all([
       apiStudentGet<StudentProfileResponse>('/api/student/me'),
       apiStudentGet<StudentBookmark[]>('/api/student/bookmarks'),
@@ -67,20 +70,7 @@ export function StudentProfilePage() {
       const formData = new FormData()
       formData.append('file', file)
       
-      const token = localStorage.getItem('devorbit-student-token')
-      const response = await fetch('/api/student/me/avatar/upload', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: formData,
-      })
-      
-      if (!response.ok) {
-        throw new Error(`Tải lên thất bại (${response.status})`)
-      }
-      
-      const updated = await response.json()
+      const updated = await apiStudentUpload<StudentProfileResponse>('/api/student/me/avatar/upload', formData)
       setProfile(updated)
       setPreviewUrl(null)
       setUploadSuccess(true)

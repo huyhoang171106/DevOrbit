@@ -93,7 +93,7 @@ app:
     user-agent: ${GITHUB_USER_AGENT:DevOrbit/1.0}
     token: ${GITHUB_TOKEN:}
   jwt:
-    secret: ${JWT_SECRET}
+    secret: ${JWT_SECRET:default-jwt-secret-key-long-enough-256bits}
     expiration-minutes: ${JWT_EXPIRATION_MINUTES:120}
   openapi:
     local-dev-url: ${OPENAPI_LOCAL_DEV_URL:http://localhost:8080}

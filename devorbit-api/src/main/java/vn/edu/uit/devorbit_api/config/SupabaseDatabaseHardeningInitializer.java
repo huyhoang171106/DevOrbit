@@ -44,7 +44,10 @@ public class SupabaseDatabaseHardeningInitializer {
             hardenTutorRegistrationPolicies();
             revokePublicSecurityDefinerFunction();
             declareBackendOwnedTables();
+<<<<<<< HEAD
+=======
             revokeBackendOwnedTableGrants();
+>>>>>>> master
             log.info("Supabase database hardening is ready");
         } catch (Exception e) {
             log.warn("Supabase database hardening skipped/failed: {}", e.getMessage());
@@ -234,6 +237,8 @@ public class SupabaseDatabaseHardeningInitializer {
             """);
     }
 
+<<<<<<< HEAD
+=======
     private void revokeBackendOwnedTableGrants() {
         jdbcTemplate.execute("""
             DO $$
@@ -289,6 +294,7 @@ public class SupabaseDatabaseHardeningInitializer {
             """);
     }
 
+>>>>>>> master
     private void executeIfTableExists(String tableName, String sql) {
         if (Boolean.TRUE.equals(jdbcTemplate.queryForObject(
                 "SELECT to_regclass(?) IS NOT NULL",

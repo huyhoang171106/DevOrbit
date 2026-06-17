@@ -51,10 +51,6 @@ public class AdminCommunityController {
                 .orElseThrow(() -> new NotFoundException("Community message not found"));
         Long channelId = msg.getChannel().getId();
         msg.setContent("Tin nhắn này đã bị admin xóa vì nghi ngờ vi phạm tiêu chuẩn cộng đồng");
-<<<<<<< HEAD
-        msg.setDeleted(true);
-=======
->>>>>>> master
         communityMessageRepo.save(msg);
         ChatMessageResponse resp = new ChatMessageResponse(
                 msg.getId(),

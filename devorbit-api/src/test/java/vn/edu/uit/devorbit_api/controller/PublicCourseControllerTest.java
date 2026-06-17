@@ -7,12 +7,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import vn.edu.uit.devorbit_api.dto.publicapi.CourseSummaryResponse;
 import vn.edu.uit.devorbit_api.dto.publicapi.KnowledgeGraphResponse;
-<<<<<<< HEAD
-import vn.edu.uit.devorbit_api.repository.StudentUserRepository;
-=======
 import vn.edu.uit.devorbit_api.repository.AdminUserRepository;
 import vn.edu.uit.devorbit_api.repository.StudentUserRepository;
->>>>>>> master
 import vn.edu.uit.devorbit_api.service.CourseArticleService;
 import vn.edu.uit.devorbit_api.service.CourseService;
 import vn.edu.uit.devorbit_api.service.CourseTutorialService;
@@ -49,9 +45,6 @@ class PublicCourseControllerTest {
 
     @MockitoBean
     private AdminUserRepository adminUserRepository;
-
-    @MockitoBean
-    private StudentUserRepository studentUserRepository;
 
     @MockitoBean
     private CourseTutorialService tutorialService;

@@ -7,18 +7,11 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-<<<<<<< HEAD
-import vn.edu.uit.devorbit_api.dto.admin.AdminCourseUpsertRequest;
-import vn.edu.uit.devorbit_api.dto.admin.CourseDeleteResult;
-import vn.edu.uit.devorbit_api.dto.publicapi.CourseDetailResponse;
-import vn.edu.uit.devorbit_api.repository.StudentUserRepository;
-=======
 import vn.edu.uit.devorbit_api.dto.admin.AdminCourseUpsertRequest;
 import vn.edu.uit.devorbit_api.dto.admin.CourseDeleteResult;
 import vn.edu.uit.devorbit_api.dto.publicapi.CourseDetailResponse;
 import vn.edu.uit.devorbit_api.repository.AdminUserRepository;
 import vn.edu.uit.devorbit_api.repository.StudentUserRepository;
->>>>>>> master
 import vn.edu.uit.devorbit_api.service.CourseService;
 import vn.edu.uit.devorbit_api.service.JwtService;
 import vn.edu.uit.devorbit_api.service.RevokedTokenStore;
@@ -46,18 +39,12 @@ class AdminCourseControllerTest {
     @MockitoBean
     private RevokedTokenStore revokedTokenStore;
 
-<<<<<<< HEAD
-    @MockitoBean
-    private StudentUserRepository studentUserRepository;
-
-=======
     @MockitoBean
     private StudentUserRepository studentUserRepository;
 
     @MockitoBean
     private AdminUserRepository adminUserRepository;
 
->>>>>>> master
     @Test
     void shouldCreateCourse() throws Exception {
         AdminCourseUpsertRequest request = new AdminCourseUpsertRequest(

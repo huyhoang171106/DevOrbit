@@ -60,7 +60,7 @@ public class CommunityChatService {
             throw new NotFoundException("Channel not found");
         }
         int safeSize = Math.max(1, Math.min(size, 100));
-        return messageRepository.findByChannelIdOrderByCreatedAtDesc(channelId, PageRequest.of(Math.max(page, 0), safeSize))
+        return messageRepository.findByChannelIdAndDeletedFalseOrderByCreatedAtDesc(channelId, PageRequest.of(Math.max(page, 0), safeSize))
                 .map(this::toMessageResponse);
     }
 

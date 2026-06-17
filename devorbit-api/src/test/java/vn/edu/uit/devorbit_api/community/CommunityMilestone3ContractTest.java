@@ -228,7 +228,7 @@ SocialService service = new SocialService(eventPublisher(), repoReviewRepository
         StudentUser student = StudentUser.builder().id(5L).studentCode("24520554").fullName("Nguyen Van A").email("a@gm.uit.edu.vn").build();
         CommunityMessage message = CommunityMessage.builder().id(1L).channel(channel).student(student).content("Xin chao").build();
         when(channelRepository.existsById(2L)).thenReturn(true);
-        when(messageRepository.findByChannelIdOrderByCreatedAtDesc(2L, PageRequest.of(0, 50)))
+        when(messageRepository.findByChannelIdAndDeletedFalseOrderByCreatedAtDesc(2L, PageRequest.of(0, 50)))
                 .thenReturn(new PageImpl<>(List.of(message)));
 
         CommunityChatService service = new CommunityChatService(

@@ -68,10 +68,6 @@ public class JwtService {
         return parseToken(token).getId();
     }
 
-    public String extractJti(String token) {
-        return parseToken(token).getId();
-    }
-
     public String extractUsername(String token) {
         return parseToken(token).getSubject();
     }
@@ -89,10 +85,6 @@ public class JwtService {
             return number.intValue();
         }
         return 0;
-    }
-
-    public Instant extractExpiration(String token) {
-        return parseToken(token).getExpiration().toInstant();
     }
 
     public Instant extractExpiration(String token) {

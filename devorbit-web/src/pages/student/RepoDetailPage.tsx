@@ -73,6 +73,8 @@ export function RepoDetailPage() {
     }
   }
 
+  const { data: socialInfo, refetch: refetchSocial } = useRepoSocialInfo(Number(repoId))
+
   useEffect(() => {
     if (!repo || !isStudentAuthenticated()) return
     apiStudentGet<StudentBookmark[]>('/api/student/bookmarks')

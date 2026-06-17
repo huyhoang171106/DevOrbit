@@ -8,7 +8,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import vn.edu.uit.devorbit_api.dto.student.StudentAuthResponse;
 import vn.edu.uit.devorbit_api.dto.student.StudentProfileResponse;
+<<<<<<< HEAD
+=======
 import vn.edu.uit.devorbit_api.repository.AdminUserRepository;
+>>>>>>> master
 import vn.edu.uit.devorbit_api.repository.StudentUserRepository;
 import vn.edu.uit.devorbit_api.service.JwtService;
 import vn.edu.uit.devorbit_api.service.RevokedTokenStore;
@@ -43,9 +46,12 @@ class StudentAuthControllerTest {
     @MockitoBean
     private StudentUserRepository studentUserRepository;
 
+<<<<<<< HEAD
+=======
     @MockitoBean
     private AdminUserRepository adminUserRepository;
 
+>>>>>>> master
     @Test
     void shouldLoginSuccessfully() throws Exception {
         StudentAuthResponse response = new StudentAuthResponse("student-jwt-token", 1L, "24520554", "Nguyen Van A", "24520554@gm.uit.edu.vn", null);

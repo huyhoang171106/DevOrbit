@@ -50,6 +50,12 @@ public class StudentUser {
     @Builder.Default
     private boolean emailVerified = false;
 
+<<<<<<< HEAD
+    /** URL to the student's avatar image */
+    @Column
+    private String avatar;
+}
+=======
     /** Incremented when all existing student JWTs should become invalid. */
     @Column(name = "token_version", nullable = false)
     @Builder.Default
@@ -59,3 +65,4 @@ public class StudentUser {
     @Column
     private String avatar;
 }
+>>>>>>> master

@@ -73,6 +73,22 @@ export function RepoDetailPage() {
     }
   }
 
+  useEffect(() => {
+    if (!repo || !isStudentAuthenticated()) return
+    apiStudentGet<StudentBookmark[]>('/api/student/bookmarks')
+      .then((bookmarks) => {
+        const bookmark = bookmarks.find(b => b.targetType === 'REPO' && b.targetId === repo.id)
+        if (bookmark) {
+          setBookmarked(true)
+          setBookmarkId(bookmark.id)
+        } else {
+          setBookmarked(false)
+          setBookmarkId(null)
+        }
+      })
+      .catch(() => {})
+  }, [repo])
+
   const { data: socialInfo, refetch: refetchSocial } = useRepoSocialInfo(Number(repoId))
 
   useEffect(() => {

@@ -720,7 +720,7 @@ export function CommunityPage() {
   }
 
   const handleSendMessage = (content: string) => {
-    if (!activeChannel) return
+    if (!activeChannel || activeChannel.id <= 0) return
 
     // Add optimistic message if currentStudent is loaded
     if (currentStudent && authenticated) {

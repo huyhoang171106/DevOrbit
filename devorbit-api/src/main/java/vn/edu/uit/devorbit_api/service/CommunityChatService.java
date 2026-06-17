@@ -42,17 +42,41 @@ public class CommunityChatService {
 
     @Transactional
     public void syncChannels() {
-        ensureChannel("general", "Kenh chung", ChatChannelType.GENERAL, null, true);
-        ensureChannel("study", "Hoc tap", ChatChannelType.GENERAL, null, true);
-        ensureChannel("relax", "Giai tri", ChatChannelType.GENERAL, null, true);
+        java.util.List<ChatChannel> allChannels = channelRepository.findAll();
+        java.util.Map<String, ChatChannel> channelMap = new java.util.HashMap<>();
+        for (ChatChannel channel : allChannels) {
+            channelMap.put(channel.getChannelId(), channel);
+        }
+
+        ensureChannelInMemory("general", "Kenh chung", ChatChannelType.GENERAL, null, true, channelMap);
+        ensureChannelInMemory("study", "Hoc tap", ChatChannelType.GENERAL, null, true, channelMap);
+        ensureChannelInMemory("relax", "Giai tri", ChatChannelType.GENERAL, null, true, channelMap);
 
         courseRepository.findAll().forEach(course -> {
             String code = course.getMaMH() != null ? course.getMaMH() : String.valueOf(course.getId());
-            ensureChannel("course-" + slug(code), course.getTenMH(), ChatChannelType.COURSE, String.valueOf(course.getId()), course.isOpen());
+            ensureChannelInMemory("course-" + slug(code), course.getTenMH(), ChatChannelType.COURSE, String.valueOf(course.getId()), course.isOpen(), channelMap);
         });
 
         techStackRepository.findAllDistinctOrderByName().forEach(techStack ->
-                ensureChannel("tech-" + slug(techStack.getName()), techStack.getName(), ChatChannelType.TECH_STACK, String.valueOf(techStack.getId()), true));
+                ensureChannelInMemory("tech-" + slug(techStack.getName()), techStack.getName(), ChatChannelType.TECH_STACK, String.valueOf(techStack.getId()), true, channelMap));
+    }
+
+    private void ensureChannelInMemory(String channelId, String name, ChatChannelType type, String referenceId, boolean active, java.util.Map<String, ChatChannel> channelMap) {
+        ChatChannel channel = channelMap.get(channelId);
+        if (channel != null) {
+            if (channel.isActive() != active) {
+                channel.setActive(active);
+                channelRepository.save(channel);
+            }
+            return;
+        }
+        channelRepository.save(ChatChannel.builder()
+                .channelId(channelId)
+                .name(name == null || name.isBlank() ? channelId : name)
+                .type(type)
+                .referenceId(referenceId)
+                .active(active)
+                .build());
     }
 
     public Page<ChatMessageResponse> getMessages(Long channelId, int page, int size) {
@@ -126,24 +150,7 @@ public class CommunityChatService {
         return response;
     }
 
-    private void ensureChannel(String channelId, String name, ChatChannelType type, String referenceId, boolean active) {
-        java.util.Optional<ChatChannel> existing = channelRepository.findByChannelId(channelId);
-        if (existing.isPresent()) {
-            ChatChannel channel = existing.get();
-            if (channel.isActive() != active) {
-                channel.setActive(active);
-                channelRepository.save(channel);
-            }
-            return;
-        }
-        channelRepository.save(ChatChannel.builder()
-                .channelId(channelId)
-                .name(name == null || name.isBlank() ? channelId : name)
-                .type(type)
-                .referenceId(referenceId)
-                .active(active)
-                .build());
-    }
+
 
     private ChatChannelResponse toChannelResponse(ChatChannel channel) {
         return new ChatChannelResponse(channel.getId(), channel.getChannelId(), channel.getName(), channel.getType(), channel.getReferenceId());

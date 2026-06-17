@@ -8,6 +8,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import vn.edu.uit.devorbit_api.dto.student.StudentAuthResponse;
 import vn.edu.uit.devorbit_api.dto.student.StudentProfileResponse;
+import vn.edu.uit.devorbit_api.repository.AdminUserRepository;
 import vn.edu.uit.devorbit_api.repository.StudentUserRepository;
 import vn.edu.uit.devorbit_api.service.JwtService;
 import vn.edu.uit.devorbit_api.service.RevokedTokenStore;
@@ -41,6 +42,9 @@ class StudentAuthControllerTest {
 
     @MockitoBean
     private StudentUserRepository studentUserRepository;
+
+    @MockitoBean
+    private AdminUserRepository adminUserRepository;
 
     @Test
     void shouldLoginSuccessfully() throws Exception {
@@ -149,6 +153,24 @@ class StudentAuthControllerTest {
     }
 
     @Test
+    void shouldResetPasswordWithStudentCode() throws Exception {
+        StudentAuthResponse response = new StudentAuthResponse("student-jwt-token", 1L, "24520554", "Nguyen Van A", "24520554@gm.uit.edu.vn", null);
+        when(studentAuthService.resetPassword(any())).thenReturn(response);
+
+        mockMvc.perform(post("/api/student/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "studentCode": "24520554",
+                                "otpCode": "123456",
+                                "newPassword": "newPassword123"
+                            }
+                        """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value("student-jwt-token"));
+    }
+
+    @Test
     void shouldResendOtpSuccessfully() throws Exception {
         mockMvc.perform(post("/api/student/resend-otp")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -185,6 +207,14 @@ class StudentAuthControllerTest {
                                 "purpose": "INVALID"
                             }
                         """))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldRejectResendOtpWithoutEmail() throws Exception {
+        mockMvc.perform(post("/api/student/resend-otp")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
                 .andExpect(status().isBadRequest());
     }
 }

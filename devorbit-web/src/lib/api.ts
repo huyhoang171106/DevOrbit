@@ -1,4 +1,4 @@
-import { getStudentToken, clearStudentToken } from './auth'
+import { getStudentToken, clearStudentToken, clearAdminToken } from './auth'
 
 export const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? ''
 
@@ -16,9 +16,19 @@ export function buildApiUrl(baseUrl: string, path: string): string {
   return `${normalizedBase}${normalizedPath}`
 }
 
+function redirectTo(path: string): void {
+  const event = new CustomEvent('devorbit:auth-redirect', {
+    cancelable: true,
+    detail: { path },
+  })
+  if (!window.dispatchEvent(event)) return
+  window.location.assign(path)
+}
+
 type RequestOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
   token?: string
+  authScope?: 'student' | 'admin'
   body?: unknown
 }
 
@@ -39,9 +49,14 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
   if (!response.ok) {
     const body = await response.text().catch(() => '')
-    if (response.status === 403 && path.startsWith('/api/student/')) {
+    const authFailed = response.status === 401 || response.status === 403
+    if (authFailed && (options.authScope === 'student' || path.startsWith('/api/student/'))) {
       clearStudentToken()
-      window.location.href = '/student/login'
+      redirectTo('/student/login')
+    }
+    if (authFailed && (options.authScope === 'admin' || (path.startsWith('/api/admin/') && !path.startsWith('/api/admin/auth/login')))) {
+      clearAdminToken()
+      redirectTo('/admin/login')
     }
     let message = body || `Yêu cầu thất bại (${response.status})`
     try {
@@ -89,36 +104,56 @@ export const apiUpload = <T>(path: string, formData: FormData): Promise<T> => {
   })
 }
 
+export const apiStudentUpload = <T>(path: string, formData: FormData): Promise<T> => {
+  const token = getStudentToken()
+  if (!token) throw new Error('Vui lòng đăng nhập')
+  return fetch(buildApiUrl(apiBaseUrl, path), {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  }).then(async (res) => {
+    if (!res.ok) {
+      if (res.status === 401 || res.status === 403) {
+        clearStudentToken()
+        redirectTo('/student/login')
+      }
+      const body = await res.text().catch(() => '')
+      throw new Error(body || `Tải lên thất bại (${res.status})`)
+    }
+    return (await res.json()) as T
+  })
+}
+
 // --- Student API (authenticated) ---
 export const apiStudentGet = <T>(path: string) => {
   const token = getStudentToken()
   if (!token) throw new Error('Vui lòng đăng nhập')
-  return request<T>(path, { token })
+  return request<T>(path, { token, authScope: 'student' })
 }
 
 export const apiStudentPost = <T>(path: string, body: unknown) => {
   const token = getStudentToken()
   if (!token) throw new Error('Vui lòng đăng nhập')
-  return request<T>(path, { method: 'POST', token, body })
+  return request<T>(path, { method: 'POST', token, authScope: 'student', body })
 }
 
 export const apiStudentDelete = (path: string) => {
   const token = getStudentToken()
   if (!token) throw new Error('Vui lòng đăng nhập')
-  return request<void>(path, { method: 'DELETE', token })
+  return request<void>(path, { method: 'DELETE', token, authScope: 'student' })
 }
 
 export const apiStudentPatch = <T>(path: string, body: unknown) => {
   const token = getStudentToken()
   if (!token) throw new Error('Vui lòng đăng nhập')
-  return request<T>(path, { method: 'PATCH', token, body })
+  return request<T>(path, { method: 'PATCH', token, authScope: 'student', body })
 }
 
 // --- Admin API (authenticated) ---
-export const apiAdminGet = <T>(path: string, token: string) => request<T>(path, { token })
+export const apiAdminGet = <T>(path: string, token: string) => request<T>(path, { token, authScope: 'admin' })
 export const apiAdminPost = <T>(path: string, token: string, body: unknown) =>
-  request<T>(path, { method: 'POST', token, body })
+  request<T>(path, { method: 'POST', token, authScope: 'admin', body })
 export const apiAdminPut = <T>(path: string, token: string, body: unknown) =>
-  request<T>(path, { method: 'PUT', token, body })
+  request<T>(path, { method: 'PUT', token, authScope: 'admin', body })
 export const apiAdminDelete = <T = void>(path: string, token: string) =>
-  request<T>(path, { method: 'DELETE', token })
+  request<T>(path, { method: 'DELETE', token, authScope: 'admin' })

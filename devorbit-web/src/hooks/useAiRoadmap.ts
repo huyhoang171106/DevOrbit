@@ -1,4 +1,5 @@
 import { useMutation } from '@tanstack/react-query'
+import { apiStudentPost } from '../lib/api'
 
 export interface RoadmapRecommendation {
     courseId: number
@@ -55,25 +56,12 @@ export interface RoadmapRequest {
 }
 
 /**
- * Generates a personalized learning roadmap by calling the backend API.
- * The backend uses a ScenarioEngine that leverages knowledge graph data
- * and curriculum rules — no LLM dependency, deterministic results.
+ * Generates a personalized learning roadmap by calling the authenticated backend API.
  */
 export function useAiRoadmap() {
     return useMutation<RoadmapResponse, Error, RoadmapRequest>({
         mutationFn: async ({ learningGoals, careerPath }) => {
-            const response = await fetch('/api/ai/generate-roadmap', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ learningGoals, careerPath })
-            })
-
-            if (!response.ok) {
-                const errorText = await response.text().catch(() => 'Unknown error')
-                throw new Error(`Lỗi từ máy chủ: ${response.status}. ${errorText}`)
-            }
-
-            return response.json()
+            return apiStudentPost<RoadmapResponse>('/api/ai/generate-roadmap', { learningGoals, careerPath })
         }
     })
 }

@@ -7,6 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import vn.edu.uit.devorbit_api.dto.admin.LoginResponse;
+import vn.edu.uit.devorbit_api.repository.AdminUserRepository;
 import vn.edu.uit.devorbit_api.repository.StudentUserRepository;
 import vn.edu.uit.devorbit_api.service.AdminAuthService;
 import vn.edu.uit.devorbit_api.service.JwtService;
@@ -35,6 +36,9 @@ class AdminAuthControllerTest {
 
     @MockitoBean
     private StudentUserRepository studentUserRepository;
+
+    @MockitoBean
+    private AdminUserRepository adminUserRepository;
 
     @Test
     void shouldReturnJwtForValidAdmin() throws Exception {

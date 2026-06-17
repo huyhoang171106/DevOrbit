@@ -31,4 +31,19 @@ class AuthValidationTest {
 
         assertNull(AuthValidation.registerError(state))
     }
+
+    @Test
+    fun `otp accepts only six numeric characters`() {
+        assertEquals("123456", AuthValidation.sanitizeOtp("123456"))
+        assertEquals("123456", AuthValidation.sanitizeOtp("12a34 56 extra"))
+        assertEquals("123456", AuthValidation.sanitizeOtp("1234567"))
+    }
+
+    @Test
+    fun `otp rejects values that are not six digits`() {
+        assertEquals("Vui long nhap ma OTP gom 6 chu so", AuthValidation.otpError(""))
+        assertEquals("Vui long nhap ma OTP gom 6 chu so", AuthValidation.otpError("12345"))
+        assertEquals("Vui long nhap ma OTP gom 6 chu so", AuthValidation.otpError("abcdef"))
+        assertNull(AuthValidation.otpError("123456"))
+    }
 }

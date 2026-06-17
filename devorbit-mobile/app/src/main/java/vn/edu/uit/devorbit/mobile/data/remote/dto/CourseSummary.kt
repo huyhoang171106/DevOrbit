@@ -5,5 +5,7 @@ data class CourseSummary(
     val code: String,
     val name: String,
     val semester: Int? = null,
-    val loaiMonHoc: String? = null
+    val loaiMonHoc: String? = null,
+    val repoCount: Int = 0,
+    val credits: Int? = null
 )

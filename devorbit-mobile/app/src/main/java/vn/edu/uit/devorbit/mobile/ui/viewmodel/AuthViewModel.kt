@@ -30,7 +30,8 @@ data class RegisterUiState(
     val isAwaitingOtp: Boolean = false,
     val isSuccess: Boolean = false,
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val message: String? = null
 )
 
 @HiltViewModel
@@ -75,7 +76,7 @@ class AuthViewModel @Inject constructor(
     fun login() {
         val state = _loginState.value
         if (state.studentCode.isBlank() || state.password.isBlank()) {
-            _loginState.value = _loginState.value.copy(error = "Vui lòng nhập đầy đủ MSSV và mật khẩu")
+            _loginState.value = _loginState.value.copy(error = "Vui long nhap day du MSSV va mat khau")
             return
         }
         viewModelScope.launch {
@@ -87,7 +88,7 @@ class AuthViewModel @Inject constructor(
                 .onFailure { e ->
                     _loginState.value = _loginState.value.copy(
                         isLoading = false,
-                        error = e.message ?: "Đăng nhập thất bại"
+                        error = e.message ?: "Dang nhap that bai"
                     )
                 }
         }
@@ -95,12 +96,15 @@ class AuthViewModel @Inject constructor(
 
     fun updateRegisterField(field: String, value: String) {
         _registerState.value = when (field) {
-            "studentCode" -> _registerState.value.copy(studentCode = value, error = null)
-            "fullName" -> _registerState.value.copy(fullName = value, error = null)
-            "email" -> _registerState.value.copy(email = value, error = null)
-            "password" -> _registerState.value.copy(password = value, error = null)
-            "confirmPassword" -> _registerState.value.copy(confirmPassword = value, error = null)
-            "otpCode" -> _registerState.value.copy(otpCode = value, error = null)
+            "studentCode" -> _registerState.value.copy(studentCode = value, error = null, message = null)
+            "fullName" -> _registerState.value.copy(fullName = value, error = null, message = null)
+            "email" -> _registerState.value.copy(email = value, error = null, message = null)
+            "password" -> _registerState.value.copy(password = value, error = null, message = null)
+            "confirmPassword" -> _registerState.value.copy(confirmPassword = value, error = null, message = null)
+            "otpCode" -> _registerState.value.copy(
+                otpCode = AuthValidation.sanitizeOtp(value),
+                error = null
+            )
             else -> _registerState.value
         }
     }
@@ -113,7 +117,7 @@ class AuthViewModel @Inject constructor(
             return
         }
         viewModelScope.launch {
-            _registerState.value = _registerState.value.copy(isLoading = true, error = null)
+            _registerState.value = _registerState.value.copy(isLoading = true, error = null, message = null)
             authRepository.register(
                 studentCode = state.studentCode,
                 fullName = state.fullName,
@@ -123,7 +127,9 @@ class AuthViewModel @Inject constructor(
                 _registerState.value = _registerState.value.copy(
                     isLoading = false,
                     isAwaitingOtp = true,
-                    registeredEmail = it.email
+                    registeredEmail = it.email,
+                    isSuccess = false,
+                    message = "Da gui ma OTP den email"
                 )
                 _loginState.value = _loginState.value.copy(
                     isLoggedIn = AuthSessionPolicy.isAuthenticatedAfterRegister()
@@ -131,7 +137,7 @@ class AuthViewModel @Inject constructor(
             }.onFailure { e ->
                 _registerState.value = _registerState.value.copy(
                     isLoading = false,
-                    error = e.message ?: "Đăng ký thất bại"
+                    error = e.message ?: "Dang ky that bai"
                 )
             }
         }
@@ -140,8 +146,9 @@ class AuthViewModel @Inject constructor(
     fun verifyOtp() {
         val state = _registerState.value
         val email = state.registeredEmail.ifBlank { state.email }
-        if (email.isBlank() || state.otpCode.isBlank()) {
-            _registerState.value = state.copy(error = "Vui lòng nhập mã OTP")
+        val otpError = AuthValidation.otpError(state.otpCode)
+        if (email.isBlank() || otpError != null) {
+            _registerState.value = state.copy(error = otpError ?: "Vui long nhap ma OTP")
             return
         }
         viewModelScope.launch {
@@ -157,7 +164,32 @@ class AuthViewModel @Inject constructor(
                 .onFailure { e ->
                     _registerState.value = _registerState.value.copy(
                         isLoading = false,
-                        error = e.message ?: "Xác thực OTP thất bại"
+                        error = e.message ?: "Xac thuc OTP that bai"
+                    )
+                }
+        }
+    }
+
+    fun resendOtp() {
+        val state = _registerState.value
+        val email = state.registeredEmail.ifBlank { state.email }
+        if (email.isBlank()) {
+            _registerState.value = state.copy(error = "Khong tim thay email de gui lai OTP", message = null)
+            return
+        }
+        viewModelScope.launch {
+            _registerState.value = state.copy(isLoading = true, error = null, message = null)
+            authRepository.resendOtp(email)
+                .onSuccess {
+                    _registerState.value = _registerState.value.copy(
+                        isLoading = false,
+                        message = "Da gui lai ma OTP"
+                    )
+                }
+                .onFailure { e ->
+                    _registerState.value = _registerState.value.copy(
+                        isLoading = false,
+                        error = e.message ?: "Gui lai OTP that bai"
                     )
                 }
         }
@@ -169,7 +201,7 @@ class AuthViewModel @Inject constructor(
 
     fun switchToLogin() {
         _loginState.value = _loginState.value.copy(error = null)
-        _registerState.value = RegisterUiState()
+        _registerState.value = AuthStateTransitions.registerStateAfterSwitchToLogin(_registerState.value)
     }
 
     fun logout() {

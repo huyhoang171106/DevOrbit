@@ -7,14 +7,14 @@ data class RepoFilterState(
     val selectedTechStack: String? = null
 ) {
     val availableTechStacks: List<String> = repos
-        .flatMap { repo -> repo.techStacks.map { it.name } }
+        .flatMap { repo -> repo.safeTechStacks.map { it.name } }
         .filter { it.isNotBlank() }
         .distinct()
         .sorted()
 
     val filteredRepos: List<RepoSummary> =
         selectedTechStack?.let { selected ->
-            repos.filter { repo -> repo.techStacks.any { it.name == selected } }
+            repos.filter { repo -> repo.safeTechStacks.any { it.name == selected } }
         } ?: repos
 
     fun selectTechStack(stack: String?): RepoFilterState {

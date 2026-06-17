@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { m as motion } from 'framer-motion'
-import { BookOpen, GithubLogo, BookmarkSimple, Trash, ArrowSquareOut, Camera, CheckCircle } from '@phosphor-icons/react'
-import { apiStudentGet, apiStudentDelete, apiStudentUpload } from '../../lib/api'
+import { BookOpen, GithubLogo, BookmarkSimple, Trash, ArrowSquareOut, Camera, CheckCircle, Gear, User, Lock, Warning } from '@phosphor-icons/react'
+import { apiStudentGet, apiStudentDelete, apiStudentPatch } from '../../lib/api'
 import { isStudentAuthenticated } from '../../lib/auth'
 import { Avatar } from '../../components/shared/Avatar'
 import type { StudentProfileResponse, StudentBookmark } from '../../types/api'
@@ -16,6 +16,18 @@ export function StudentProfilePage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  const [fullName, setFullName] = useState('')
+  const [savingName, setSavingName] = useState(false)
+  const [nameSuccess, setNameSuccess] = useState(false)
+  const [nameError, setNameError] = useState('')
+
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [savingPassword, setSavingPassword] = useState(false)
+  const [passwordSuccess, setPasswordSuccess] = useState(false)
+  const [passwordError, setPasswordError] = useState('')
+
   useEffect(() => {
     if (!isStudentAuthenticated()) {
       setLoading(false)
@@ -27,6 +39,7 @@ export function StudentProfilePage() {
     ])
       .then(([profileData, bookmarksData]) => {
         setProfile(profileData)
+        setFullName(profileData.fullName)
         setBookmarks(bookmarksData)
       })
       .finally(() => setLoading(false))
@@ -86,6 +99,54 @@ export function StudentProfilePage() {
   function cancelAvatarUpload() {
     setPreviewUrl(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  async function handleUpdateFullName() {
+    if (!fullName.trim() || fullName.trim().length < 2) {
+      setNameError('Tên phải có ít nhất 2 ký tự')
+      return
+    }
+    setSavingName(true)
+    setNameError('')
+    try {
+      const updated = await apiStudentPatch<StudentProfileResponse>('/api/student/me/fullname', { fullName: fullName.trim() })
+      setProfile(updated)
+      setNameSuccess(true)
+      setTimeout(() => setNameSuccess(false), 2000)
+    } catch (err: unknown) {
+      setNameError(err instanceof Error ? err.message : 'Có lỗi xảy ra')
+    } finally {
+      setSavingName(false)
+    }
+  }
+
+  async function handleChangePassword() {
+    setPasswordError('')
+    if (!currentPassword) {
+      setPasswordError('Vui lòng nhập mật khẩu hiện tại')
+      return
+    }
+    if (!newPassword || newPassword.length < 6) {
+      setPasswordError('Mật khẩu mới phải có ít nhất 6 ký tự')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Mật khẩu xác nhận không khớp')
+      return
+    }
+    setSavingPassword(true)
+    try {
+      await apiStudentPatch('/api/student/me/password', { currentPassword, newPassword })
+      setPasswordSuccess(true)
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+      setTimeout(() => setPasswordSuccess(false), 2000)
+    } catch (err: unknown) {
+      setPasswordError(err instanceof Error ? err.message : 'Có lỗi xảy ra')
+    } finally {
+      setSavingPassword(false)
+    }
   }
 
   if (loading) {
@@ -220,6 +281,109 @@ export function StudentProfilePage() {
             </motion.div>
           </div>
         )}
+
+        {/* Settings Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mt-10"
+        >
+          <div className="flex items-center gap-2.5 mb-6">
+            <Gear className="h-5 w-5 text-orbit-accent" weight="fill" />
+            <h2 className="font-heading text-xl font-bold text-orbit-text tracking-tight">
+              Cài đặt
+            </h2>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Change Display Name Card */}
+            <div className="rounded-2xl border border-orbit-border bg-orbit-surface/50 p-6">
+              <div className="flex items-center gap-2.5 mb-4">
+                <User className="h-4 w-4 text-orbit-accent" weight="fill" />
+                <h3 className="text-[15px] font-bold text-orbit-text">Đổi tên hiển thị</h3>
+              </div>
+              <div className="space-y-3">
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-orbit-bg border border-orbit-border text-[14px] text-orbit-text placeholder:text-orbit-text-muted focus:outline-none focus:border-orbit-accent/50 transition-colors"
+                  placeholder="Nhập tên mới"
+                />
+                {nameError && (
+                  <div className="flex items-center gap-1.5 text-[12px] text-red-400">
+                    <Warning className="h-3.5 w-3.5" weight="fill" />
+                    {nameError}
+                  </div>
+                )}
+                {nameSuccess && (
+                  <div className="flex items-center gap-1.5 text-[12px] text-emerald-400">
+                    <CheckCircle className="h-3.5 w-3.5" weight="fill" />
+                    Đã cập nhật tên
+                  </div>
+                )}
+                <button
+                  onClick={handleUpdateFullName}
+                  disabled={savingName || fullName.trim() === profile.fullName}
+                  className="px-4 py-2 rounded-xl text-[12px] font-bold text-white bg-orbit-accent hover:bg-orbit-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  {savingName ? 'Đang lưu...' : 'Lưu tên'}
+                </button>
+              </div>
+            </div>
+
+            {/* Change Password Card */}
+            <div className="rounded-2xl border border-orbit-border bg-orbit-surface/50 p-6">
+              <div className="flex items-center gap-2.5 mb-4">
+                <Lock className="h-4 w-4 text-orbit-accent" weight="fill" />
+                <h3 className="text-[15px] font-bold text-orbit-text">Đổi mật khẩu</h3>
+              </div>
+              <div className="space-y-3">
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-orbit-bg border border-orbit-border text-[14px] text-orbit-text placeholder:text-orbit-text-muted focus:outline-none focus:border-orbit-accent/50 transition-colors"
+                  placeholder="Mật khẩu hiện tại"
+                />
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-orbit-bg border border-orbit-border text-[14px] text-orbit-text placeholder:text-orbit-text-muted focus:outline-none focus:border-orbit-accent/50 transition-colors"
+                  placeholder="Mật khẩu mới (ít nhất 6 ký tự)"
+                />
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-orbit-bg border border-orbit-border text-[14px] text-orbit-text placeholder:text-orbit-text-muted focus:outline-none focus:border-orbit-accent/50 transition-colors"
+                  placeholder="Xác nhận mật khẩu mới"
+                />
+                {passwordError && (
+                  <div className="flex items-center gap-1.5 text-[12px] text-red-400">
+                    <Warning className="h-3.5 w-3.5" weight="fill" />
+                    {passwordError}
+                  </div>
+                )}
+                {passwordSuccess && (
+                  <div className="flex items-center gap-1.5 text-[12px] text-emerald-400">
+                    <CheckCircle className="h-3.5 w-3.5" weight="fill" />
+                    Đã đổi mật khẩu thành công
+                  </div>
+                )}
+                <button
+                  onClick={handleChangePassword}
+                  disabled={savingPassword}
+                  className="px-4 py-2 rounded-xl text-[12px] font-bold text-white bg-orbit-accent hover:bg-orbit-accent/90 transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  {savingPassword ? 'Đang lưu...' : 'Đổi mật khẩu'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
 
         {/* Bookmarks Section */}
         <div>

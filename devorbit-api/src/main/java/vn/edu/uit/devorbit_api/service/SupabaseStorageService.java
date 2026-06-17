@@ -63,11 +63,12 @@ public class SupabaseStorageService {
 
         try {
             byte[] fileBytes = file.getBytes();
-            
+
             String response = webClient.post()
                     .uri(uploadUrl)
                     .header("Authorization", "Bearer " + supabaseKey)
                     .header("apikey", supabaseKey)
+                    .header("x-upsert", "true")
                     .contentType(MediaType.parseMediaType(file.getContentType()))
                     .bodyValue(fileBytes)
                     .retrieve()
@@ -79,11 +80,12 @@ public class SupabaseStorageService {
             return Map.of("url", publicUrl);
 
         } catch (WebClientResponseException e) {
-            log.error("Supabase Storage upload failed: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
+            String responseBody = e.getResponseBodyAsString();
+            log.error("Supabase Storage upload failed: {} - {}", e.getStatusCode(), responseBody);
             if (e.getStatusCode().value() == 403) {
                 throw new BadRequestException("Supabase Storage: bucket not found or missing storage policies. Please create the 'devorbit' bucket in Supabase Dashboard with public access.");
             }
-            throw new BadRequestException("Supabase Storage upload failed: " + e.getMessage());
+            throw new BadRequestException("Supabase Storage: " + responseBody);
         } catch (IOException e) {
             log.error("Failed to read file bytes", e);
             throw new BadRequestException("Failed to read uploaded file");

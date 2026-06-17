@@ -1471,6 +1471,7 @@ export type OtpVerificationRequest = {
 };
 export type ResetPasswordRequest = {
   email?: string;
+  studentCode?: string;
   otpCode?: string;
   newPassword?: string;
 };

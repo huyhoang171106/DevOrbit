@@ -8,6 +8,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import vn.edu.uit.devorbit_api.dto.student.*;
@@ -83,6 +84,41 @@ class StudentAuthServiceTest {
     // ─── VERIFY OTP ────────────────────────────────────
 
     @Test
+    void register_checksDuplicatesWithNormalizedStudentCodeAndEmail() {
+        StudentUser existing = StudentUser.builder()
+                .id(1L).studentCode("24520554").fullName("Nguyen Van A")
+                .email("24520554@gm.uit.edu.vn").passwordHash("hash").active(true).build();
+        when(studentUserRepository.findByStudentCode("24520554")).thenReturn(Optional.of(existing));
+
+        StudentRegisterRequest req = new StudentRegisterRequest(
+                " 24520554 ", "Nguyen Van A", " 24520554@GM.UIT.EDU.VN ", "password123");
+
+        assertThatThrownBy(() -> service.register(req))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("Student code already exists");
+        verify(studentUserRepository).findByStudentCode("24520554");
+        verify(studentUserRepository, never()).save(any());
+    }
+
+    @Test
+    void register_translatesConcurrentDuplicateBeforeOtpEmail() {
+        when(studentUserRepository.findByStudentCode("24520554")).thenReturn(Optional.empty());
+        when(studentUserRepository.findByEmail("24520554@gm.uit.edu.vn")).thenReturn(Optional.empty());
+        when(studentUserRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        doThrow(new DataIntegrityViolationException("unique student"))
+                .when(studentUserRepository).flush();
+
+        StudentRegisterRequest req = new StudentRegisterRequest(
+                "24520554", "Nguyen Van A", "24520554@gm.uit.edu.vn", "password123");
+
+        assertThatThrownBy(() -> service.register(req))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("already exists");
+        verifyNoInteractions(otpRepository);
+        verifyNoInteractions(emailService);
+    }
+
+    @Test
     void verifyOtp_rejectsWrongPurpose() {
         when(otpRepository.findTopByEmailAndPurposeOrderByCreatedAtDesc("24520554@gm.uit.edu.vn", OtpPurpose.EMAIL_VERIFICATION))
                 .thenReturn(Optional.empty());
@@ -153,10 +189,14 @@ class StudentAuthServiceTest {
 
     @Test
     void resetPassword_rejectsWrongPurpose() {
+        StudentUser student = StudentUser.builder()
+                .id(1L).studentCode("24520554").fullName("Nguyen Van A")
+                .email("24520554@gm.uit.edu.vn").passwordHash("hash").active(true).build();
+        when(studentUserRepository.findByEmail("24520554@gm.uit.edu.vn")).thenReturn(Optional.of(student));
         when(otpRepository.findTopByEmailAndPurposeOrderByCreatedAtDesc("24520554@gm.uit.edu.vn", OtpPurpose.PASSWORD_RESET))
                 .thenReturn(Optional.empty());
 
-        ResetPasswordRequest req = new ResetPasswordRequest("24520554@gm.uit.edu.vn", "123456", "newPassword123");
+        ResetPasswordRequest req = new ResetPasswordRequest("24520554@gm.uit.edu.vn", null, "123456", "newPassword123");
         assertThatThrownBy(() -> service.resetPassword(req))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessageContaining("OTP");
@@ -171,11 +211,15 @@ class StudentAuthServiceTest {
                 .otpCode("123456")
                 .expiresAt(LocalDateTime.now().plusMinutes(10))
                 .build();
+        StudentUser student = StudentUser.builder()
+                .id(1L).studentCode("24520554").fullName("Nguyen Van A")
+                .email(emailOtp.getEmail()).passwordHash("hash").active(true).build();
+        when(studentUserRepository.findByEmail("24520554@gm.uit.edu.vn")).thenReturn(Optional.of(student));
 
         when(otpRepository.findTopByEmailAndPurposeOrderByCreatedAtDesc("24520554@gm.uit.edu.vn", OtpPurpose.PASSWORD_RESET))
                 .thenReturn(Optional.empty());
 
-        ResetPasswordRequest req = new ResetPasswordRequest("24520554@gm.uit.edu.vn", "123456", "newPassword123");
+        ResetPasswordRequest req = new ResetPasswordRequest("24520554@gm.uit.edu.vn", null, "123456", "newPassword123");
         assertThatThrownBy(() -> service.resetPassword(req))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessageContaining("OTP");
@@ -198,13 +242,49 @@ class StudentAuthServiceTest {
                 .thenReturn(Optional.of(validOtp));
         when(studentUserRepository.findByEmail("24520554@gm.uit.edu.vn")).thenReturn(Optional.of(inactive));
 
-        ResetPasswordRequest req = new ResetPasswordRequest("24520554@gm.uit.edu.vn", "123456", "newPassword123");
+        ResetPasswordRequest req = new ResetPasswordRequest("24520554@gm.uit.edu.vn", null, "123456", "newPassword123");
         assertThatThrownBy(() -> service.resetPassword(req))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessageContaining("vô hiệu hóa");
     }
 
     // ─── RESEND OTP ────────────────────────────────────
+
+    @Test
+    void resetPassword_acceptsStudentCodeWithoutLeakingEmailToClient() {
+        Otp validOtp = Otp.builder()
+                .email("24520554@gm.uit.edu.vn")
+                .purpose(OtpPurpose.PASSWORD_RESET)
+                .otpCode("123456")
+                .expiresAt(LocalDateTime.now().plusMinutes(10))
+                .build();
+        StudentUser student = StudentUser.builder()
+                .id(1L).studentCode("24520554").fullName("Nguyen Van A")
+                .email("24520554@gm.uit.edu.vn").passwordHash("hash").active(true).build();
+
+        when(studentUserRepository.findByStudentCode("24520554")).thenReturn(Optional.of(student));
+        when(otpRepository.findTopByEmailAndPurposeOrderByCreatedAtDesc("24520554@gm.uit.edu.vn", OtpPurpose.PASSWORD_RESET))
+                .thenReturn(Optional.of(validOtp));
+        when(jwtService.generateToken("24520554", "STUDENT", 1)).thenReturn("token");
+
+        StudentAuthResponse response = service.resetPassword(
+                new ResetPasswordRequest(null, "24520554", "123456", "newPassword123"));
+
+        assertThat(response.token()).isEqualTo("token");
+        assertThat(student.getTokenVersion()).isEqualTo(1);
+        verify(studentUserRepository).save(student);
+        verify(otpRepository).delete(validOtp);
+    }
+
+    @Test
+    void resetPassword_rejectsMissingEmailAndStudentCode() {
+        ResetPasswordRequest req = new ResetPasswordRequest(null, null, "123456", "newPassword123");
+
+        assertThatThrownBy(() -> service.resetPassword(req))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("bắt buộc");
+        verifyNoInteractions(otpRepository);
+    }
 
     @Test
     void resendOtp_sendsCorrectEmailBasedOnPurpose() {
@@ -296,7 +376,7 @@ class StudentAuthServiceTest {
                 .active(true).build();
 
         when(studentUserRepository.findByStudentCode("24520554")).thenReturn(Optional.of(student));
-        when(jwtService.generateToken("24520554", "STUDENT")).thenReturn("token");
+        when(jwtService.generateToken("24520554", "STUDENT", 0)).thenReturn("token");
 
         StudentLoginRequest req = new StudentLoginRequest("24520554", "password123");
         service.login(req, httpRequest);
@@ -325,5 +405,14 @@ class StudentAuthServiceTest {
         assertThatThrownBy(() -> service.resendOtp("nobody@example.com", OtpPurpose.EMAIL_VERIFICATION))
                 .isInstanceOf(BadRequestException.class);
         verify(otpRateLimitService).check("RESEND_OTP:nobody@example.com");
+    }
+
+    @Test
+    void resendOtp_rejectsBlankEmailAsBadRequest() {
+        assertThatThrownBy(() -> service.resendOtp(" ", OtpPurpose.EMAIL_VERIFICATION))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("Email");
+        verifyNoInteractions(studentUserRepository);
+        verifyNoInteractions(otpRepository);
     }
 }

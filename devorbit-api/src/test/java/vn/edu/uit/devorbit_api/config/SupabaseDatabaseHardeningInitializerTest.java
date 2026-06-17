@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -53,9 +54,10 @@ class SupabaseDatabaseHardeningInitializerTest {
         verify(jdbcTemplate).execute("CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA extensions");
         verify(jdbcTemplate).execute(org.mockito.ArgumentMatchers.contains("ALTER EXTENSION vector SET SCHEMA extensions"));
         verify(jdbcTemplate).execute(org.mockito.ArgumentMatchers.contains("Deny direct API access"));
+        verify(jdbcTemplate).execute(org.mockito.ArgumentMatchers.contains("REVOKE ALL PRIVILEGES ON TABLE"));
         verify(jdbcTemplate).execute(org.mockito.ArgumentMatchers.contains("Public read photobooth storage buckets"));
         verify(jdbcTemplate).execute(org.mockito.ArgumentMatchers.contains("Allow public upload ify4b9_0"));
-        verify(jdbcTemplate).execute(org.mockito.ArgumentMatchers.contains("'notifications'"));
+        verify(jdbcTemplate, atLeastOnce()).execute(org.mockito.ArgumentMatchers.contains("'notifications'"));
     }
 
     @Test

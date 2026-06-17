@@ -56,7 +56,7 @@ public class SupabaseStorageService {
 
         validateFile(file);
 
-        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+        String fileName = UUID.randomUUID() + "_" + safeFileName(file.getOriginalFilename());
         String uploadUrl = String.format("%s/storage/v1/object/%s/%s", supabaseUrl, bucketName, fileName);
 
         log.info("Uploading file '{}' to Supabase Storage: {}", file.getOriginalFilename(), uploadUrl);
@@ -119,6 +119,25 @@ public class SupabaseStorageService {
         } catch (IOException e) {
             throw new RuntimeException("Failed to read file for validation", e);
         }
+    }
+
+    static String safeFileName(String originalFilename) {
+        if (originalFilename == null || originalFilename.isBlank()) {
+            return "upload";
+        }
+        String baseName = originalFilename.replace('\\', '/');
+        int slash = baseName.lastIndexOf('/');
+        if (slash >= 0) {
+            baseName = baseName.substring(slash + 1);
+        }
+        String sanitized = baseName.replaceAll("[^A-Za-z0-9._-]", "_")
+                .replaceAll("_+", "_")
+                .replaceAll("^\\.+", "")
+                .trim();
+        if (sanitized.isBlank() || ".".equals(sanitized) || "..".equals(sanitized)) {
+            return "upload";
+        }
+        return sanitized.length() > 120 ? sanitized.substring(0, 120) : sanitized;
     }
 
     private boolean startsWith(byte[] data, byte[] prefix) {

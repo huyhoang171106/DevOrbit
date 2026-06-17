@@ -10,6 +10,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import vn.edu.uit.devorbit_api.dto.admin.AdminCourseUpsertRequest;
 import vn.edu.uit.devorbit_api.dto.admin.CourseDeleteResult;
 import vn.edu.uit.devorbit_api.dto.publicapi.CourseDetailResponse;
+import vn.edu.uit.devorbit_api.repository.AdminUserRepository;
 import vn.edu.uit.devorbit_api.repository.StudentUserRepository;
 import vn.edu.uit.devorbit_api.service.CourseService;
 import vn.edu.uit.devorbit_api.service.JwtService;
@@ -40,6 +41,9 @@ class AdminCourseControllerTest {
 
     @MockitoBean
     private StudentUserRepository studentUserRepository;
+
+    @MockitoBean
+    private AdminUserRepository adminUserRepository;
 
     @Test
     void shouldCreateCourse() throws Exception {

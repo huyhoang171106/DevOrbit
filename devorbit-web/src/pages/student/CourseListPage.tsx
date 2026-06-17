@@ -388,7 +388,7 @@ function RepoSearchCard({ repo }: { repo: RepoSummary }) {
 
   return (
     <Link
-      to={`/courses/${repo.courseId}/repos/${repo.id}`}
+      to={`/repos/${repo.id}`}
       className="orbit-card p-5 border-orbit-border bg-orbit-surface/70 hover:border-orbit-accent/25 hover:bg-orbit-accent/[0.03] transition-all duration-300 group block"
     >
       <div className="flex items-start gap-4">

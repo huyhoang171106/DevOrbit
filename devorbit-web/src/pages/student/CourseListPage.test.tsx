@@ -4,8 +4,8 @@ import '@testing-library/jest-dom/vitest'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { useState, type ReactNode } from 'react'
 import { Link, MemoryRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
-import { afterEach, describe, expect, test, vi } from 'vitest'
-import type { CourseSummary } from '../../types/api'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import type { CourseSummary, RepoSummary } from '../../types/api'
 import { CourseListPage } from './CourseListPage'
 
 const courses: CourseSummary[] = Array.from({ length: 31 }, (_, index) => ({
@@ -47,6 +47,12 @@ vi.mock('../../motion/primitives/ParallaxLayer', () => ({
   ParallaxLayer: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }))
 
+const apiGetMock = vi.hoisted(() => vi.fn())
+
+vi.mock('../../lib/api', () => ({
+  apiGet: apiGetMock,
+}))
+
 function CourseDetailStub() {
   const location = useLocation()
   const navigate = useNavigate()
@@ -67,9 +73,14 @@ function LocationProbe() {
   return <output aria-label="current-location">{`${location.pathname}${location.search}`}</output>
 }
 
+beforeEach(() => {
+  apiGetMock.mockResolvedValue([])
+})
+
 afterEach(() => {
   cleanup()
   vi.useRealTimers()
+  apiGetMock.mockReset()
 })
 
 describe('CourseListPage pagination', () => {
@@ -174,5 +185,43 @@ describe('CourseListPage pagination', () => {
 
     expect(screen.getByText('COURSE-01')).toBeInTheDocument()
     expect(screen.queryByText('COURSE-02')).not.toBeInTheDocument()
+  })
+
+  test('opens the repo detail route from repository search results', async () => {
+    const repos: RepoSummary[] = [
+      {
+        id: 77,
+        displayName: 'devorbit-sample-repo',
+        description: 'Sample repository for course work',
+        githubUrl: 'https://github.com/example/devorbit-sample-repo',
+        primaryLanguage: 'TypeScript',
+        stars: 12,
+        techStacks: ['React'],
+        courseId: 1,
+        courseCode: 'COURSE-01',
+        courseName: 'Nhap mon Cong nghe phan mem',
+      },
+    ]
+    apiGetMock.mockResolvedValueOnce(repos)
+
+    render(
+      <MemoryRouter initialEntries={['/courses']}>
+        <LocationProbe />
+        <Routes>
+          <Route path="/courses" element={<CourseListPage />} />
+          <Route path="/repos/:repoId" element={<div>Repo detail loaded</div>} />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'devorbit sample' } })
+
+    const repoLink = await screen.findByRole('link', { name: /devorbit-sample-repo/i })
+    expect(repoLink).toHaveAttribute('href', '/repos/77')
+
+    fireEvent.click(repoLink)
+
+    expect(screen.getByLabelText('current-location')).toHaveTextContent('/repos/77')
+    expect(screen.getByText('Repo detail loaded')).toBeInTheDocument()
   })
 })

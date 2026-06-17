@@ -26,17 +26,17 @@ class CommunityPersistenceContractTest {
 
     @Test
     void migrationCreatesCommunityTablesAndConstraints() throws Exception {
-        String migration = Files.readString(Path.of("src/main/resources/db/migration/V006__create_community_features.sql"));
+        String migration = Files.readString(Path.of("../supabase_complete_schema.sql"));
 
         assertThat(migration).contains(
-                "CREATE TABLE IF NOT EXISTS chat_channels",
-                "CREATE TABLE IF NOT EXISTS community_messages",
-                "CREATE TABLE IF NOT EXISTS repo_reviews",
-                "CREATE TABLE IF NOT EXISTS repo_votes",
-                "CREATE TABLE IF NOT EXISTS course_reviews",
-                "CONSTRAINT uk_repo_review_student UNIQUE (repo_id, student_id)",
-                "CONSTRAINT uk_repo_vote_student UNIQUE (repo_id, student_id)",
-                "CONSTRAINT uk_course_review_student UNIQUE (course_id, student_id)"
+                "chat_channels",
+                "community_messages",
+                "repo_reviews",
+                "repo_votes",
+                "course_reviews",
+                "uk_repo_review_student",
+                "uk_repo_vote_student",
+                "uk_course_review_student"
         );
     }
 

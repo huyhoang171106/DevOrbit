@@ -106,7 +106,11 @@ function ChannelList({
   const isSearching = search.length > 0
 
   const filtered = isSearching
-    ? channels.filter((ch) => ch.name.toLowerCase().includes(search.toLowerCase()))
+    ? channels.filter((ch) => {
+        const matchesName = ch.name.toLowerCase().includes(search.toLowerCase())
+        const matchesCode = ch.type === 'COURSE' && ch.channelId.startsWith('course-') && ch.channelId.substring(7).toLowerCase().includes(search.toLowerCase())
+        return matchesName || matchesCode
+      })
     : channels
 
   const groups = filtered.reduce<Record<string, ChatChannelResponse[]>>((acc, ch) => {
@@ -154,7 +158,14 @@ function ChannelList({
                       className={`flex-1 flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-left text-sm transition-all duration-200 ${isActive ? 'bg-orbit-accent/10 text-orbit-accent shadow-[inset_2px_0_0_rgba(52,211,153,0.5)]' : 'text-orbit-text-secondary hover:text-orbit-text hover:bg-orbit-surface-hover'}`}
                     >
                       <Hash className="h-4 w-4 shrink-0 opacity-60" weight="bold" />
-                      <span className="font-medium min-w-0">{ch.name}</span>
+                      <span className="font-medium min-w-0 truncate">
+                        {ch.type === 'COURSE' && ch.channelId.startsWith('course-') && (
+                          <span className="text-[10px] text-orbit-accent mr-1.5 uppercase font-bold">
+                            [{ch.channelId.substring(7)}]
+                          </span>
+                        )}
+                        {ch.name}
+                      </span>
                       <span className={`shrink-0 ml-auto text-[9px] font-bold ${CHANNEL_GROUP_COLORS[type]}`}>{CHANNEL_GROUP_LABELS[type]}</span>
                     </button>
                     {subscribedIds.has(ch.id) && ch.type !== 'GENERAL' && (
@@ -210,7 +221,14 @@ function ChannelList({
                             className={`flex-1 flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-left text-sm transition-all duration-200 ${isActive ? 'bg-orbit-accent/10 text-orbit-accent shadow-[inset_2px_0_0_rgba(52,211,153,0.5)]' : 'text-orbit-text-secondary hover:text-orbit-text hover:bg-orbit-surface-hover'}`}
                           >
                             <Hash className="h-4 w-4 shrink-0 opacity-60" weight="bold" />
-                            <span className="font-medium min-w-0">{ch.name}</span>
+                            <span className="font-medium min-w-0 truncate">
+                              {ch.type === 'COURSE' && ch.channelId.startsWith('course-') && (
+                                <span className="text-[10px] text-orbit-accent mr-1.5 uppercase font-bold">
+                                  [{ch.channelId.substring(7)}]
+                                </span>
+                              )}
+                              {ch.name}
+                            </span>
                           </button>
                           {isSubscribed && ch.type !== 'GENERAL' && (
                             <button
@@ -264,6 +282,13 @@ function ChatArea({
   const prevMessagesLength = useRef(0)
   const [visibleRange, setVisibleRange] = useState({ start: 0, end: MESSAGE_BATCH_SIZE })
 
+  // Reset scroll and virtualization state when channel changes
+  useEffect(() => {
+    autoScrollRef.current = true
+    setVisibleRange({ start: 0, end: MESSAGE_BATCH_SIZE })
+    prevMessagesLength.current = 0
+  }, [channel?.id])
+
   // Format time label
   const formatTime = (date: Date) => {
     const today = new Date()
@@ -311,6 +336,7 @@ function ChatArea({
     const trimmed = input.trim()
     if (!trimmed || !authenticated) return
     onSend(trimmed)
+    autoScrollRef.current = true
     setInput('')
   }
 
@@ -338,7 +364,14 @@ function ChatArea({
       <div className="shrink-0 px-6 py-4 border-b border-orbit-border flex items-center gap-3">
         <Hash className="h-5 w-5 text-orbit-accent" weight="bold" />
         <div>
-          <h2 className="font-heading text-sm font-bold text-orbit-text">{channel.name}</h2>
+          <h2 className="font-heading text-sm font-bold text-orbit-text">
+            {channel.type === 'COURSE' && channel.channelId.startsWith('course-') && (
+              <span className="text-xs text-orbit-accent mr-1.5 uppercase font-bold">
+                [{channel.channelId.substring(7)}]
+              </span>
+            )}
+            {channel.name}
+          </h2>
           <p className="text-[11px] text-orbit-text-muted">{CHANNEL_GROUP_LABELS[channel.type]}</p>
         </div>
         <span className="ml-auto text-[11px] text-orbit-text-muted">
@@ -387,7 +420,7 @@ function ChatArea({
                   right: 0,
                   height: 72,
                 }}
-                className={`flex gap-3 ${isMine ? 'flex-row-reverse' : ''}`}
+                className={`flex gap-3 ${isMine ? 'flex-row-reverse' : ''} ${msg.sending ? 'opacity-60' : ''}`}
               >
                 <div className="shrink-0">
                   <Avatar name={msg.senderName} size={32} src={msg.senderAvatar} />
@@ -399,7 +432,7 @@ function ChatArea({
                       <span className="text-[10px] text-orbit-text-muted">{timeLabel}</span>
                     </div>
                   )}
-                  <p className={`text-[14px] leading-relaxed whitespace-pre-wrap break-words ${isMine ? 'bg-orbit-accent/20 text-orbit-text border border-orbit-accent/20 rounded-2xl px-3 py-2 max-w-[75%] text-right' : 'text-orbit-text-secondary'}`}>
+                  <p className={`text-[14px] leading-relaxed whitespace-pre-wrap break-words ${isMine ? 'bg-orbit-accent/20 text-orbit-text border border-orbit-accent/20 rounded-2xl px-3 py-2 max-w-[75%] text-right' : 'text-orbit-text'}`}>
                     {msg.content}
                   </p>
                   {isMine && (
@@ -517,8 +550,6 @@ export function CommunityPage() {
   const { data: channels = [], isLoading: channelsLoading } = useChannels()
   const [activeChannel, setActiveChannel] = useState<ChatChannelResponse | null>(null)
   const [allMessages, setAllMessages] = useState<ChatMessageResponse[]>([])
-  const allMessagesRef = useRef(allMessages)
-  allMessagesRef.current = allMessages
   const [totalPages, setTotalPages] = useState(1)
   const [messagesLoading, setMessagesLoading] = useState(false)
   const [messagesFetching, setMessagesFetching] = useState(false)
@@ -583,18 +614,25 @@ export function CommunityPage() {
     const current = activeChannelRef.current
     if (current && msg.channelId === current.id) {
       setAllMessages((prev) => {
+        let next: ChatMessageResponse[]
         if (msg.content === DELETED_NOTICE) {
-          return prev.filter((m) => m.id !== msg.id)
+          next = prev.filter((m) => m.id !== msg.id)
+        } else {
+          // Remove the corresponding optimistic message from this user
+          const filtered = prev.filter(
+            (m) => !(m.id < 0 && m.studentId === msg.studentId && m.content === msg.content)
+          )
+          const idx = filtered.findIndex((m) => m.id === msg.id)
+          if (idx >= 0) {
+            next = [...filtered]
+            next[idx] = msg
+          } else {
+            next = [...filtered, msg]
+          }
         }
-        const idx = prev.findIndex((m) => m.id === msg.id)
-        if (idx >= 0) {
-          const next = [...prev]
-          next[idx] = msg
-          return next
-        }
-        return [...prev, msg]
+        setCachedMessages(current.id, next, totalPagesRef.current)
+        return next
       })
-      setCachedMessages(current.id, allMessagesRef.current, totalPagesRef.current)
     }
   }, [])
 
@@ -609,7 +647,7 @@ export function CommunityPage() {
   totalPagesRef.current = totalPages
 
   const { sendMessage, connected } = useCommunitySocket({
-    channelId: activeChannel?.id ?? null,
+    channelId: activeChannel && activeChannel.id > 0 ? activeChannel.id : null,
     enabled: authenticated,
     onMessage: handleRealtimeMessage,
     onPresence: handlePresence,
@@ -646,7 +684,7 @@ export function CommunityPage() {
 
   // Load messages when active channel changes
   useEffect(() => {
-    if (activeChannel) {
+    if (activeChannel && activeChannel.id > 0) {
       loadChannelMessages(activeChannel)
     }
   }, [activeChannel?.id])
@@ -683,6 +721,23 @@ export function CommunityPage() {
 
   const handleSendMessage = (content: string) => {
     if (!activeChannel) return
+
+    // Add optimistic message if currentStudent is loaded
+    if (currentStudent && authenticated) {
+      const tempId = -(Date.now())
+      const optimisticMsg: ChatMessageResponse = {
+        id: tempId,
+        channelId: activeChannel.id,
+        studentId: currentStudent.id,
+        senderName: currentStudent.fullName,
+        senderAvatar: currentStudent.avatar,
+        content: content,
+        createdAt: new Date().toISOString(),
+        sending: true,
+      }
+      setAllMessages((prev) => [...prev, optimisticMsg])
+    }
+
     sendMessage(activeChannel.id, content)
     addSubscribedId(activeChannel.id)
     setSubscribedIds(getSubscribedIds())

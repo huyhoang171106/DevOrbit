@@ -92,7 +92,7 @@ public class CourseService {
      */
     @Cacheable(value = "courses", key = "'all'", unless = "#result.isEmpty()")
     public List<CourseSummaryResponse> getActiveCourseSummaries() {
-        return courseRepository.findAllWithRepoCountSortedByRepoCount();
+        return courseRepository.findActiveWithRepoCountSortedByRepoCount();
     }
 
     /**
@@ -110,7 +110,7 @@ public class CourseService {
      */
     public List<CourseSummaryResponse> searchCourses(
             String q, String subjectType, Integer semester, String managementUnit) {
-        return courseRepository.findAllWithRepoCountSortedByRepoCount().stream()
+        return courseRepository.findActiveWithRepoCountSortedByRepoCount().stream()
             .filter(c -> q == null || q.isBlank() ||
                 c.name().toLowerCase().contains(q.toLowerCase()) ||
                 c.code().toLowerCase().contains(q.toLowerCase()))

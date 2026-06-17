@@ -1,120 +1,66 @@
 # Contributing to DevOrbit
 
-Thank you for your interest in contributing to DevOrbit! This document outlines
-the guidelines for contributing to the project.
+Thank you for contributing to DevOrbit. To maintain a clean and reliable codebase, please follow the guidelines below.
 
-## Prerequisites
+## Branch Naming Conventions
 
-Before you begin, make sure you have:
+Create descriptive branches off the master branch using the following prefixes:
+- feature/feature-name : for new features
+- bugfix/bug-description : for bug fixes
+- chore/task-name : for repository updates, dependency bumps, or tooling adjustments
+- docs/document-name : for documentation additions or corrections
 
-- **Java 21** (JDK) installed
-- **Node.js 20+** and **bun** installed
-- **Git** installed
-- **Docker** (optional, for running dependencies via docker-compose.yml)
+Example: feature/gpa-goal-planner
 
-## Local Setup
+## Commit Message Conventions
 
-1. **Fork and clone** the repository:
+Commit messages must follow the conventional style. Use lowercase, keep the subject line short (under 50 characters), and optionally include a body for explaining the rationale if not obvious.
 
-   git clone https://github.com/<your-username>/devorbit.git
-   cd devorbit
+Format:
+type(scope): description
 
-2. **Install dependencies**:
+Types:
+- feat: A new feature
+- fix: A bug fix
+- chore: Maintenance, config changes, or dependency updates
+- docs: Documentation changes
+- test: Adding or updating tests
+- refactor: Code alterations that do not fix bugs or add features
 
-   Backend (Spring Boot):
-   cd devorbit-api
-   ./mvnw clean install   (or .\mvnw.cmd clean install on Windows)
-
-   Frontend:
-   cd ../devorbit-web
-   bun install
-
-3. **Set up environment variables**:
-
-   cp .env.example .env
-   Edit .env with your local configuration
-
-4. **Run the application**:
-
-   Backend:
-   cd devorbit-api
-   ./mvnw spring-boot:run
-
-   Frontend:
-   cd devorbit-web
-   bun run dev
+Examples:
+- fix(admin): delete community message
+- fix: lifecycle cleanup for course and repo deletion
+- feat(student): add roadmap recommendation query
 
 ## Development Workflow
 
-1. **Create a branch** from master:
+1. Fork or branch from master.
+2. Follow the editorconfig rules:
+   - UTF-8 encoding.
+   - LF line endings.
+   - 2-space indentation for general configurations and frontend files.
+   - 4-space indentation for Java and Kotlin files.
+3. Keep class and component names consistent:
+   - Java package: vn.edu.uit.devorbit_api
+   - Java classes: CourseService, StudentAuthController, CommunityPresenceServiceTest
+   - React components: PascalCase (e.g. SemesterSelector)
+   - React hooks and helpers: camelCase (e.g. useDebounce)
+4. Do not modify the database schema (supabase_complete_schema.sql) directly without a review. If you need to make changes, document them in your pull request description for database posture checks.
+5. Do not commit secrets, passwords, or connection tokens. Keep credentials in local configuration files (like .env or .env.properties) which are ignored by Git.
 
-   git checkout -b feature/your-feature-name master
+## Testing Guidelines
 
-   Use a descriptive branch name:
-   - feature/description for new features
-   - fix/description for bug fixes
-   - docs/description for documentation changes
+You must verify that your changes pass tests locally before pushing or opening a pull request.
 
-2. **Make your changes** following the code style guidelines below.
+- Backend: Run `./mvnw test` (or `./mvnw.cmd test` on Windows) to verify all JUnit tests pass.
+- Frontend: Run `npm test` inside devorbit-web to verify Vitest tests. Run `npm run build` to ensure TypeScript compilation and asset bundling succeed.
+- Mobile: Run `./gradlew test` (or `.\gradlew.bat test` on Windows) inside devorbit-mobile.
 
-3. **Write or update tests** for your changes.
+Targeted tests should be run first, followed by the complete module build.
 
-4. **Commit** with a clear, descriptive message:
+## Pull Request Guidelines
 
-   git commit -m "feat: add user profile endpoint"
-
-   Follow Conventional Commits (https://www.conventionalcommits.org/) format:
-   - feat: New feature
-   - fix: Bug fix
-   - docs: Documentation
-   - refactor: Code refactoring
-   - test: Adding or updating tests
-   - chore: Maintenance tasks
-
-5. **Push** your branch and **open a Pull Request**.
-
-## Code Style Guidelines
-
-### Java / Kotlin
-
-- Follow standard Java/Kotlin conventions
-- Use meaningful variable and method names
-- Keep methods focused and concise
-- Add Javadoc/KDoc for public APIs
-
-### TypeScript / JavaScript (React)
-
-- Use TypeScript for all new code
-- Follow the project's ESLint configuration
-- Use functional components with hooks
-- Keep components small and focused
-
-### General
-
-- No trailing whitespace
-- Use consistent indentation (match the existing file)
-- Comment complex logic, not obvious code
-
-## Testing Requirements
-
-- All new features **must** include tests
-- Bug fixes **must** include a regression test
-- Run the full test suite before submitting:
-
-   Backend:  cd devorbit-api && ./mvnw test
-   Frontend: cd devorbit-web && bun run test
-
-## Pull Request Process
-
-1. Ensure your PR targets the master branch
-2. Fill out the PR template completely
-3. Link any related issues
-4. Ensure all CI checks pass
-5. Request a review from a maintainer
-6. Address review feedback promptly
-7. Once approved, a maintainer will merge your PR
-
-## Code of Conduct
-
-Be respectful, inclusive, and constructive in all interactions.
-We are committed to providing a welcoming and inclusive experience for everyone.
+- Scope: Keep pull requests small, targeted, and focused on one specific issue or feature.
+- Description: Document what the change accomplishes, why it was made, and how it was tested.
+- Evidence: Include test execution results, screenshots (for UI changes), or REST API response logs. Never claim success without testing the code locally.
+- Documentation: If your changes alter existing behavior, APIs, or settings, you must update the relevant Markdown documentation files in the docs/ folder accordingly.

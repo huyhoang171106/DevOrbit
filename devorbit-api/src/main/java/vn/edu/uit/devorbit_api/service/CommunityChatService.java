@@ -42,17 +42,17 @@ public class CommunityChatService {
 
     @Transactional
     public void syncChannels() {
-        ensureChannel("general", "Kenh chung", ChatChannelType.GENERAL, null);
-        ensureChannel("study", "Hoc tap", ChatChannelType.GENERAL, null);
-        ensureChannel("relax", "Giai tri", ChatChannelType.GENERAL, null);
+        ensureChannel("general", "Kenh chung", ChatChannelType.GENERAL, null, true);
+        ensureChannel("study", "Hoc tap", ChatChannelType.GENERAL, null, true);
+        ensureChannel("relax", "Giai tri", ChatChannelType.GENERAL, null, true);
 
         courseRepository.findAll().forEach(course -> {
             String code = course.getMaMH() != null ? course.getMaMH() : String.valueOf(course.getId());
-            ensureChannel("course-" + slug(code), course.getTenMH(), ChatChannelType.COURSE, String.valueOf(course.getId()));
+            ensureChannel("course-" + slug(code), course.getTenMH(), ChatChannelType.COURSE, String.valueOf(course.getId()), course.isOpen());
         });
 
         techStackRepository.findAllDistinctOrderByName().forEach(techStack ->
-                ensureChannel("tech-" + slug(techStack.getName()), techStack.getName(), ChatChannelType.TECH_STACK, String.valueOf(techStack.getId())));
+                ensureChannel("tech-" + slug(techStack.getName()), techStack.getName(), ChatChannelType.TECH_STACK, String.valueOf(techStack.getId()), true));
     }
 
     public Page<ChatMessageResponse> getMessages(Long channelId, int page, int size) {
@@ -126,8 +126,14 @@ public class CommunityChatService {
         return response;
     }
 
-    private void ensureChannel(String channelId, String name, ChatChannelType type, String referenceId) {
-        if (channelRepository.findByChannelId(channelId).isPresent()) {
+    private void ensureChannel(String channelId, String name, ChatChannelType type, String referenceId, boolean active) {
+        java.util.Optional<ChatChannel> existing = channelRepository.findByChannelId(channelId);
+        if (existing.isPresent()) {
+            ChatChannel channel = existing.get();
+            if (channel.isActive() != active) {
+                channel.setActive(active);
+                channelRepository.save(channel);
+            }
             return;
         }
         channelRepository.save(ChatChannel.builder()
@@ -135,6 +141,7 @@ public class CommunityChatService {
                 .name(name == null || name.isBlank() ? channelId : name)
                 .type(type)
                 .referenceId(referenceId)
+                .active(active)
                 .build());
     }
 

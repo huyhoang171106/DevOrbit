@@ -1,1 +1,0 @@
-ALTER TABLE student_users ADD COLUMN avatar TEXT;

@@ -11,7 +11,8 @@ Spring Boot backend API for the DevOrbit platform, providing RESTful endpoints f
 |------|-------------|
 | `pom.xml` | Maven project configuration with Spring Boot, Security, Data JPA, JWT (jjwt 0.12.6), PostgreSQL, Flyway, OpenAPI dependencies |
 | `Dockerfile` | Multi-stage build: Maven 3.9 + Eclipse Temurin 21 → Eclipse Temurin 21-jre-alpine |
-| `mvnw.cmd` | Maven wrapper for Windows |
+| `mvnw` | Maven wrapper (Unix/macOS) |
+| `mvnw.cmd` | Maven wrapper (Windows) |
 | `.env` | Runtime secrets (DATABASE_URL, JWT_SECRET, GITHUB_TOKEN, SUPABASE_URL/KEY) |
 | `src/main/resources/application.yaml` | Spring Boot configuration (database, JWT, GitHub, Supabase, CORS, mail) |
 | `src/main/resources/application-local.yaml` | Local development overrides |
@@ -47,7 +48,7 @@ Spring Boot backend API for the DevOrbit platform, providing RESTful endpoints f
 - Supabase Storage integration for photobooth frame image uploads (config via `.env` SUPABASE_URL/KEY/BUCKET)
 - Supabase Pooler used for production DB connection (`aws-1-ap-northeast-1.pooler.supabase.com:6543`)
 - CORS configured for localhost:3000, localhost:5173/5174, production IPs, Cloudflare tunnel
-- Flyway migration: single migration V002 for photobooth frames (DDL via schema.sql, flyway for versioned changes)
+- Flyway migrations: V002–V006 (photobooth frames, repo context fields, AI course QA schema, repo last pushed, subject QA fixes, community features) — DDL via schema.sql, flyway for versioned changes
 - AI services in `service/ai/` package: AdviceGenerator, CurriculumMatcher, GraphQueryEngine, RoadmapGenerator, SummaryGenerator
 - `RepoCandidateDataInitializer` seeds initial repo candidates on startup via `CommandLineRunner`
 

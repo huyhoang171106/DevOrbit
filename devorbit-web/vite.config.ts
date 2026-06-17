@@ -34,6 +34,9 @@ export default defineConfig(({ mode }) => {
         threshold: 1024,
       }),
     ],
+    define: {
+      global: 'globalThis',
+    },
     envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
     server: {
       port,
@@ -44,7 +47,12 @@ export default defineConfig(({ mode }) => {
         '/api': {
           target: proxyTarget,
           changeOrigin: true,
-        }
+        },
+        '/ws': {
+          target: proxyTarget,
+          changeOrigin: true,
+          ws: true,
+        },
       }
     },
     build: {

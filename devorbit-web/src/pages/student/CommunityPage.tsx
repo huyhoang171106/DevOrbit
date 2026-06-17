@@ -140,7 +140,7 @@ function ChannelList({
           />
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto scrollbar-thin min-h-0">
+      <div data-lenis-prevent className="flex-1 overflow-y-auto scrollbar-thin min-h-0">
         {loading ? (
           <div className="flex justify-center py-8">
             <Spinner className="h-5 w-5 text-orbit-accent animate-spin" />
@@ -383,6 +383,7 @@ function ChatArea({
       <div
         ref={containerRef}
         onScroll={handleScroll}
+        data-lenis-prevent
         className="flex-1 overflow-y-auto scrollbar-thin px-6 py-4 min-h-0"
       >
         {loadingMessages && messages.length === 0 && (
@@ -505,7 +506,7 @@ export function OnlineMembers({ members, connected, currentUserId }: { members: 
           )}
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto scrollbar-thin min-h-0 px-4 py-4">
+      <div data-lenis-prevent className="flex-1 overflow-y-auto scrollbar-thin min-h-0 px-4 py-4">
         {!connected ? (
           <div className="flex flex-col items-center justify-center h-full text-orbit-text-secondary">
             <Spinner className="h-6 w-6 text-orbit-accent animate-spin mb-3" />

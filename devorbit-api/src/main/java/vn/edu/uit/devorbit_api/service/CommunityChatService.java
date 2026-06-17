@@ -60,7 +60,7 @@ public class CommunityChatService {
             throw new NotFoundException("Channel not found");
         }
         int safeSize = Math.max(1, Math.min(size, 100));
-        return messageRepository.findByChannelIdAndDeletedFalseOrderByCreatedAtDesc(channelId, PageRequest.of(Math.max(page, 0), safeSize))
+        return messageRepository.findByChannelIdOrderByCreatedAtDesc(channelId, PageRequest.of(Math.max(page, 0), safeSize))
                 .map(this::toMessageResponse);
     }
 
@@ -113,13 +113,14 @@ public class CommunityChatService {
 
         ChatMessageResponse response = toMessageResponse(messageRepository.save(message));
 
+        String targetUrl = "/admin/community?ch=" + channel.getId();
         boolean hasExisting = notificationRepository.findByIsReadFalseOrderByCreatedAtDesc()
-                .stream().anyMatch(n -> "COMMUNITY_CHAT".equals(n.getType()));
+                .stream().anyMatch(n -> targetUrl.equals(n.getTargetUrl()));
         if (!hasExisting) {
             eventPublisher.publishEvent(new NotificationEvent(
                 "COMMUNITY_CHAT",
-                "Có tin nhắn mới trong cộng đồng",
-                "/admin/community"
+                "Có tin nhắn mới trong: " + channel.getName(),
+                targetUrl
             ));
         }
 
@@ -157,7 +158,8 @@ public class CommunityChatService {
                 message.getStudent().getFullName(),
                 message.getStudent().getAvatar(),
                 message.getContent(),
-                message.getCreatedAt() != null ? message.getCreatedAt().toString() : null);
+                message.getCreatedAt() != null ? message.getCreatedAt().toString() : null,
+                message.isDeleted());
     }
 
     private String slug(String value) {

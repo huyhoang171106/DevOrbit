@@ -147,7 +147,7 @@ class CommunityMilestone3ContractTest {
         CommunityChatService chatService = mock(CommunityChatService.class);
         SimpMessagingTemplate messagingTemplate = mock(SimpMessagingTemplate.class);
         var response = new vn.edu.uit.devorbit_api.dto.community.ChatMessageResponse(
-                9L, 2L, 5L, "Nguyen Van A", null, "Xin chao", null);
+                9L, 2L, 5L, "Nguyen Van A", null, "Xin chao", null, false);
         when(chatService.sendMessage(eq("24520554"), eq(2L), any(ChatMessageRequest.class))).thenReturn(response);
 
         StudentCommunityController controller = new StudentCommunityController(chatService, messagingTemplate);
@@ -228,7 +228,7 @@ SocialService service = new SocialService(eventPublisher(), repoReviewRepository
         StudentUser student = StudentUser.builder().id(5L).studentCode("24520554").fullName("Nguyen Van A").email("a@gm.uit.edu.vn").build();
         CommunityMessage message = CommunityMessage.builder().id(1L).channel(channel).student(student).content("Xin chao").build();
         when(channelRepository.existsById(2L)).thenReturn(true);
-        when(messageRepository.findByChannelIdAndDeletedFalseOrderByCreatedAtDesc(2L, PageRequest.of(0, 50)))
+        when(messageRepository.findByChannelIdOrderByCreatedAtDesc(2L, PageRequest.of(0, 50)))
                 .thenReturn(new PageImpl<>(List.of(message)));
 
         CommunityChatService service = new CommunityChatService(

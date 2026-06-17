@@ -36,8 +36,6 @@ const CHANNEL_INITIAL_LIMIT: Record<string, number> = {
   TECH_STACK: 0,
 }
 
-const DELETED_NOTICE = "Tin nhắn này đã bị admin xóa vì nghi ngờ vi phạm tiêu chuẩn cộng đồng"
-
 function ConfirmDialog({ show, title, message, onConfirm, onCancel }: {
   show: boolean; title: string; message: string; onConfirm: () => void; onCancel: () => void
 }) {
@@ -432,9 +430,15 @@ function ChatArea({
                       <span className="text-[10px] text-orbit-text-muted">{timeLabel}</span>
                     </div>
                   )}
-                  <p className={`text-[14px] leading-relaxed whitespace-pre-wrap break-words ${isMine ? 'bg-orbit-accent/20 text-orbit-text border border-orbit-accent/20 rounded-2xl px-3 py-2 max-w-[75%] text-right' : 'text-orbit-text'}`}>
-                    {msg.content}
-                  </p>
+                  {msg.deleted ? (
+                    <p className={`text-[13px] leading-relaxed italic text-zinc-400 border border-dashed border-zinc-600 rounded-2xl px-3 py-2 bg-zinc-800/40 w-fit ${!isMine ? 'mt-1' : ''}`}>
+                      {msg.content}
+                    </p>
+                  ) : (
+                    <p className={`text-[14px] leading-relaxed whitespace-pre-wrap break-words ${isMine ? 'bg-orbit-accent/20 text-orbit-text border border-orbit-accent/20 rounded-2xl px-3 py-2 max-w-[75%] text-right' : 'text-orbit-text'}`}>
+                      {msg.content}
+                    </p>
+                  )}
                   {isMine && (
                     <span className="text-[10px] text-orbit-text-muted mt-0.5">{timeLabel}</span>
                   )}
@@ -614,21 +618,17 @@ export function CommunityPage() {
     const current = activeChannelRef.current
     if (current && msg.channelId === current.id) {
       setAllMessages((prev) => {
+        // Remove the corresponding optimistic message from this user
+        const filtered = prev.filter(
+          (m) => !(m.id < 0 && m.studentId === msg.studentId && m.content === msg.content)
+        )
+        const idx = filtered.findIndex((m) => m.id === msg.id)
         let next: ChatMessageResponse[]
-        if (msg.content === DELETED_NOTICE) {
-          next = prev.filter((m) => m.id !== msg.id)
+        if (idx >= 0) {
+          next = [...filtered]
+          next[idx] = msg
         } else {
-          // Remove the corresponding optimistic message from this user
-          const filtered = prev.filter(
-            (m) => !(m.id < 0 && m.studentId === msg.studentId && m.content === msg.content)
-          )
-          const idx = filtered.findIndex((m) => m.id === msg.id)
-          if (idx >= 0) {
-            next = [...filtered]
-            next[idx] = msg
-          } else {
-            next = [...filtered, msg]
-          }
+          next = [...filtered, msg]
         }
         setCachedMessages(current.id, next, totalPagesRef.current)
         return next

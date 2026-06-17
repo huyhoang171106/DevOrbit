@@ -39,6 +39,8 @@ export interface FrameDefinition {
   slots: FrameSlot[];
   overlays: FrameOverlay[];
   overlayImage?: string;
+  overlayWidth?: number;
+  overlayHeight?: number;
   filter: FilterType;
   backgroundColor: string;
   accentColor?: string;
@@ -134,9 +136,12 @@ export async function normalizeStoredFrameSlots(stored: StoredFrame): Promise<St
 async function toFrameDefinition(stored: StoredFrame): Promise<FrameDefinition> {
   // Determine proportional logical space from overlay image
   let logicalW = LOGICAL_MAX, logicalH = LOGICAL_MAX;
+  let overlayWidth: number | undefined, overlayHeight: number | undefined;
   if (stored.overlayImage) {
     try {
       const size = await loadImageSize(stored.overlayImage);
+      overlayWidth = size.w;
+      overlayHeight = size.h;
       const ls = getLogicalSize(size.w, size.h);
       logicalW = ls.w;
       logicalH = ls.h;
@@ -178,6 +183,8 @@ async function toFrameDefinition(stored: StoredFrame): Promise<FrameDefinition> 
     })),
     overlays: [],
     overlayImage: stored.overlayImage || undefined,
+    overlayWidth,
+    overlayHeight,
     filter: (stored.filter as FilterType) || "normal",
     backgroundColor: stored.backgroundColor || "#ffffff",
   };

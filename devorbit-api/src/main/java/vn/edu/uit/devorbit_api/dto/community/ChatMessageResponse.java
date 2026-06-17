@@ -7,6 +7,7 @@ public record ChatMessageResponse(
         String senderName,
         String senderAvatar,
         String content,
-        String createdAt
+        String createdAt,
+        boolean deleted
 ) {
 }

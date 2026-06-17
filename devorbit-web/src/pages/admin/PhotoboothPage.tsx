@@ -73,11 +73,13 @@ export function PhotoboothPage() {
       if (saved) {
         const normalized = await normalizeStoredFrameSlots(saved)
         setFrames((prev) => prev.map((f) => (f.id === normalized.id ? normalized : f)))
+        reloadFrames()
       }
     } catch (e: any) {
       setError(e?.message || 'Lưu ô thất bại')
+    } finally {
+      setEditingSlots(null)
     }
-    setEditingSlots(null)
   }
 
   const handleUpload = async (data: { displayName: string; photoCount: number }, file: File | null) => {
@@ -108,6 +110,7 @@ export function PhotoboothPage() {
       setError(e?.message || 'Tải lên thất bại')
     }
     setShowUpload(false)
+    reloadFrames()
     load()
   }
 

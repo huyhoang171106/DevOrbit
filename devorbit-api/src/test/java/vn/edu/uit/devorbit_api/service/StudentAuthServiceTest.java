@@ -153,10 +153,15 @@ class StudentAuthServiceTest {
 
     @Test
     void resetPassword_rejectsWrongPurpose() {
+        StudentUser student = StudentUser.builder()
+                .id(1L).studentCode("24520554").fullName("Nguyen Van A")
+                .email("24520554@gm.uit.edu.vn").passwordHash("hash").active(true).build();
+
+        when(studentUserRepository.findByStudentCode("24520554")).thenReturn(Optional.of(student));
         when(otpRepository.findTopByEmailAndPurposeOrderByCreatedAtDesc("24520554@gm.uit.edu.vn", OtpPurpose.PASSWORD_RESET))
                 .thenReturn(Optional.empty());
 
-        ResetPasswordRequest req = new ResetPasswordRequest("24520554@gm.uit.edu.vn", "123456", "newPassword123");
+        ResetPasswordRequest req = new ResetPasswordRequest("24520554", "123456", "newPassword123");
         assertThatThrownBy(() -> service.resetPassword(req))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessageContaining("OTP");
@@ -165,6 +170,10 @@ class StudentAuthServiceTest {
     @Test
     void resetPassword_ignoresEmailVerificationOtp() {
         // Only EMAIL_VERIFICATION OTP exists
+        StudentUser student = StudentUser.builder()
+                .id(1L).studentCode("24520554").fullName("Nguyen Van A")
+                .email("24520554@gm.uit.edu.vn").passwordHash("hash").active(true).build();
+
         Otp emailOtp = Otp.builder()
                 .email("24520554@gm.uit.edu.vn")
                 .purpose(OtpPurpose.EMAIL_VERIFICATION)
@@ -172,10 +181,11 @@ class StudentAuthServiceTest {
                 .expiresAt(LocalDateTime.now().plusMinutes(10))
                 .build();
 
+        when(studentUserRepository.findByStudentCode("24520554")).thenReturn(Optional.of(student));
         when(otpRepository.findTopByEmailAndPurposeOrderByCreatedAtDesc("24520554@gm.uit.edu.vn", OtpPurpose.PASSWORD_RESET))
                 .thenReturn(Optional.empty());
 
-        ResetPasswordRequest req = new ResetPasswordRequest("24520554@gm.uit.edu.vn", "123456", "newPassword123");
+        ResetPasswordRequest req = new ResetPasswordRequest("24520554", "123456", "newPassword123");
         assertThatThrownBy(() -> service.resetPassword(req))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessageContaining("OTP");
@@ -183,22 +193,13 @@ class StudentAuthServiceTest {
 
     @Test
     void resetPassword_rejectsInactiveAccount() {
-        Otp validOtp = Otp.builder()
-                .email("24520554@gm.uit.edu.vn")
-                .purpose(OtpPurpose.PASSWORD_RESET)
-                .otpCode("123456")
-                .expiresAt(LocalDateTime.now().plusMinutes(10))
-                .build();
-
         StudentUser inactive = StudentUser.builder()
                 .id(1L).studentCode("24520554").fullName("Nguyen Van A")
                 .email("24520554@gm.uit.edu.vn").passwordHash("hash").active(false).build();
 
-        when(otpRepository.findTopByEmailAndPurposeOrderByCreatedAtDesc("24520554@gm.uit.edu.vn", OtpPurpose.PASSWORD_RESET))
-                .thenReturn(Optional.of(validOtp));
-        when(studentUserRepository.findByEmail("24520554@gm.uit.edu.vn")).thenReturn(Optional.of(inactive));
+        when(studentUserRepository.findByStudentCode("24520554")).thenReturn(Optional.of(inactive));
 
-        ResetPasswordRequest req = new ResetPasswordRequest("24520554@gm.uit.edu.vn", "123456", "newPassword123");
+        ResetPasswordRequest req = new ResetPasswordRequest("24520554", "123456", "newPassword123");
         assertThatThrownBy(() -> service.resetPassword(req))
                 .isInstanceOf(BadRequestException.class)
                 .hasMessageContaining("vô hiệu hóa");
@@ -314,6 +315,24 @@ class StudentAuthServiceTest {
         verify(otpRateLimitService).check("FORGOT_PASSWORD:nonexistent");
         verifyNoInteractions(otpRepository);
         verifyNoInteractions(emailService);
+    }
+
+    @Test
+    void resendOtpByStudentCode_sendsPasswordResetOtp() {
+        StudentUser student = StudentUser.builder()
+                .id(1L).studentCode("24520554").fullName("Nguyen Van A")
+                .email("24520554@gm.uit.edu.vn").passwordHash("hash").active(true).build();
+
+        when(studentUserRepository.findByStudentCode("24520554")).thenReturn(Optional.of(student));
+        when(studentUserRepository.findByEmail("24520554@gm.uit.edu.vn")).thenReturn(Optional.of(student));
+        when(otpRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        service.resendOtpByStudentCode("24520554", OtpPurpose.PASSWORD_RESET);
+
+        verify(otpRepository).deleteByEmailAndPurpose("24520554@gm.uit.edu.vn", OtpPurpose.PASSWORD_RESET);
+        verify(otpRepository).save(otpCaptor.capture());
+        assertThat(otpCaptor.getValue().getPurpose()).isEqualTo(OtpPurpose.PASSWORD_RESET);
+        verify(emailService).sendPasswordResetOtp(eq("24520554@gm.uit.edu.vn"), any(), anyInt());
     }
 
     // ─── RESEND OTP RATE LIMITING ─────────────────────

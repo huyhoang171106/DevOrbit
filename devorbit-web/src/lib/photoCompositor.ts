@@ -3,6 +3,7 @@ import { SlotFilter, FILTER_PRESETS } from "./photoFilters";
 
 const LOGICAL_MAX = 2000;
 const imageCache = new Map<string, HTMLImageElement>();
+const fileImageCache = new Map<File, HTMLImageElement>();
 
 function getLogicalSize(imgW: number, imgH: number) {
   const maxDim = Math.max(imgW, imgH);
@@ -13,7 +14,14 @@ function getLogicalSize(imgW: number, imgH: number) {
 
 export class PhotoCompositor {
   static async loadImages(files: File[]): Promise<HTMLImageElement[]> {
-    return Promise.all(files.map((file) => this.loadImageFromFile(file)));
+    return Promise.all(files.map((file) => {
+      const cached = fileImageCache.get(file);
+      if (cached) return cached;
+      return this.loadImageFromFile(file).then((img) => {
+        fileImageCache.set(file, img);
+        return img;
+      });
+    }));
   }
 
   private static loadImageFromFile(file: File): Promise<HTMLImageElement> {
@@ -52,6 +60,7 @@ export class PhotoCompositor {
 
   static clearCache() {
     imageCache.clear();
+    fileImageCache.clear();
   }
 
   static async compositePhotos(

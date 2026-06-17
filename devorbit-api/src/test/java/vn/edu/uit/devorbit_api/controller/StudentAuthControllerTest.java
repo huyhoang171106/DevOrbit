@@ -139,7 +139,7 @@ class StudentAuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                             {
-                                "email": "24520554@gm.uit.edu.vn",
+                                "studentCode": "24520554",
                                 "otpCode": "123456",
                                 "newPassword": "newPassword123"
                             }
@@ -167,7 +167,7 @@ class StudentAuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                             {
-                                "email": "24520554@gm.uit.edu.vn",
+                                "studentCode": "24520554",
                                 "purpose": "PASSWORD_RESET"
                             }
                         """))

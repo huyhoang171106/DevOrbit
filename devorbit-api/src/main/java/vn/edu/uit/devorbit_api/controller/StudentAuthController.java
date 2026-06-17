@@ -8,6 +8,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import vn.edu.uit.devorbit_api.dto.student.ChangePasswordRequest;
 import vn.edu.uit.devorbit_api.dto.student.ForgotPasswordRequest;
 import vn.edu.uit.devorbit_api.dto.student.OtpVerificationRequest;
 import vn.edu.uit.devorbit_api.dto.student.ResetPasswordRequest;
@@ -16,6 +17,7 @@ import vn.edu.uit.devorbit_api.dto.student.StudentLoginRequest;
 import vn.edu.uit.devorbit_api.dto.student.StudentProfileResponse;
 import vn.edu.uit.devorbit_api.dto.student.StudentRegisterRequest;
 import vn.edu.uit.devorbit_api.dto.student.UpdateAvatarRequest;
+import vn.edu.uit.devorbit_api.dto.student.UpdateFullNameRequest;
 import vn.edu.uit.devorbit_api.entity.OtpPurpose;
 import vn.edu.uit.devorbit_api.exception.BadRequestException;
 import vn.edu.uit.devorbit_api.service.StudentAuthService;
@@ -132,5 +134,18 @@ public class StudentAuthController {
         Map<String, String> uploadResult = supabaseStorageService.upload(file);
         String avatarUrl = uploadResult.get("url");
         return studentAuthService.updateAvatar(studentCode, new UpdateAvatarRequest(avatarUrl));
+    }
+
+    @PostMapping("/me/name")
+    public StudentProfileResponse updateFullName(@AuthenticationPrincipal String studentCode,
+                                                  @RequestBody @Valid UpdateFullNameRequest request) {
+        return studentAuthService.updateFullName(studentCode, request);
+    }
+
+    @PostMapping("/me/password")
+    public Map<String, String> changePassword(@AuthenticationPrincipal String studentCode,
+                                               @RequestBody @Valid ChangePasswordRequest request) {
+        studentAuthService.changePassword(studentCode, request);
+        return Map.of("message", "Đổi mật khẩu thành công");
     }
 }

@@ -14,6 +14,20 @@ export function RepoEditDialog({ open, repo, courses, onClose, onSave }: RepoEdi
   const [form, setForm] = useState<ApprovedRepoUpdateRequest>({})
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [techStackInput, setTechStackInput] = useState('')
+  const techStacks = form.techStacks ?? []
+
+  const addTechStack = () => {
+    const trimmed = techStackInput.trim()
+    if (trimmed && !techStacks.includes(trimmed)) {
+      setForm((prev) => ({ ...prev, techStacks: [...(prev.techStacks ?? []), trimmed] }))
+    }
+    setTechStackInput('')
+  }
+
+  const removeTechStack = (stack: string) => {
+    setForm((prev) => ({ ...prev, techStacks: (prev.techStacks ?? []).filter((s) => s !== stack) }))
+  }
 
   useEffect(() => {
     if (repo) {
@@ -22,7 +36,6 @@ export function RepoEditDialog({ open, repo, courses, onClose, onSave }: RepoEdi
         description: repo.description,
         githubUrl: repo.githubUrl,
         primaryLanguage: repo.primaryLanguage,
-        stars: repo.stars,
         courseId: repo.courseId,
         techStacks: repo.techStacks ?? [],
       })
@@ -83,26 +96,38 @@ export function RepoEditDialog({ open, repo, courses, onClose, onSave }: RepoEdi
               required
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="label">Ngôn ngữ chính</label>
+          <div>
+            <label className="label">Ngôn ngữ chính</label>
+            <input
+              type="text"
+              value={form.primaryLanguage ?? ''}
+              onChange={(e) => setForm((prev) => ({ ...prev, primaryLanguage: e.target.value }))}
+              className="input-field"
+            />
+          </div>
+          <div>
+            <label className="label">Tech Stacks</label>
+            <div className="flex gap-2 mb-2">
               <input
                 type="text"
-                value={form.primaryLanguage ?? ''}
-                onChange={(e) => setForm((prev) => ({ ...prev, primaryLanguage: e.target.value }))}
-                className="input-field"
+                value={techStackInput}
+                onChange={(e) => setTechStackInput(e.target.value)}
+                className="input-field flex-1"
+                placeholder="VD: React, Spring Boot"
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTechStack() } }}
               />
+              <button onClick={addTechStack} className="btn-primary text-xs px-3">Thêm</button>
             </div>
-            <div>
-              <label className="label">Stars</label>
-              <input
-                type="number"
-                value={form.stars ?? ''}
-                onChange={(e) => setForm((prev) => ({ ...prev, stars: e.target.value ? Number(e.target.value) : null }))}
-                className="input-field"
-                min={0}
-              />
-            </div>
+            {techStacks.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {techStacks.map((stack) => (
+                  <span key={stack} className="inline-flex items-center gap-1 px-2 py-1 rounded bg-orbit-accent/10 text-xs text-orbit-accent">
+                    {stack}
+                    <button onClick={() => removeTechStack(stack)} className="hover:text-red-400">&times;</button>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
           <div>
             <label className="label">Môn học</label>

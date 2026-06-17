@@ -34,7 +34,7 @@ public class AdminCommunityController {
     @GetMapping("/messages")
     public ResponseEntity<List<CommunityMessageAdminResponse>> listMessages() {
         return ResponseEntity.ok(communityMessageRepo.findAllByOrderByCreatedAtDesc()
-            .stream().map(m -> CommunityMessageAdminResponse.builder()
+            .stream().filter(m -> !m.isDeleted()).map(m -> CommunityMessageAdminResponse.builder()
                 .id(m.getId())
                 .channelName(m.getChannel() != null ? m.getChannel().getName() : "Deleted")
                 .studentName(m.getStudent() != null ? m.getStudent().getFullName() : "Deleted")
@@ -60,7 +60,8 @@ public class AdminCommunityController {
                 msg.getStudent().getFullName(),
                 msg.getStudent().getAvatar(),
                 msg.getContent(),
-                msg.getCreatedAt() != null ? msg.getCreatedAt().toString() : null);
+                msg.getCreatedAt() != null ? msg.getCreatedAt().toString() : null,
+                msg.isDeleted());
         messagingTemplate.convertAndSend("/topic/channel/" + channelId, resp);
         return ResponseEntity.ok().build();
     }

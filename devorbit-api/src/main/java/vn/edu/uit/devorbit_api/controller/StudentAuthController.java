@@ -72,7 +72,6 @@ public class StudentAuthController {
      */
     @PostMapping("/resend-otp")
     public Map<String, String> resendOtp(@RequestBody Map<String, String> body) {
-        String email = body.get("email");
         String purposeStr = body.getOrDefault("purpose", "EMAIL_VERIFICATION");
         OtpPurpose purpose;
         try {
@@ -80,7 +79,19 @@ public class StudentAuthController {
         } catch (IllegalArgumentException e) {
             throw new BadRequestException("Purpose không hợp lệ: " + purposeStr);
         }
-        studentAuthService.resendOtp(email, purpose);
+        if (purpose == OtpPurpose.PASSWORD_RESET) {
+            String studentCode = body.get("studentCode");
+            if (studentCode == null || studentCode.isBlank()) {
+                throw new BadRequestException("studentCode là bắt buộc.");
+            }
+            studentAuthService.resendOtpByStudentCode(studentCode, purpose);
+        } else {
+            String email = body.get("email");
+            if (email == null || email.isBlank()) {
+                throw new BadRequestException("email là bắt buộc.");
+            }
+            studentAuthService.resendOtp(email, purpose);
+        }
         return Map.of("message", "OTP resent");
     }
 

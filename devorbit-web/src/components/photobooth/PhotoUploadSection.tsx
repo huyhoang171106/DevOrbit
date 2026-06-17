@@ -68,7 +68,10 @@ export function PhotoUploadSection({
           offset={slotOffsets[adjustSlot] ?? { dx: 0, dy: 0, filter: DEFAULT_FILTER }}
           slotIndex={adjustSlot}
           slotAspect={frame.slots[adjustSlot].width / frame.slots[adjustSlot].height}
-          onSave={(offset) => onSlotOffset(adjustSlot, offset)}
+          onSave={(offset) => {
+            onSlotOffset(adjustSlot, offset);
+            setAdjustSlot(null);
+          }}
           onClose={() => setAdjustSlot(null)}
         />
       )}
@@ -183,6 +186,7 @@ function SlotCard({
     ctx.beginPath();
     ctx.rect(cropX, cropY, cropW, cropH);
     ctx.clip();
+    if (flt) ctx.filter = flt;
     ctx.drawImage(img, fullX, fullY, fullW, fullH);
     ctx.restore();
 
@@ -350,7 +354,10 @@ function ImageAdjuster({
 
     // Draw full image dimmed
     ctx.globalAlpha = 0.15;
+    const cssFilter = offset.filter && offset.filter !== "normal" ? FILTER_PRESETS[offset.filter]?.css : undefined;
+    if (cssFilter) ctx.filter = cssFilter;
     ctx.drawImage(img, imgX, imgY, drawW, drawH);
+    ctx.filter = "none";
     ctx.globalAlpha = 1;
 
     // Crop rect in canvas coords
@@ -374,7 +381,9 @@ function ImageAdjuster({
     ctx.beginPath();
     ctx.rect(dispX, dispY, dispW, dispH);
     ctx.clip();
+    if (cssFilter) ctx.filter = cssFilter;
     ctx.drawImage(img, imgX, imgY, drawW, drawH);
+    ctx.filter = "none";
     ctx.restore();
 
     // Crop border
@@ -389,7 +398,7 @@ function ImageAdjuster({
     ctx.font = "bold 13px monospace";
     ctx.textAlign = "center";
     ctx.fillText(`Kéo để di chuyển`, cw / 2, ch - 10);
-  }, [dx, dy, zoom, slotAspect]);
+  }, [dx, dy, zoom, slotAspect, offset.filter]);
 
   useEffect(() => {
     const img = new Image();
@@ -504,7 +513,7 @@ function ImageAdjuster({
           onTouchEnd={handleTouchEnd}
         />
 
-        <div className="mt-4 space-y-3">
+          <div className="mt-4 space-y-3">
           <div className="flex items-center gap-3">
             <span className="text-xs text-zinc-500 w-8">Thu phóng:</span>
             <button onClick={() => setZoom(z => Math.max(0.5, +(z - 0.1).toFixed(1)))} className="w-8 h-8 rounded-lg border border-glass-border bg-glass-surface hover:bg-glass-surface-hover text-ink text-sm font-bold flex items-center justify-center">−</button>

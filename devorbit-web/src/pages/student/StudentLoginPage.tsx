@@ -126,7 +126,11 @@ export function StudentLoginPage() {
     setError('')
     setLoading(true)
     try {
-      await apiPost('/api/student/resend-otp', { email })
+      if (mode === 'forgot') {
+        await apiPost('/api/student/resend-otp', { studentCode, purpose: 'PASSWORD_RESET' })
+      } else {
+        await apiPost('/api/student/resend-otp', { email })
+      }
       startCountdown()
     } catch {
       setError('Gửi lại mã OTP thất bại.')
@@ -201,6 +205,11 @@ export function StudentLoginPage() {
         setLoading(false)
         return
       }
+      if (password.length < 6) {
+        setError('Mật khẩu phải có ít nhất 6 ký tự.')
+        setLoading(false)
+        return
+      }
       try {
         const res = await apiPost<{ id: number; studentCode: string; fullName: string; email: string }>(
           '/api/student/register',
@@ -235,8 +244,7 @@ export function StudentLoginPage() {
     if (mode === 'forgot') {
       if (forgotStep === 1) {
         try {
-          const res = await apiPost<{ email: string }>('/api/student/forgot-password', { studentCode })
-          setEmail(res.email)
+          await apiPost('/api/student/forgot-password', { studentCode })
           setForgotStep(2)
           startCountdown()
         } catch (e) {
@@ -251,9 +259,14 @@ export function StudentLoginPage() {
           setLoading(false)
           return
         }
+        if (password.length < 6) {
+          setError('Mật khẩu phải có ít nhất 6 ký tự.')
+          setLoading(false)
+          return
+        }
         try {
           const res = await apiPost<StudentAuthResponse>('/api/student/reset-password', {
-            email, otpCode, newPassword: password,
+            studentCode, otpCode, newPassword: password,
           })
           saveStudentToken(res.token)
           navigate('/')
@@ -307,7 +320,10 @@ export function StudentLoginPage() {
           </h1>
           {(mode === 'otp' || (mode === 'forgot' && forgotStep === 2)) && (
             <p className="body-sm text-ink/60 mt-[4px]">
-              Mã OTP đã được gửi đến <strong>{email}</strong>
+              {mode === 'forgot'
+                ? 'Mã OTP đã được gửi đến email đăng ký của bạn'
+                : <>Mã OTP đã được gửi đến <strong>{email}</strong></>
+              }
             </p>
           )}
         </div>

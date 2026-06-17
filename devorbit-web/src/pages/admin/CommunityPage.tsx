@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { AdminPageLayout } from '../../components/admin/shared/AdminPageLayout'
 import { AdminSpinner } from '../../components/admin/shared/AdminSpinner'
 import { AdminErrorBanner } from '../../components/admin/shared/AdminErrorBanner'
@@ -11,6 +12,7 @@ import type { ChatChannelResponse } from '../../types/api'
 
 export function CommunityPage() {
   const token = getAdminToken()
+  const [searchParams] = useSearchParams()
   const [selectedChannel, setSelectedChannel] = useState<ChatChannelResponse | null>(null)
   const [search, setSearch] = useState('')
 
@@ -18,6 +20,14 @@ export function CommunityPage() {
     (t) => adminApi.getChannels(t),
     [],
   )
+
+  useEffect(() => {
+    const ch = searchParams.get('ch')
+    if (ch && channels) {
+      const match = channels.find((c) => c.id === Number(ch))
+      if (match) setSelectedChannel(match)
+    }
+  }, [searchParams, channels])
 
   const { data: messages, loading: loadingMessages, error: messagesError, refetch: refetchMessages } = useAdminFetch(
     (t) => adminApi.getCommunityMessages(t),

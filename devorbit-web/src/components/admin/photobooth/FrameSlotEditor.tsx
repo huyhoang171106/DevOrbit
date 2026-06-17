@@ -244,13 +244,13 @@ export function FrameSlotEditor({ frame, onSave, onClose }: FrameSlotEditorProps
           Click <strong>Auto Detect</strong> to find transparent regions, or click two points on the image to create a slot manually.
         </p>
         <div className="flex flex-col lg:flex-row gap-6">
-          <div className="flex-1 flex flex-col items-center">
+          <div className="flex-1 flex flex-col items-center" style={{ touchAction: 'pan-y' }}>
             <canvas
               ref={canvasRef}
               width={displaySize.w}
               height={displaySize.h}
               className="rounded-lg border border-orbit-border cursor-crosshair"
-              style={{ maxWidth: '100%' }}
+              style={{ maxWidth: '100%', touchAction: 'pan-y' }}
               onClick={handleCanvasClick}
               onMouseMove={handleCanvasMouseMove}
               onMouseLeave={handleCanvasMouseLeave}

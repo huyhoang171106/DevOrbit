@@ -38,6 +38,9 @@ export function FrameSelector({
                   src={frame.overlayImage}
                   alt={frame.displayName}
                   className="w-full h-full object-contain"
+                  loading="lazy"
+                  width={frame.overlayWidth && frame.overlayHeight ? Math.round((frame.overlayWidth / frame.overlayHeight) * 200) : undefined}
+                  height={200}
                   onError={() =>
                     setImgErrors((prev) => new Set(prev).add(frame.id))
                   }

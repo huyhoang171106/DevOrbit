@@ -217,7 +217,14 @@ public class StudentAuthService {
 
     @Transactional
     public StudentAuthResponse resetPassword(ResetPasswordRequest request) {
-        String email = request.email().trim().toLowerCase();
+        StudentUser student = studentUserRepository.findByStudentCode(request.studentCode().trim())
+                .orElseThrow(() -> new BadRequestException("Người dùng không tồn tại."));
+
+        if (!student.isActive()) {
+            throw new BadRequestException("Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.");
+        }
+
+        String email = student.getEmail();
         Otp otp = otpRepository.findTopByEmailAndPurposeOrderByCreatedAtDesc(email, OtpPurpose.PASSWORD_RESET)
                 .orElseThrow(() -> new BadRequestException("Không tìm thấy mã OTP đặt lại mật khẩu. Vui lòng yêu cầu lại."));
 
@@ -229,11 +236,8 @@ public class StudentAuthService {
             throw new BadRequestException("Mã OTP không đúng.");
         }
 
-        StudentUser student = studentUserRepository.findByEmail(email)
-                .orElseThrow(() -> new BadRequestException("Người dùng không tồn tại."));
-
-        if (!student.isActive()) {
-            throw new BadRequestException("Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.");
+        if (passwordEncoder.matches(request.newPassword(), student.getPasswordHash())) {
+            throw new BadRequestException("Mật khẩu mới không được trùng với mật khẩu cũ.");
         }
 
         student.setPasswordHash(passwordEncoder.encode(request.newPassword()));
@@ -242,6 +246,13 @@ public class StudentAuthService {
 
         String token = jwtService.generateToken(student.getStudentCode(), "STUDENT");
         return new StudentAuthResponse(token, student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail(), student.getAvatar());
+    }
+
+    @Transactional
+    public void resendOtpByStudentCode(String studentCode, OtpPurpose purpose) {
+        StudentUser student = studentUserRepository.findByStudentCode(studentCode.trim())
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy người dùng."));
+        resendOtp(student.getEmail(), purpose);
     }
 
     // ───────── UPDATE AVATAR ─────────

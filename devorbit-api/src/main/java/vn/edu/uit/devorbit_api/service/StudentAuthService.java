@@ -121,6 +121,9 @@ public class StudentAuthService {
 
         otpRateLimitService.check("EMAIL_VERIFICATION:" + student.getEmail());
 
+        // rate limit by email for register
+        otpRateLimitService.check("EMAIL_VERIFICATION:" + student.getEmail());
+
         String otpCode = generateOtp();
         otpRepository.save(Otp.builder()
                 .email(student.getEmail())

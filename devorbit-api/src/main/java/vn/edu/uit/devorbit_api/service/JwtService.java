@@ -68,6 +68,10 @@ public class JwtService {
         return parseToken(token).getId();
     }
 
+    public String extractJti(String token) {
+        return parseToken(token).getId();
+    }
+
     public String extractUsername(String token) {
         return parseToken(token).getSubject();
     }

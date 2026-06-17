@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -21,11 +22,11 @@ import vn.edu.uit.devorbit.mobile.domain.model.*
 import vn.edu.uit.devorbit.mobile.ui.components.CosmicBackground
 import vn.edu.uit.devorbit.mobile.ui.navigation.Screen
 import vn.edu.uit.devorbit.mobile.ui.screen.dashboard.DashboardScreen
-import vn.edu.uit.devorbit.mobile.ui.screen.courses.CourseHubScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.knowledge.KnowledgeGraphScreen
-import vn.edu.uit.devorbit.mobile.ui.screen.explore.ExploreScreen
+import vn.edu.uit.devorbit.mobile.ui.screen.gpa.GpaScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.plan.StudyPlannerScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.profile.ProfileScreen
+import vn.edu.uit.devorbit.mobile.ui.screen.repos.ReposByCourseScreen
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.AcademicViewModel
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.CourseViewModel
@@ -55,20 +56,22 @@ fun MainScreen(
     CosmicBackground {
         NavigationSuiteScaffold(
             navigationSuiteItems = {
-                val items = listOf(
-                    Screen.Dashboard,
-                    Screen.Courses,
-                    Screen.Knowledge,
-                    Screen.Explore,
-                    Screen.Plan,
-                    Screen.Profile
-                )
+                val items = Screen.navItems
                 items.forEach { screen ->
+                    val screenIcon = screen.icon
+                    val screenLabel = screen.label
                     item(
                         selected = currentScreen == screen,
                         onClick = { currentScreen = screen },
-                        icon = { Icon(screen.icon, contentDescription = screen.label) },
-                        label = { Text(screen.label) },
+                        icon = { Icon(screenIcon, contentDescription = screenLabel) },
+                        label = {
+                            Text(
+                                text = screenLabel,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        },
                         colors = navItemColors
                     )
                 }
@@ -96,10 +99,9 @@ fun MainScreen(
                             onCompleteTask = { academicVm.toggleTaskComplete(it.id) },
                             onBreakdownGoal = { currentScreen = Screen.Plan }
                         )
-                        Screen.Courses -> CourseHubScreen()
-                        Screen.Knowledge -> KnowledgeTabView()
-                        Screen.Explore -> ExploreScreen()
+                        Screen.Repos -> ReposByCourseScreen()
                         Screen.Plan -> PlanTabView()
+                        Screen.Gpa -> GpaScreen()
                         Screen.Profile -> ProfileScreen()
                     }
                 }

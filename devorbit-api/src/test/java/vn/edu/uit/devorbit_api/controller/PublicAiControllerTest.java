@@ -11,6 +11,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import vn.edu.uit.devorbit_api.dto.knowledge.Citation;
 import vn.edu.uit.devorbit_api.dto.publicapi.ChatRequest;
 import vn.edu.uit.devorbit_api.dto.publicapi.ChatResponse;
+<<<<<<< HEAD
+=======
+import vn.edu.uit.devorbit_api.repository.AdminUserRepository;
+>>>>>>> master
 import vn.edu.uit.devorbit_api.repository.StudentUserRepository;
 import vn.edu.uit.devorbit_api.service.AiService;
 import vn.edu.uit.devorbit_api.service.JwtService;
@@ -41,6 +45,11 @@ class PublicAiControllerTest {
     @MockitoBean
     private StudentUserRepository studentUserRepository;
     @MockitoBean
+<<<<<<< HEAD
+=======
+    private AdminUserRepository adminUserRepository;
+    @MockitoBean
+>>>>>>> master
     private JwtService jwtService;
 
     @MockitoBean

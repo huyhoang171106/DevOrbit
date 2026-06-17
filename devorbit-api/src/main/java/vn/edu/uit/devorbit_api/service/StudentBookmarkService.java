@@ -1,6 +1,7 @@
 package vn.edu.uit.devorbit_api.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.uit.devorbit_api.dto.student.StudentBookmarkRequest;
@@ -37,15 +38,14 @@ public class StudentBookmarkService {
         StudentUser student = studentUserRepository.findByStudentCode(studentCode)
                 .orElseThrow(() -> new NotFoundException("Student not found"));
 
-        if (bookmarkRepository.existsByStudentIdAndTargetTypeAndTargetId(
-                student.getId(), request.targetType(), request.targetId())) {
-            throw new BadRequestException("Bookmark already exists");
-        }
-
-        // Validate target type
-        String type = request.targetType().toUpperCase();
+        String type = request.targetType().trim().toUpperCase();
         if (!"COURSE".equals(type) && !"REPO".equals(type)) {
             throw new BadRequestException("targetType must be COURSE or REPO");
+        }
+
+        if (bookmarkRepository.existsByStudentIdAndTargetTypeAndTargetId(
+                student.getId(), type, request.targetId())) {
+            throw new BadRequestException("Bookmark already exists");
         }
 
         StudentBookmark bookmark = StudentBookmark.builder()
@@ -58,7 +58,11 @@ public class StudentBookmarkService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        bookmark = bookmarkRepository.save(bookmark);
+        try {
+            bookmark = bookmarkRepository.save(bookmark);
+        } catch (DataIntegrityViolationException e) {
+            throw new BadRequestException("Bookmark already exists");
+        }
         return toResponse(bookmark);
     }
 

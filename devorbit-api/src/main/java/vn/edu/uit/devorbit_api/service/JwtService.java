@@ -47,15 +47,25 @@ public class JwtService {
     }
 
     public String generateToken(String username, String tokenType) {
+        return generateToken(username, tokenType, null);
+    }
+
+    public String generateToken(String username, String tokenType, Integer tokenVersion) {
         long now = System.currentTimeMillis();
-        return Jwts.builder()
+        var builder = Jwts.builder()
                 .id(UUID.randomUUID().toString())
                 .subject(username)
                 .claim("type", tokenType)
                 .issuedAt(new Date(now))
-                .expiration(new Date(now + jwtProperties.expirationMinutes() * 60 * 1000))
-                .signWith(secretKey)
-                .compact();
+                .expiration(new Date(now + jwtProperties.expirationMinutes() * 60 * 1000));
+        if (tokenVersion != null) {
+            builder.claim("tokenVersion", tokenVersion);
+        }
+        return builder.signWith(secretKey).compact();
+    }
+
+    public String extractJti(String token) {
+        return parseToken(token).getId();
     }
 
     public String extractJti(String token) {
@@ -70,6 +80,19 @@ public class JwtService {
         Claims claims = parseToken(token);
         String type = claims.get("type", String.class);
         return type != null ? type : "USER";
+    }
+
+    public int extractTokenVersion(String token) {
+        Claims claims = parseToken(token);
+        Object version = claims.get("tokenVersion");
+        if (version instanceof Number number) {
+            return number.intValue();
+        }
+        return 0;
+    }
+
+    public Instant extractExpiration(String token) {
+        return parseToken(token).getExpiration().toInstant();
     }
 
     public Instant extractExpiration(String token) {

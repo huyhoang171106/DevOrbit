@@ -4,6 +4,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+<<<<<<< HEAD
+=======
+import org.springframework.dao.DataIntegrityViolationException;
+>>>>>>> master
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,7 +73,11 @@ public class StudentAuthService {
         }
 
         loginRateLimitService.onSuccess(request.studentCode(), ip);
+<<<<<<< HEAD
         String token = jwtService.generateToken(student.getStudentCode(), "STUDENT");
+=======
+        String token = jwtService.generateToken(student.getStudentCode(), "STUDENT", student.getTokenVersion());
+>>>>>>> master
         return new StudentAuthResponse(token, student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail(), student.getAvatar());
     }
 
@@ -83,7 +91,10 @@ public class StudentAuthService {
 
     @Transactional
     public StudentProfileResponse register(StudentRegisterRequest request) {
-        var existingByCode = studentUserRepository.findByStudentCode(request.studentCode());
+        String studentCode = request.studentCode().trim();
+        String email = request.email().trim().toLowerCase();
+
+        var existingByCode = studentUserRepository.findByStudentCode(studentCode);
         if (existingByCode.isPresent()) {
             if (existingByCode.get().isActive()) {
                 throw new BadRequestException("Student code already exists");
@@ -93,7 +104,7 @@ public class StudentAuthService {
             studentUserRepository.flush();
         }
 
-        var existingByEmail = studentUserRepository.findByEmail(request.email());
+        var existingByEmail = studentUserRepository.findByEmail(email);
         if (existingByEmail.isPresent()) {
             if (existingByEmail.get().isActive()) {
                 throw new BadRequestException("Email already exists");
@@ -104,13 +115,20 @@ public class StudentAuthService {
         }
 
         StudentUser student = studentUserRepository.save(StudentUser.builder()
-                .studentCode(request.studentCode().trim())
+                .studentCode(studentCode)
                 .fullName(request.fullName().trim())
-                .email(request.email().trim().toLowerCase())
+                .email(email)
                 .passwordHash(passwordEncoder.encode(request.password()))
                 .active(false)
                 .emailVerified(false)
                 .build());
+        try {
+            studentUserRepository.flush();
+        } catch (DataIntegrityViolationException e) {
+            throw new BadRequestException("Student code or email already exists");
+        }
+
+        otpRateLimitService.check("EMAIL_VERIFICATION:" + student.getEmail());
 
         otpRateLimitService.check("EMAIL_VERIFICATION:" + student.getEmail());
 
@@ -154,7 +172,11 @@ public class StudentAuthService {
             "/admin/students"
         ));
 
+<<<<<<< HEAD
         String token = jwtService.generateToken(student.getStudentCode(), "STUDENT");
+=======
+        String token = jwtService.generateToken(student.getStudentCode(), "STUDENT", student.getTokenVersion());
+>>>>>>> master
         return new StudentAuthResponse(token, student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail(), student.getAvatar());
     }
 
@@ -162,9 +184,13 @@ public class StudentAuthService {
 
     @Transactional
     public void resendOtp(String email, OtpPurpose purpose) {
-        otpRateLimitService.check("RESEND_OTP:" + email.trim().toLowerCase());
+        if (email == null || email.isBlank()) {
+            throw new BadRequestException("Email is required");
+        }
+        String normalizedEmail = email.trim().toLowerCase();
+        otpRateLimitService.check("RESEND_OTP:" + normalizedEmail);
 
-        StudentUser student = studentUserRepository.findByEmail(email.trim().toLowerCase())
+        StudentUser student = studentUserRepository.findByEmail(normalizedEmail)
                 .orElseThrow(() -> new BadRequestException("Không thể gửi lại mã OTP. Vui lòng thử lại."));
 
         otpRateLimitService.check(purpose + ":" + student.getEmail());
@@ -217,7 +243,9 @@ public class StudentAuthService {
 
     @Transactional
     public StudentAuthResponse resetPassword(ResetPasswordRequest request) {
-        String email = request.email().trim().toLowerCase();
+        StudentUser student = findPasswordResetStudent(request);
+        String email = student.getEmail();
+
         Otp otp = otpRepository.findTopByEmailAndPurposeOrderByCreatedAtDesc(email, OtpPurpose.PASSWORD_RESET)
                 .orElseThrow(() -> new BadRequestException("Không tìm thấy mã OTP đặt lại mật khẩu. Vui lòng yêu cầu lại."));
 
@@ -229,21 +257,42 @@ public class StudentAuthService {
             throw new BadRequestException("Mã OTP không đúng.");
         }
 
-        StudentUser student = studentUserRepository.findByEmail(email)
-                .orElseThrow(() -> new BadRequestException("Người dùng không tồn tại."));
+        if (!student.isActive()) {
+            throw new BadRequestException("Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.");
+        }
 
         if (!student.isActive()) {
             throw new BadRequestException("Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.");
         }
 
         student.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        student.setTokenVersion(student.getTokenVersion() + 1);
         studentUserRepository.save(student);
         otpRepository.delete(otp);
 
+<<<<<<< HEAD
         String token = jwtService.generateToken(student.getStudentCode(), "STUDENT");
         return new StudentAuthResponse(token, student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail(), student.getAvatar());
     }
 
+=======
+        String token = jwtService.generateToken(student.getStudentCode(), "STUDENT", student.getTokenVersion());
+        return new StudentAuthResponse(token, student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail(), student.getAvatar());
+    }
+
+    private StudentUser findPasswordResetStudent(ResetPasswordRequest request) {
+        if (request.studentCode() != null && !request.studentCode().isBlank()) {
+            return studentUserRepository.findByStudentCode(request.studentCode().trim())
+                    .orElseThrow(() -> new BadRequestException("Không tìm thấy mã OTP đặt lại mật khẩu. Vui lòng yêu cầu lại."));
+        }
+        if (request.email() != null && !request.email().isBlank()) {
+            return studentUserRepository.findByEmail(request.email().trim().toLowerCase())
+                    .orElseThrow(() -> new BadRequestException("Không tìm thấy mã OTP đặt lại mật khẩu. Vui lòng yêu cầu lại."));
+        }
+        throw new BadRequestException("Email hoặc tên đăng nhập là bắt buộc");
+    }
+
+>>>>>>> master
     // ───────── UPDATE AVATAR ─────────
 
     @Transactional

@@ -6,6 +6,7 @@ data class StudentInfo(val studentCode: String, val fullName: String, val email:
 interface AuthRepository {
     suspend fun register(studentCode: String, fullName: String, email: String, password: String): Result<StudentInfo>
     suspend fun verifyOtp(email: String, otpCode: String): Result<AuthResult>
+    suspend fun resendOtp(email: String): Result<Unit>
     suspend fun login(studentCode: String, password: String): Result<AuthResult>
     suspend fun getProfile(): Result<StudentInfo>
     suspend fun getToken(): String?

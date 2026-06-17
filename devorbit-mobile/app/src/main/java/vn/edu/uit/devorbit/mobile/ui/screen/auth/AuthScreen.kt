@@ -62,6 +62,7 @@ fun AuthScreen(
                 onFieldChange = viewModel::updateRegisterField,
                 onRegister = viewModel::register,
                 onVerifyOtp = viewModel::verifyOtp,
+                onResendOtp = viewModel::resendOtp,
                 onSwitchToLogin = { showRegister = false; viewModel.switchToLogin() }
             )
         } else {
@@ -180,19 +181,20 @@ private fun RegisterContent(
     onFieldChange: (String, String) -> Unit,
     onRegister: () -> Unit,
     onVerifyOtp: () -> Unit,
+    onResendOtp: () -> Unit,
     onSwitchToLogin: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
 
     if (state.isAwaitingOtp) {
         Text(
-            "Xác thực email",
+            "Xac thuc email",
             style = CosmicTheme.typography.display,
             color = CosmicTheme.colors.plasma
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            "Nhập mã OTP đã gửi đến ${state.registeredEmail.ifBlank { state.email }}",
+            "Nhap ma OTP da gui den ${state.registeredEmail.ifBlank { state.email }}",
             style = CosmicTheme.typography.body,
             color = CosmicTheme.colors.textSecondary,
             textAlign = TextAlign.Center
@@ -215,12 +217,16 @@ private fun RegisterContent(
             Spacer(modifier = Modifier.height(12.dp))
             Text(state.error, color = CosmicTheme.colors.supernova, style = CosmicTheme.typography.label)
         }
+        if (state.message != null) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(state.message, color = CosmicTheme.colors.nebula, style = CosmicTheme.typography.label)
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
             onClick = onVerifyOtp,
-            enabled = !state.isLoading,
+            enabled = !state.isLoading && state.otpCode.length == 6,
             modifier = Modifier.fillMaxWidth().height(50.dp),
             colors = ButtonDefaults.buttonColors(containerColor = CosmicTheme.colors.plasma)
         ) {
@@ -231,13 +237,21 @@ private fun RegisterContent(
                     strokeWidth = 2.dp
                 )
             } else {
-                Text("Xác thực", style = CosmicTheme.typography.body, fontWeight = FontWeight.Bold)
+                Text("Xac thuc", style = CosmicTheme.typography.body, fontWeight = FontWeight.Bold)
             }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+        TextButton(
+            onClick = onResendOtp,
+            enabled = !state.isLoading
+        ) {
+            Text("Gui lai ma OTP", color = CosmicTheme.colors.plasma)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
         TextButton(onClick = onSwitchToLogin) {
-            Text("Quay lại đăng nhập", color = CosmicTheme.colors.plasma)
+            Text("Quay lai dang nhap", color = CosmicTheme.colors.plasma)
         }
         return
     }

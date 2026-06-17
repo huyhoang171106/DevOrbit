@@ -7,11 +7,11 @@ internal fun RepoSummary.toRecentRepo(): RecentRepo {
     return RecentRepo(
         id = id,
         name = displayName,
-        description = description,
-        githubUrl = githubUrl,
-        language = primaryLanguage,
+        description = safeDescription,
+        githubUrl = safeGithubUrl,
+        language = safePrimaryLanguage,
         stars = stars ?: 0,
         courseName = courseName,
-        techStacks = techStacks.map { it.name }.filter { it.isNotBlank() }
+        techStacks = safeTechStacks.map { it.name }.filter { it.isNotBlank() }
     )
 }

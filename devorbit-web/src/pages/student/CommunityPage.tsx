@@ -374,6 +374,7 @@ function ChatArea({
             }
 
             const isMine = currentUserId !== null && msg.studentId === currentUserId
+            const isDeleted = msg.content === DELETED_NOTICE
             const msgDate = new Date(msg.createdAt)
             const timeLabel = formatTime(msgDate)
 
@@ -399,7 +400,7 @@ function ChatArea({
                       <span className="text-[10px] text-orbit-text-muted">{timeLabel}</span>
                     </div>
                   )}
-                  <p className={`text-[14px] leading-relaxed whitespace-pre-wrap break-words ${isMine ? 'bg-orbit-accent/20 text-orbit-text border border-orbit-accent/20 rounded-2xl px-3 py-2 max-w-[75%] text-right' : 'text-orbit-text-secondary'}`}>
+                  <p className={`text-[14px] leading-relaxed whitespace-pre-wrap break-words ${isDeleted ? 'bg-transparent text-orbit-text-muted border border-dashed border-gray-500/30 rounded-2xl px-3 py-2' : isMine ? 'bg-orbit-accent/20 text-orbit-text border border-orbit-accent/20 rounded-2xl px-3 py-2 max-w-[75%] text-right' : 'text-orbit-text-secondary'}`}>
                     {msg.content}
                   </p>
                   {isMine && (
@@ -553,6 +554,13 @@ export function CommunityPage() {
       )
       const tp = firstPage.totalPages ?? 1
 
+      if (cached?.totalPages === tp) {
+        // Cache is still fresh, no need to re-fetch
+        setMessagesLoading(false)
+        setMessagesFetching(false)
+        return
+      }
+
       let msgs: ChatMessageResponse[]
       if (tp <= 1) {
         msgs = [...firstPage.content].reverse()
@@ -583,9 +591,6 @@ export function CommunityPage() {
     const current = activeChannelRef.current
     if (current && msg.channelId === current.id) {
       setAllMessages((prev) => {
-        if (msg.content === DELETED_NOTICE) {
-          return prev.filter((m) => m.id !== msg.id)
-        }
         const idx = prev.findIndex((m) => m.id === msg.id)
         if (idx >= 0) {
           const next = [...prev]
@@ -594,7 +599,6 @@ export function CommunityPage() {
         }
         return [...prev, msg]
       })
-      setCachedMessages(current.id, allMessagesRef.current, totalPagesRef.current)
     }
   }, [])
 

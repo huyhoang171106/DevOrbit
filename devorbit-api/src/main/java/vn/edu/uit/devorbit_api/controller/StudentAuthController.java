@@ -73,6 +73,9 @@ public class StudentAuthController {
     @PostMapping("/resend-otp")
     public Map<String, String> resendOtp(@RequestBody Map<String, String> body) {
         String email = body.get("email");
+        if (email == null || email.isBlank()) {
+            throw new BadRequestException("Email is required");
+        }
         String purposeStr = body.getOrDefault("purpose", "EMAIL_VERIFICATION");
         OtpPurpose purpose;
         try {

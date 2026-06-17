@@ -34,8 +34,12 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun verifyOtp(email: String, otpCode: String): Result<AuthResult> = runCatching {
-        val response = apiService.verifyOtp(mapOf("email" to email, "otpCode" to otpCode))
-        val token = response["token"] as? String ?: throw Exception("OTP verification failed")
+        val response = try {
+            apiService.verifyOtp(mapOf("email" to email, "otpCode" to otpCode))
+        } catch (e: Exception) {
+            throw AuthErrorMessageParser.exceptionFrom(e, "OTP verification failed")
+        }
+        val token = AuthErrorMessageParser.requireToken(response, "OTP verification failed")
         val studentCode = response["studentCode"] as? String ?: ""
         val fullName = response["fullName"] as? String ?: ""
         val verifiedEmail = response["email"] as? String ?: email
@@ -43,6 +47,11 @@ class AuthRepositoryImpl @Inject constructor(
         settingsDataStore.saveStudentName(fullName)
         settingsDataStore.saveStudentCode(studentCode)
         AuthResult(token, studentCode, fullName, verifiedEmail)
+    }
+
+    override suspend fun resendOtp(email: String): Result<Unit> = runCatching {
+        apiService.resendOtp(mapOf("email" to email))
+        Unit
     }
 
     override suspend fun login(studentCode: String, password: String): Result<AuthResult> = runCatching {

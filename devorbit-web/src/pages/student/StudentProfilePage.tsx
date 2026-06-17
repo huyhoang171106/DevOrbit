@@ -32,7 +32,10 @@ export function StudentProfilePage() {
   const [passwordError, setPasswordError] = useState('')
 
   useEffect(() => {
-    if (!isStudentAuthenticated()) return
+    if (!isStudentAuthenticated()) {
+      setLoading(false)
+      return
+    }
     Promise.all([
       apiStudentGet<StudentProfileResponse>('/api/student/me'),
       apiStudentGet<StudentBookmark[]>('/api/student/bookmarks'),
@@ -94,20 +97,7 @@ export function StudentProfilePage() {
       const formData = new FormData()
       formData.append('file', file)
       
-      const token = localStorage.getItem('devorbit-student-token')
-      const response = await fetch('/api/student/me/avatar/upload', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: formData,
-      })
-      
-      if (!response.ok) {
-        throw new Error(`Tải lên thất bại (${response.status})`)
-      }
-      
-      const updated = await response.json()
+      const updated = await apiStudentUpload<StudentProfileResponse>('/api/student/me/avatar/upload', formData)
       setProfile(updated)
       setPreviewUrl(null)
       setUploadSuccess(true)

@@ -8,6 +8,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.edu.uit.devorbit_api.dto.student.ChangePasswordRequest;
 import vn.edu.uit.devorbit_api.dto.student.ForgotPasswordRequest;
 import vn.edu.uit.devorbit_api.dto.student.OtpVerificationRequest;
 import vn.edu.uit.devorbit_api.dto.student.ResetPasswordRequest;
@@ -16,6 +17,7 @@ import vn.edu.uit.devorbit_api.dto.student.StudentLoginRequest;
 import vn.edu.uit.devorbit_api.dto.student.StudentProfileResponse;
 import vn.edu.uit.devorbit_api.dto.student.StudentRegisterRequest;
 import vn.edu.uit.devorbit_api.dto.student.UpdateAvatarRequest;
+import vn.edu.uit.devorbit_api.dto.student.UpdateFullNameRequest;
 import vn.edu.uit.devorbit_api.entity.Otp;
 import vn.edu.uit.devorbit_api.entity.OtpPurpose;
 import vn.edu.uit.devorbit_api.entity.StudentUser;
@@ -279,6 +281,32 @@ public class StudentAuthService {
         student.setAvatar(request.avatar());
         studentUserRepository.save(student);
         return new StudentProfileResponse(student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail(), student.getAvatar());
+    }
+
+    // ───────── UPDATE FULL NAME ─────────
+
+    @Transactional
+    public StudentProfileResponse updateFullName(String studentCode, UpdateFullNameRequest request) {
+        StudentUser student = studentUserRepository.findByStudentCode(studentCode)
+                .orElseThrow(() -> new UnauthorizedException("Student not found"));
+        student.setFullName(request.fullName().trim());
+        studentUserRepository.save(student);
+        return new StudentProfileResponse(student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail(), student.getAvatar());
+    }
+
+    // ───────── CHANGE PASSWORD ─────────
+
+    @Transactional
+    public void changePassword(String studentCode, ChangePasswordRequest request) {
+        StudentUser student = studentUserRepository.findByStudentCode(studentCode)
+                .orElseThrow(() -> new UnauthorizedException("Student not found"));
+
+        if (!passwordEncoder.matches(request.currentPassword(), student.getPasswordHash())) {
+            throw new BadRequestException("Mật khẩu hiện tại không đúng");
+        }
+
+        student.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        studentUserRepository.save(student);
     }
 
     // ───────── LOGOUT ─────────

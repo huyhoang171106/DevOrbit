@@ -73,15 +73,17 @@ fun RepoListSection(
                 border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
+                    val description = repo.safeDescription
+                    val primaryLanguage = repo.safePrimaryLanguage
                     Text(
                         text = repo.displayName,
                         style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
                         color = CosmicTheme.colors.textPrimary
                     )
-                    if (repo.description.isNotBlank()) {
+                    if (description.isNotBlank()) {
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = repo.description,
+                            text = description,
                             style = CosmicTheme.typography.label,
                             color = CosmicTheme.colors.textSecondary,
                             maxLines = 2
@@ -91,20 +93,20 @@ fun RepoListSection(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.padding(top = 10.dp)
                     ) {
-                        if (repo.primaryLanguage.isNotBlank()) {
+                        if (primaryLanguage.isNotBlank()) {
                             Surface(
                                 shape = RoundedCornerShape(6.dp),
                                 color = CosmicTheme.colors.plasma.copy(alpha = 0.12f)
                             ) {
                                 Text(
-                                    text = repo.primaryLanguage,
+                                    text = primaryLanguage,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
                                     style = CosmicTheme.typography.label,
                                     color = CosmicTheme.colors.plasma
                                 )
                             }
                         }
-                        repo.techStacks.take(2).forEach { stack ->
+                        repo.safeTechStacks.take(2).forEach { stack ->
                             Surface(
                                 shape = RoundedCornerShape(6.dp),
                                 color = CosmicTheme.colors.nebula,

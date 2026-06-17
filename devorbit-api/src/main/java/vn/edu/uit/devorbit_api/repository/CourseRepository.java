@@ -86,4 +86,17 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             ORDER BY COUNT(r) DESC
             """)
     List<CourseSummaryResponse> findAllWithRepoCountSortedByRepoCount();
+
+    /** Get active courses with their GitHub repo count, sorted by most repos first. */
+    @Query("""
+            SELECT new vn.edu.uit.devorbit_api.dto.publicapi.CourseSummaryResponse(
+                c.id, c.maMH, c.tenMH, c.description, COUNT(r), c.semester, c.soTC, c.loaiMonHoc, c.managementUnit
+            )
+            FROM Course c
+            LEFT JOIN GithubRepo r ON r.course.id = c.id AND r.active = true
+            WHERE c.isOpen = true
+            GROUP BY c.id, c.maMH, c.tenMH, c.description, c.semester, c.soTC, c.loaiMonHoc, c.managementUnit
+            ORDER BY COUNT(r) DESC
+            """)
+    List<CourseSummaryResponse> findActiveWithRepoCountSortedByRepoCount();
 }

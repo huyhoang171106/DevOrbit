@@ -1,17 +1,18 @@
-﻿---
+---
 name: Bug Report
-about: Report a bug to help us improve DevOrbit
-title: "[BUG] "
+about: Create a report to help us improve and fix errors.
+title: 'bug: '
 labels: bug
 assignees: ''
 ---
 
-## Description
+## Bug Description
 
-<!-- Provide a clear and concise description of the bug. -->
+Provide a clear and concise description of the bug.
 
 ## Steps to Reproduce
 
+Steps to reproduce the behavior:
 1. Go to '...'
 2. Click on '...'
 3. Scroll down to '...'
@@ -19,21 +20,35 @@ assignees: ''
 
 ## Expected Behavior
 
-<!-- Describe what you expected to happen. -->
+A clear and concise description of what you expected to happen.
 
 ## Actual Behavior
 
-<!-- Describe what actually happened. Include error messages, screenshots, or logs if applicable. -->
+Describe what actually happened (e.g., error message, page crash).
 
-## Environment
+## Logs and Tracebacks
 
-- **OS**: <!-- e.g., Windows 11, macOS 15, Ubuntu 24.04 -->
-- **Browser**: <!-- e.g., Chrome 125, Firefox 128, Safari 18 (if web-related) -->
-- **Java version**: <!-- e.g., 21.0.x -->
-- **Node version**: <!-- e.g., 20.x.x -->
-- **Device**: <!-- e.g., Pixel 8, iPhone 15 (if mobile-related) -->
-- **DevOrbit branch/commit**: <!-- e.g., master @ abc1234 -->
+Paste any error logs or console stack traces here. Ensure all passwords, tokens, API keys, and connection strings are redacted before posting.
 
-## Additional Context
+```text
+Insert logs here
+```
 
-<!-- Add any other context about the problem here. -->
+## Environment Information
+
+- Operating System: [e.g. Windows, macOS, Linux]
+- Browser: [e.g. Chrome, Firefox, Safari] (for frontend issues)
+- Java Version: [e.g. OpenJDK 21] (for backend issues)
+- Node.js Version: [e.g. v20.11.0] (for frontend issues)
+- Commit SHA or Branch Name: [e.g. master, feature/gpa-calculator]
+
+## Screenshots
+
+If applicable, add screenshots to help explain the problem.
+
+## Issue Checklist
+
+Confirm the following checks:
+- [ ] I have searched the existing issues to ensure this has not been reported already.
+- [ ] I have verified that this occurs on the latest commit of the target branch.
+- [ ] I have removed all passwords, tokens, credentials, and connection strings from the logs and text.

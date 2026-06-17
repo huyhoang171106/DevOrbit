@@ -286,6 +286,7 @@ export type ChatMessageResponse = {
   senderAvatar: string | null
   content: string
   createdAt: string
+  sending?: boolean
 }
 
 export type OnlineMemberResponse = {

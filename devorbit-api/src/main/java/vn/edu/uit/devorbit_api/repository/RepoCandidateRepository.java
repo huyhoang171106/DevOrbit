@@ -15,6 +15,8 @@ public interface RepoCandidateRepository extends JpaRepository<RepoCandidate, Lo
     @EntityGraph(attributePaths = {"course"})
     List<RepoCandidate> findByStatus(RepoCandidateStatus status);
     List<RepoCandidate> findTop10ByOrderByIdDesc();
+    @EntityGraph(attributePaths = {"course"})
+    List<RepoCandidate> findTop10ByStatusOrderByIdDesc(RepoCandidateStatus status);
 
     void deleteByCourseId(Long courseId);
 

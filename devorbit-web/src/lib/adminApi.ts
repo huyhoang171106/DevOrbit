@@ -126,6 +126,10 @@ export const adminApi = {
     apiAdminPut<RepoSummary>(`/api/admin/repos/${id}`, token, data),
   deleteApprovedRepo: (token: string, id: number) =>
     apiAdminDelete(`/api/admin/repos/${id}`, token),
+  evaluateAllRepos: (token: string) =>
+    apiAdminPost<void>('/api/admin/repos/evaluate-all', token, {}),
+  syncApprovedRepo: (token: string, id: number) =>
+    apiAdminPost<RepoSummary>(`/api/admin/repos/${id}/sync`, token, {}),
 
   // --- Relationships ---
   getRelationships: (token: string) =>

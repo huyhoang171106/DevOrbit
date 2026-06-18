@@ -6,6 +6,9 @@ import vn.edu.uit.devorbit_api.entity.CourseReference;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * COURSE REFERENCE REPOSITORY = textbook/reference citations from syllabi.
+ */
 @Repository
 public interface CourseReferenceRepository extends JpaRepository<CourseReference, UUID> {
     List<CourseReference> findByCourseCode(String courseCode);

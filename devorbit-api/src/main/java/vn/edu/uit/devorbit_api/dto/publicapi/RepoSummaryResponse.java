@@ -11,6 +11,13 @@ import java.util.List;
  *   GET /api/courses/{courseId}/repos
  *   GET /api/admin/repos
  *   nested inside CourseDetailResponse.repos
+ *
+ * @JsonInclude(NON_NULL): optional fields like readmeExcerpt, fileTree,
+ * courseName only appear in JSON if they have a value. This keeps the
+ * response payload small when those fields haven't been fetched yet.
+ *
+ * techStacks includes full TechStackResponse objects (not just names)
+ * so the frontend gets display-ready data without a second call.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record RepoSummaryResponse(
@@ -28,5 +35,11 @@ public record RepoSummaryResponse(
     String fileTree,
     Boolean hasReadme,
     String lastPushedAt,
-    String approvedAt
+    String approvedAt,
+    String repoType,
+    String usefulnessRating,
+    Integer usefulnessScore,
+    String readyToUseLevel,
+    Integer reviewCount,
+    Double averageRating
 ) {}

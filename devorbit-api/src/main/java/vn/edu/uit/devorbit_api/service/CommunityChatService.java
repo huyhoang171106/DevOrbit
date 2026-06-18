@@ -18,6 +18,7 @@ import vn.edu.uit.devorbit_api.repository.*;
 import java.text.Normalizer;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 @RequiredArgsConstructor
@@ -31,16 +32,18 @@ public class CommunityChatService {
     private final CourseRepository courseRepository;
     private final TechStackRepository techStackRepository;
 
-    @Transactional
+    private final AtomicBoolean syncDone = new AtomicBoolean(false);
+
     public List<ChatChannelResponse> getChannels() {
-        syncChannels();
+        if (syncDone.compareAndSet(false, true)) {
+            syncChannels();
+        }
         return channelRepository.findByActiveTrueOrderByTypeAscNameAsc()
                 .stream()
                 .map(this::toChannelResponse)
                 .toList();
     }
 
-    @Transactional
     public void syncChannels() {
         java.util.List<ChatChannel> allChannels = channelRepository.findAll();
         java.util.Map<String, ChatChannel> channelMap = new java.util.HashMap<>();

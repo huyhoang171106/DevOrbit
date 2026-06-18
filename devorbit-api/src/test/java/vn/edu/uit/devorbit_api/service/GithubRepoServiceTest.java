@@ -7,6 +7,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import vn.edu.uit.devorbit_api.dto.publicapi.RepoSummaryResponse;
 import vn.edu.uit.devorbit_api.entity.GithubRepo;
 import vn.edu.uit.devorbit_api.repository.*;
+import vn.edu.uit.devorbit_api.service.ai.RepoEvaluationService;
 
 import java.util.Optional;
 
@@ -40,6 +41,9 @@ class GithubRepoServiceTest {
     @Mock
     private RepoReviewRepository repoReviewRepository;
 
+    @Mock
+    private RepoEvaluationService repoEvaluationService;
+
     @Test
     void refreshesMissingLastPushedAtWhenRepoDetailIsOpened() {
         GithubRepo repo = new GithubRepo();
@@ -60,7 +64,8 @@ class GithubRepoServiceTest {
             studentBookmarkRepository,
             noteRepository,
             repoVoteRepository,
-            repoReviewRepository
+            repoReviewRepository,
+            repoEvaluationService
         );
         org.springframework.test.util.ReflectionTestUtils.setField(service, "self", service);
 

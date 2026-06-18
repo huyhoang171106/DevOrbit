@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import vn.edu.uit.devorbit_api.dto.publicapi.RepoSummaryResponse;
-import vn.edu.uit.devorbit_api.dto.publicapi.TechStackResponse;
 import vn.edu.uit.devorbit_api.repository.GithubRepoRepository;
 import vn.edu.uit.devorbit_api.repository.TechStackRepository;
 import vn.edu.uit.devorbit_api.service.GithubRepoService;
@@ -39,24 +38,7 @@ public class PublicDiscoveryController {
     @GetMapping("/recent-repos")
     public List<RepoSummaryResponse> getRecentRepos() {
         return repoRepository.findTop10ByActiveTrueOrderByIdDesc().stream()
-                .map(repo -> new RepoSummaryResponse(
-                        repo.getId(),
-                        repo.getDisplayName(),
-                        repo.getDescription(),
-                        repo.getGithubUrl(),
-                        repo.getPrimaryLanguage(),
-                        repo.getStars() != null ? repo.getStars() : 0,
-                        repo.getTechStacks().stream()
-                                .map(ts -> new TechStackResponse(ts.getName()))
-                                .toList(),
-                        repo.getCourse() != null ? repo.getCourse().getId() : null,
-                        repo.getCourse() != null ? repo.getCourse().getMaMH() : null,
-                        repo.getCourse() != null ? repo.getCourse().getTenMH() : null,
-                        repo.getReadmeExcerpt(),
-                        repo.getFileTree(),
-                        repo.getHasReadme(),
-                        repo.getLastPushedAt(),
-                        repo.getApprovedAt() != null ? repo.getApprovedAt().toString() : null))
+                .map(githubRepoService::mapToRepoSummary)
                 .toList();
     }
 

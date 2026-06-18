@@ -4,18 +4,35 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * DTO for a photobooth frame configuration.
+ * Used in the photobooth feature (e.g. GET /api/photobooth/frames, admin CRUD).
+ * Each frame defines a visual template with slots for photos, overlay, filter, and background color.
+ *
+ * <p>Example usage: a graduation photobooth frame with 2 photo slots, a "sepia" filter,
+ * and a school logo overlay.</p>
+ */
 public class PhotoboothFrameDTO {
 
     private static final ObjectMapper SHARED_MAPPER = new ObjectMapper();
 
+    /** Unique identifier for this frame template. */
     private String frameId;
+    /** Internal code name (e.g. "grad-2026"). */
     private String name;
+    /** Human-readable name shown to users (e.g. "Graduation 2026"). */
     private String displayName;
+    /** Number of photo slots in this frame. */
     private Integer photoCount;
+    /** Description of the frame template. */
     private String description;
-    private String slots; // Raw JSON string (e.g. "[{\"id\":\"s1\",...}]")
+    /** Raw JSON string defining photo slot positions (e.g. "[{\"id\":\"s1\",...}]"). */
+    private String slots;
+    /** URL/path to the overlay image placed on top of the photos (e.g. a decorative frame border). */
     private String overlayImageUrl;
+    /** CSS filter name applied to the final composite (e.g. "sepia", "grayscale", null = none). */
     private String filter;
+    /** Background color behind the photos (hex code like "#FFFFFF" or named color). */
     private String backgroundColor;
 
     public PhotoboothFrameDTO() {}

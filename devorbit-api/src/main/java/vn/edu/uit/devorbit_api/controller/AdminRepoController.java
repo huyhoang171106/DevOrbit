@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import vn.edu.uit.devorbit_api.dto.admin.ApprovedRepoUpdateRequest;
 import vn.edu.uit.devorbit_api.dto.publicapi.RepoSummaryResponse;
 import vn.edu.uit.devorbit_api.service.GithubRepoService;
+import vn.edu.uit.devorbit_api.service.ai.RepoEvaluationService;
 
 import java.util.List;
 
@@ -21,6 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminRepoController {
     private final GithubRepoService githubRepoService;
+    private final RepoEvaluationService repoEvaluationService;
 
     /** List ALL approved repos */
     @GetMapping
@@ -43,4 +45,15 @@ public class AdminRepoController {
         githubRepoService.deleteApprovedRepo(repoId);
     }
 
+    /** Manually trigger rule-based evaluation of all repositories */
+    @PostMapping("/evaluate-all")
+    public void evaluateAll() {
+        repoEvaluationService.evaluateAndSaveAll();
+    }
+
+    /** Re-sync metadata and re-evaluate a specific approved repo from GitHub */
+    @PostMapping("/{repoId}/sync")
+    public RepoSummaryResponse syncRepo(@PathVariable Long repoId) {
+        return githubRepoService.syncApprovedRepo(repoId);
+    }
 }

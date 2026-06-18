@@ -25,6 +25,38 @@ export function RepoApprovedTab() {
   const [editingRepo, setEditingRepo] = useState<RepoSummary | null>(null)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [evaluating, setEvaluating] = useState(false)
+  const [syncingId, setSyncingId] = useState<number | null>(null)
+
+  const handleEvaluateAll = async () => {
+    if (!token) return
+    setEvaluating(true)
+    setActionError(null)
+    try {
+      await adminApi.evaluateAllRepos(token)
+      alert('Đã chạy đánh giá lại toàn bộ repository thành công!')
+      refetch()
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : 'Đánh giá thất bại')
+    } finally {
+      setEvaluating(false)
+    }
+  }
+
+  const handleSync = async (id: number) => {
+    if (!token) return
+    setSyncingId(id)
+    setActionError(null)
+    try {
+      await adminApi.syncApprovedRepo(token, id)
+      alert('Đã đồng bộ và đánh giá lại repo thành công!')
+      refetch()
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : 'Đồng bộ thất bại')
+    } finally {
+      setSyncingId(null)
+    }
+  }
 
   const { data: repos, loading, error, refetch } = useAdminFetch(
     (t) => adminApi.getApprovedRepos(t),
@@ -82,20 +114,29 @@ export function RepoApprovedTab() {
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-4">
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="input-field flex-1"
-          placeholder="Tìm theo tên repo..."
-        />
-        <select value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)} className="input-field w-auto">
-          <option value="newest">Mới nhất</option>
-          <option value="oldest">Cũ nhất</option>
-          <option value="alpha-asc">A-Z</option>
-          <option value="alpha-desc">Z-A</option>
-        </select>
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div className="flex items-center gap-3 flex-1">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="input-field flex-1"
+            placeholder="Tìm theo tên repo..."
+          />
+          <select value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)} className="input-field w-auto">
+            <option value="newest">Mới nhất</option>
+            <option value="oldest">Cũ nhất</option>
+            <option value="alpha-asc">A-Z</option>
+            <option value="alpha-desc">Z-A</option>
+          </select>
+        </div>
+        <button
+          onClick={handleEvaluateAll}
+          disabled={evaluating}
+          className="btn-primary text-xs shrink-0 cursor-pointer"
+        >
+          {evaluating ? 'Đang đánh giá...' : 'Đánh giá lại toàn bộ'}
+        </button>
       </div>
 
       <div className="glass-card overflow-hidden border border-orbit-border">
@@ -132,6 +173,13 @@ export function RepoApprovedTab() {
                 <td className="px-4 py-3 text-sm text-center">
                   <div className="flex justify-center gap-2">
                     <button onClick={() => handleEdit(repo)} className="btn-ghost text-xs whitespace-nowrap">Sửa</button>
+                    <button
+                      onClick={() => handleSync(repo.id)}
+                      disabled={syncingId === repo.id}
+                      className="btn-ghost text-xs whitespace-nowrap text-orbit-accent"
+                    >
+                      {syncingId === repo.id ? 'Đang đồng bộ...' : 'Đồng bộ'}
+                    </button>
                     <button onClick={() => handleDeactivate(repo.id)} className="btn-ghost text-xs whitespace-nowrap text-red-400">Vô hiệu</button>
                   </div>
                 </td>

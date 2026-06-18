@@ -3,6 +3,18 @@ package vn.edu.uit.devorbit_api.dto.publicapi;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
+/**
+ * ROADMAP RECOMMENDATION RESPONSE = AI-generated 4-year study plan.
+ *
+ * Main output of the graduation roadmap feature:
+ *   summary            → AI-written overview
+ *   recommendedCourses → ordered list semester-by-semester
+ *   graduationTracks   → specialization tracks with AI recommendation
+ *   electivePools      → elective groups with AI-ranked picks
+ *
+ * Each elective candidate has a "score" (relevance) and
+ * "isSelected" flag (AI-picked best choices).
+ */
 public record RoadmapRecommendationResponse(
     String summary,
     List<CourseRecommendation> recommendedCourses,
@@ -13,10 +25,10 @@ public record RoadmapRecommendationResponse(
         Long courseId,
         String courseCode,
         String courseName,
-        String reasoning,
+        String reasoning,       // Why the AI recommends this
         String description,
-        boolean isMandatory,
-        Integer semester,
+        boolean isMandatory,    // Required for graduation?
+        Integer semester,       // When to take it
         int credits
     ) {}
 
@@ -34,8 +46,8 @@ public record RoadmapRecommendationResponse(
     public record ElectivePoolCandidates(
         String poolId,
         String poolName,
-        int targetTC,
-        int currentTC,
+        int targetTC,               // Target credits needed
+        int currentTC,              // Current earned credits
         List<ElectiveCandidate> candidates
     ) {}
 
@@ -44,8 +56,8 @@ public record RoadmapRecommendationResponse(
         String courseCode,
         String courseName,
         int credits,
-        int score,
-        boolean isSelected,
+        int score,              // AI relevance (higher = better)
+        boolean isSelected,     // AI recommends picking this
         String description,
         String reasoning,
         Integer semester

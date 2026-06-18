@@ -6,6 +6,10 @@ import vn.edu.uit.devorbit_api.entity.CourseAssessment;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * COURSE ASSESSMENT REPOSITORY = grading components from course syllabi.
+ * Each assessment has a code (e.g., "BT" for homework), description, and weight percentage.
+ */
 @Repository
 public interface CourseAssessmentRepository extends JpaRepository<CourseAssessment, UUID> {
     List<CourseAssessment> findByCourseCode(String courseCode);

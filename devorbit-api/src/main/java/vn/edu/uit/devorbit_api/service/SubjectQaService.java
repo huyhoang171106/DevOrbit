@@ -212,7 +212,18 @@ public class SubjectQaService {
         SubjectQaPreparation preparation = prepareQuery(request, SubjectQaProgressSink.NOOP);
 
         if (preparation.directResponse() != null) {
-            return preparation.directResponse();
+            SubjectQaResponse dr = preparation.directResponse();
+            return new SubjectQaResponse(
+                removeEmojis(dr.answer()),
+                dr.sessionId(),
+                dr.relevantNodeIds(),
+                dr.sources(),
+                dr.type(),
+                dr.searchResults(),
+                dr.roadmap(),
+                dr.suggestedFollowUps(),
+                dr.confidenceScore()
+            );
         }
 
         // Check response cache before LLM call
@@ -255,7 +266,7 @@ public class SubjectQaService {
         String quickAnswer = tryQuickFact(request.message(), preparation.systemPrompt());
         if (quickAnswer != null) {
             log.info("SubjectQaService: quick fact HIT for '{}'", request.message());
-            String answer = quickAnswer;
+            String answer = removeEmojis(quickAnswer);
             responseCache.put(cacheKey, new CachedQaResponse(answer, System.currentTimeMillis()));
             saveAiResponseBestEffort(preparation.session(), answer, preparation.sources());
             Set<String> summaryCodes = new LinkedHashSet<>();
@@ -311,6 +322,9 @@ public class SubjectQaService {
                 log.warn("SubjectQaService: critique failed, using original response: {}", e.getMessage());
             }
         }
+
+        // Clean up emojis from answer
+        answer = removeEmojis(answer);
 
         // Store in response cache
         responseCache.put(cacheKey, new CachedQaResponse(answer, System.currentTimeMillis()));
@@ -379,7 +393,7 @@ public class SubjectQaService {
                 // Direct response (greeting, needs-course-code) → emit as single delta
                 if (preparation.directResponse() != null) {
                     emit(emitter, SubjectQaStreamEvent.status("answer", "Đang soạn câu trả lời"));
-                    emit(emitter, SubjectQaStreamEvent.delta(preparation.directResponse().answer()));
+                    emit(emitter, SubjectQaStreamEvent.delta(removeEmojis(preparation.directResponse().answer())));
                     emit(emitter, SubjectQaStreamEvent.complete(preparation.directResponse()));
                     emitter.complete();
                     cleanup.run();
@@ -396,8 +410,11 @@ public class SubjectQaService {
                 Disposable disposable = openCodeAiService.streamCompletion(preparation.systemPrompt(), preparation.userMessage())
                     .subscribe(
                         delta -> {
-                            answerBuffer.append(delta);
-                            emit(emitter, SubjectQaStreamEvent.delta(delta));
+                            String cleanedDelta = removeEmojis(delta);
+                            if (cleanedDelta != null && !cleanedDelta.isEmpty()) {
+                                answerBuffer.append(cleanedDelta);
+                                emit(emitter, SubjectQaStreamEvent.delta(cleanedDelta));
+                            }
                         },
                         error -> {
                             log.error("SubjectQaService: streaming error: {}", error.getMessage());
@@ -415,6 +432,7 @@ public class SubjectQaService {
                                     fallbackAnswer = "Mình đã lấy được ngữ cảnh thật từ DevOrbit nhưng LLM không trả về nội dung trả lời. "
                                         + "Mình sẽ không bịa thêm thông tin. Bạn hãy thử hỏi lại với mã môn cụ thể hoặc câu hỏi hẹp hơn.";
                                 }
+                                fallbackAnswer = removeEmojis(fallbackAnswer);
                                 answerBuffer.append(fallbackAnswer);
                                 emit(emitter, SubjectQaStreamEvent.delta(fallbackAnswer));
                             }
@@ -439,6 +457,7 @@ public class SubjectQaService {
                                     finalAnswer = "Mình đã lấy được ngữ cảnh thật từ DevOrbit nhưng LLM không trả về nội dung trả lời. "
                                         + "Mình sẽ không bịa thêm thông tin. Bạn hãy thử hỏi lại với mã môn cụ thể hoặc câu hỏi hẹp hơn.";
                                 }
+                                finalAnswer = removeEmojis(finalAnswer);
                                 emit(emitter, SubjectQaStreamEvent.delta(finalAnswer));
                                 answerBuffer.setLength(0);
                                 answerBuffer.append(finalAnswer);
@@ -1767,5 +1786,12 @@ public class SubjectQaService {
             }
             response.append('\n');
         }
+    }
+
+    private String removeEmojis(String text) {
+        if (text == null) {
+            return null;
+        }
+        return text.replaceAll("[\\uD83C-\\uDBFF\\uDC00-\\uDFFF]|[\\u2600-\\u27BF]|[\\u2B00-\\u2BFF]|[\\p{So}]|[\\uFE00-\\uFE0F]", "");
     }
 }

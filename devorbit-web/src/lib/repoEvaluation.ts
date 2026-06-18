@@ -20,6 +20,48 @@ export type UsefulnessRating =
 export type ConfidenceLabel = 'high' | 'medium' | 'low'
 export type ReadyToUseLevel = 'very_ready' | 'ready' | 'needs_check' | 'quick_reference' | 'insufficient_data'
 export type CourseGroup = 'foundation_algorithms' | 'software_project' | 'design_process' | 'general_skills' | 'unknown'
+export type CriterionApplicability = 'applicable' | 'not_applicable' | 'unknown'
+export type CriterionStatus = 'strong' | 'ok' | 'weak' | 'missing' | 'not_applicable'
+export type RecommendationTag =
+  | 'ready_to_use'
+  | 'needs_check'
+  | 'reference_only'
+  | 'good_study_material'
+  | 'good_project_sample'
+  | 'insufficient_data'
+
+export type RepoEvaluationEvidence = {
+  type:
+    | 'readme'
+    | 'file'
+    | 'directory'
+    | 'manifest'
+    | 'test'
+    | 'demo'
+    | 'metadata'
+    | 'warning_signal'
+  path?: string
+  message: string
+}
+
+export type RepoEvaluationWarning = {
+  code: string
+  severity: 'info' | 'warning' | 'critical'
+  message: string
+  paths?: string[]
+}
+
+export type RepoEvaluationCriterion = {
+  key: string
+  label: string
+  score: number
+  maxScore: number
+  status: CriterionStatus
+  applicability: CriterionApplicability
+  confidence: number
+  evidence: RepoEvaluationEvidence[]
+  warnings: RepoEvaluationWarning[]
+}
 
 export type EvaluationSection = {
   title: string
@@ -96,6 +138,15 @@ export type RepoEvaluationResult = {
   typeReason: string
   sections: EvaluationSection[]
   signals: RepoSignals
+  classificationConfidence: number
+  evaluationConfidence: number
+  evidenceCoverage: number
+  learningUsefulnessScore: number
+  technicalReadinessScore: number | null
+  runReadinessScore: number | null
+  recommendationTag: RecommendationTag
+  criteria: RepoEvaluationCriterion[]
+  warnings: RepoEvaluationWarning[]
 }
 
 type OptionalRepoMetadata = {
@@ -109,6 +160,7 @@ type OptionalRepoMetadata = {
   readmeMarkdown?: string | null
   readmeText?: string | null
   readme?: string | null
+  hasReadme?: boolean | null
   files?: string[] | Array<{ path?: string | null; name?: string | null }> | null
   fileList?: string[] | Array<{ path?: string | null; name?: string | null }> | null
   paths?: string[] | null
@@ -211,7 +263,7 @@ function translateTopics(items: string[]): string[] {
   return items.map((t) => topicViMap[t] ?? t)
 }
 
-const projectConfigPattern = /(^|\/)(package(-lock)?\.json|pnpm-lock\.yaml|yarn\.lock|bun\.lock|requirements\.txt|pyproject\.toml|poetry\.lock|pom\.xml|build\.gradle|settings\.gradle|gradle\.properties|pubspec\.yaml|composer\.json|go\.mod|cargo\.toml|\.csproj|\.sln)$/i
+const projectConfigPattern = /(^|\/)(package(-lock)?\.json|pnpm-lock\.yaml|yarn\.lock|bun\.lock|requirements\.txt|pyproject\.toml|poetry\.lock|pom\.xml|build\.gradle|settings\.gradle|gradle\.properties|pubspec\.yaml|composer\.json|go\.mod|cargo\.toml|[^/]+\.(csproj|sln))$/i
 const buildFilePattern = /(^|\/)(makefile|cmakelists\.txt|mvnw|gradlew|dockerfile)$/i
 const sourceFolderPattern = /(^|\/)(src|source|app|lib|components|controllers|services|models)(\/|$)/i
 const testPathPattern = /(^|\/)(__tests__|tests?|spec|input|output|sample)(\/|$)|(\.|-)(test|spec)\.[a-z0-9]+$/i
@@ -220,22 +272,24 @@ export function evaluateRepository(repo: RepoSummary): RepoEvaluationResult {
   const signals = extractRepoSignals(repo)
   const { repoType, reason } = classifyRepoType(signals)
   const courseGroup = detectCourseGroup(signals)
-  const ready = buildReadyToUse(repoType, courseGroup, signals)
-  const usefulnessScore = buildUsefulnessScore(repoType, courseGroup, ready.stars, signals)
+  const rubric = buildEvidenceRubric(repoType, courseGroup, signals)
+  const runStars = mapRunReadinessToStars(rubric.runReadinessScore)
+  const ready = buildReadyToUseFromRubric(repoType, signals, rubric.runReadinessScore, runStars)
+  const usefulnessScore = rubric.learningUsefulnessScore
   const usefulnessRating = ratingFromScore(usefulnessScore, repoType)
-  const confidence = getConfidence(signals, repoType)
+  const confidence = getConfidenceFromScore(rubric.evaluationConfidence, repoType)
   const repoIdentity = buildRepoIdentity(repoType, courseGroup, signals)
   const techTools = detectTechTools(repoType, courseGroup, signals)
   const coreTopics = translateTopics(detectCoreTopics(courseGroup, repoType, signals))
   const groupHighlights = buildGroupHighlights(courseGroup, repoType, signals, coreTopics)
-  const recommendation = buildRecommendation(repoType, usefulnessRating, ready.level, signals)
+  const recommendation = buildRecommendationFromTag(rubric.recommendationTag, repoType, signals)
   const quickBullets = buildQuickBullets(repoIdentity, techTools, coreTopics, recommendation, signals)
   const bestFor = buildBestFor(repoType, usefulnessRating, signals)
   const mainReason = buildMainReason(repoType, usefulnessRating, signals)
   const quickSummary = buildQuickSummary(repoType, usefulnessRating, signals, confidence)
-  const strengths = buildStrengths(repoType, signals, usefulnessRating)
-  const weaknesses = buildWeaknesses(repoType, signals, usefulnessRating)
-  const nextActions = buildNextActions(repoType, signals)
+  const strengths = deriveStrengthsFromRubric(rubric.criteria, signals)
+  const weaknesses = deriveWeaknessesFromRubric(rubric.criteria, rubric.warnings, repoType, signals, usefulnessRating)
+  const nextActions = deriveActionsFromRubric(rubric.criteria, rubric.warnings, repoType, signals)
   const learningStrategy = buildLearningStrategy(repoType, courseGroup, signals)
   const cautionNotes = buildCautionNotes(repoType, courseGroup, signals)
   const suitableUse = buildSuitableUse(repoType, signals)
@@ -284,6 +338,15 @@ export function evaluateRepository(repo: RepoSummary): RepoEvaluationResult {
       { title: 'Thông tin tham khảo', items: evidence.slice(0, 6) },
     ],
     signals,
+    classificationConfidence: rubric.classificationConfidence,
+    evaluationConfidence: rubric.evaluationConfidence,
+    evidenceCoverage: rubric.evidenceCoverage,
+    learningUsefulnessScore: rubric.learningUsefulnessScore,
+    technicalReadinessScore: rubric.technicalReadinessScore,
+    runReadinessScore: rubric.runReadinessScore,
+    recommendationTag: rubric.recommendationTag,
+    criteria: rubric.criteria,
+    warnings: rubric.warnings,
   }
 }
 
@@ -300,7 +363,7 @@ export function extractRepoSignals(repo: RepoSummary): RepoSignals {
   const filePaths = normalizeFilePaths(metadata.files ?? metadata.fileList ?? metadata.paths ?? metadata.fileTree)
   const haystack = normalizeSearchText([name, description, primaryLanguage, ...techStacks, ...topics, readmeText, ...filePaths])
   const hasFileList = filePaths.length > 0
-  const hasReadme = Boolean(readmeText) || hasPath(filePaths, /(^|\/)readme(\.md|\.txt)?$/i)
+  const hasReadme = Boolean(readmeText) || metadata.hasReadme === true || hasPath(filePaths, /(^|\/)readme(\.md|\.txt)?$/i)
   const hasPackageFile = hasPath(filePaths, projectConfigPattern)
   const hasBuildFile = hasPackageFile || hasPath(filePaths, buildFilePattern)
   const hasEnvExample = hasPath(filePaths, /(^|\/)\.env\.(example|sample|template)$/i)
@@ -524,7 +587,7 @@ function detectCoreTopics(courseGroup: CourseGroup, repoType: RepoType, signals:
   return signals.topics.slice(0, 5)
 }
 
-function buildReadyToUse(repoType: RepoType, courseGroup: CourseGroup, signals: RepoSignals): { level: ReadyToUseLevel; label: string; stars: number; note: string } {
+export function buildReadyToUse(repoType: RepoType, courseGroup: CourseGroup, signals: RepoSignals): { level: ReadyToUseLevel; label: string; stars: number; note: string } {
   if (repoType === 'unknown' && signals.evidence.length <= 2) {
     return { level: 'insufficient_data', label: readyToUseLabels.insufficient_data, stars: 1, note: 'Thiếu README, cây thư mục và mô tả nên cần mở GitHub để xem trước.' }
   }
@@ -574,7 +637,7 @@ function buildReadyNote(repoType: RepoType, level: ReadyToUseLevel, signals: Rep
   return 'Có thể tham khảo, nhưng cần lọc đúng folder/nội dung.'
 }
 
-function buildUsefulnessScore(repoType: RepoType, courseGroup: CourseGroup, readyStars: number, signals: RepoSignals): number {
+export function buildUsefulnessScore(repoType: RepoType, courseGroup: CourseGroup, readyStars: number, signals: RepoSignals): number {
   const hasCourseContext = courseGroup !== 'unknown'
   if (repoType === 'unknown' && !signals.description && !signals.hasReadme && !signals.hasFileList && !hasCourseContext) return 10
   let value = readyStars * 13
@@ -598,8 +661,9 @@ function buildUsefulnessScore(repoType: RepoType, courseGroup: CourseGroup, read
 
 function ratingFromScore(value: number, repoType: RepoType): UsefulnessRating {
   if (repoType === 'unknown' && value < 30) return 'insufficient_data'
-  if (value >= 84) return 'highly_recommended'
-  if (value >= 56) return 'recommended'
+  if (repoType === 'exam_review' && value >= 56) return 'highly_recommended'
+  if (value >= 68) return 'highly_recommended'
+  if (value >= 64) return 'recommended'
   if (value >= 34) return 'selective'
   if (value >= 20) return 'quick_reference'
   return 'low_priority'
@@ -640,7 +704,7 @@ function buildGroupHighlights(courseGroup: CourseGroup, repoType: RepoType, sign
   return ['Chưa rõ nhóm môn, cần mở GitHub để xác nhận ngữ cảnh.']
 }
 
-function buildRecommendation(repoType: RepoType, rating: UsefulnessRating, readyLevel: ReadyToUseLevel, signals: RepoSignals): string {
+export function buildRecommendation(repoType: RepoType, rating: UsefulnessRating, readyLevel: ReadyToUseLevel, signals: RepoSignals): string {
   if (rating === 'insufficient_data') return 'Chưa nên clone; mở GitHub kiểm tra README và cây thư mục trước.'
   if (rating === 'highly_recommended' || rating === 'recommended') {
     if (repoType === 'project_practice') return readyLevel === 'very_ready' || readyLevel === 'ready' ? 'Clone thử để học setup và cách tổ chức project.' : 'Xem source và cấu trúc project trước khi clone chạy.'
@@ -707,6 +771,17 @@ function classifyRepoType(signals: RepoSignals): { repoType: RepoType; reason: s
     .sort((a, b) => b[1] - a[1])
   const strongTypes = ranked.filter(([, value]) => value >= 2)
 
+  if (
+    signals.hasAssignments
+    && signals.hasSourceCode
+    && !contains(text, /\b(do an|project|fullstack|backend|frontend|api|server)\b/)
+  ) {
+    return {
+      repoType: 'programming_exercise',
+      reason: 'Repo has lab/assignment wording and source evidence.',
+    }
+  }
+
   if (strongTypes.length >= 2 && strongTypes[0][1] <= 3 && strongTypes[0][1] - strongTypes[1][1] <= 1) {
     return {
       repoType: 'mixed_resource',
@@ -741,7 +816,7 @@ function isFoundationAlgorithmContext(text: string): boolean {
   return contains(text, /\b(it003|dsa|ctdl|data structures?|cau truc du lieu|giai thuat|algorithms?|lap trinh|co so lap trinh|programming fundamentals|stack|queue|tree|graph|sorting)\b/)
 }
 
-function getConfidence(signals: RepoSignals, repoType: RepoType): ConfidenceLabel {
+export function getConfidence(signals: RepoSignals, repoType: RepoType): ConfidenceLabel {
   const confidenceScore = buildConfidenceScore(signals, repoType)
   if (repoType === 'unknown' || confidenceScore < 42) return 'low'
   if (confidenceScore >= 70) return 'high'
@@ -804,7 +879,7 @@ function buildQuickSummary(repoType: RepoType, rating: UsefulnessRating, signals
   return `Repo này chỉ nên tham khảo nhanh cho đến khi bạn xác nhận được mục tiêu, cấu trúc và nội dung chính trên GitHub.${caution}`
 }
 
-function buildStrengths(repoType: RepoType, signals: RepoSignals, rating: UsefulnessRating): string[] {
+export function buildStrengths(repoType: RepoType, signals: RepoSignals, rating: UsefulnessRating): string[] {
   const items: string[] = []
   if (signals.description) items.push(`Mô tả cho biết trọng tâm: ${truncate(signals.description, 110)}.`)
   if (signals.primaryLanguage || signals.techStacks.length > 0) items.push(`Có tín hiệu kỹ thuật: ${[signals.primaryLanguage, ...signals.techStacks].filter(Boolean).slice(0, 4).join(', ')}.`)
@@ -1068,6 +1143,996 @@ function buildEvidence(signals: RepoSignals): string[] {
     signals.hasExam ? 'Có tín hiệu đề thi/giữa kỳ/cuối kỳ.' : null,
     signals.hasSlides || signals.hasNotes ? 'Có tín hiệu slide/tài liệu học.' : null,
   ], 12)
+}
+
+type EvidenceRubric = {
+  criteria: RepoEvaluationCriterion[]
+  warnings: RepoEvaluationWarning[]
+  classificationConfidence: number
+  evaluationConfidence: number
+  evidenceCoverage: number
+  learningUsefulnessScore: number
+  technicalReadinessScore: number | null
+  runReadinessScore: number | null
+  recommendationTag: RecommendationTag
+}
+
+function buildEvidenceRubric(repoType: RepoType, courseGroup: CourseGroup, signals: RepoSignals): EvidenceRubric {
+  const warnings = detectRepositoryWarnings(repoType, signals)
+  const criteria = buildCriteriaForRepoType(repoType, courseGroup, signals, warnings)
+  const classificationConfidence = buildConfidenceScore(signals, repoType)
+  const evidenceCoverage = calculateEvidenceCoverage(criteria)
+  const learningUsefulnessScore = normalizedScore(criteria)
+  const technicalReadinessScore = calculateTechnicalReadinessScore(repoType, criteria, signals)
+  const runReadinessScore = calculateRunReadinessScore(repoType, criteria, signals, warnings)
+  const evaluationConfidence = calculateEvaluationConfidence(classificationConfidence, evidenceCoverage, criteria, warnings)
+  const recommendationTag = chooseRecommendationTag({
+    repoType,
+    signals,
+    warnings,
+    criteria,
+    classificationConfidence,
+    evaluationConfidence,
+    evidenceCoverage,
+    learningUsefulnessScore,
+    technicalReadinessScore,
+    runReadinessScore,
+  })
+
+  return {
+    criteria,
+    warnings,
+    classificationConfidence,
+    evaluationConfidence,
+    evidenceCoverage,
+    learningUsefulnessScore,
+    technicalReadinessScore,
+    runReadinessScore,
+    recommendationTag,
+  }
+}
+
+function buildCriteriaForRepoType(
+  repoType: RepoType,
+  courseGroup: CourseGroup,
+  signals: RepoSignals,
+  warnings: RepoEvaluationWarning[],
+): RepoEvaluationCriterion[] {
+  if (repoType === 'programming_exercise') return buildProgrammingExerciseCriteria(signals, warnings)
+  if (repoType === 'project_practice') return buildProjectPracticeCriteria(signals, warnings)
+  if (repoType === 'study_material') return buildStudyMaterialCriteria(signals, warnings)
+  if (repoType === 'exam_review') return buildExamReviewCriteria(signals, warnings)
+  if (repoType === 'mixed_resource') return buildMixedResourceCriteria(signals, warnings)
+  return buildUnknownCriteria(courseGroup, signals, warnings)
+}
+
+function buildProgrammingExerciseCriteria(signals: RepoSignals, warnings: RepoEvaluationWarning[]): RepoEvaluationCriterion[] {
+  const assignmentEvidence = evidenceList([
+    signals.hasAssignments ? evidence('metadata', 'Tên, mô tả, README hoặc đường dẫn nhắc đến lab/bài tập.') : null,
+    hasUsefulReadme(signals) ? evidence('readme', 'README có đủ nội dung mô tả ngữ cảnh bài tập.') : null,
+    findFirstPath(signals.filePaths, /(assignment|exercise|lab|de|problem|requirement|readme)\b/i, 'file', 'File mô tả bài tập hoặc lab.'),
+  ])
+  const validationEvidence = evidenceList([
+    ...findPaths(signals.filePaths, testPathPattern, 'test', 'Test, sample input/output hoặc spec path.').slice(0, 4),
+    contains(normalizeSearchText([signals.readmeText]), /\b(sample|input|output|expected|test case|unit test)\b/)
+      ? evidence('readme', 'README nhắc đến sample, expected output hoặc test cases.')
+      : null,
+  ])
+  const explanationEvidence = evidenceList([
+    contains(normalizeSearchText([signals.readmeText]), /\b(algorithm|approach|explain|complexity|thuat toan|giai thich|y tuong)\b/)
+      ? evidence('readme', 'README có giải thích cách tiếp cận hoặc thuật toán.')
+      : null,
+    findFirstPath(signals.filePaths, /(explain|algorithm|note|docs?|report)\b/i, 'file', 'File giải thích, ghi chú hoặc báo cáo.'),
+  ])
+
+  return [
+    criterion({
+      key: 'course_topic_identification',
+      label: 'Nhận diện môn học/lab/chủ đề',
+      maxScore: 15,
+      score: scorePart(15, [
+        [Boolean(signals.courseCode || signals.courseName), 6],
+        [signals.hasAssignments, 5],
+        [signals.description !== null || signals.topics.length > 0, 4],
+      ]),
+      evidence: evidenceList([
+        signals.courseCode ? evidence('metadata', `Mã môn: ${signals.courseCode}.`) : null,
+        signals.courseName ? evidence('metadata', `Môn: ${signals.courseName}.`) : null,
+        signals.hasAssignments ? evidence('metadata', 'Phát hiện từ khóa bài tập/lab.') : null,
+      ]),
+      warnings,
+    }),
+    criterion({
+      key: 'assignment_description',
+      label: 'Mô tả bài tập/vấn đề',
+      maxScore: 20,
+      score: scorePart(20, [
+        [hasUsefulReadme(signals), 9],
+        [signals.description !== null && signals.description.length >= 30, 5],
+        [assignmentEvidence.length > 0, 6],
+      ]),
+      evidence: assignmentEvidence,
+      warnings: warnings.filter((warning) => warning.code === 'minimal_readme'),
+    }),
+    criterion({
+      key: 'relevant_implementation',
+      label: 'Source code / triển khai',
+      maxScore: 25,
+      score: scorePart(25, [
+        [signals.hasSourceCode, 12],
+        [sourcePaths(signals).length >= 2, 7],
+        [signals.primaryLanguage !== null, 3],
+        [signals.hasFileList, 3],
+      ]),
+      evidence: evidenceList([
+        signals.primaryLanguage ? evidence('metadata', `Ngôn ngữ chính: ${signals.primaryLanguage}.`) : null,
+        ...sourcePaths(signals).slice(0, 4).map((path) => evidence('file', 'Phát hiện file source code.', path)),
+      ]),
+      warnings: warnings.filter((warning) => warning.severity === 'critical'),
+    }),
+    criterion({
+      key: 'validation_evidence',
+      label: 'Test / sample I/O / kết quả kỳ vọng',
+      maxScore: 20,
+      score: scorePart(20, [
+        [signals.hasTests, 12],
+        [validationEvidence.length >= 2, 5],
+        [contains(normalizeSearchText([signals.readmeText]), /\b(expected|result|output)\b/), 3],
+      ]),
+      evidence: validationEvidence,
+      warnings: warnings.filter((warning) => warning.code === 'missing_validation_evidence'),
+    }),
+    criterion({
+      key: 'approach_explanation',
+      label: 'Giải thích cách tiếp cận/thuật toán',
+      maxScore: 10,
+      score: scorePart(10, [
+        [explanationEvidence.length > 0, 7],
+        [signals.hasDocs, 3],
+      ]),
+      evidence: explanationEvidence,
+      warnings: [],
+    }),
+    criterion({
+      key: 'file_organization_hygiene',
+      label: 'Tổ chức file và vệ sinh repo',
+      maxScore: 10,
+      score: Math.max(0, scorePart(10, [
+        [signals.hasFileList, 3],
+        [signals.organizedFolders || sourcePaths(signals).length <= 6, 3],
+        [warnings.every((warning) => warning.code !== 'committed_build_artifacts'), 4],
+      ])),
+      evidence: evidenceList([
+        signals.hasFileList ? evidence('metadata', `${signals.filePaths.length} đường dẫn có sẵn để xem cấu trúc.`) : null,
+        signals.organizedFolders ? evidence('directory', 'Repo có nhiều thư mục cấp cao nhất.') : null,
+      ]),
+      warnings: warnings.filter((warning) => warning.code === 'committed_build_artifacts'),
+    }),
+    notApplicableCriterion('production_runtime_config', 'Cấu hình runtime/Docker', 0, 'Không yêu cầu cho bài tập lập trình nhẹ.'),
+  ]
+}
+
+function buildProjectPracticeCriteria(signals: RepoSignals, warnings: RepoEvaluationWarning[]): RepoEvaluationCriterion[] {
+  const setupEvidence = evidenceList([
+    ...manifestPaths(signals).slice(0, 4).map((path) => evidence('manifest', 'Phát hiện file manifest build hoặc project.', path)),
+    contains(normalizeSearchText([signals.readmeText]), /\b(setup|install|run|usage|build|open|visual studio|npm|mvn|gradle|dotnet|docker)\b/)
+      ? evidence('readme', 'README có đề cập bước setup, run, build hoặc usage.')
+      : null,
+  ])
+  const demoEvidence = evidenceList([
+    ...findPaths(signals.filePaths, /(demo|screenshot|screenshots|image|images|preview|manual|verification|docs?)\b|\.(png|jpe?g|gif|webp)$/i, 'demo', 'Bằng chứng demo, screenshot hoặc xác minh thủ công.').slice(0, 4),
+    contains(normalizeSearchText([signals.readmeText]), /\b(demo|screenshot|manual|feature|usage|preview)\b/)
+      ? evidence('readme', 'README nhắc đến demo, features, screenshot, usage hoặc preview.')
+      : null,
+  ])
+
+  return [
+    criterion({
+      key: 'project_goal_scope',
+      label: 'Mục tiêu và phạm vi project',
+      maxScore: 10,
+      score: scorePart(10, [
+        [Boolean(signals.description && signals.description.length >= 30), 4],
+        [hasUsefulReadme(signals), 4],
+        [signals.topics.length > 0 || signals.courseCode !== null, 2],
+      ]),
+      evidence: evidenceList([
+        signals.description ? evidence('metadata', `Mô tả: ${truncate(signals.description, 120)}.`) : null,
+        hasUsefulReadme(signals) ? evidence('readme', 'README có ngữ cảnh project có ý nghĩa.') : null,
+      ]),
+      warnings: warnings.filter((warning) => warning.code === 'minimal_readme'),
+    }),
+    criterion({
+      key: 'expected_open_build_readiness',
+      label: 'Mức độ sẵn sàng mở/build',
+      maxScore: 20,
+      score: scorePart(20, [
+        [manifestPaths(signals).length > 0, 8],
+        [setupEvidence.some((item) => item.type === 'readme'), 6],
+        [signals.hasBuildFile, 3],
+        [signals.hasFileList, 3],
+      ]),
+      evidence: setupEvidence,
+      warnings: warnings.filter((warning) => warning.code === 'missing_setup_guidance'),
+    }),
+    criterion({
+      key: 'source_structure',
+      label: 'Cấu trúc source code',
+      maxScore: 15,
+      score: scorePart(15, [
+        [signals.hasSourceCode, 6],
+        [sourcePaths(signals).length >= 4, 4],
+        [signals.organizedFolders, 3],
+        [signals.techStacks.length > 0 || signals.primaryLanguage !== null, 2],
+      ]),
+      evidence: evidenceList([
+        signals.primaryLanguage ? evidence('metadata', `Ngôn ngữ chính: ${signals.primaryLanguage}.`) : null,
+        ...sourcePaths(signals).slice(0, 5).map((path) => evidence('file', 'Phát hiện file source.', path)),
+      ]),
+      warnings: warnings.filter((warning) => warning.severity === 'critical'),
+    }),
+    criterion({
+      key: 'observable_feature_completeness',
+      label: 'Mức độ hoàn thiện tính năng',
+      maxScore: 15,
+      score: scorePart(15, [
+        [contains(normalizeSearchText([signals.description, signals.readmeText]), /\b(feature|screen|crud|login|auth|editor|notepad|app|module|function)\b/), 6],
+        [sourcePaths(signals).length >= 6, 4],
+        [signals.hasDocs || demoEvidence.length > 0, 3],
+        [signals.hasFileList, 2],
+      ]),
+      evidence: evidenceList([
+        contains(normalizeSearchText([signals.description, signals.readmeText]), /\b(feature|screen|crud|login|auth|editor|notepad|app|module|function)\b/)
+          ? evidence('metadata', 'Phát hiện từ khóa tính năng trong mô tả hoặc README.')
+          : null,
+        ...demoEvidence.slice(0, 2),
+      ]),
+      warnings: [],
+    }),
+    criterion({
+      key: 'demo_manual_verification',
+      label: 'Demo/ảnh chụp/xác minh thủ công',
+      maxScore: 15,
+      score: scorePart(15, [
+        [demoEvidence.length > 0, 8],
+        [demoEvidence.length >= 2, 4],
+        [contains(normalizeSearchText([signals.readmeText]), /\b(run|usage|manual|verify|test)\b/), 3],
+      ]),
+      evidence: demoEvidence,
+      warnings: warnings.filter((warning) => warning.code === 'missing_demo_evidence'),
+    }),
+    criterion({
+      key: 'test_validation_evidence',
+      label: 'Bằng chứng kiểm thử/validation',
+      maxScore: 10,
+      score: scorePart(10, [
+        [signals.hasTests, 7],
+        [contains(normalizeSearchText([signals.readmeText]), /\b(test|validation|verify|manual test)\b/), 3],
+      ]),
+      evidence: evidenceList([
+        ...findPaths(signals.filePaths, testPathPattern, 'test', 'Test/spec/sample path.').slice(0, 4),
+        contains(normalizeSearchText([signals.readmeText]), /\b(test|validation|verify|manual test)\b/)
+          ? evidence('readme', 'README nhắc đến validation hoặc testing.')
+          : null,
+      ]),
+      warnings: warnings.filter((warning) => warning.code === 'missing_validation_evidence'),
+    }),
+    criterion({
+      key: 'config_secret_hygiene',
+      label: 'Cấu hình và bảo mật secrets',
+      maxScore: 10,
+      score: Math.max(0, scorePart(10, [
+        [!hasSecretLikePaths(signals), 6],
+        [!needsExternalConfig(signals) || signals.hasEnvExample || signals.hasDockerConfig, 4],
+      ])),
+      evidence: evidenceList([
+        signals.hasEnvExample ? evidence('file', 'Phát hiện file env example.') : null,
+        signals.hasDockerConfig ? evidence('manifest', 'Phát hiện cấu hình Docker.') : null,
+        !needsExternalConfig(signals) ? evidence('metadata', 'Không phát hiện yêu cầu cấu hình ngoài rõ ràng.') : null,
+      ]),
+      warnings: warnings.filter((warning) => warning.code === 'possible_secret_file' || warning.code === 'missing_config_template'),
+    }),
+    criterion({
+      key: 'repository_hygiene',
+      label: 'Vệ sinh repo',
+      maxScore: 5,
+      score: warnings.some((warning) => warning.code === 'committed_build_artifacts') ? 1 : 5,
+      evidence: evidenceList([
+        signals.hasFileList ? evidence('metadata', `${signals.filePaths.length} đường dẫn có sẵn để đánh giá vệ sinh.`) : null,
+      ]),
+      warnings: warnings.filter((warning) => warning.code === 'committed_build_artifacts'),
+    }),
+  ]
+}
+
+function buildStudyMaterialCriteria(signals: RepoSignals, warnings: RepoEvaluationWarning[]): RepoEvaluationCriterion[] {
+  return [
+    criterion({
+      key: 'course_relevance',
+      label: 'Mức độ liên quan đến môn học',
+      maxScore: 20,
+      score: scorePart(20, [
+        [Boolean(signals.courseCode || signals.courseName), 8],
+        [signals.description !== null || signals.topics.length > 0, 6],
+        [signals.hasSlides || signals.hasNotes || signals.hasDocs, 6],
+      ]),
+      evidence: evidenceList([
+        signals.courseCode ? evidence('metadata', `Mã môn: ${signals.courseCode}.`) : null,
+        signals.hasSlides ? evidence('file', 'Phát hiện slide hoặc bài giảng.') : null,
+        signals.hasNotes || signals.hasDocs ? evidence('file', 'Phát hiện ghi chú hoặc tài liệu.') : null,
+      ]),
+      warnings,
+    }),
+    criterion({
+      key: 'learning_content',
+      label: 'Mức độ bao phủ nội dung',
+      maxScore: 30,
+      score: scorePart(30, [
+        [signals.hasSlides, 10],
+        [signals.hasNotes || signals.hasDocs, 10],
+        [signals.hasFileList, 5],
+        [signals.organizedFolders, 5],
+      ]),
+      evidence: evidenceList([
+        ...findPaths(signals.filePaths, /(slides?|lectures?|notes?|docs?|documents?)\b|\.(pdf|pptx?|docx?|md)$/i, 'file', 'Đường dẫn tài liệu học tập.').slice(0, 6),
+      ]),
+      warnings: warnings.filter((warning) => warning.code === 'minimal_readme'),
+    }),
+    criterion({
+      key: 'navigation_structure',
+      label: 'Điều hướng và cấu trúc',
+      maxScore: 20,
+      score: scorePart(20, [
+        [signals.hasReadme, 6],
+        [hasUsefulReadme(signals), 5],
+        [signals.organizedFolders, 5],
+        [contains(normalizeSearchText([...signals.filePaths]), /\b(chapter|week|lecture|chuong|tuan|buoi)\b/), 4],
+      ]),
+      evidence: evidenceList([
+        hasUsefulReadme(signals) ? evidence('readme', 'README cung cấp ngữ cảnh điều hướng hữu ích.') : null,
+        signals.organizedFolders ? evidence('directory', 'Cấu trúc thư mục giúp duyệt tài liệu dễ dàng.') : null,
+      ]),
+      warnings: [],
+    }),
+    criterion({
+      key: 'reference_context',
+      label: 'Ngữ cảnh tham khảo',
+      maxScore: 15,
+      score: scorePart(15, [
+        [signals.description !== null, 5],
+        [signals.topics.length > 0, 4],
+        [signals.updatedAt !== null, 3],
+        [signals.hasReadme, 3],
+      ]),
+      evidence: evidenceList([
+        signals.description ? evidence('metadata', 'Có mô tả.') : null,
+        signals.updatedAt ? evidence('metadata', `Hoạt động gần nhất: ${signals.updatedAt}.`) : null,
+      ]),
+      warnings: [],
+    }),
+    criterion({
+      key: 'material_hygiene',
+      label: 'Vệ sinh repo',
+      maxScore: 15,
+      score: warnings.some((warning) => warning.code === 'committed_build_artifacts') ? 8 : 15,
+      evidence: evidenceList([
+        signals.hasFileList ? evidence('metadata', 'Cây thư mục có sẵn để đánh giá vệ sinh repo.') : null,
+      ]),
+      warnings: warnings.filter((warning) => warning.code === 'committed_build_artifacts'),
+    }),
+    notApplicableCriterion('build_test_docker', 'Build/kiểm thử/Docker', 0, 'Không yêu cầu cho repo tài liệu học tập.'),
+  ]
+}
+
+function buildExamReviewCriteria(signals: RepoSignals, warnings: RepoEvaluationWarning[]): RepoEvaluationCriterion[] {
+  return [
+    criterion({
+      key: 'exam_identification',
+      label: 'Nhận diện đề thi/quiz',
+      maxScore: 25,
+      score: scorePart(25, [
+        [signals.hasExam, 10],
+        [contains(normalizeSearchText([signals.name, signals.description, signals.readmeText, ...signals.filePaths]), /\b(20\d{2}|midterm|final|quiz|giua ky|cuoi ky)\b/), 8],
+        [signals.courseCode !== null || signals.courseName !== null, 4],
+        [signals.hasFileList, 3],
+      ]),
+      evidence: evidenceList([
+        signals.hasExam ? evidence('metadata', 'Phát hiện từ khóa đề thi, giữa kỳ, cuối kỳ hoặc quiz.') : null,
+        ...findPaths(signals.filePaths, /(exam|midterm|final|quiz|de-thi|de_thi|20\d{2})/i, 'file', 'Đường dẫn liên quan đề thi.').slice(0, 4),
+      ]),
+      warnings,
+    }),
+    criterion({
+      key: 'answer_solution_evidence',
+      label: 'Bằng chứng đáp án/lời giải',
+      maxScore: 25,
+      score: scorePart(25, [
+        [signals.hasAnswerOrSolution, 15],
+        [findPaths(signals.filePaths, /(answer|answers|solution|solutions|dap-an|loi-giai)/i, 'file', 'Đường dẫn đáp án hoặc lời giải.').length > 0, 6],
+        [contains(normalizeSearchText([signals.readmeText]), /\b(answer|solution|dap an|loi giai)\b/), 4],
+      ]),
+      evidence: evidenceList([
+        ...findPaths(signals.filePaths, /(answer|answers|solution|solutions|dap-an|loi-giai)/i, 'file', 'Đường dẫn đáp án hoặc lời giải.').slice(0, 4),
+        signals.hasAnswerOrSolution ? evidence('metadata', 'Phát hiện từ khóa đáp án hoặc lời giải.') : null,
+      ]),
+      warnings: [],
+    }),
+    criterion({
+      key: 'organization',
+      label: 'Tổ chức bộ đề thi',
+      maxScore: 20,
+      score: scorePart(20, [
+        [signals.hasFileList, 5],
+        [signals.organizedFolders, 5],
+        [contains(normalizeSearchText([...signals.filePaths]), /\b(20\d{2}|midterm|final|quiz|giua|cuoi)\b/), 5],
+        [signals.hasReadme, 5],
+      ]),
+      evidence: evidenceList([
+        signals.organizedFolders ? evidence('directory', 'Tài liệu thi được phân nhóm vào các thư mục.') : null,
+        signals.hasReadme ? evidence('readme', 'Phát hiện README hoặc đường dẫn README.') : null,
+      ]),
+      warnings: warnings.filter((warning) => warning.code === 'minimal_readme'),
+    }),
+    criterion({
+      key: 'study_context',
+      label: 'Ngữ cảnh học tập',
+      maxScore: 20,
+      score: scorePart(20, [
+        [signals.description !== null, 5],
+        [hasUsefulReadme(signals), 7],
+        [signals.topics.length > 0, 4],
+        [signals.updatedAt !== null, 4],
+      ]),
+      evidence: evidenceList([
+        signals.description ? evidence('metadata', 'Có mô tả.') : null,
+        hasUsefulReadme(signals) ? evidence('readme', 'README có ngữ cảnh hữu ích.') : null,
+      ]),
+      warnings: [],
+    }),
+    criterion({
+      key: 'material_hygiene',
+      label: 'Vệ sinh repo',
+      maxScore: 10,
+      score: warnings.some((warning) => warning.code === 'committed_build_artifacts') ? 5 : 10,
+      evidence: evidenceList([
+        signals.hasFileList ? evidence('metadata', 'Cây thư mục có sẵn để đánh giá vệ sinh.') : null,
+      ]),
+      warnings: warnings.filter((warning) => warning.code === 'committed_build_artifacts'),
+    }),
+    notApplicableCriterion('project_build_readiness', 'Sẵn sàng build project', 0, 'Không yêu cầu cho repo ôn thi.'),
+  ]
+}
+
+function buildMixedResourceCriteria(signals: RepoSignals, warnings: RepoEvaluationWarning[]): RepoEvaluationCriterion[] {
+  return [
+    criterion({
+      key: 'content_identification',
+      label: 'Nhận diện nội dung',
+      maxScore: 25,
+      score: scorePart(25, [
+        [signals.description !== null, 7],
+        [signals.hasReadme, 6],
+        [signals.hasFileList, 6],
+        [signals.topics.length > 0, 6],
+      ]),
+      evidence: evidenceList([
+        signals.description ? evidence('metadata', 'Có mô tả.') : null,
+        signals.hasReadme ? evidence('readme', 'Phát hiện README hoặc đường dẫn README.') : null,
+      ]),
+      warnings,
+    }),
+    criterion({
+      key: 'resource_coverage',
+      label: 'Mức độ bao phủ tài nguyên',
+      maxScore: 35,
+      score: scorePart(35, [
+        [signals.hasSourceCode, 8],
+        [signals.hasDocs || signals.hasNotes, 8],
+        [signals.hasSlides, 6],
+        [signals.hasExam, 6],
+        [signals.organizedFolders, 7],
+      ]),
+      evidence: evidenceList([
+        signals.hasSourceCode ? evidence('file', 'Phát hiện tín hiệu source code.') : null,
+        signals.hasDocs || signals.hasNotes ? evidence('file', 'Phát hiện tín hiệu tài liệu hoặc ghi chú.') : null,
+        signals.hasExam ? evidence('file', 'Phát hiện tín hiệu đề thi.') : null,
+      ]),
+      warnings: warnings.filter((warning) => warning.code === 'minimal_readme'),
+    }),
+    criterion({
+      key: 'safe_navigation',
+      label: 'Điều hướng an toàn',
+      maxScore: 20,
+      score: scorePart(20, [
+        [hasUsefulReadme(signals), 8],
+        [signals.hasFileList, 5],
+        [signals.organizedFolders, 5],
+        [warnings.every((warning) => warning.severity !== 'critical'), 2],
+      ]),
+      evidence: evidenceList([
+        hasUsefulReadme(signals) ? evidence('readme', 'README cung cấp ngữ cảnh hữu ích.') : null,
+        signals.organizedFolders ? evidence('directory', 'Cấu trúc thư mục giúp duyệt tài nguyên.') : null,
+      ]),
+      warnings: warnings.filter((warning) => warning.severity === 'critical'),
+    }),
+    criterion({
+      key: 'repository_hygiene',
+      label: 'Vệ sinh repo',
+      maxScore: 20,
+      score: warnings.some((warning) => warning.code === 'committed_build_artifacts') ? 10 : 20,
+      evidence: evidenceList([
+        signals.hasFileList ? evidence('metadata', 'Cây thư mục có sẵn để đánh giá vệ sinh.') : null,
+      ]),
+      warnings: warnings.filter((warning) => warning.code === 'committed_build_artifacts'),
+    }),
+  ]
+}
+
+function buildUnknownCriteria(courseGroup: CourseGroup, signals: RepoSignals, warnings: RepoEvaluationWarning[]): RepoEvaluationCriterion[] {
+  return [
+    criterion({
+      key: 'minimum_metadata',
+      label: 'Thông tin tối thiểu',
+      maxScore: 40,
+      score: scorePart(40, [
+        [signals.description !== null, 10],
+        [signals.hasReadme, 10],
+        [signals.hasFileList, 10],
+        [signals.primaryLanguage !== null || signals.techStacks.length > 0 || signals.topics.length > 0, 10],
+      ]),
+      evidence: evidenceList([
+        signals.description ? evidence('metadata', 'Có mô tả.') : null,
+        signals.hasReadme ? evidence('readme', 'Phát hiện README hoặc đường dẫn README.') : null,
+        signals.hasFileList ? evidence('metadata', 'Cây thư mục có sẵn.') : null,
+      ]),
+      warnings,
+    }),
+    criterion({
+      key: 'content_signal',
+      label: 'Tín hiệu nội dung chính',
+      maxScore: 40,
+      score: scorePart(40, [
+        [signals.hasSourceCode, 10],
+        [signals.hasDocs || signals.hasNotes || signals.hasSlides, 10],
+        [signals.hasExam, 10],
+        [courseGroup !== 'unknown', 10],
+      ]),
+      evidence: evidenceList([
+        signals.hasSourceCode ? evidence('file', 'Phát hiện tín hiệu source code.') : null,
+        signals.hasDocs || signals.hasNotes || signals.hasSlides ? evidence('file', 'Phát hiện tín hiệu tài liệu học tập.') : null,
+        signals.hasExam ? evidence('file', 'Phát hiện tín hiệu đề thi.') : null,
+      ]),
+      warnings: [],
+    }),
+    criterion({
+      key: 'safe_first_step',
+      label: 'Bước đầu an toàn',
+      maxScore: 20,
+      score: scorePart(20, [
+        [hasUsefulReadme(signals), 8],
+        [signals.hasFileList, 6],
+        [warnings.every((warning) => warning.severity !== 'critical'), 6],
+      ]),
+      evidence: evidenceList([
+        hasUsefulReadme(signals) ? evidence('readme', 'README có đủ nội dung để đọc lần đầu.') : null,
+        signals.hasFileList ? evidence('metadata', 'Có thể xem cây thư mục trước khi clone.') : null,
+      ]),
+      warnings: warnings.filter((warning) => warning.severity === 'critical'),
+    }),
+  ]
+}
+
+function criterion(input: {
+  key: string
+  label: string
+  score: number
+  maxScore: number
+  evidence: RepoEvaluationEvidence[]
+  warnings: RepoEvaluationWarning[]
+  applicability?: CriterionApplicability
+  confidence?: number
+}): RepoEvaluationCriterion {
+  const applicability = input.applicability ?? 'applicable'
+  const maxScore = Math.max(0, input.maxScore)
+  const scoreValue = applicability === 'applicable' ? Math.max(0, Math.min(maxScore, Math.round(input.score))) : 0
+  return {
+    key: input.key,
+    label: input.label,
+    score: scoreValue,
+    maxScore,
+    status: statusFor(scoreValue, maxScore, applicability),
+    applicability,
+    confidence: input.confidence ?? confidenceForCriterion(input.evidence, input.warnings, applicability),
+    evidence: input.evidence,
+    warnings: input.warnings,
+  }
+}
+
+function notApplicableCriterion(key: string, label: string, maxScore: number, message: string): RepoEvaluationCriterion {
+  return criterion({
+    key,
+    label,
+    maxScore,
+    score: 0,
+    applicability: 'not_applicable',
+    evidence: [evidence('metadata', message)],
+    warnings: [],
+    confidence: 100,
+  })
+}
+
+function statusFor(scoreValue: number, maxScore: number, applicability: CriterionApplicability): CriterionStatus {
+  if (applicability === 'not_applicable') return 'not_applicable'
+  if (applicability === 'unknown') return 'missing'
+  if (maxScore <= 0) return 'not_applicable'
+  const ratio = scoreValue / maxScore
+  if (ratio >= 0.8) return 'strong'
+  if (ratio >= 0.55) return 'ok'
+  if (ratio > 0) return 'weak'
+  return 'missing'
+}
+
+function confidenceForCriterion(evidenceItems: RepoEvaluationEvidence[], warnings: RepoEvaluationWarning[], applicability: CriterionApplicability): number {
+  if (applicability === 'not_applicable') return 100
+  if (applicability === 'unknown') return 20
+  const base = Math.min(80, evidenceItems.length * 20)
+  const penalty = warnings.some((warning) => warning.severity === 'critical') ? 25 : warnings.length * 8
+  return clampScore(base + 20 - penalty)
+}
+
+function normalizedScore(criteria: RepoEvaluationCriterion[]): number {
+  const applicable = criteria.filter((item) => item.applicability === 'applicable')
+  const maxScore = applicable.reduce((total, item) => total + item.maxScore, 0)
+  if (maxScore <= 0) return 0
+  return clampScore((applicable.reduce((total, item) => total + item.score, 0) / maxScore) * 100)
+}
+
+function normalizedScoreForKeys(criteria: RepoEvaluationCriterion[], keys: string[]): number | null {
+  const selected = criteria.filter((item) => keys.includes(item.key) && item.applicability === 'applicable')
+  if (selected.length === 0) return null
+  const maxScore = selected.reduce((total, item) => total + item.maxScore, 0)
+  if (maxScore <= 0) return null
+  return clampScore((selected.reduce((total, item) => total + item.score, 0) / maxScore) * 100)
+}
+
+function calculateTechnicalReadinessScore(repoType: RepoType, criteria: RepoEvaluationCriterion[], signals: RepoSignals): number | null {
+  if (!signals.hasSourceCode && !signals.hasPackageFile && !signals.hasBuildFile) return null
+  if (repoType === 'study_material' || repoType === 'exam_review') return null
+  if (repoType === 'programming_exercise') {
+    return normalizedScoreForKeys(criteria, ['relevant_implementation', 'validation_evidence', 'approach_explanation', 'file_organization_hygiene'])
+  }
+  if (repoType === 'project_practice') {
+    return normalizedScoreForKeys(criteria, ['expected_open_build_readiness', 'source_structure', 'observable_feature_completeness', 'test_validation_evidence', 'config_secret_hygiene', 'repository_hygiene'])
+  }
+  return normalizedScoreForKeys(criteria, ['content_signal', 'safe_first_step', 'repository_hygiene'])
+}
+
+function calculateRunReadinessScore(
+  repoType: RepoType,
+  criteria: RepoEvaluationCriterion[],
+  signals: RepoSignals,
+  warnings: RepoEvaluationWarning[],
+): number | null {
+  if (repoType === 'study_material' || repoType === 'exam_review') return null
+  if (!signals.hasSourceCode && !signals.hasPackageFile && !signals.hasBuildFile) return null
+  const base = repoType === 'programming_exercise'
+    ? normalizedScoreForKeys(criteria, ['relevant_implementation', 'validation_evidence'])
+    : normalizedScoreForKeys(criteria, ['expected_open_build_readiness', 'demo_manual_verification', 'test_validation_evidence', 'config_secret_hygiene'])
+  if (base === null) return null
+  const penalty = warnings.some((warning) => warning.severity === 'critical') ? 25 : warnings.filter((warning) => warning.severity === 'warning').length * 5
+  return clampScore(base - penalty)
+}
+
+function calculateEvidenceCoverage(criteria: RepoEvaluationCriterion[]): number {
+  const applicable = criteria.filter((item) => item.applicability === 'applicable')
+  if (applicable.length === 0) return 0
+  const covered = applicable.filter((item) => item.evidence.length > 0).length
+  return clampScore((covered / applicable.length) * 100)
+}
+
+function calculateEvaluationConfidence(
+  classificationConfidence: number,
+  evidenceCoverage: number,
+  criteria: RepoEvaluationCriterion[],
+  warnings: RepoEvaluationWarning[],
+): number {
+  const averageCriterionConfidence = criteria.length === 0
+    ? 0
+    : criteria.reduce((total, item) => total + item.confidence, 0) / criteria.length
+  const penalty = warnings.some((warning) => warning.severity === 'critical') ? 12 : warnings.length * 2
+  return clampScore((classificationConfidence * 0.35) + (evidenceCoverage * 0.35) + (averageCriterionConfidence * 0.3) - penalty)
+}
+
+function chooseRecommendationTag(input: {
+  repoType: RepoType
+  signals: RepoSignals
+  warnings: RepoEvaluationWarning[]
+  criteria: RepoEvaluationCriterion[]
+  classificationConfidence: number
+  evaluationConfidence: number
+  evidenceCoverage: number
+  learningUsefulnessScore: number
+  technicalReadinessScore: number | null
+  runReadinessScore: number | null
+}): RecommendationTag {
+  const hasCriticalWarning = input.warnings.some((warning) => warning.severity === 'critical')
+  const hasSeriousWarning = input.warnings.some((warning) => warning.severity === 'critical' || warning.code === 'committed_build_artifacts')
+  const hasMainContent = input.signals.hasSourceCode || input.signals.hasDocs || input.signals.hasNotes || input.signals.hasSlides || input.signals.hasExam
+  const hasSetupEvidence = input.signals.hasPackageFile || input.signals.hasBuildFile || hasUsefulReadme(input.signals)
+  const hasValidationOrDemo = input.signals.hasTests || hasDemoEvidence(input.signals)
+  const sparse = input.repoType === 'unknown'
+    || input.classificationConfidence < 42
+    || input.evidenceCoverage < 35
+    || (!input.signals.hasFileList && !input.signals.hasReadme && !input.signals.description)
+
+  if (sparse) return 'insufficient_data'
+
+  if (
+    hasMainContent
+    && hasSetupEvidence
+    && hasValidationOrDemo
+    && input.evaluationConfidence >= 70
+    && !hasCriticalWarning
+    && input.runReadinessScore !== null
+    && input.runReadinessScore >= 80
+  ) {
+    return 'ready_to_use'
+  }
+
+  if (
+    input.repoType === 'project_practice'
+    && input.signals.hasSourceCode
+    && input.signals.hasPackageFile
+    && (hasUsefulReadme(input.signals) || hasDemoEvidence(input.signals))
+    && input.technicalReadinessScore !== null
+    && input.technicalReadinessScore >= 72
+    && !hasSeriousWarning
+  ) {
+    return 'good_project_sample'
+  }
+
+  if (
+    (input.repoType === 'study_material' || input.repoType === 'exam_review')
+    && input.learningUsefulnessScore >= 68
+    && input.evaluationConfidence >= 55
+    && !hasCriticalWarning
+  ) {
+    return 'good_study_material'
+  }
+
+  if (
+    input.learningUsefulnessScore >= 45
+    && (!hasValidationOrDemo || input.runReadinessScore === null || input.runReadinessScore < 45 || hasSeriousWarning)
+  ) {
+    return hasSeriousWarning && input.learningUsefulnessScore < 65 ? 'reference_only' : 'needs_check'
+  }
+
+  if (input.learningUsefulnessScore >= 30 || hasMainContent) return 'reference_only'
+  return 'insufficient_data'
+}
+
+function buildReadyToUseFromRubric(repoType: RepoType, signals: RepoSignals, runReadinessScore: number | null, stars: number): { level: ReadyToUseLevel; label: string; stars: number; note: string } {
+  if (runReadinessScore === null) {
+    if (repoType === 'study_material' || repoType === 'exam_review') {
+      return {
+        level: signals.hasReadme || signals.hasFileList ? 'needs_check' : 'insufficient_data',
+        label: signals.hasReadme || signals.hasFileList ? readyToUseLabels.needs_check : readyToUseLabels.insufficient_data,
+        stars,
+        note: 'Repo này phù hợp đánh giá như tài liệu học; mức độ sẵn sàng chạy không áp dụng.',
+      }
+    }
+    return {
+      level: 'insufficient_data',
+      label: readyToUseLabels.insufficient_data,
+      stars,
+      note: 'Chưa đủ bằng chứng kỹ thuật để đánh giá mức sẵn sàng chạy.',
+    }
+  }
+  const level: ReadyToUseLevel = runReadinessScore >= 85 ? 'very_ready' : runReadinessScore >= 68 ? 'ready' : runReadinessScore >= 40 ? 'needs_check' : runReadinessScore >= 20 ? 'quick_reference' : 'insufficient_data'
+  return {
+    level,
+    label: readyToUseLabels[level],
+    stars,
+    note: level === 'very_ready' || level === 'ready'
+      ? 'Metadata cho thấy repo có thể chạy được, nhưng chưa xác minh build/test.'
+      : 'Metadata chưa đủ để xem repo này sẵn sàng clone và chạy.',
+  }
+}
+
+function mapRunReadinessToStars(value: number | null): number {
+  if (value === null) return 1
+  if (value >= 85) return 5
+  if (value >= 68) return 4
+  if (value >= 40) return 3
+  if (value >= 20) return 2
+  return 1
+}
+
+function buildRecommendationFromTag(tag: RecommendationTag, repoType: RepoType, signals: RepoSignals): string {
+  if (tag === 'ready_to_use') return 'Metadata cho thấy repo có thể dùng được, nhưng vẫn cần kiểm tra build/test local trước khi tin tưởng.'
+  if (tag === 'good_project_sample') return 'Phù hợp để học cấu trúc project sau khi kiểm tra setup, demo và cảnh báo.'
+  if (tag === 'good_study_material') return 'Hữu ích làm tài liệu học; đối chiếu với đề cương môn trước khi dùng chính thức.'
+  if (tag === 'reference_only') return 'Tham khảo có chọn lọc; thiếu bằng chứng nên không copy hay chạy mù.'
+  if (tag === 'needs_check') return 'Tham khảo sau khi kiểm tra; mở GitHub xem README, file, validation và cảnh báo trước.'
+  if (repoType === 'programming_exercise' && signals.hasSourceCode) return 'Chỉ xem source sau khi tìm được đề bài và sample case gốc.'
+  return 'Chưa đủ bằng chứng để đề xuất dùng trực tiếp.'
+}
+
+function getConfidenceFromScore(value: number, repoType: RepoType): ConfidenceLabel {
+  if (repoType === 'unknown' || value < 42) return 'low'
+  if (value >= 70) return 'high'
+  return 'medium'
+}
+
+function deriveStrengthsFromRubric(criteria: RepoEvaluationCriterion[], signals: RepoSignals): string[] {
+  const strong = criteria
+    .filter((item) => item.applicability === 'applicable' && (item.status === 'strong' || item.status === 'ok'))
+    .map((item) => `${item.label}: ${item.score}/${item.maxScore}.`)
+  return compact([
+    ...strong,
+    signals.description ? `Mô tả cho biết trọng tâm: ${truncate(signals.description, 110)}.` : null,
+  ], 4, ['Có một số metadata cơ bản để đánh giá sơ bộ.'])
+}
+
+function deriveWeaknessesFromRubric(
+  criteria: RepoEvaluationCriterion[],
+  warnings: RepoEvaluationWarning[],
+  repoType: RepoType,
+  signals: RepoSignals,
+  rating: UsefulnessRating,
+): string[] {
+  const weak = criteria
+    .filter((item) => item.applicability === 'applicable' && (item.status === 'weak' || item.status === 'missing'))
+    .map((item) => `${item.label}: evidence is weak or missing.`)
+  const warningMessages = warnings
+    .filter((warning) => warning.severity !== 'info')
+    .map((warning) => warning.message)
+  return compact([
+    !signals.hasReadme && repoType === 'project_practice' ? 'Missing README/setup guidance is a major weakness for a runnable project.' : null,
+    ...warningMessages,
+    ...weak,
+    ...buildWeaknesses(repoType, signals, rating),
+  ], 4, ['Chưa thấy điểm yếu lớn từ metadata hiện tại, nhưng vẫn cần kiểm tra trực tiếp trên GitHub.'])
+}
+
+function deriveActionsFromRubric(
+  criteria: RepoEvaluationCriterion[],
+  warnings: RepoEvaluationWarning[],
+  repoType: RepoType,
+  signals: RepoSignals,
+): string[] {
+  const missing = criteria.filter((item) => item.applicability === 'applicable' && (item.status === 'missing' || item.status === 'weak'))
+  const actions = compact([
+    warnings.some((warning) => warning.severity === 'critical') ? 'Kiểm tra file secret/config trước khi clone hoặc chạy.' : null,
+    warnings.some((warning) => warning.code === 'committed_build_artifacts') ? 'Kiểm tra file sinh tự động, tập trung vào source, bỏ qua bin/obj/.vs.' : null,
+    missing.find((item) => item.key.includes('validation') || item.key.includes('demo')) ? 'Tìm sample input/output, test, screenshot hoặc xác minh thủ công trước khi tin kết quả.' : null,
+    missing.find((item) => item.key.includes('setup') || item.key.includes('build')) ? 'Đọc README và file manifest để suy luận bước setup; đừng cho rằng build chạy được.' : null,
+    missing.find((item) => item.key.includes('description') || item.key.includes('goal')) ? 'Xác định rõ mục tiêu bài tập/project trước khi dùng repo này làm tham khảo.' : null,
+  ], 4)
+  return compact([...actions, ...buildNextActions(repoType, signals)], 4)
+}
+
+function detectRepositoryWarnings(repoType: RepoType, signals: RepoSignals): RepoEvaluationWarning[] {
+  const warnings: RepoEvaluationWarning[] = []
+  const artifactPaths = signals.filePaths.filter((path) => /(^|\/)(\.vs|bin\/debug|bin\/release|obj\/debug|obj\/release|target|dist|build|node_modules)(\/|$)/i.test(path))
+  if (artifactPaths.length > 0) {
+    warnings.push({
+      code: 'committed_build_artifacts',
+      severity: 'warning',
+      message: 'Repo có vẻ chứa file IDE/build được sinh tự động.',
+      paths: artifactPaths.slice(0, 8),
+    })
+  }
+  if (signals.hasReadme && !hasUsefulReadme(signals)) {
+    warnings.push({
+      code: 'minimal_readme',
+      severity: 'info',
+      message: 'README có tồn tại nhưng quá ngắn hoặc chưa đủ chi tiết.',
+    })
+  }
+  if ((repoType === 'programming_exercise' || repoType === 'project_practice') && !signals.hasTests) {
+    warnings.push({
+      code: 'missing_validation_evidence',
+      severity: 'warning',
+      message: 'Không thấy test, sample input/output hoặc bằng chứng xác thực từ metadata.',
+    })
+  }
+  if (repoType === 'project_practice' && !hasSetupGuidance(signals)) {
+    warnings.push({
+      code: 'missing_setup_guidance',
+      severity: 'warning',
+      message: 'File manifest project có thể có, nhưng không thấy hướng dẫn setup/run.',
+    })
+  }
+  if (repoType === 'project_practice' && !hasDemoEvidence(signals)) {
+    warnings.push({
+      code: 'missing_demo_evidence',
+      severity: 'info',
+      message: 'Không thấy screenshot, demo hoặc bằng chứng xác minh thủ công.',
+    })
+  }
+  if (needsExternalConfig(signals) && !signals.hasEnvExample && !signals.hasDockerConfig) {
+    warnings.push({
+      code: 'missing_config_template',
+      severity: 'warning',
+      message: 'Có vẻ cần cấu hình ngoài, nhưng không thấy .env example hoặc Docker config.',
+    })
+  }
+  const secretPaths = signals.filePaths.filter((path) => /(^|\/)(\.env|id_rsa|.*secret.*|.*credential.*|.*token.*|.*key.*)(\..*)?$/i.test(path) && !/\.env\.(example|sample|template)$/i.test(path))
+  if (secretPaths.length > 0) {
+    warnings.push({
+      code: 'possible_secret_file',
+      severity: 'critical',
+      message: 'Phát hiện đường dẫn có thể chứa secret hoặc credential trong cây thư mục.',
+      paths: secretPaths.slice(0, 6),
+    })
+  }
+  return warnings
+}
+
+function evidence(type: RepoEvaluationEvidence['type'], message: string, path?: string): RepoEvaluationEvidence {
+  return path ? { type, path, message } : { type, message }
+}
+
+function evidenceList(items: Array<RepoEvaluationEvidence | null | undefined>): RepoEvaluationEvidence[] {
+  const seen = new Set<string>()
+  const result: RepoEvaluationEvidence[] = []
+  for (const item of items) {
+    if (!item) continue
+    const key = `${item.type}:${item.path ?? ''}:${item.message}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    result.push(item)
+  }
+  return result
+}
+
+function findPaths(paths: string[], pattern: RegExp, type: RepoEvaluationEvidence['type'], message: string): RepoEvaluationEvidence[] {
+  return paths
+    .filter((path) => pattern.test(path))
+    .map((path) => evidence(type, message, path))
+}
+
+function findFirstPath(paths: string[], pattern: RegExp, type: RepoEvaluationEvidence['type'], message: string): RepoEvaluationEvidence | null {
+  const path = paths.find((item) => pattern.test(item))
+  return path ? evidence(type, message, path) : null
+}
+
+function scorePart(maxScore: number, values: Array<[boolean, number]>): number {
+  return Math.min(maxScore, scoreSignals(values))
+}
+
+function sourcePaths(signals: RepoSignals): string[] {
+  return signals.filePaths.filter((path) => sourceFilePattern.test(path))
+}
+
+function manifestPaths(signals: RepoSignals): string[] {
+  return signals.filePaths.filter((path) => projectConfigPattern.test(path) || buildFilePattern.test(path))
+}
+
+function hasUsefulReadme(signals: RepoSignals): boolean {
+  const readme = signals.readmeText?.trim() ?? ''
+  if (readme.length < 50) return false
+  const text = normalizeSearchText([readme])
+  return contains(text, /\b(setup|install|run|usage|feature|assignment|lab|exercise|algorithm|overview|description|guide|how to|requirement|demo|test|chapter|lecture|note)\b/)
+    || readme.split(/\s+/).length >= 30
+}
+
+function hasSetupGuidance(signals: RepoSignals): boolean {
+  return contains(normalizeSearchText([signals.readmeText]), /\b(setup|install|run|usage|build|open|visual studio|npm|mvn|gradle|dotnet|docker|compile)\b/)
+}
+
+function hasDemoEvidence(signals: RepoSignals): boolean {
+  return hasPath(signals.filePaths, /(demo|screenshot|screenshots|image|images|preview|manual|verification|docs?)\b|\.(png|jpe?g|gif|webp)$/i)
+    || contains(normalizeSearchText([signals.readmeText]), /\b(demo|screenshot|manual|feature|usage|preview|verification)\b/)
+}
+
+function needsExternalConfig(signals: RepoSignals): boolean {
+  return contains(normalizeSearchText([signals.name, signals.description, signals.readmeText, ...signals.filePaths, ...signals.techStacks]), /\b(api|database|db|server|backend|postgres|mysql|mongodb|firebase|supabase|auth|jwt|oauth|docker|deploy|cloud)\b/)
+}
+
+function hasSecretLikePaths(signals: RepoSignals): boolean {
+  return signals.filePaths.some((path) => /(^|\/)(\.env|id_rsa|.*secret.*|.*credential.*|.*token.*|.*key.*)(\..*)?$/i.test(path) && !/\.env\.(example|sample|template)$/i.test(path))
 }
 
 function normalizeFilePaths(value: OptionalRepoMetadata['files'] | OptionalRepoMetadata['paths'] | OptionalRepoMetadata['fileTree']): string[] {

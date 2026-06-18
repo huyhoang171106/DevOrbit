@@ -167,7 +167,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                         className="flex items-center gap-4 px-5 py-4 text-[16px] font-bold rounded-2xl text-orbit-text-secondary hover:text-orbit-text hover:bg-orbit-surface border border-transparent transition-[background-color,color,border-color] duration-200"
                       >
                         <BookmarkSimple className="h-5 w-5" weight="regular" />
-                        Bookmarks
+                        Đã đánh dấu
                       </Link>
                       <Link
                         to="/community"

@@ -296,7 +296,7 @@ public class GithubScanService {
         return readText(repoMetadata, "updated_at");
     }
 
-    private JsonNode fetchRepoMetadata(String owner, String repo) {
+    public JsonNode fetchRepoMetadata(String owner, String repo) {
         try {
             return webClient.get()
                 .uri("/repos/{owner}/{repo}", owner, repo)

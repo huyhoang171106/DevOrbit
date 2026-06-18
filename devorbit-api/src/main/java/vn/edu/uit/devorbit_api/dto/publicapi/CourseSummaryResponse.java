@@ -1,23 +1,30 @@
 package vn.edu.uit.devorbit_api.dto.publicapi;
 
 /**
- * COURSE SUMMARY = a compact representation of a course for list views.
+ * COURSE SUMMARY = lightweight course info for list views.
  *
- * Used by GET /api/courses and GET /api/admin/courses.
- * Contains only the fields needed for a course card/row display.
+ * Used in: GET /api/courses (public) and GET /api/admin/courses (admin).
+ * Contains ONLY fields needed to render a course card/row — no heavy joins.
  *
- * NOTE: The field "loaiMonHoc" (Vietnamese) corresponds to "subjectType"
- * in CourseDetailResponse. Same concept, different name for historical reasons.
- * loaiMonHoc values: "DAI_CUONG" (general), "CHUYEN_NGANH" (major), "CO_SO" (foundation)
+ * The repoCount field is computed via LEFT JOIN COUNT in the repository,
+ * not stored in the database. This avoids an extra column that needs syncing.
+ *
+ * loaiMonHoc values:
+ *   DAI_CUONG     — General education (e.g., English, Math)
+ *   CHUYEN_NGANH  — Major/specialization course
+ *   CO_SO         — Foundation course
+ *
+ * Note: loaiMonHoc here = subjectType in CourseDetailResponse.
+ * Same field, different name for historical consistency.
  */
 public record CourseSummaryResponse(
     Long id,
-    String code,
-    String name,
-    String description,
-    Long repoCount,
-    Integer semester,
-    int credits,
-    String loaiMonHoc,
-    String managementUnit
+    String code,              // Course code (maMH), e.g., "SE101"
+    String name,              // Course name in Vietnamese (tenMH)
+    String description,       // Brief course description
+    Long repoCount,           // Number of approved GitHub repos linked
+    Integer semester,         // Recommended semester (1-9)
+    int credits,              // Credit hours (soTC)
+    String loaiMonHoc,        // Subject type classification
+    String managementUnit     // Department: "CNPM", "HTTT", etc.
 ) {}

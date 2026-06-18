@@ -18,11 +18,15 @@ import vn.edu.uit.devorbit_api.entity.Course;
 import vn.edu.uit.devorbit_api.entity.GithubRepo;
 import vn.edu.uit.devorbit_api.entity.TechStack;
 import vn.edu.uit.devorbit_api.exception.NotFoundException;
+import vn.edu.uit.devorbit_api.exception.BadRequestException;
+import com.fasterxml.jackson.databind.JsonNode;
 import vn.edu.uit.devorbit_api.repository.*;
+import vn.edu.uit.devorbit_api.service.ai.RepoEvaluationService;
 
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import vn.edu.uit.devorbit_api.entity.NoteTargetType;
@@ -39,6 +43,7 @@ public class GithubRepoService {
     private final NoteRepository noteRepository;
     private final RepoVoteRepository repoVoteRepository;
     private final RepoReviewRepository repoReviewRepository;
+    private final RepoEvaluationService repoEvaluationService;
 
     // Self-inject for proxy-aware @Cacheable + @Async from same class
     @Autowired @Lazy
@@ -58,18 +63,25 @@ public class GithubRepoService {
         }
         // Fire async refresh in background — cached response returns immediately
         try { self.asyncRefreshLastPushedAt(repoId); } catch (Exception ignored) {}
-        return mapToRepoSummary(repo);
+        Map<Long, double[]> statsMap = buildReviewStatsMap(List.of(repoId));
+        double[] stats = statsMap.getOrDefault(repoId, new double[]{0, 0.0});
+        return mapToRepoSummary(repo, (int) stats[0], stats[1]);
     }
 
     @Transactional(readOnly = true)
     @Cacheable(value = "reposByCourse", unless = "#result.isEmpty()")
     public List<RepoSummaryResponse> getApprovedReposByCourse(Long courseId) {
-        List<RepoSummaryResponse> responses = githubRepoRepository
-                .findByCourseIdAndActiveTrue(courseId).stream()
-                .map(this::mapToRepoSummary)
+        List<GithubRepo> repos = githubRepoRepository.findByCourseIdAndActiveTrue(courseId);
+        List<Long> repoIds = repos.stream().map(GithubRepo::getId).toList();
+        Map<Long, double[]> statsMap = buildReviewStatsMap(repoIds);
+        List<RepoSummaryResponse> responses = repos.stream()
+                .map(repo -> {
+                    double[] stats = statsMap.getOrDefault(repo.getId(), new double[]{0, 0.0});
+                    return mapToRepoSummary(repo, (int) stats[0], stats[1]);
+                })
                 .toList();
         // Fire async refresh for any repos needing GitHub data
-        for (var repo : githubRepoRepository.findByCourseIdAndActiveTrue(courseId)) {
+        for (var repo : repos) {
             if (repo.getLastPushedAt() == null || repo.getLastPushedAt().isBlank()) {
                 try { self.asyncRefreshLastPushedAt(repo.getId()); } catch (Exception ignored) {}
             }
@@ -82,8 +94,13 @@ public class GithubRepoService {
     public List<RepoSummaryResponse> getAllApprovedRepos() {
         List<GithubRepo> repos = githubRepoRepository.findByActiveTrue();
         log.info("getAllApprovedRepos: found {} active repos", repos.size());
+        List<Long> repoIds = repos.stream().map(GithubRepo::getId).toList();
+        Map<Long, double[]> statsMap = buildReviewStatsMap(repoIds);
         List<RepoSummaryResponse> responses = repos.stream()
-                .map(this::mapToRepoSummary)
+                .map(repo -> {
+                    double[] stats = statsMap.getOrDefault(repo.getId(), new double[]{0, 0.0});
+                    return mapToRepoSummary(repo, (int) stats[0], stats[1]);
+                })
                 .toList();
         // Async refresh in background
         for (var repo : repos) {
@@ -96,8 +113,14 @@ public class GithubRepoService {
 
     @Transactional(readOnly = true)
     public List<RepoSummaryResponse> getApprovedReposByCourseAndTechStack(Long courseId, String techStack) {
-        return githubRepoRepository.findByCourseIdAndActiveTrueAndTechStack(courseId, techStack).stream()
-                .map(this::mapToRepoSummary)
+        List<GithubRepo> repos = githubRepoRepository.findByCourseIdAndActiveTrueAndTechStack(courseId, techStack);
+        List<Long> repoIds = repos.stream().map(GithubRepo::getId).toList();
+        Map<Long, double[]> statsMap = buildReviewStatsMap(repoIds);
+        return repos.stream()
+                .map(repo -> {
+                    double[] stats = statsMap.getOrDefault(repo.getId(), new double[]{0, 0.0});
+                    return mapToRepoSummary(repo, (int) stats[0], stats[1]);
+                })
                 .toList();
     }
 
@@ -129,9 +152,13 @@ public class GithubRepoService {
             repo.setSubjectId(course.getMaMH());
         }
 
-        RepoSummaryResponse saved = mapToRepoSummary(githubRepoRepository.save(repo));
+        repoEvaluationService.evaluateRepo(repo);
+        GithubRepo saved = githubRepoRepository.save(repo);
+        Map<Long, double[]> statsMap = buildReviewStatsMap(List.of(saved.getId()));
+        double[] stats = statsMap.getOrDefault(saved.getId(), new double[]{0, 0.0});
+        RepoSummaryResponse response = mapToRepoSummary(saved, (int) stats[0], stats[1]);
         log.info("updateApprovedRepo: updated repo id={} active={}", repoId, request.active());
-        return saved;
+        return response;
     }
 
     @Transactional
@@ -149,6 +176,66 @@ public class GithubRepoService {
         repo.setActive(false);
         githubRepoRepository.save(repo);
         log.info("deleteApprovedRepo: deactivated repo id={} with cleaned dependents", repoId);
+    }
+
+    @Transactional
+    @CacheEvict(value = {"reposByCourse", "repoById", "allRepos"}, allEntries = true)
+    public RepoSummaryResponse syncApprovedRepo(Long repoId) {
+        GithubRepo repo = githubRepoRepository.findById(repoId)
+                .orElseThrow(() -> new NotFoundException("Repo not found: " + repoId));
+
+        RepoSlug slug = parseGithubSlug(repo.getGithubUrl());
+        if (slug == null) {
+            throw new BadRequestException("Invalid GitHub URL for repo: " + repoId);
+        }
+
+        // 1. Fetch Repository Metadata from GitHub
+        JsonNode metadata = githubScanService.fetchRepoMetadata(slug.owner(), slug.name());
+        if (metadata != null && !metadata.isMissingNode()) {
+            if (metadata.path("description").asText(null) != null && (repo.getDescription() == null || repo.getDescription().isBlank())) {
+                repo.setDescription(metadata.path("description").asText(null));
+            }
+            String lang = metadata.path("language").asText(null);
+            if (lang != null && !lang.isBlank()) {
+                repo.setPrimaryLanguage(lang);
+            }
+            if (!metadata.path("stargazers_count").isMissingNode()) {
+                repo.setStars(metadata.path("stargazers_count").asInt(0));
+            }
+            String lastPushed = githubScanService.resolveLatestActivityAt(slug.owner(), slug.name(), metadata);
+            if (lastPushed != null) {
+                repo.setLastPushedAt(lastPushed);
+            }
+        }
+
+        // 2. Fetch README and File Tree
+        GithubScanService.RepositoryContext context = githubScanService.fetchRepositoryContext(slug.owner(), slug.name());
+        if (context.readmeExcerpt() != null) {
+            repo.setReadmeExcerpt(context.readmeExcerpt());
+        }
+        if (context.fileTree() != null) {
+            repo.setFileTree(context.fileTree());
+        }
+        if (context.hasReadme() != null) {
+            repo.setHasReadme(context.hasReadme());
+        } else if (context.readmeExcerpt() != null) {
+            repo.setHasReadme(true);
+        }
+
+        // 3. Resolve tech stack if empty
+        if ((repo.getTechStacks() == null || repo.getTechStacks().isEmpty()) 
+            && repo.getPrimaryLanguage() != null && !repo.getPrimaryLanguage().isBlank()) {
+            repo.setTechStacks(resolveTechStacks(List.of(repo.getPrimaryLanguage())));
+        }
+
+        // 4. Re-evaluate
+        repoEvaluationService.evaluateRepo(repo);
+
+        GithubRepo saved = githubRepoRepository.save(repo);
+        log.info("syncApprovedRepo: successfully synced metadata and re-evaluated repo id={} ({})", repoId, repo.getGithubUrl());
+        Map<Long, double[]> statsMap = buildReviewStatsMap(List.of(saved.getId()));
+        double[] stats = statsMap.getOrDefault(saved.getId(), new double[]{0, 0.0});
+        return mapToRepoSummary(saved, (int) stats[0], stats[1]);
     }
 
     // =====================================================================
@@ -211,7 +298,14 @@ public class GithubRepoService {
     // DTO MAPPING
     // =====================================================================
 
+    @Transactional(readOnly = true)
     public RepoSummaryResponse mapToRepoSummary(GithubRepo repo) {
+        Map<Long, double[]> statsMap = buildReviewStatsMap(List.of(repo.getId()));
+        double[] stats = statsMap.getOrDefault(repo.getId(), new double[]{0, 0.0});
+        return mapToRepoSummary(repo, (int) stats[0], stats[1]);
+    }
+
+    public RepoSummaryResponse mapToRepoSummary(GithubRepo repo, int reviewCount, double averageRating) {
         Long courseId = null;
         String courseCode = null;
         String courseName = null;
@@ -237,8 +331,27 @@ public class GithubRepoService {
                 repo.getFileTree(),
                 repo.getHasReadme(),
                 repo.getLastPushedAt(),
-                repo.getApprovedAt() != null ? repo.getApprovedAt().toString() : null
+                repo.getApprovedAt() != null ? repo.getApprovedAt().toString() : null,
+                repo.getRepoType(),
+                repo.getUsefulnessRating(),
+                repo.getUsefulnessScore(),
+                repo.getReadyToUseLevel(),
+                reviewCount,
+                averageRating
         );
+    }
+
+    // =====================================================================
+    // REVIEW STATS HELPERS
+    // =====================================================================
+
+    private Map<Long, double[]> buildReviewStatsMap(List<Long> repoIds) {
+        if (repoIds == null || repoIds.isEmpty()) return Map.of();
+        return repoReviewRepository.countAndAverageByRepoIds(repoIds).stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> new double[]{((Number) row[1]).longValue(), ((Number) row[2]).doubleValue()}
+                ));
     }
 
     // =====================================================================

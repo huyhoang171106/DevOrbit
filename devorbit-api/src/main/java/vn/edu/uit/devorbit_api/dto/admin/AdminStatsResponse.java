@@ -127,4 +127,23 @@ public class AdminStatsResponse {
          */
         private String status;
     }
+
+    private List<RepoStatsEntry> topFavoritedRepos;
+    private List<RepoStatsEntry> topViewedRepos;
+
+    @Data @Builder @NoArgsConstructor @AllArgsConstructor
+    public static class RepoStatsEntry {
+        private Long repoId;
+        private String repoName;
+        private String githubUrl;
+        private String courseName;
+        private String primaryLanguage;
+        private long count;
+        private long bookmarkCount;
+        private double averageRating;
+        private long reviewCount;
+        private long voteScore;
+        private long viewCount;
+        private double popularityScore;
+    }
 }

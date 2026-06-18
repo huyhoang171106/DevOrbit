@@ -35,6 +35,9 @@ public interface RepoVoteRepository extends JpaRepository<RepoVote, Long> {
     Integer sumVoteValueByRepoId(Long repoId);
 
     /** Delete all votes for one repo (cascade cleanup). */
+    @Query("SELECT v.repo.id, COUNT(v) FROM RepoVote v WHERE v.voteValue > 0 GROUP BY v.repo.id")
+    List<Object[]> upvoteCountGroupByRepoId();
+
     void deleteByRepoId(Long repoId);
 
     /** Delete all votes for MULTIPLE repos (batch cleanup). */

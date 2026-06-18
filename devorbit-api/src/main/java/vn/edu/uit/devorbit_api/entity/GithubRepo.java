@@ -125,5 +125,14 @@ public class GithubRepo {
     /** AI-evaluated readiness level: e.g. "ready", "needs-work", "incomplete" */
     @Column(name = "ready_to_use_level", length = 50)
     private String readyToUseLevel;
-}
 
+    /** Number of times this repo has been viewed by students */
+    @Column(name = "view_count")
+    @Builder.Default
+    private Integer viewCount = 0;
+
+    @PostLoad
+    public void ensureDefaults() {
+        if (viewCount == null) viewCount = 0;
+    }
+}

@@ -1,6 +1,8 @@
 package vn.edu.uit.devorbit_api.repository;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import vn.edu.uit.devorbit_api.entity.StudentBookmark;
 
@@ -36,4 +38,7 @@ public interface StudentBookmarkRepository extends JpaRepository<StudentBookmark
 
     /** Remove bookmarks for multiple targets (batch cascade cleanup). */
     void deleteByTargetTypeAndTargetIdIn(String targetType, List<Long> targetIds);
+
+    @Query("SELECT b.targetId, COUNT(b) as cnt FROM StudentBookmark b WHERE b.targetType = 'REPO' GROUP BY b.targetId ORDER BY cnt DESC")
+    List<Object[]> findTopBookmarkedRepoIds(Pageable pageable);
 }

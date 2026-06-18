@@ -31,7 +31,7 @@ public class TechStackDataInitializer {
     private final TechStackRepository techStackRepository;
 
     @EventListener(ApplicationReadyEvent.class)
-    @Transactional
+    @Transactional(noRollbackFor = Exception.class)
     public void init() {
         try {
             List<GithubRepo> repos = githubRepoRepository.findAll();

@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LabelList,
 } from 'recharts'
@@ -7,7 +7,13 @@ import { useAdminFetch } from '../../../lib/adminHooks'
 import { AdminSpinner } from '../shared/AdminSpinner'
 import { AdminErrorBanner } from '../shared/AdminErrorBanner'
 
-type TimeFilter = 'week' | 'month'
+type TimeFilter = 'day' | 'week' | 'month'
+
+const FILTER_OPTIONS: { key: TimeFilter; label: string }[] = [
+  { key: 'day', label: 'Ngày' },
+  { key: 'week', label: 'Tuần' },
+  { key: 'month', label: 'Tháng' },
+]
 
 interface Bucket {
   key: string
@@ -17,20 +23,7 @@ interface Bucket {
   count: number
 }
 
-interface WeekStat {
-  monday: Date
-  label: string
-  count: number
-}
-
-const MIN_MONDAY = (() => {
-  const d = new Date(2026, 3, 15)
-  const day = d.getDay()
-  const diff = day === 0 ? -6 : 1 - day
-  d.setDate(d.getDate() + diff)
-  d.setHours(0, 0, 0, 0)
-  return d
-})()
+const MIN_DATE = new Date(2026, 3, 15)
 
 function pad2(n: number): string {
   return String(n).padStart(2, '0')
@@ -49,36 +42,69 @@ function getMonday(d: Date): Date {
   return date
 }
 
+function getWeekKey(date: Date): string {
+  const monday = getMonday(date)
+  return `${monday.getFullYear()}-${pad2(monday.getMonth() + 1)}-${pad2(monday.getDate())}`
+}
+
 function getBucketKey(date: Date, filter: TimeFilter): string {
   const y = date.getFullYear()
   const m = pad2(date.getMonth() + 1)
-  if (filter === 'month') return `${y}-${m}`
-  return `${y}-${m}-${pad2(date.getDate())}`
+  const d = pad2(date.getDate())
+  switch (filter) {
+    case 'day': return `${y}-${m}-${d}`
+    case 'week': return getWeekKey(date)
+    case 'month': return `${y}-${m}`
+  }
 }
 
 function getBucketLabel(key: string, filter: TimeFilter): string {
-  if (filter === 'week') {
-    const [y, m, d] = key.split('-').map(Number)
-    const date = new Date(y, m - 1, d)
-    const vietDays = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
-    return `${vietDays[date.getDay()]} ${formatDateShort(date)}`
+  switch (filter) {
+    case 'day': {
+      const [y, m, d] = key.split('-').map(Number)
+      const date = new Date(y, m - 1, d)
+      const vietDays = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7']
+      return `${vietDays[date.getDay()]} ${formatDateShort(date)}`
+    }
+    case 'week': {
+      const [y, m, d] = key.split('-').map(Number)
+      const monday = new Date(y, m - 1, d)
+      const sunday = new Date(monday)
+      sunday.setDate(sunday.getDate() + 6)
+      return `${formatDateShort(monday)} → ${formatDateShort(sunday)}`
+    }
+    case 'month': {
+      const [, mStr] = key.split('-')
+      return `Tháng ${parseInt(mStr, 10)}`
+    }
   }
-  const [, m] = key.split('-')
-  return `Tháng ${parseInt(m, 10)}`
 }
 
 function getBucketRange(key: string, filter: TimeFilter): { start: Date; end: Date } {
-  if (filter === 'month') {
-    const [y, m] = key.split('-').map(Number)
-    return {
-      start: new Date(y, m - 1, 1, 0, 0, 0, 0),
-      end: new Date(y, m, 0, 23, 59, 59, 999),
+  switch (filter) {
+    case 'day': {
+      const [y, m, d] = key.split('-').map(Number)
+      return {
+        start: new Date(y, m - 1, d, 0, 0, 0, 0),
+        end: new Date(y, m - 1, d, 23, 59, 59, 999),
+      }
     }
-  }
-  const [y, m, d] = key.split('-').map(Number)
-  return {
-    start: new Date(y, m - 1, d, 0, 0, 0, 0),
-    end: new Date(y, m - 1, d, 23, 59, 59, 999),
+    case 'week': {
+      const [y, m, d] = key.split('-').map(Number)
+      const monday = new Date(y, m - 1, d)
+      monday.setHours(0, 0, 0, 0)
+      const sunday = new Date(monday)
+      sunday.setDate(sunday.getDate() + 6)
+      sunday.setHours(23, 59, 59, 999)
+      return { start: monday, end: sunday }
+    }
+    case 'month': {
+      const [y, m] = key.split('-').map(Number)
+      return {
+        start: new Date(y, m - 1, 1, 0, 0, 0, 0),
+        end: new Date(y, m, 0, 23, 59, 59, 999),
+      }
+    }
   }
 }
 
@@ -92,151 +118,95 @@ function formatDateTime(iso: string | null | undefined): string {
   })
 }
 
+/** Generate contiguous empty buckets between min date and now for the given filter */
+function generateEmptyBuckets(
+  repos: { approvedAt?: string | null }[],
+  filter: TimeFilter,
+): Bucket[] {
+  const now = new Date()
+  let minTime = Infinity
+
+  for (const r of repos) {
+    if (!r.approvedAt) continue
+    const d = new Date(r.approvedAt)
+    if (isNaN(d.getTime())) continue
+
+    if (filter === 'day') {
+      const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+      if (dayStart < minTime) minTime = dayStart
+    } else if (filter === 'week') {
+      const monday = getMonday(d).getTime()
+      if (monday < minTime) minTime = monday
+    } else {
+      const monthStart = new Date(d.getFullYear(), d.getMonth(), 1).getTime()
+      if (monthStart < minTime) minTime = monthStart
+    }
+  }
+
+  if (minTime === Infinity) return []
+
+  const buckets: Bucket[] = []
+  const cursor = new Date(Math.max(minTime, MIN_DATE.getTime()))
+
+  // align cursor to start of period
+  if (filter === 'week') {
+    const c = getMonday(cursor)
+    cursor.setTime(c.getTime())
+  } else if (filter === 'month') {
+    cursor.setDate(1)
+  } else {
+    cursor.setHours(0, 0, 0, 0)
+  }
+
+  const periodEnd = new Date(now)
+  if (filter === 'month') {
+    // cap at current month
+    periodEnd.setDate(1)
+    periodEnd.setMonth(periodEnd.getMonth() + 1)
+    periodEnd.setDate(0) // last day of current month
+  }
+
+  while (cursor.getTime() <= periodEnd.getTime()) {
+    const key = getBucketKey(cursor, filter)
+    const range = getBucketRange(key, filter)
+    buckets.push({
+      key,
+      label: getBucketLabel(key, filter),
+      start: range.start,
+      end: range.end,
+      count: 0,
+    })
+
+    // advance cursor
+    switch (filter) {
+      case 'day':
+        cursor.setDate(cursor.getDate() + 1)
+        break
+      case 'week':
+        cursor.setDate(cursor.getDate() + 7)
+        break
+      case 'month':
+        cursor.setMonth(cursor.getMonth() + 1)
+        break
+    }
+  }
+
+  return buckets
+}
+
 export function RepoStatsTab() {
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>('week')
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>('month')
   const [selectedBucket, setSelectedBucket] = useState<Bucket | null>(null)
-  const [selectedMonday, setSelectedMonday] = useState<Date>(() => getMonday(new Date()))
 
   const { data: repos, loading, error, refetch } = useAdminFetch(
     (t) => adminApi.getApprovedRepos(t),
     [],
   )
 
-  const currentMonday = useMemo(() => getMonday(new Date()), [])
-
-  const goPrevWeek = useCallback(() => {
-    setSelectedMonday((prev) => {
-      const next = new Date(prev)
-      next.setDate(next.getDate() - 7)
-      if (next.getTime() < MIN_MONDAY.getTime()) return prev
-      return next
-    })
-    setSelectedBucket(null)
-  }, [])
-
-  const goNextWeek = useCallback(() => {
-    setSelectedMonday((prev) => {
-      const next = new Date(prev)
-      next.setDate(next.getDate() + 7)
-      if (next.getTime() > currentMonday.getTime()) return prev
-      return next
-    })
-    setSelectedBucket(null)
-  }, [currentMonday])
-
-  const weekOptions = useMemo(() => {
-    const seen = new Set<number>()
-    const options: { monday: Date; label: string }[] = []
-
-    if (repos) {
-      for (const r of repos) {
-        if (!r.approvedAt) continue
-        const d = new Date(r.approvedAt)
-        if (isNaN(d.getTime())) continue
-        const monday = getMonday(d)
-        const ts = monday.getTime()
-        if (seen.has(ts) || ts < MIN_MONDAY.getTime() || ts > currentMonday.getTime()) continue
-        seen.add(ts)
-        options.push({ monday, label: formatDateShort(monday) })
-      }
-    }
-
-    const curTs = currentMonday.getTime()
-    if (curTs >= MIN_MONDAY.getTime() && !seen.has(curTs)) {
-      options.push({
-        monday: currentMonday,
-        label: formatDateShort(currentMonday),
-      })
-      seen.add(curTs)
-    }
-
-    const selTs = selectedMonday.getTime()
-    if (!seen.has(selTs)) {
-      options.push({ monday: selectedMonday, label: formatDateShort(selectedMonday) })
-    }
-
-    options.sort((a, b) => b.monday.getTime() - a.monday.getTime())
-    return options
-  }, [repos, currentMonday, selectedMonday])
-
-  const weekStats = useMemo(() => {
-    if (!repos || timeFilter !== 'week') return []
-    const map = new Map<number, WeekStat>()
-    for (const r of repos) {
-      if (!r.approvedAt) continue
-      const d = new Date(r.approvedAt)
-      if (isNaN(d.getTime())) continue
-      const monday = getMonday(d)
-      const ts = monday.getTime()
-      if (map.has(ts)) {
-        map.get(ts)!.count++
-      } else {
-        map.set(ts, { monday, label: '', count: 1 })
-      }
-    }
-    return Array.from(map.values())
-      .filter((s) => s.monday.getTime() >= MIN_MONDAY.getTime() && s.monday.getTime() <= currentMonday.getTime())
-      .sort((a, b) => b.monday.getTime() - a.monday.getTime())
-      .map((s) => {
-        const sunday = new Date(s.monday)
-        sunday.setDate(sunday.getDate() + 6)
-        return { ...s, label: `${formatDateShort(s.monday)} → ${formatDateShort(sunday)}` }
-      })
-  }, [repos, timeFilter, currentMonday])
-
   const buckets = useMemo(() => {
     if (!repos) return []
 
-    const emptyBuckets: Bucket[] = []
-
-    if (timeFilter === 'week') {
-      for (let i = 0; i < 7; i++) {
-        const d = new Date(selectedMonday)
-        d.setDate(d.getDate() + i)
-        const key = getBucketKey(d, 'week')
-        emptyBuckets.push({
-          key,
-          label: getBucketLabel(key, 'week'),
-          ...getBucketRange(key, 'week'),
-          count: 0,
-        })
-      }
-    } else {
-      let minMonth = Infinity
-      for (const r of repos) {
-        if (!r.approvedAt) continue
-        const d = new Date(r.approvedAt)
-        if (isNaN(d.getTime())) continue
-        const m = d.getFullYear() * 12 + d.getMonth()
-        if (m < minMonth) minMonth = m
-      }
-
-      if (minMonth === Infinity) return []
-
-      const startYear = Math.floor(minMonth / 12)
-      const startMonth = minMonth % 12
-      const now = new Date()
-      const endMonth = now.getMonth() <= 6 ? 6 : now.getMonth()
-      const endYear = now.getFullYear()
-
-      let year = startYear
-      let month = startMonth
-      while (year < endYear || (year === endYear && month <= endMonth)) {
-        const key = `${year}-${pad2(month + 1)}`
-        emptyBuckets.push({
-          key,
-          label: getBucketLabel(key, 'month'),
-          ...getBucketRange(key, 'month'),
-          count: 0,
-        })
-        month++
-        if (month > 11) {
-          month = 0
-          year++
-        }
-      }
-    }
-
+    const emptyBuckets = generateEmptyBuckets(repos, timeFilter)
     const bucketMap = new Map(emptyBuckets.map((b) => [b.key, b]))
 
     for (const r of repos) {
@@ -249,7 +219,7 @@ export function RepoStatsTab() {
     }
 
     return Array.from(bucketMap.values())
-  }, [repos, timeFilter, selectedMonday])
+  }, [repos, timeFilter])
 
   const bucketRepos = useMemo(() => {
     if (!selectedBucket || !repos) return []
@@ -265,134 +235,99 @@ export function RepoStatsTab() {
 
   const chartData = buckets.map((b) => ({ name: b.label, count: b.count, bucket: b }))
   const totalRepos = buckets.reduce((s, b) => s + b.count, 0)
-  const grandTotal = timeFilter === 'week'
-    ? weekStats.reduce((s, w) => s + w.count, 0)
-    : totalRepos
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-4 flex-wrap">
-        <select
-          value={timeFilter}
-          onChange={(e) => { setSelectedBucket(null); setTimeFilter(e.target.value as TimeFilter) }}
-          className="input-field w-auto"
-        >
-          <option value="week">Tuần</option>
-          <option value="month">Tháng</option>
-        </select>
-
-        {timeFilter === 'week' && (
-          <>
-            <select
-              value={selectedMonday.getTime()}
-              onChange={(e) => {
-                setSelectedBucket(null)
-                setSelectedMonday(new Date(Number(e.target.value)))
-              }}
-              className="input-field w-auto text-sm"
+      {/* Filter toggle */}
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <div className="flex gap-1 bg-[var(--color-surface)] rounded-lg p-1 border border-[#334155]">
+          {FILTER_OPTIONS.map((opt) => (
+            <button
+              key={opt.key}
+              onClick={() => { setSelectedBucket(null); setTimeFilter(opt.key) }}
+              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+                timeFilter === opt.key
+                  ? 'bg-[#3b82f6] text-white shadow-sm'
+                  : 'text-[#94a3b8] hover:text-[#f1f5f9]'
+              }`}
             >
-              {weekOptions.map((opt) => (
-                <option key={opt.monday.getTime()} value={opt.monday.getTime()}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-
-            <div className="flex items-center gap-1">
-              <button
-                onClick={goPrevWeek}
-                disabled={selectedMonday.getTime() <= MIN_MONDAY.getTime()}
-                className="flex items-center justify-center w-7 h-7 rounded-md border border-[#334155] bg-[var(--color-surface)] hover:bg-[#1e293b] disabled:opacity-30 disabled:cursor-not-allowed text-[#94a3b8] transition-colors"
-                title="Tuần trước"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="15 18 9 12 15 6" />
-                </svg>
-              </button>
-
-              <span className="text-sm text-[#94a3b8] min-w-[120px] text-center select-none">
-                {formatDateShort(selectedMonday)} → {formatDateShort(new Date(selectedMonday.getTime() + 6 * 86400000))}
-              </span>
-
-              <button
-                onClick={goNextWeek}
-                disabled={selectedMonday.getTime() >= currentMonday.getTime()}
-                className="flex items-center justify-center w-7 h-7 rounded-md border border-[#334155] bg-[var(--color-surface)] hover:bg-[#1e293b] disabled:opacity-30 disabled:cursor-not-allowed text-[#94a3b8] transition-colors"
-                title="Tuần sau"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </button>
-            </div>
-          </>
-        )}
-
-        <span className="text-sm text-ink-muted">
+              {opt.label}
+            </button>
+          ))}
+        </div>
+        <span className="text-sm text-[#94a3b8]">
           {totalRepos} repo
         </span>
       </div>
 
+      {/* Chart */}
       <div className="rounded-xl p-5 mb-4 border border-[#1e293b] bg-[var(--color-surface)]">
-        <ResponsiveContainer width="100%" height={250}>
-          <BarChart data={chartData} margin={{ top: 20, right: 16, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="4 4" stroke="#334155" />
-            <XAxis
-              dataKey="name"
-              tick={{ fontSize: 12, fill: '#94a3b8' }}
-              interval={0}
-              angle={timeFilter === 'month' ? -15 : 0}
-              textAnchor={timeFilter === 'month' ? 'end' : 'middle'}
-              height={timeFilter === 'month' ? 40 : 30}
-            />
-            <YAxis allowDecimals={false} width={40} tick={{ fontSize: 12, fill: '#94a3b8' }} />
-            <Tooltip
-              contentStyle={{
-                background: '#0f172a',
-                border: '1px solid #334155',
-                borderRadius: 8,
-                color: '#f1f5f9',
-                fontSize: 13,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-              }}
-              formatter={(value) => [value, 'Số repo']}
-            />
-            <Bar
-              dataKey="count"
-              radius={[4, 4, 0, 0]}
-              cursor="pointer"
-              onClick={(data) => {
-                const payload = data as { bucket?: Bucket } | null
-                if (payload && payload.bucket) {
-                  setSelectedBucket(payload.bucket)
-                }
-              }}
-            >
-              <LabelList dataKey="count" position="top" fontSize={12} fill="#f1f5f9" fontWeight={600} />
-              {chartData.map((entry) => (
-                <Cell
-                  key={entry.bucket.key}
-                  fill={
-                    entry.bucket.count === 0
-                      ? '#334155'
-                      : selectedBucket?.key === entry.bucket.key
-                        ? '#2563eb'
-                        : '#3b82f6'
+        {chartData.length > 0 ? (
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={chartData} margin={{ top: 20, right: 16, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="4 4" stroke="#334155" />
+              <XAxis
+                dataKey="name"
+                tick={{ fontSize: 11, fill: '#94a3b8' }}
+                interval={0}
+                angle={timeFilter === 'month' ? -25 : timeFilter === 'week' ? -15 : 0}
+                textAnchor={timeFilter === 'month' ? 'end' : 'middle'}
+                height={timeFilter === 'month' ? 50 : timeFilter === 'week' ? 45 : 35}
+              />
+              <YAxis allowDecimals={false} width={40} tick={{ fontSize: 12, fill: '#94a3b8' }} />
+              <Tooltip
+                contentStyle={{
+                  background: '#0f172a',
+                  border: '1px solid #334155',
+                  borderRadius: 8,
+                  color: '#f1f5f9',
+                  fontSize: 13,
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                }}
+                formatter={(value: any) => [value, 'Số repo']}
+              />
+              <Bar
+                dataKey="count"
+                radius={[4, 4, 0, 0]}
+                cursor="pointer"
+                onClick={(data: unknown) => {
+                  const payload = data as { bucket?: Bucket } | null
+                  if (payload && payload.bucket) {
+                    setSelectedBucket(payload.bucket)
                   }
-                  style={{ transition: 'fill 0.2s' }}
-                />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+                }}
+              >
+                <LabelList dataKey="count" position="top" fontSize={11} fill="#f1f5f9" fontWeight={600} />
+                {chartData.map((entry) => (
+                  <Cell
+                    key={entry.bucket.key}
+                    fill={
+                      entry.bucket.count === 0
+                        ? '#334155'
+                        : selectedBucket?.key === entry.bucket.key
+                          ? '#2563eb'
+                          : '#3b82f6'
+                    }
+                    style={{ transition: 'fill 0.2s' }}
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="flex items-center justify-center h-[250px] text-[#94a3b8]">
+            Chưa có dữ liệu
+          </div>
+        )}
       </div>
 
+      {/* Summary table */}
       <div className="rounded-xl mb-4 border border-[#1e293b] bg-[var(--color-surface)] overflow-hidden">
         <table className="w-full">
           <thead>
             <tr className="border-b border-[#334155]">
               <th className="px-4 py-2.5 text-left text-xs font-medium text-[#94a3b8] uppercase tracking-wider">
-                {timeFilter === 'week' ? 'Tuần' : 'Tháng'}
+                {timeFilter === 'day' ? 'Ngày' : timeFilter === 'week' ? 'Tuần' : 'Tháng'}
               </th>
               <th className="px-4 py-2.5 text-right text-xs font-medium text-[#94a3b8] uppercase tracking-wider">
                 Số repo
@@ -400,44 +335,35 @@ export function RepoStatsTab() {
             </tr>
           </thead>
           <tbody className="divide-y divide-[#1e293b]">
-            {timeFilter === 'week'
-              ? weekStats.map((s) => (
-                  <tr
-                    key={s.monday.getTime()}
-                    onClick={() => {
-                      setSelectedMonday(s.monday)
-                      setSelectedBucket(null)
-                    }}
-                    className={`transition-colors cursor-pointer ${
-                      s.monday.getTime() === selectedMonday.getTime()
-                        ? 'bg-[#2563eb]/10'
-                        : 'hover:bg-[#1e293b]/50'
-                    }`}
-                  >
-                    <td className="px-4 py-2 text-sm text-[#f1f5f9]">{s.label}</td>
-                    <td className="px-4 py-2 text-sm text-right text-[#f1f5f9] font-mono">{s.count}</td>
-                  </tr>
-                ))
-              : buckets.map((b) => (
-                  <tr key={b.key} className="hover:bg-[#1e293b]/50 transition-colors">
-                    <td className="px-4 py-2 text-sm text-[#f1f5f9]">{b.label}</td>
-                    <td className="px-4 py-2 text-sm text-right text-[#f1f5f9] font-mono">{b.count}</td>
-                  </tr>
-                ))}
+            {buckets.map((b) => (
+              <tr
+                key={b.key}
+                onClick={() => setSelectedBucket(b)}
+                className={`transition-colors cursor-pointer ${
+                  selectedBucket?.key === b.key
+                    ? 'bg-[#2563eb]/10'
+                    : 'hover:bg-[#1e293b]/50'
+                }`}
+              >
+                <td className="px-4 py-2 text-sm text-[#f1f5f9]">{b.label}</td>
+                <td className="px-4 py-2 text-sm text-right text-[#f1f5f9] font-mono">{b.count}</td>
+              </tr>
+            ))}
           </tbody>
           <tfoot>
             <tr className="border-t border-[#334155]">
               <td className="px-4 py-2.5 text-sm font-semibold text-[#f1f5f9]">Tổng</td>
-              <td className="px-4 py-2.5 text-sm font-semibold text-right text-[#f1f5f9] font-mono">{grandTotal}</td>
+              <td className="px-4 py-2.5 text-sm font-semibold text-right text-[#f1f5f9] font-mono">{totalRepos}</td>
             </tr>
           </tfoot>
         </table>
       </div>
 
+      {/* Bucket detail */}
       <div className="glass-card overflow-hidden border border-orbit-border">
         {!selectedBucket ? (
           <div className="px-4 py-10 text-center body-sm text-ink-secondary">
-            Click vào cột để xem danh sách repo
+            Click vào cột hoặc dòng để xem danh sách repo
           </div>
         ) : bucketRepos.length === 0 ? (
           <div className="px-4 py-10 text-center body-sm text-ink-secondary">

@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -44,6 +46,7 @@ public class GithubRepoService {
     private final RepoVoteRepository repoVoteRepository;
     private final RepoReviewRepository repoReviewRepository;
     private final RepoEvaluationService repoEvaluationService;
+    private final CacheManager cacheManager;
 
     // Self-inject for proxy-aware @Cacheable + @Async from same class
     @Autowired @Lazy
@@ -78,6 +81,22 @@ public class GithubRepoService {
                 .map(repo -> {
                     double[] stats = statsMap.getOrDefault(repo.getId(), new double[]{0, 0.0});
                     return mapToRepoSummary(repo, (int) stats[0], stats[1]);
+                })
+                .sorted((a, b) -> {
+                    // 1. newest lastPushedAt first
+                    String da = a.lastPushedAt();
+                    String db = b.lastPushedAt();
+                    if (da != null && db != null) return db.compareTo(da);
+                    if (db != null) return 1;
+                    if (da != null) return -1;
+                    // 2. newest approvedAt first
+                    String aa = a.approvedAt();
+                    String ab = b.approvedAt();
+                    if (aa != null && ab != null) return ab.compareTo(aa);
+                    if (ab != null) return 1;
+                    if (aa != null) return -1;
+                    // 3. highest id first
+                    return Long.compare(b.id(), a.id());
                 })
                 .toList();
         // Fire async refresh for any repos needing GitHub data
@@ -257,6 +276,11 @@ public class GithubRepoService {
 
             repo.setLastPushedAt(lastPushedAt);
             githubRepoRepository.save(repo);
+            // Evict cached course lists so they pick up the fresh lastPushedAt
+            Cache cached = cacheManager.getCache("reposByCourse");
+            if (cached != null) cached.clear();
+            cached = cacheManager.getCache("allRepos");
+            if (cached != null) cached.clear();
             log.info("asyncRefreshed lastPushedAt for repo id={} -> {}", repoId, lastPushedAt);
         } catch (Exception e) {
             log.warn("asyncRefreshLastPushedAt failed for repo id={}: {}", repoId, e.getMessage());
@@ -291,7 +315,12 @@ public class GithubRepoService {
                 log.warn("batchRefresh failed for repo id={}: {}", repo.getId(), e.getMessage());
             }
         }
-        log.info("batchRefreshStaleLastPushedAt: completed");
+        // Evict cached course/repo lists so they pick up fresh lastPushedAt values
+        Cache cached = cacheManager.getCache("reposByCourse");
+        if (cached != null) cached.clear();
+        cached = cacheManager.getCache("allRepos");
+        if (cached != null) cached.clear();
+        log.info("batchRefreshStaleLastPushedAt: completed, evicted reposByCourse/allRepos caches");
     }
 
     // =====================================================================

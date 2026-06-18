@@ -50,7 +50,9 @@ public class PublicDiscoveryController {
                         repo.getReadmeExcerpt(),
                         repo.getFileTree(),
                         repo.getHasReadme(),
-                        repo.getLastPushedAt()))
+                        repo.getLastPushedAt(),
+                        null,
+                        null))
                 .toList();
     }
 

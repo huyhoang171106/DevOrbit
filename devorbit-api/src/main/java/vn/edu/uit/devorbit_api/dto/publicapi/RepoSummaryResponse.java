@@ -5,12 +5,6 @@ import java.util.List;
 
 /**
  * REPO SUMMARY = a compact representation of a GitHub repo.
- *
- * Used across many endpoints:
- *   GET /api/repos/{repoId}
- *   GET /api/courses/{courseId}/repos
- *   GET /api/admin/repos
- *   nested inside CourseDetailResponse.repos
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record RepoSummaryResponse(
@@ -27,5 +21,11 @@ public record RepoSummaryResponse(
     String readmeExcerpt,
     String fileTree,
     Boolean hasReadme,
-    String lastPushedAt
+    String lastPushedAt,
+    String repoType,
+    String usefulnessRating,
+    Integer usefulnessScore,
+    String readyToUseLevel,
+    Integer reviewCount,
+    Double averageRating
 ) {}

@@ -26,6 +26,7 @@ import vn.edu.uit.devorbit_api.service.ai.RepoEvaluationService;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import vn.edu.uit.devorbit_api.entity.NoteTargetType;
@@ -62,18 +63,25 @@ public class GithubRepoService {
         }
         // Fire async refresh in background — cached response returns immediately
         try { self.asyncRefreshLastPushedAt(repoId); } catch (Exception ignored) {}
-        return mapToRepoSummary(repo);
+        Map<Long, double[]> statsMap = buildReviewStatsMap(List.of(repoId));
+        double[] stats = statsMap.getOrDefault(repoId, new double[]{0, 0.0});
+        return mapToRepoSummary(repo, (int) stats[0], stats[1]);
     }
 
     @Transactional(readOnly = true)
     @Cacheable(value = "reposByCourse", unless = "#result.isEmpty()")
     public List<RepoSummaryResponse> getApprovedReposByCourse(Long courseId) {
-        List<RepoSummaryResponse> responses = githubRepoRepository
-                .findByCourseIdAndActiveTrue(courseId).stream()
-                .map(this::mapToRepoSummary)
+        List<GithubRepo> repos = githubRepoRepository.findByCourseIdAndActiveTrue(courseId);
+        List<Long> repoIds = repos.stream().map(GithubRepo::getId).toList();
+        Map<Long, double[]> statsMap = buildReviewStatsMap(repoIds);
+        List<RepoSummaryResponse> responses = repos.stream()
+                .map(repo -> {
+                    double[] stats = statsMap.getOrDefault(repo.getId(), new double[]{0, 0.0});
+                    return mapToRepoSummary(repo, (int) stats[0], stats[1]);
+                })
                 .toList();
         // Fire async refresh for any repos needing GitHub data
-        for (var repo : githubRepoRepository.findByCourseIdAndActiveTrue(courseId)) {
+        for (var repo : repos) {
             if (repo.getLastPushedAt() == null || repo.getLastPushedAt().isBlank()) {
                 try { self.asyncRefreshLastPushedAt(repo.getId()); } catch (Exception ignored) {}
             }
@@ -86,8 +94,13 @@ public class GithubRepoService {
     public List<RepoSummaryResponse> getAllApprovedRepos() {
         List<GithubRepo> repos = githubRepoRepository.findByActiveTrue();
         log.info("getAllApprovedRepos: found {} active repos", repos.size());
+        List<Long> repoIds = repos.stream().map(GithubRepo::getId).toList();
+        Map<Long, double[]> statsMap = buildReviewStatsMap(repoIds);
         List<RepoSummaryResponse> responses = repos.stream()
-                .map(this::mapToRepoSummary)
+                .map(repo -> {
+                    double[] stats = statsMap.getOrDefault(repo.getId(), new double[]{0, 0.0});
+                    return mapToRepoSummary(repo, (int) stats[0], stats[1]);
+                })
                 .toList();
         // Async refresh in background
         for (var repo : repos) {
@@ -100,8 +113,14 @@ public class GithubRepoService {
 
     @Transactional(readOnly = true)
     public List<RepoSummaryResponse> getApprovedReposByCourseAndTechStack(Long courseId, String techStack) {
-        return githubRepoRepository.findByCourseIdAndActiveTrueAndTechStack(courseId, techStack).stream()
-                .map(this::mapToRepoSummary)
+        List<GithubRepo> repos = githubRepoRepository.findByCourseIdAndActiveTrueAndTechStack(courseId, techStack);
+        List<Long> repoIds = repos.stream().map(GithubRepo::getId).toList();
+        Map<Long, double[]> statsMap = buildReviewStatsMap(repoIds);
+        return repos.stream()
+                .map(repo -> {
+                    double[] stats = statsMap.getOrDefault(repo.getId(), new double[]{0, 0.0});
+                    return mapToRepoSummary(repo, (int) stats[0], stats[1]);
+                })
                 .toList();
     }
 
@@ -134,9 +153,12 @@ public class GithubRepoService {
         }
 
         repoEvaluationService.evaluateRepo(repo);
-        RepoSummaryResponse saved = mapToRepoSummary(githubRepoRepository.save(repo));
+        GithubRepo saved = githubRepoRepository.save(repo);
+        Map<Long, double[]> statsMap = buildReviewStatsMap(List.of(saved.getId()));
+        double[] stats = statsMap.getOrDefault(saved.getId(), new double[]{0, 0.0});
+        RepoSummaryResponse response = mapToRepoSummary(saved, (int) stats[0], stats[1]);
         log.info("updateApprovedRepo: updated repo id={} active={}", repoId, request.active());
-        return saved;
+        return response;
     }
 
     @Transactional
@@ -211,7 +233,9 @@ public class GithubRepoService {
 
         GithubRepo saved = githubRepoRepository.save(repo);
         log.info("syncApprovedRepo: successfully synced metadata and re-evaluated repo id={} ({})", repoId, repo.getGithubUrl());
-        return mapToRepoSummary(saved);
+        Map<Long, double[]> statsMap = buildReviewStatsMap(List.of(saved.getId()));
+        double[] stats = statsMap.getOrDefault(saved.getId(), new double[]{0, 0.0});
+        return mapToRepoSummary(saved, (int) stats[0], stats[1]);
     }
 
     // =====================================================================
@@ -274,7 +298,7 @@ public class GithubRepoService {
     // DTO MAPPING
     // =====================================================================
 
-    public RepoSummaryResponse mapToRepoSummary(GithubRepo repo) {
+    public RepoSummaryResponse mapToRepoSummary(GithubRepo repo, int reviewCount, double averageRating) {
         Long courseId = null;
         String courseCode = null;
         String courseName = null;
@@ -303,8 +327,23 @@ public class GithubRepoService {
                 repo.getRepoType(),
                 repo.getUsefulnessRating(),
                 repo.getUsefulnessScore(),
-                repo.getReadyToUseLevel()
+                repo.getReadyToUseLevel(),
+                reviewCount,
+                averageRating
         );
+    }
+
+    // =====================================================================
+    // REVIEW STATS HELPERS
+    // =====================================================================
+
+    private Map<Long, double[]> buildReviewStatsMap(List<Long> repoIds) {
+        if (repoIds == null || repoIds.isEmpty()) return Map.of();
+        return repoReviewRepository.countAndAverageByRepoIds(repoIds).stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> new double[]{((Number) row[1]).longValue(), ((Number) row[2]).doubleValue()}
+                ));
     }
 
     // =====================================================================

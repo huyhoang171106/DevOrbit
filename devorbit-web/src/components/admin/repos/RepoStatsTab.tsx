@@ -204,7 +204,7 @@ function generateEmptyBuckets(
 export function RepoStatsTab() {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('month')
   const [selectedBucket, setSelectedBucket] = useState<Bucket | null>(null)
-  const [visibleCount, setVisibleCount] = useState<number>(PAGE_LIMIT.month)
+  const [page, setPage] = useState<number>(0)
 
   const { data: repos, loading, error, refetch } = useAdminFetch(
     (t) => adminApi.getApprovedRepos(t),
@@ -215,7 +215,7 @@ export function RepoStatsTab() {
   const handleFilterChange = useCallback((filter: TimeFilter) => {
     setSelectedBucket(null)
     setTimeFilter(filter)
-    setVisibleCount(PAGE_LIMIT[filter])
+    setPage(0)
   }, [])
 
   const buckets = useMemo(() => {
@@ -236,13 +236,27 @@ export function RepoStatsTab() {
     return Array.from(bucketMap.values())
   }, [repos, timeFilter])
 
-  // Currently visible buckets (newest first, limited)
+  // Pagination: page 0 = newest items
   const displayBuckets = useMemo(() => {
-    // buckets are oldest-first; take the last N (most recent)
-    return buckets.slice(-visibleCount)
-  }, [buckets, visibleCount])
+    const limit = PAGE_LIMIT[timeFilter]
+    const end = buckets.length - page * limit
+    const start = Math.max(0, end - limit)
+    return buckets.slice(start, end)
+  }, [buckets, timeFilter, page])
 
-  const hasMore = buckets.length > visibleCount
+  const canGoOlder = (buckets.length - (page + 1) * PAGE_LIMIT[timeFilter]) > 0
+  const canGoNewer = page > 0
+
+  // Page info text: "1\u201314 / 42"
+  const pageInfo = useMemo(() => {
+    const limit = PAGE_LIMIT[timeFilter]
+    const total = buckets.length
+    if (total === 0) return ''
+    const end = total - page * limit
+    const start = Math.max(1, end - limit + 1)
+    if (start >= end && page === 0) return `${total} m\u1ee5c`
+    return `${start}\u2013${end} / ${total}`
+  }, [buckets, timeFilter, page])
 
   const bucketRepos = useMemo(() => {
     if (!selectedBucket || !repos) return []
@@ -344,7 +358,7 @@ export function RepoStatsTab() {
         )}
       </div>
 
-      {/* Summary table */}
+      {/* Summary table with pagination */}
       <div className="rounded-xl mb-4 border border-[#1e293b] bg-[var(--color-surface)] overflow-hidden">
         <table className="w-full">
           <thead>
@@ -373,21 +387,41 @@ export function RepoStatsTab() {
               </tr>
             ))}
           </tbody>
-          {hasMore && (
-            <tbody>
-              <tr>
-                <td colSpan={2}>
-                  <button
-                    onClick={() => setVisibleCount((prev) => prev + PAGE_LIMIT[timeFilter])}
-                    className="w-full px-4 py-2.5 text-sm text-[#94a3b8] hover:text-[#f1f5f9] hover:bg-[#1e293b]/50 transition-colors text-center"
-                  >
-                    &larr; Xem thêm {PAGE_LIMIT[timeFilter]} mục cũ hơn
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          )}
+          {/* Pagination row */}
           <tfoot>
+            <tr className="border-t border-[#334155]">
+              <td colSpan={2} className="px-4 py-2">
+                <div className="flex items-center justify-between">
+                  {/* Left arrow — older */}
+                  <button
+                    onClick={() => setPage((p) => p + 1)}
+                    disabled={!canGoOlder}
+                    className="flex items-center gap-1 px-2 py-1 text-sm text-[#94a3b8] hover:text-[#f1f5f9] disabled:text-[#475569] disabled:cursor-not-allowed transition-colors"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    Cũ hơn
+                  </button>
+
+                  {/* Page indicator */}
+                  <span className="text-xs text-[#64748b] select-none">{pageInfo}</span>
+
+                  {/* Right arrow — newer */}
+                  <button
+                    onClick={() => setPage((p) => Math.max(0, p - 1))}
+                    disabled={!canGoNewer}
+                    className="flex items-center gap-1 px-2 py-1 text-sm text-[#94a3b8] hover:text-[#f1f5f9] disabled:text-[#475569] disabled:cursor-not-allowed transition-colors"
+                  >
+                    Mới hơn
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {/* Total row */}
             <tr className="border-t border-[#334155]">
               <td className="px-4 py-2.5 text-sm font-semibold text-[#f1f5f9]">Tổng</td>
               <td className="px-4 py-2.5 text-sm font-semibold text-right text-[#f1f5f9] font-mono">{totalRepos}</td>

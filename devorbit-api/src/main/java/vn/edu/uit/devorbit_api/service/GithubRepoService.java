@@ -18,7 +18,10 @@ import vn.edu.uit.devorbit_api.entity.Course;
 import vn.edu.uit.devorbit_api.entity.GithubRepo;
 import vn.edu.uit.devorbit_api.entity.TechStack;
 import vn.edu.uit.devorbit_api.exception.NotFoundException;
+import vn.edu.uit.devorbit_api.exception.BadRequestException;
+import com.fasterxml.jackson.databind.JsonNode;
 import vn.edu.uit.devorbit_api.repository.*;
+import vn.edu.uit.devorbit_api.service.ai.RepoEvaluationService;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -39,6 +42,7 @@ public class GithubRepoService {
     private final NoteRepository noteRepository;
     private final RepoVoteRepository repoVoteRepository;
     private final RepoReviewRepository repoReviewRepository;
+    private final RepoEvaluationService repoEvaluationService;
 
     // Self-inject for proxy-aware @Cacheable + @Async from same class
     @Autowired @Lazy
@@ -129,6 +133,7 @@ public class GithubRepoService {
             repo.setSubjectId(course.getMaMH());
         }
 
+        repoEvaluationService.evaluateRepo(repo);
         RepoSummaryResponse saved = mapToRepoSummary(githubRepoRepository.save(repo));
         log.info("updateApprovedRepo: updated repo id={} active={}", repoId, request.active());
         return saved;
@@ -149,6 +154,64 @@ public class GithubRepoService {
         repo.setActive(false);
         githubRepoRepository.save(repo);
         log.info("deleteApprovedRepo: deactivated repo id={} with cleaned dependents", repoId);
+    }
+
+    @Transactional
+    @CacheEvict(value = {"reposByCourse", "repoById", "allRepos"}, allEntries = true)
+    public RepoSummaryResponse syncApprovedRepo(Long repoId) {
+        GithubRepo repo = githubRepoRepository.findById(repoId)
+                .orElseThrow(() -> new NotFoundException("Repo not found: " + repoId));
+
+        RepoSlug slug = parseGithubSlug(repo.getGithubUrl());
+        if (slug == null) {
+            throw new BadRequestException("Invalid GitHub URL for repo: " + repoId);
+        }
+
+        // 1. Fetch Repository Metadata from GitHub
+        JsonNode metadata = githubScanService.fetchRepoMetadata(slug.owner(), slug.name());
+        if (metadata != null && !metadata.isMissingNode()) {
+            if (metadata.path("description").asText(null) != null && (repo.getDescription() == null || repo.getDescription().isBlank())) {
+                repo.setDescription(metadata.path("description").asText(null));
+            }
+            String lang = metadata.path("language").asText(null);
+            if (lang != null && !lang.isBlank()) {
+                repo.setPrimaryLanguage(lang);
+            }
+            if (!metadata.path("stargazers_count").isMissingNode()) {
+                repo.setStars(metadata.path("stargazers_count").asInt(0));
+            }
+            String lastPushed = githubScanService.resolveLatestActivityAt(slug.owner(), slug.name(), metadata);
+            if (lastPushed != null) {
+                repo.setLastPushedAt(lastPushed);
+            }
+        }
+
+        // 2. Fetch README and File Tree
+        GithubScanService.RepositoryContext context = githubScanService.fetchRepositoryContext(slug.owner(), slug.name());
+        if (context.readmeExcerpt() != null) {
+            repo.setReadmeExcerpt(context.readmeExcerpt());
+        }
+        if (context.fileTree() != null) {
+            repo.setFileTree(context.fileTree());
+        }
+        if (context.hasReadme() != null) {
+            repo.setHasReadme(context.hasReadme());
+        } else if (context.readmeExcerpt() != null) {
+            repo.setHasReadme(true);
+        }
+
+        // 3. Resolve tech stack if empty
+        if ((repo.getTechStacks() == null || repo.getTechStacks().isEmpty()) 
+            && repo.getPrimaryLanguage() != null && !repo.getPrimaryLanguage().isBlank()) {
+            repo.setTechStacks(resolveTechStacks(List.of(repo.getPrimaryLanguage())));
+        }
+
+        // 4. Re-evaluate
+        repoEvaluationService.evaluateRepo(repo);
+
+        GithubRepo saved = githubRepoRepository.save(repo);
+        log.info("syncApprovedRepo: successfully synced metadata and re-evaluated repo id={} ({})", repoId, repo.getGithubUrl());
+        return mapToRepoSummary(saved);
     }
 
     // =====================================================================
@@ -236,7 +299,11 @@ public class GithubRepoService {
                 repo.getReadmeExcerpt(),
                 repo.getFileTree(),
                 repo.getHasReadme(),
-                repo.getLastPushedAt()
+                repo.getLastPushedAt(),
+                repo.getRepoType(),
+                repo.getUsefulnessRating(),
+                repo.getUsefulnessScore(),
+                repo.getReadyToUseLevel()
         );
     }
 

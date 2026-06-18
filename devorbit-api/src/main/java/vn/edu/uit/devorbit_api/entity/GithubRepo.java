@@ -87,6 +87,21 @@ public class GithubRepo {
     @Builder.Default
     private Set<TechStack> techStacks = new LinkedHashSet<>();
 
+    /** Number of GitHub stars (popularity metric) */
+    private Integer stars;
+
+    /** ISO date of latest commit/push activity from GitHub */
+    @Column(name = "last_pushed_at")
+    private String lastPushedAt;
+
+    /** Short excerpt from the README, fetched during scan/review when available */
+    @Column(name = "readme_excerpt", columnDefinition = "TEXT")
+    private String readmeExcerpt;
+
+    /** Whether GitHub reported a README or the file tree contains one */
+    @Column(name = "has_readme")
+    private Boolean hasReadme;
+
     /** Short, newline-separated repository tree used by frontend evaluation */
     @Column(name = "file_tree", columnDefinition = "TEXT")
     private String fileTree;

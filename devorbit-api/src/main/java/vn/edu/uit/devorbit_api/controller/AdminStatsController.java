@@ -113,7 +113,7 @@ public class AdminStatsController {
 
             long metricValue = switch (sortBy) {
                 case "bookmarks" -> bookmarks;
-                case "rating" -> (long) (avgRating * 100);
+                case "rating" -> (long) (avgRating * 1000) + reviewCount;
                 case "upvotes" -> upvotes;
                 default -> bookmarks;
             };

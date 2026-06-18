@@ -11,7 +11,7 @@ type SortTab = 'bookmarks' | 'rating' | 'upvotes'
 
 const SORT_TABS: { key: SortTab; label: string; icon: React.ReactNode; header: string }[] = [
   { key: 'bookmarks', label: 'Bookmark', icon: <BookmarkSimple size={16} weight="duotone" />, header: 'Lượt bookmark' },
-  { key: 'rating', label: 'Đánh giá sao', icon: <Star size={16} weight="duotone" />, header: 'Đánh giá TB (5)' },
+  { key: 'rating', label: 'Đánh giá sao', icon: <Star size={16} weight="duotone" />, header: 'Đánh giá' },
   { key: 'upvotes', label: 'Upvote', icon: <ThumbsUp size={16} weight="duotone" />, header: 'Lượt upvote' },
 ]
 
@@ -92,7 +92,7 @@ function FavoriteTable({ entries, activeTab }: { entries: RepoStatsEntry[]; acti
                     <td className="py-3 px-2 text-right">
                       <span className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-lg bg-orbit-accent/10 text-orbit-accent font-bold tabular-nums">
                         {activeTab === 'rating'
-                          ? `${repo.averageRating.toFixed(1)}/5`
+                          ? `${repo.averageRating.toFixed(1)} (${repo.reviewCount})`
                           : repo.count}
                       </span>
                     </td>

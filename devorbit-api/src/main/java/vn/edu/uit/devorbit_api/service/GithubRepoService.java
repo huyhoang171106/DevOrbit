@@ -181,7 +181,6 @@ public class GithubRepoService {
     // =====================================================================
 
     @Scheduled(fixedRate = 1_800_000) // 30 min
-    @Transactional
     public void batchRefreshStaleLastPushedAt() {
         List<GithubRepo> stale = githubRepoRepository.findStaleActiveRepos().stream()
                 .filter(r -> r.getGithubUrl() != null && !r.getGithubUrl().isBlank())

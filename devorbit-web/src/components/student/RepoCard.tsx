@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import type { RepoSummary } from '../../types/api'
-import { Code, Star } from '@phosphor-icons/react'
+import { Code, Star, ChatCircle } from '@phosphor-icons/react'
 
 const LANGUAGE_COLORS: Record<string, string> = {
   TypeScript: '#3178C6',
@@ -50,14 +50,27 @@ export function RepoCard({ repo }: { repo: RepoSummary }) {
             </p>
           </div>
 
-          {repo.stars !== null && (
-            <div className="shrink-0">
+          <div className="shrink-0 flex flex-col items-end gap-2">
+            {repo.stars !== null && (
               <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[11px] font-bold tabular-nums ${repo.stars > 0 ? 'bg-orbit-surface border-orbit-border text-orbit-text-muted' : 'bg-orbit-surface/50 border-orbit-border/50 text-orbit-text-muted/60'}`}>
                 <Star className={`h-3.5 w-3.5 ${repo.stars > 0 ? 'text-amber-400' : 'text-orbit-text-muted/40'}`} weight="fill" />
                 {repo.stars.toLocaleString('en-US')}
               </span>
-            </div>
-          )}
+            )}
+            {repo.reviewCount != null && repo.reviewCount > 0 && (
+              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[11px] font-bold tabular-nums bg-orbit-accent/5 border-orbit-accent/20 text-orbit-accent">
+                <ChatCircle className="h-3.5 w-3.5" weight="fill" />
+                {repo.reviewCount}
+                {repo.averageRating != null && repo.averageRating > 0 && (
+                  <>
+                    <span className="text-orbit-accent/40">·</span>
+                    <Star className="h-3 w-3 text-amber-400" weight="fill" />
+                    {repo.averageRating.toFixed(1)}
+                  </>
+                )}
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="mt-auto flex flex-wrap items-center gap-2 pt-6 border-t border-orbit-border/30">

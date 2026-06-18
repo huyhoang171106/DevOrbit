@@ -12,7 +12,6 @@ import java.util.List;
  *   GET /api/admin/repos
  *   nested inside CourseDetailResponse.repos
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public record RepoSummaryResponse(
     Long id,
     String displayName,
@@ -27,5 +26,7 @@ public record RepoSummaryResponse(
     String readmeExcerpt,
     String fileTree,
     Boolean hasReadme,
-    String lastPushedAt
+    String lastPushedAt,
+    Integer reviewCount,
+    Double averageRating
 ) {}

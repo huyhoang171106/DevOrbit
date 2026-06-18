@@ -6,6 +6,23 @@ export interface AdminStats {
   recentStudents: StudentSummary[]
   recentCourseReviews: ReviewSummary[]
   recentSubmissions: SubmissionSummary[]
+  topFavoritedRepos: RepoStatsEntry[]
+  topViewedRepos: RepoStatsEntry[]
+}
+
+export interface RepoStatsEntry {
+  repoId: number
+  repoName: string
+  githubUrl: string
+  courseName: string | null
+  primaryLanguage: string | null
+  count: number
+  bookmarkCount: number
+  averageRating: number
+  reviewCount: number
+  voteScore: number
+  viewCount: number
+  popularityScore: number
 }
 
 export interface StudentSummary {

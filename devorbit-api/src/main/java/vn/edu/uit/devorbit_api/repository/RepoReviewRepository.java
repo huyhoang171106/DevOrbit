@@ -34,6 +34,9 @@ public interface RepoReviewRepository extends JpaRepository<RepoReview, Long> {
     Double averageRatingByRepoId(Long repoId);
 
     /** Delete all reviews for one repo (cascade cleanup). */
+    @Query("SELECT r.repo.id, SUM(r.rating), COUNT(r) FROM RepoReview r GROUP BY r.repo.id")
+    List<Object[]> avgRatingGroupByRepoId();
+
     void deleteByRepoId(Long repoId);
 
     /** Delete all reviews for MULTIPLE repos (batch cleanup). */

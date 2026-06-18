@@ -93,5 +93,11 @@ public interface GithubRepoRepository extends JpaRepository<GithubRepo, Long> {
      */
     @Query("SELECT r FROM GithubRepo r WHERE r.active = true AND (r.lastPushedAt IS NULL OR r.lastPushedAt = '')")
     List<GithubRepo> findStaleActiveRepos();
+
+    @EntityGraph(attributePaths = {"course"})
+    List<GithubRepo> findTop10ByActiveTrueOrderByViewCountDesc();
+
+    @EntityGraph(attributePaths = {"course"})
+    List<GithubRepo> findTop100ByActiveTrueOrderByViewCountDesc();
 }
 

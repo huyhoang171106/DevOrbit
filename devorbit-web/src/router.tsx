@@ -27,6 +27,7 @@ const ChatMonitorPage = lazy(() => import('./pages/admin/ChatMonitorPage').then(
 const RelationshipsPage = lazy(() => import('./pages/admin/RelationshipsPage').then(m => ({ default: m.RelationshipsPage })))
 const PhotoboothAdminPage = lazy(() => import('./pages/admin/PhotoboothPage').then(m => ({ default: m.PhotoboothPage })))
 const TechStackPage = lazy(() => import('./pages/admin/TechStackPage').then(m => ({ default: m.TechStackPage })))
+const ReportsPage = lazy(() => import('./pages/admin/ReportsPage').then(m => ({ default: m.ReportsPage })))
 
 function PageFallback() {
   return (
@@ -73,6 +74,7 @@ export function AppRoutes() {
         <Route path="relationships" element={<RelationshipsPage />} />
         <Route path="photobooth" element={<PhotoboothAdminPage />} />
         <Route path="techstack" element={<TechStackPage />} />
+        <Route path="reports" element={<ReportsPage />} />
       </Route>
     </Routes>
   );

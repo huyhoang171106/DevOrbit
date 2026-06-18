@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LabelList,
 } from 'recharts'
@@ -14,6 +14,13 @@ const FILTER_OPTIONS: { key: TimeFilter; label: string }[] = [
   { key: 'week', label: 'Tuần' },
   { key: 'month', label: 'Tháng' },
 ]
+
+/** Max bars to show per page */
+const PAGE_LIMIT: Record<TimeFilter, number> = {
+  day: 14,
+  week: 12,
+  month: 12,
+}
 
 interface Bucket {
   key: string
@@ -71,7 +78,7 @@ function getBucketLabel(key: string, filter: TimeFilter): string {
       const monday = new Date(y, m - 1, d)
       const sunday = new Date(monday)
       sunday.setDate(sunday.getDate() + 6)
-      return `${formatDateShort(monday)} → ${formatDateShort(sunday)}`
+      return `${formatDateShort(monday)} \u2192 ${formatDateShort(sunday)}`
     }
     case 'month': {
       const [, mStr] = key.split('-')
@@ -197,11 +204,19 @@ function generateEmptyBuckets(
 export function RepoStatsTab() {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('month')
   const [selectedBucket, setSelectedBucket] = useState<Bucket | null>(null)
+  const [visibleCount, setVisibleCount] = useState<number>(PAGE_LIMIT.month)
 
   const { data: repos, loading, error, refetch } = useAdminFetch(
     (t) => adminApi.getApprovedRepos(t),
     [],
   )
+
+  // Reset pagination when filter changes
+  const handleFilterChange = useCallback((filter: TimeFilter) => {
+    setSelectedBucket(null)
+    setTimeFilter(filter)
+    setVisibleCount(PAGE_LIMIT[filter])
+  }, [])
 
   const buckets = useMemo(() => {
     if (!repos) return []
@@ -221,6 +236,14 @@ export function RepoStatsTab() {
     return Array.from(bucketMap.values())
   }, [repos, timeFilter])
 
+  // Currently visible buckets (newest first, limited)
+  const displayBuckets = useMemo(() => {
+    // buckets are oldest-first; take the last N (most recent)
+    return buckets.slice(-visibleCount)
+  }, [buckets, visibleCount])
+
+  const hasMore = buckets.length > visibleCount
+
   const bucketRepos = useMemo(() => {
     if (!selectedBucket || !repos) return []
     return repos.filter((r) => {
@@ -233,7 +256,7 @@ export function RepoStatsTab() {
   if (loading) return <AdminSpinner text="Đang tải thống kê..." />
   if (error) return <AdminErrorBanner message={error} onRetry={refetch} />
 
-  const chartData = buckets.map((b) => ({ name: b.label, count: b.count, bucket: b }))
+  const chartData = displayBuckets.map((b) => ({ name: b.label, count: b.count, bucket: b }))
   const totalRepos = buckets.reduce((s, b) => s + b.count, 0)
 
   return (
@@ -244,7 +267,7 @@ export function RepoStatsTab() {
           {FILTER_OPTIONS.map((opt) => (
             <button
               key={opt.key}
-              onClick={() => { setSelectedBucket(null); setTimeFilter(opt.key) }}
+              onClick={() => handleFilterChange(opt.key)}
               className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
                 timeFilter === opt.key
                   ? 'bg-[#3b82f6] text-white shadow-sm'
@@ -335,7 +358,7 @@ export function RepoStatsTab() {
             </tr>
           </thead>
           <tbody className="divide-y divide-[#1e293b]">
-            {buckets.map((b) => (
+            {displayBuckets.map((b) => (
               <tr
                 key={b.key}
                 onClick={() => setSelectedBucket(b)}
@@ -350,6 +373,20 @@ export function RepoStatsTab() {
               </tr>
             ))}
           </tbody>
+          {hasMore && (
+            <tbody>
+              <tr>
+                <td colSpan={2}>
+                  <button
+                    onClick={() => setVisibleCount((prev) => prev + PAGE_LIMIT[timeFilter])}
+                    className="w-full px-4 py-2.5 text-sm text-[#94a3b8] hover:text-[#f1f5f9] hover:bg-[#1e293b]/50 transition-colors text-center"
+                  >
+                    &larr; Xem thêm {PAGE_LIMIT[timeFilter]} mục cũ hơn
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          )}
           <tfoot>
             <tr className="border-t border-[#334155]">
               <td className="px-4 py-2.5 text-sm font-semibold text-[#f1f5f9]">Tổng</td>

@@ -358,7 +358,34 @@ export function RepoStatsTab() {
         )}
       </div>
 
-      {/* Summary table with pagination */}
+      {/* Pagination bar */}
+      <div className="flex items-center justify-between px-1 mb-4">
+        <button
+          onClick={() => setPage((p) => p + 1)}
+          disabled={!canGoOlder}
+          className="flex items-center gap-1 px-3 py-1.5 text-sm text-[#94a3b8] hover:text-[#f1f5f9] disabled:text-[#475569] disabled:cursor-not-allowed transition-colors rounded-md hover:bg-[#1e293b]/50"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          Cũ hơn
+        </button>
+
+        <span className="text-xs text-[#64748b] select-none">{pageInfo}</span>
+
+        <button
+          onClick={() => setPage((p) => Math.max(0, p - 1))}
+          disabled={!canGoNewer}
+          className="flex items-center gap-1 px-3 py-1.5 text-sm text-[#94a3b8] hover:text-[#f1f5f9] disabled:text-[#475569] disabled:cursor-not-allowed transition-colors rounded-md hover:bg-[#1e293b]/50"
+        >
+          Mới hơn
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Summary table */}
       <div className="rounded-xl mb-4 border border-[#1e293b] bg-[var(--color-surface)] overflow-hidden">
         <table className="w-full">
           <thead>
@@ -387,41 +414,8 @@ export function RepoStatsTab() {
               </tr>
             ))}
           </tbody>
-          {/* Pagination row */}
+          {/* Total row */}
           <tfoot>
-            <tr className="border-t border-[#334155]">
-              <td colSpan={2} className="px-4 py-2">
-                <div className="flex items-center justify-between">
-                  {/* Left arrow — older */}
-                  <button
-                    onClick={() => setPage((p) => p + 1)}
-                    disabled={!canGoOlder}
-                    className="flex items-center gap-1 px-2 py-1 text-sm text-[#94a3b8] hover:text-[#f1f5f9] disabled:text-[#475569] disabled:cursor-not-allowed transition-colors"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="15 18 9 12 15 6" />
-                    </svg>
-                    Cũ hơn
-                  </button>
-
-                  {/* Page indicator */}
-                  <span className="text-xs text-[#64748b] select-none">{pageInfo}</span>
-
-                  {/* Right arrow — newer */}
-                  <button
-                    onClick={() => setPage((p) => Math.max(0, p - 1))}
-                    disabled={!canGoNewer}
-                    className="flex items-center gap-1 px-2 py-1 text-sm text-[#94a3b8] hover:text-[#f1f5f9] disabled:text-[#475569] disabled:cursor-not-allowed transition-colors"
-                  >
-                    Mới hơn
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="9 18 15 12 9 6" />
-                    </svg>
-                  </button>
-                </div>
-              </td>
-            </tr>
-            {/* Total row */}
             <tr className="border-t border-[#334155]">
               <td className="px-4 py-2.5 text-sm font-semibold text-[#f1f5f9]">Tổng</td>
               <td className="px-4 py-2.5 text-sm font-semibold text-right text-[#f1f5f9] font-mono">{totalRepos}</td>

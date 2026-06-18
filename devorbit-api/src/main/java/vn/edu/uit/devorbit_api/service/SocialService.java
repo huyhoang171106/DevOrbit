@@ -1,6 +1,7 @@
 package vn.edu.uit.devorbit_api.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +28,7 @@ public class SocialService {
     private final StudentUserRepository studentUserRepository;
 
     @Transactional
+    @CacheEvict(value = {"reposByCourse", "repoById", "allRepos"}, allEntries = true)
     public ReviewResponse upsertRepoReview(String studentCode, Long repoId, ReviewRequest request) {
         GithubRepo repo = githubRepoRepository.findById(repoId)
                 .orElseThrow(() -> new NotFoundException("Repository not found"));
@@ -48,6 +50,7 @@ public class SocialService {
     }
 
     @Transactional
+    @CacheEvict(value = {"reposByCourse", "repoById", "allRepos"}, allEntries = true)
     public void deleteRepoReview(String studentCode, Long repoId) {
         githubRepoRepository.findById(repoId)
                 .filter(GithubRepo::isActive)

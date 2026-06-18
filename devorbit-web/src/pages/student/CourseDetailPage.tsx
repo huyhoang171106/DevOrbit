@@ -4,7 +4,7 @@ import { m as motion } from 'framer-motion'
 import { apiGet, apiStudentPost, apiStudentGet, apiStudentDelete } from '../../lib/api'
 import { isStudentAuthenticated } from '../../lib/auth'
 import { RepoCard } from '../../components/student/RepoCard'
-import { RepoFilterBar } from '../../components/student/RepoFilterBar'
+import { RepoFilterBar, type SortOption } from '../../components/student/RepoFilterBar'
 import { CourseKnowledgeGraph } from '../../components/student/CourseKnowledgeGraph'
 import { ReviewSection } from '../../components/student/ReviewSection'
 import { useCourseReviews } from '../../hooks/useCommunity'
@@ -74,6 +74,8 @@ export function CourseDetailPage() {
   const [bookmarkId, setBookmarkId] = useState<number | null>(null)
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [sortBy, setSortBy] = useState<SortOption>('default')
+  const [activeStack, setActiveStack] = useState<string | null>(null)
 
   const shareUrl = courseId ? `${window.location.origin}/courses/${courseId}` : ''
 
@@ -161,12 +163,24 @@ export function CourseDetailPage() {
 
   const allStacks = [...new Set(repos.flatMap((r) => r.techStacks))]
 
-  function handleFilter(stack: string | null) {
-    if (!stack) {
-      setFiltered(repos)
-    } else {
-      setFiltered(repos.filter((r) => r.techStacks.includes(stack)))
+  function applySortAndFilter(source: RepoSummary[], stack: string | null, sort: SortOption) {
+    let result = stack ? source.filter((r) => r.techStacks.includes(stack)) : source
+    if (sort === 'mostStars') {
+      result = [...result].sort((a, b) => (b.stars ?? 0) - (a.stars ?? 0))
+    } else if (sort === 'mostReviews') {
+      result = [...result].sort((a, b) => (b.reviewCount ?? 0) - (a.reviewCount ?? 0))
     }
+    return result
+  }
+
+  function handleFilter(stack: string | null) {
+    setActiveStack(stack)
+    setFiltered(applySortAndFilter(repos, stack, sortBy))
+  }
+
+  function handleSort(sort: SortOption) {
+    setSortBy(sort)
+    setFiltered(applySortAndFilter(repos, activeStack, sort))
   }
 
   if (loading) {
@@ -394,7 +408,7 @@ export function CourseDetailPage() {
 
               {allStacks.length > 0 && (
                 <div className="mb-8 p-1.5 rounded-3xl bg-orbit-surface/60 border border-orbit-border/60 backdrop-blur-sm">
-                  <RepoFilterBar techStacks={allStacks} onFilter={handleFilter} />
+                  <RepoFilterBar techStacks={allStacks} onFilter={handleFilter} sortBy={sortBy} onSortChange={handleSort} />
                 </div>
               )}
 

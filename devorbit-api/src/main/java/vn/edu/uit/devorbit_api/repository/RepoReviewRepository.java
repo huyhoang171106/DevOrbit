@@ -17,6 +17,9 @@ public interface RepoReviewRepository extends JpaRepository<RepoReview, Long> {
     @Query("SELECT AVG(r.rating) FROM RepoReview r WHERE r.repo.id = :repoId")
     Double averageRatingByRepoId(Long repoId);
 
+    @Query("SELECT r.repo.id, SUM(r.rating), COUNT(r) FROM RepoReview r GROUP BY r.repo.id")
+    List<Object[]> avgRatingGroupByRepoId();
+
     void deleteByRepoId(Long repoId);
 
     void deleteByRepoIdIn(List<Long> repoIds);

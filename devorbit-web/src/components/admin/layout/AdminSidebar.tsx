@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom'
 import {
   BookOpen, UsersThree, ChatCircle, ChatDots, Camera, Tag,
   GitBranch, Star, Link, GearSix, CaretDown, CaretLeft, CaretRight, Cube,
-  SignOut, UserCircle,
+  SignOut, UserCircle, ChartBar,
 } from '@phosphor-icons/react'
 import { getSidebarCollapsed, setSidebarCollapsed, getAdminToken } from '../../../lib/adminAuth'
 import { clearAdminToken } from '../../../lib/auth'
@@ -34,6 +34,7 @@ const NAV_GROUPS = [
 
 const NAV_ITEMS = [
   { to: '/admin/students', icon: UsersThree, label: 'Sinh viên' },
+  { to: '/admin/reports', icon: ChartBar, label: 'Báo cáo' },
   { to: '/admin/community', icon: ChatCircle, label: 'Cộng đồng' },
   { to: '/admin/chat', icon: ChatDots, label: 'AI Chat' },
   { to: '/admin/photobooth', icon: Camera, label: 'Photobooth' },

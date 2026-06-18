@@ -15,6 +15,9 @@ public interface RepoVoteRepository extends JpaRepository<RepoVote, Long> {
     @Query("SELECT COALESCE(SUM(v.voteValue), 0) FROM RepoVote v WHERE v.repo.id = :repoId")
     Integer sumVoteValueByRepoId(Long repoId);
 
+    @Query("SELECT v.repo.id, COUNT(v) FROM RepoVote v WHERE v.voteValue > 0 GROUP BY v.repo.id")
+    List<Object[]> upvoteCountGroupByRepoId();
+
     void deleteByRepoId(Long repoId);
 
     void deleteByRepoIdIn(List<Long> repoIds);

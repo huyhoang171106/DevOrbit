@@ -56,6 +56,8 @@ public class GithubRepoService {
         if (!repo.isActive()) {
             throw new NotFoundException("Repo not found: " + repoId);
         }
+        // Track view asynchronously
+        try { self.asyncTrackView(repoId); } catch (Exception ignored) {}
         // Fire async refresh in background — cached response returns immediately
         try { self.asyncRefreshLastPushedAt(repoId); } catch (Exception ignored) {}
         return mapToRepoSummary(repo);
@@ -154,6 +156,20 @@ public class GithubRepoService {
     // =====================================================================
     // ASYNC GITHUB REFRESH — background HTTP calls
     // =====================================================================
+
+    @Async
+    @Transactional
+    public void asyncTrackView(Long repoId) {
+        try {
+            githubRepoRepository.findById(repoId).ifPresent(repo -> {
+                int current = repo.getViewCount() != null ? repo.getViewCount() : 0;
+                repo.setViewCount(current + 1);
+                githubRepoRepository.save(repo);
+            });
+        } catch (Exception e) {
+            log.warn("asyncTrackView failed for repo id={}: {}", repoId, e.getMessage());
+        }
+    }
 
     @Async
     public void asyncRefreshLastPushedAt(Long repoId) {

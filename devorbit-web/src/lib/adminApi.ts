@@ -16,8 +16,8 @@ import type {
 
 export const adminApi = {
   // --- Stats ---
-  getStats: (token: string) =>
-    apiAdminGet<AdminStats>('/api/admin/stats', token),
+  getStats: (token: string, sortBy?: string) =>
+    apiAdminGet<AdminStats>(`/api/admin/stats${sortBy ? `?sortBy=${sortBy}` : ''}`, token),
 
   // --- Students ---
   getStudents: (token: string, search?: string) =>

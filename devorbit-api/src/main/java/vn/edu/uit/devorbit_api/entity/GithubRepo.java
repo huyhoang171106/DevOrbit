@@ -104,4 +104,14 @@ public class GithubRepo {
     /** Short, newline-separated repository tree used by frontend evaluation */
     @Column(name = "file_tree", columnDefinition = "TEXT")
     private String fileTree;
+
+    /** Number of times this repo has been viewed by students */
+    @Column(name = "view_count")
+    @Builder.Default
+    private Integer viewCount = 0;
+
+    @PostLoad
+    public void ensureDefaults() {
+        if (viewCount == null) viewCount = 0;
+    }
 }

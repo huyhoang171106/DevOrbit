@@ -76,7 +76,7 @@ public class AdminStatsController {
                 .build())
             .collect(Collectors.toList());
 
-        List<AdminStatsResponse.SubmissionSummary> recentSubmissions = repoCandidateRepo.findTop10ByOrderByIdDesc()
+        List<AdminStatsResponse.SubmissionSummary> recentSubmissions = repoCandidateRepo.findTop10ByStatusOrderByIdDesc(RepoCandidateStatus.NEW)
             .stream().map(s -> AdminStatsResponse.SubmissionSummary.builder()
                 .id(s.getId())
                 .githubUrl(s.getGithubUrl())

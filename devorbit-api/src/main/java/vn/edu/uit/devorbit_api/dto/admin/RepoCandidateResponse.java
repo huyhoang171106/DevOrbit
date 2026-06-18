@@ -77,7 +77,8 @@ public record RepoCandidateResponse(
     Long courseId,
     String courseCode,
     String courseName,
-    String reviewNote
+    String reviewNote,
+    String approvedAt
 ) {
     /**
      * Converts a {@link RepoCandidate} entity into a {@code RepoCandidateResponse}.
@@ -109,7 +110,8 @@ public record RepoCandidateResponse(
             candidate.getCourse() != null ? candidate.getCourse().getId() : null,
             candidate.getCourse() != null ? candidate.getCourse().getMaMH() : null,
             candidate.getCourse() != null ? candidate.getCourse().getTenMH() : null,
-            candidate.getReviewNote()
+            candidate.getReviewNote(),
+            candidate.getApprovedAt() != null ? candidate.getApprovedAt().toString() : null
         );
     }
 }

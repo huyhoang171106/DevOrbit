@@ -17,6 +17,7 @@ import vn.edu.uit.devorbit_api.repository.GithubRepoRepository;
 import vn.edu.uit.devorbit_api.repository.RepoCandidateRepository;
 import vn.edu.uit.devorbit_api.service.ai.RepoEvaluationService;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,6 +74,7 @@ public class RepoCandidateService {
             repo.setSubjectId(candidate.getCourse().getMaMH());
         }
         repo.setActive(true);
+        repo.setApprovedAt(LocalDateTime.now());
 
         if (request.techStacks() != null && !request.techStacks().isEmpty()) {
             repo.setTechStacks(githubRepoService.resolveTechStacks(request.techStacks()));
@@ -87,6 +89,7 @@ public class RepoCandidateService {
 
         candidate.setReviewNote(request.reviewNote());
         candidate.setStatus(RepoCandidateStatus.APPROVED);
+        candidate.setApprovedAt(LocalDateTime.now());
         repoCandidateRepository.save(candidate);
 
         log.info("approveCandidate: candidate id={} url={} -> GithubRepo id={}", candidateId, candidate.getGithubUrl(), repo.getId());

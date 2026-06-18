@@ -22,19 +22,20 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record RepoSummaryResponse(
     Long id,
-    String displayName,              // Friendly name (may differ from GitHub repo name)
-    String description,              // GitHub repo description
-    String githubUrl,                // Full URL: https://github.com/user/repo
-    String primaryLanguage,          // "Java", "Python", "TypeScript", etc.
-    Integer stars,                   // GitHub star count
-    List<TechStackResponse> techStacks,  // Technology tags with full objects
-    Long courseId,                   // The course this repo belongs to
-    String courseCode,               // Course code e.g., "SE101" (denormalized for convenience)
-    String courseName,               // Course name (denormalized for convenience)
-    String readmeExcerpt,            // Short README snippet for quick preview
-    String fileTree,                 // Newline-separated file tree structure
-    Boolean hasReadme,               // Whether GitHub reported a README
-    String lastPushedAt,             // ISO date of last push/commit
+    String displayName,
+    String description,
+    String githubUrl,
+    String primaryLanguage,
+    Integer stars,
+    List<TechStackResponse> techStacks,
+    Long courseId,
+    String courseCode,
+    String courseName,
+    String readmeExcerpt,
+    String fileTree,
+    Boolean hasReadme,
+    String lastPushedAt,
+    String approvedAt,
     String repoType,
     String usefulnessRating,
     Integer usefulnessScore,

@@ -32,6 +32,8 @@ public interface RepoCandidateRepository extends JpaRepository<RepoCandidate, Lo
 
     /** 10 most recent candidates (for admin dashboard). */
     List<RepoCandidate> findTop10ByOrderByIdDesc();
+    @EntityGraph(attributePaths = {"course"})
+    List<RepoCandidate> findTop10ByStatusOrderByIdDesc(RepoCandidateStatus status);
 
     /** Delete candidates associated with a course (cascade cleanup on course deletion). */
     void deleteByCourseId(Long courseId);

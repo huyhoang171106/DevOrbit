@@ -331,6 +331,7 @@ public class GithubRepoService {
                 repo.getFileTree(),
                 repo.getHasReadme(),
                 repo.getLastPushedAt(),
+                repo.getApprovedAt() != null ? repo.getApprovedAt().toString() : null,
                 repo.getRepoType(),
                 repo.getUsefulnessRating(),
                 repo.getUsefulnessScore(),

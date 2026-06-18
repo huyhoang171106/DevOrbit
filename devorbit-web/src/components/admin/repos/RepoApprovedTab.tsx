@@ -8,6 +8,18 @@ import { getAdminToken } from '../../../lib/auth'
 import type { RepoSummary } from '../../../types/api'
 import type { ApprovedRepoUpdateRequest } from '../../../types/admin'
 
+function formatDate(iso: string | null | undefined): string {
+  if (!iso) return '-'
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return '-'
+  const dd = String(d.getDate()).padStart(2, '0')
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const yyyy = d.getFullYear()
+  const hh = String(d.getHours()).padStart(2, '0')
+  const mi = String(d.getMinutes()).padStart(2, '0')
+  return `${dd}/${mm}/${yyyy} ${hh}:${mi}`
+}
+
 export function RepoApprovedTab() {
   const token = getAdminToken()
   const [editingRepo, setEditingRepo] = useState<RepoSummary | null>(null)
@@ -135,13 +147,14 @@ export function RepoApprovedTab() {
               <th className="px-4 py-3 text-center text-xs font-medium text-orbit-text uppercase">Môn học</th>
               <th className="px-4 py-3 text-center text-xs font-medium text-orbit-text uppercase">Ngôn ngữ</th>
               <th className="px-4 py-3 text-center text-xs font-medium text-orbit-text uppercase">Stars</th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-orbit-text uppercase">Đã duyệt lúc</th>
               <th className="px-4 py-3 text-center text-xs font-medium text-orbit-text uppercase">Thao tác</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-clay-border">
             {filteredRepos.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-10 text-center body-sm text-ink-secondary">
+                <td colSpan={6} className="px-4 py-10 text-center body-sm text-ink-secondary">
                   {searchQuery.trim() ? 'Không tìm thấy repo phù hợp' : 'Không có approved repos'}
                 </td>
               </tr>
@@ -156,6 +169,7 @@ export function RepoApprovedTab() {
                 <td className="px-4 py-3 text-sm text-center text-ink-secondary">{repo.courseName ?? '-'}</td>
                 <td className="px-4 py-3 text-sm text-center text-ink-secondary">{repo.primaryLanguage ?? '-'}</td>
                 <td className="px-4 py-3 text-sm text-center text-ink-secondary">{repo.stars ?? '-'}</td>
+                <td className="px-4 py-3 text-sm text-center text-ink-secondary whitespace-nowrap">{formatDate(repo.approvedAt)}</td>
                 <td className="px-4 py-3 text-sm text-center">
                   <div className="flex justify-center gap-2">
                     <button onClick={() => handleEdit(repo)} className="btn-ghost text-xs whitespace-nowrap">Sửa</button>

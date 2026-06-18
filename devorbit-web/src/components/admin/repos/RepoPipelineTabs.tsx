@@ -2,11 +2,13 @@ import { useState } from 'react'
 import { RepoScanTab } from './RepoScanTab'
 import { RepoCandidatesTab } from './RepoCandidatesTab'
 import { RepoApprovedTab } from './RepoApprovedTab'
+import { RepoStatsTab } from './RepoStatsTab'
 
 const TABS = [
   { key: 'scan', label: 'Quét' },
   { key: 'candidates', label: 'Ứng viên' },
   { key: 'approved', label: 'Đã duyệt' },
+  { key: 'stats', label: 'Thống kê' },
 ] as const
 
 export function RepoPipelineTabs() {
@@ -33,6 +35,7 @@ export function RepoPipelineTabs() {
       {activeTab === 'scan' && <RepoScanTab />}
       {activeTab === 'candidates' && <RepoCandidatesTab />}
       {activeTab === 'approved' && <RepoApprovedTab />}
+      {activeTab === 'stats' && <RepoStatsTab />}
     </div>
   )
 }

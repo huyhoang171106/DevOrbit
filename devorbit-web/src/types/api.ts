@@ -43,6 +43,7 @@ export type RepoSummary = {
   fileTree?: string | null
   hasReadme?: boolean | null
   lastPushedAt?: string | null
+  approvedAt?: string | null
   reviewCount?: number | null
   averageRating?: number | null
   repoType?: string | null

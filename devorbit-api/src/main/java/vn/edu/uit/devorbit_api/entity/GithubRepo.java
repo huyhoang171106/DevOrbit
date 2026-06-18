@@ -1,6 +1,7 @@
 package vn.edu.uit.devorbit_api.entity;
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -105,15 +106,23 @@ public class GithubRepo {
     @Column(name = "file_tree", columnDefinition = "TEXT")
     private String fileTree;
 
+    /** Timestamp when this repo was approved by an admin */
+    @Column(name = "approved_at")
+    private LocalDateTime approvedAt;
+
+    /** AI-evaluated repo type: e.g. "fullstack", "backend", "frontend", "mobile", "data-science" */
     @Column(name = "repo_type", length = 50)
     private String repoType;
 
+    /** AI-evaluated usefulness rating: e.g. "excellent", "good", "average", "limited", "unusable" */
     @Column(name = "usefulness_rating", length = 50)
     private String usefulnessRating;
 
+    /** AI-evaluated usefulness score (numeric, higher = more useful) */
     @Column(name = "usefulness_score")
     private Integer usefulnessScore;
 
+    /** AI-evaluated readiness level: e.g. "ready", "needs-work", "incomplete" */
     @Column(name = "ready_to_use_level", length = 50)
     private String readyToUseLevel;
 }

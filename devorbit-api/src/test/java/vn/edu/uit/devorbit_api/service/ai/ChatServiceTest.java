@@ -30,6 +30,7 @@ class ChatServiceTest {
     @Mock private ChatSessionRepository sessionRepository;
     @Mock private ChatMessageRepository messageRepository;
     @Mock private LlmContextBuilder contextBuilder;
+    @Mock private vn.edu.uit.devorbit_api.repository.CourseRepository courseRepository;
 
     private ChatService chatService;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -41,7 +42,7 @@ class ChatServiceTest {
     void setUp() {
         chatService = new ChatService(
             openCodeAiService, sessionRepository, messageRepository,
-            objectMapper, contextBuilder);
+            objectMapper, contextBuilder, courseRepository);
     }
 
     @Test
@@ -113,5 +114,30 @@ class ChatServiceTest {
         assertThat(savedMessages).hasSize(2);
         assertThat(savedMessages.get(0).getSender()).isEqualTo("STUDENT");
         assertThat(savedMessages.get(1).getSender()).isEqualTo("AI");
+    }
+
+    @Test
+    void sendMessage_courseNameInMessage_matchesAndUsesCourseCode() {
+        when(openCodeAiService.isLlmEnabled()).thenReturn(true);
+        when(sessionRepository.save(any())).thenAnswer(invocation -> {
+            ChatSession s = invocation.getArgument(0);
+            s.setId(UUID.randomUUID());
+            return s;
+        });
+        when(messageRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        vn.edu.uit.devorbit_api.entity.Course osCourse = vn.edu.uit.devorbit_api.entity.Course.builder()
+                .maMH("IT007")
+                .tenMH("Hệ điều hành")
+                .build();
+        when(courseRepository.findAll()).thenReturn(List.of(osCourse));
+        when(contextBuilder.buildCourseContext("IT007")).thenReturn("OS course context");
+        when(openCodeAiService.generateCompletion(any(), anyString())).thenReturn("Here is your OS advice");
+
+        ChatResponse response = chatService.sendMessage(
+            new ChatRequest(null, "Kiếm cho mình tài liệu môn hệ điều hành tốt đi"));
+
+        assertThat(response.message()).isEqualTo("Here is your OS advice");
+        verify(contextBuilder).buildCourseContext("IT007");
     }
 }

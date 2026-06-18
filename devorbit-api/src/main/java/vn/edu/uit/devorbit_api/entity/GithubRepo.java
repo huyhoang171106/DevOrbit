@@ -104,4 +104,17 @@ public class GithubRepo {
     /** Short, newline-separated repository tree used by frontend evaluation */
     @Column(name = "file_tree", columnDefinition = "TEXT")
     private String fileTree;
+
+    @Column(name = "repo_type", length = 50)
+    private String repoType;
+
+    @Column(name = "usefulness_rating", length = 50)
+    private String usefulnessRating;
+
+    @Column(name = "usefulness_score")
+    private Integer usefulnessScore;
+
+    @Column(name = "ready_to_use_level", length = 50)
+    private String readyToUseLevel;
 }
+

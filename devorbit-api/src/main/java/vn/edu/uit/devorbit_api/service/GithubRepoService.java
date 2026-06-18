@@ -298,6 +298,13 @@ public class GithubRepoService {
     // DTO MAPPING
     // =====================================================================
 
+    @Transactional(readOnly = true)
+    public RepoSummaryResponse mapToRepoSummary(GithubRepo repo) {
+        Map<Long, double[]> statsMap = buildReviewStatsMap(List.of(repo.getId()));
+        double[] stats = statsMap.getOrDefault(repo.getId(), new double[]{0, 0.0});
+        return mapToRepoSummary(repo, (int) stats[0], stats[1]);
+    }
+
     public RepoSummaryResponse mapToRepoSummary(GithubRepo repo, int reviewCount, double averageRating) {
         Long courseId = null;
         String courseCode = null;

@@ -11,6 +11,17 @@ import vn.edu.uit.devorbit_api.repository.RepoReviewRepository;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Admin controller for managing repository (GitHub) reviews.
+ * <p>
+ * Endpoints:
+ * <ul>
+ *   <li>GET /api/admin/reviews/repos - List all repo reviews</li>
+ *   <li>DELETE /api/admin/reviews/repos/{id} - Delete a repo review</li>
+ * </ul>
+ * <p>
+ * Security: ADMIN role required. Read-only by default; delete is explicitly transactional.
+ */
 @RestController
 @RequestMapping("/api/admin/reviews/repos")
 @RequiredArgsConstructor
@@ -19,6 +30,13 @@ public class AdminRepoReviewController {
 
     private final RepoReviewRepository repoReviewRepo;
 
+    /**
+     * List all repository reviews ordered by creation date descending.
+     * Student/repo names fall back to "Deleted" if the related entity is missing.
+     *
+     * @return 200 OK with list of RepoReviewAdminResponse
+     * @apiNote GET /api/admin/reviews/repos
+     */
     @GetMapping
     public ResponseEntity<List<RepoReviewAdminResponse>> listRepoReviews() {
         return ResponseEntity.ok(repoReviewRepo.findAllByOrderByCreatedAtDesc()
@@ -33,6 +51,14 @@ public class AdminRepoReviewController {
             .collect(Collectors.toList()));
     }
 
+    /**
+     * Permanently delete a repo review by ID.
+     *
+     * @param id Long ID of the repo review to delete
+     * @return 204 No Content if successful
+     * @throws NotFoundException if review not found
+     * @apiNote DELETE /api/admin/reviews/repos/{id}
+     */
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity<Void> deleteRepoReview(@PathVariable Long id) {

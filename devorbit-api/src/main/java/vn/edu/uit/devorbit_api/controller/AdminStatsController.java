@@ -15,6 +15,19 @@ import vn.edu.uit.devorbit_api.repository.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Admin controller for aggregated dashboard statistics.
+ * <p>
+ * Endpoints:
+ * <ul>
+ *   <li>GET /api/admin/stats - Get full dashboard stats</li>
+ * </ul>
+ * <p>
+ * Security: ADMIN role required. Aggregates data from multiple tables:
+ * students, courses, repos, repo candidates, and course reviews.
+ * Response includes count totals + recent item summaries.
+ * Cache-control is set to no-cache to ensure fresh data.
+ */
 @RestController
 @RequestMapping("/api/admin/stats")
 @RequiredArgsConstructor
@@ -27,6 +40,21 @@ public class AdminStatsController {
     private final RepoCandidateRepository repoCandidateRepo;
     private final CourseReviewRepository courseReviewRepo;
 
+    /**
+     * Get aggregated dashboard statistics.
+     * <p>
+     * Computes:
+     * <ul>
+     *   <li>totalStudents, totalCourses, totalRepos (active), pendingCandidates</li>
+     *   <li>recentStudents (top 10 by ID descending)</li>
+     *   <li>recentCourseReviews (top 10 by creation date descending)</li>
+     *   <li>recentSubmissions (top 10 repo candidates by ID descending)</li>
+     * </ul>
+     * Response has Cache-Control: no-cache, must-revalidate.
+     *
+     * @return 200 OK with AdminStatsResponse containing all aggregate data
+     * @apiNote GET /api/admin/stats
+     */
     @GetMapping
     public ResponseEntity<AdminStatsResponse> getStats() {
         List<AdminStatsResponse.StudentSummary> recentStudents = studentRepo.findTop10ByOrderByIdDesc()

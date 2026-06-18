@@ -145,7 +145,7 @@ function OverviewCard({ repo, evaluation }: { repo: RepoSummary; evaluation: Rep
   const safety = buildSafetySummary(evaluation)
   const coreTopics = evaluation.coreTopics.length > 0 ? evaluation.coreTopics : ['Chưa đủ dữ liệu']
   const tools = evaluation.techTools.length > 0 ? evaluation.techTools : ['Chưa rõ']
-  const coursePrefix = repo.courseCode ? `${repo.courseCode} — ` : ''
+  const coursePrefix = ''
   const { readmeText, hasReadme } = evaluation.signals
   const hasRealReadme = Boolean(readmeText) && readmeText!.trim().length > 3
 
@@ -160,7 +160,7 @@ function OverviewCard({ repo, evaluation }: { repo: RepoSummary; evaluation: Rep
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-3">
             <MagicWand className="h-4 w-4 text-orbit-accent" weight="fill" />
-            <p className="text-[12px] font-black uppercase tracking-[0.18em] text-orbit-accent">Tổng quan nhanh</p>
+
           </div>
 
           <h3 className="mt-3 text-[20px] md:text-[24px] font-black leading-tight text-orbit-text break-words">
@@ -214,6 +214,64 @@ function OverviewCard({ repo, evaluation }: { repo: RepoSummary; evaluation: Rep
       </div>
 
       <div className="rounded-xl border border-orbit-border/80 bg-orbit-surface/40 p-5 space-y-5">
+        <SectionBlock title="Thang điểm đánh giá" icon={<Gauge className="h-3.5 w-3.5" weight="duotone" />}>
+          <div className="grid gap-3 md:grid-cols-3">
+            <ScoreTile label="Mức độ hữu ích" value={`${evaluation.learningUsefulnessScore}/100`} />
+            <ScoreTile
+              label="Mức độ sẵn sàng kỹ thuật"
+              value={evaluation.technicalReadinessScore === null ? 'N/A' : `${evaluation.technicalReadinessScore}/100`}
+            />
+            <ScoreTile
+              label="Mức độ sẵn sàng chạy"
+              value={evaluation.runReadinessScore === null ? 'N/A' : `${evaluation.runReadinessScore}/100`}
+            />
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <span className="rounded-full border border-orbit-accent/20 bg-orbit-accent/10 px-3 py-1.5 text-[12px] font-bold text-orbit-accent">
+              {recommendationTagLabel(evaluation.recommendationTag)}
+            </span>
+            <span className="rounded-full border border-orbit-border bg-orbit-surface/70 px-3 py-1.5 text-[12px] font-bold text-orbit-text-secondary">
+              Độ tin cậy {evaluation.evaluationConfidence}/100
+            </span>
+            <span className="rounded-full border border-orbit-border bg-orbit-surface/70 px-3 py-1.5 text-[12px] font-bold text-orbit-text-secondary">
+              Bằng chứng {evaluation.evidenceCoverage}/100
+            </span>
+          </div>
+          <p className="mt-3 text-[12px] leading-relaxed text-orbit-text-muted">
+            Mức độ sẵn sàng kỹ thuật được suy luận từ metadata, README và cây thư mục; DevOrbit chưa xác minh build, test, tính đúng đắn hay bảo mật.
+          </p>
+        </SectionBlock>
+
+        <SectionDivider />
+
+        <SectionBlock title="Chi tiết tiêu chí" icon={<CheckCircle className="h-3.5 w-3.5" weight="duotone" />}>
+          <div className="space-y-3">
+            {evaluation.criteria.map((item) => (
+              <CriterionRow key={item.key} criterion={item} />
+            ))}
+          </div>
+        </SectionBlock>
+
+        {evaluation.warnings.length > 0 && (
+          <>
+            <SectionDivider />
+            <SectionBlock title="Cảnh báo bằng chứng" icon={<WarningCircle className="h-3.5 w-3.5" weight="duotone" />}>
+              <div className="space-y-2">
+                {evaluation.warnings.map((warning) => (
+                  <div key={`${warning.code}-${warning.paths?.join(',') ?? ''}`} className={`rounded-lg border px-3 py-2 ${warningToneClass(warning.severity)}`}>
+                    <p className="text-[12px] font-black uppercase tracking-[0.08em]">{warning.severity} · {warning.code}</p>
+                    <p className="mt-1 text-[13px] font-semibold leading-relaxed">{warning.message}</p>
+                    {warning.paths && warning.paths.length > 0 && (
+                      <p className="mt-1 text-[11px] leading-relaxed opacity-80">{warning.paths.slice(0, 3).join(', ')}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </SectionBlock>
+          </>
+        )}
+
+        <SectionDivider />
         <SectionBlock title="Thông tin repo" icon={<Info className="h-3.5 w-3.5" weight="duotone" />}>
           <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             <MetaItem label="Owner" value={owner || 'Chưa rõ'} />
@@ -447,6 +505,90 @@ function InfoPanel({ title, children, icon }: { title: string; children: ReactNo
       {children}
     </div>
   )
+}
+
+function ScoreTile({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-orbit-border/60 bg-orbit-surface/40 px-3 py-3 min-h-[4.25rem]">
+      <p className="text-[10px] font-black uppercase tracking-[0.12em] text-orbit-text-muted">{label}</p>
+      <p className="mt-1 text-[18px] font-black text-orbit-text tabular-nums">{value}</p>
+    </div>
+  )
+}
+
+function CriterionRow({ criterion }: { criterion: RepoEvaluationResult['criteria'][number] }) {
+  return (
+    <div className="rounded-lg border border-orbit-border/60 bg-orbit-surface/40 p-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <p className="text-[13px] font-black text-orbit-text">{criterion.label}</p>
+          <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.08em] text-orbit-text-muted">
+            {criterionStatusLabel(criterion.status)} · {criterionApplicabilityLabel(criterion.applicability)} · độ tin cậy {criterion.confidence}/100
+          </p>
+        </div>
+        <span className={`shrink-0 rounded-full border px-3 py-1 text-[12px] font-black tabular-nums ${criterionToneClass(criterion.status)}`}>
+          {criterion.applicability === 'not_applicable' ? 'N/A' : `${criterion.score}/${criterion.maxScore}`}
+        </span>
+      </div>
+      {criterion.evidence.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {criterion.evidence.slice(0, 4).map((item) => (
+            <span key={`${item.type}-${item.path ?? item.message}`} className="rounded-full border border-orbit-border bg-orbit-elevated/70 px-2.5 py-1 text-[11px] font-semibold text-orbit-text-secondary">
+              {item.path ?? item.message}
+            </span>
+          ))}
+        </div>
+      )}
+      {criterion.warnings.length > 0 && (
+        <div className="mt-2 space-y-1">
+          {criterion.warnings.slice(0, 2).map((warning) => (
+            <p key={warning.code} className="text-[12px] font-semibold leading-relaxed text-amber-200">
+              {warning.message}
+            </p>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function recommendationTagLabel(tag: RepoEvaluationResult['recommendationTag']): string {
+  if (tag === 'ready_to_use') return 'Sẵn sàng dùng'
+  if (tag === 'good_project_sample') return 'Mẫu project tốt'
+  if (tag === 'good_study_material') return 'Tài liệu học tốt'
+  if (tag === 'reference_only') return 'Chỉ tham khảo'
+  if (tag === 'needs_check') return 'Cần kiểm tra'
+  return 'Chưa đủ dữ liệu'
+}
+
+function criterionStatusLabel(status: RepoEvaluationResult['criteria'][number]['status']): string {
+  if (status === 'strong') return 'tốt'
+  if (status === 'ok') return 'đạt'
+  if (status === 'weak') return 'yếu'
+  if (status === 'missing') return 'thiếu'
+  if (status === 'not_applicable') return 'không áp dụng'
+  return status
+}
+
+function criterionApplicabilityLabel(applicability: RepoEvaluationResult['criteria'][number]['applicability']): string {
+  if (applicability === 'applicable') return 'áp dụng'
+  if (applicability === 'not_applicable') return 'không áp dụng'
+  if (applicability === 'unknown') return 'chưa rõ'
+  return applicability
+}
+
+function criterionToneClass(status: RepoEvaluationResult['criteria'][number]['status']): string {
+  if (status === 'strong') return 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300'
+  if (status === 'ok') return 'border-orbit-accent/25 bg-orbit-accent/10 text-orbit-accent'
+  if (status === 'weak') return 'border-amber-500/25 bg-amber-500/10 text-amber-300'
+  if (status === 'missing') return 'border-rose-500/25 bg-rose-500/10 text-rose-300'
+  return 'border-orbit-border bg-orbit-elevated text-orbit-text-muted'
+}
+
+function warningToneClass(severity: RepoEvaluationResult['warnings'][number]['severity']): string {
+  if (severity === 'critical') return 'border-rose-500/25 bg-rose-500/10 text-rose-200'
+  if (severity === 'warning') return 'border-amber-500/25 bg-amber-500/10 text-amber-200'
+  return 'border-orbit-border bg-orbit-elevated/70 text-orbit-text-secondary'
 }
 
 function MetaItem({ label, value }: { label: string; value: string }) {

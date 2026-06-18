@@ -1361,6 +1361,10 @@ export type RepoSummaryResponse = {
   fileTree?: string;
   hasReadme?: boolean;
   lastPushedAt?: string;
+  repoType?: string;
+  usefulnessRating?: string;
+  usefulnessScore?: number;
+  readyToUseLevel?: string;
 };
 export type ApprovedRepoUpdateRequest = {
   displayName?: string;

@@ -9,13 +9,43 @@ import vn.edu.uit.devorbit_api.entity.KnowledgeChunk;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * KNOWLEDGE CHUNK REPOSITORY = data access for text chunks + vector search.
+ *
+ * This is the MOST TECHNICALLY COMPLEX repository because it supports:
+ *   1. Vector similarity search (cosine distance on embeddings)
+ *   2. Full-text search (PostgreSQL FTS via ts_query)
+ *   3. Hybrid search (RRF score fusion combining both)
+ *
+ * The embedding field is a pgvector VECTOR(4096) — an array of 4096 floats
+ * representing the semantic meaning of the chunk text.
+ *
+ * Hybrid search formula:
+ *   similarity = 1/(60+vector_rank) + 1/(60+text_rank) + trust_boost + source_boost + kind_boost
+ *
+ * This is an advanced RAG (Retrieval-Augmented Generation) pattern —
+ * the AI tutor uses this to find relevant context when answering questions.
+ */
 @Repository
 public interface KnowledgeChunkRepository extends JpaRepository<KnowledgeChunk, UUID> {
+
+    /** All chunks for a course, in order (for sequential display). */
     List<KnowledgeChunk> findByCourseCodeOrderByChunkIndexAsc(String courseCode);
+
+    /** All chunks from one source document. */
     List<KnowledgeChunk> findBySourceIdOrderByChunkIndexAsc(UUID sourceId);
+
+    /** Delete chunks when a course is removed. */
     void deleteByCourseCode(String courseCode);
+
+    /** Delete chunks when their source document is removed. */
     void deleteBySourceId(UUID sourceId);
 
+    /**
+     * Insert a chunk WITHOUT its embedding vector (faster batch insert).
+     * Uses nativeQuery = true because we need PostgreSQL-specific CAST and JSONB.
+     * Embedding is computed separately and updated via updateEmbeddingVector().
+     */
     @Modifying
     @Query(value = """
         INSERT INTO knowledge_chunks (
@@ -41,6 +71,10 @@ public interface KnowledgeChunkRepository extends JpaRepository<KnowledgeChunk, 
         @Param("parentChunkId") UUID parentChunkId
     );
 
+    /**
+     * Update a chunk's embedding vector after it's been computed by the AI model.
+     * CAST(:embedding AS vector) converts the string "[0.1,0.2,...]" to pgvector format.
+     */
     @Modifying
     @Query(value = """
         UPDATE knowledge_chunks
@@ -53,8 +87,15 @@ public interface KnowledgeChunkRepository extends JpaRepository<KnowledgeChunk, 
     );
 
     /**
-     * Vector similarity search using cosine distance.
-     * Returns chunks ordered by relevance (lowest distance = most similar).
+     * PURE VECTOR SIMILARITY SEARCH.
+     * Uses pgvector's <=> operator (cosine distance).
+     * Lower distance = more semantically similar.
+     * Similarity score = 1 - cosine_distance (so higher = better).
+     *
+     * @param queryVector the query embedding as a string
+     * @param courseCode  filter to one course, or null for all courses
+     * @param topK        how many results to return
+     * @return list of Object[] rows with chunk data + similarity score
      */
     @Query(value = """
         SELECT c.id, c.source_id, c.course_code, c.chunk_index, c.section_title,
@@ -75,8 +116,15 @@ public interface KnowledgeChunkRepository extends JpaRepository<KnowledgeChunk, 
     );
 
     /**
-     * Hybrid search combining vector similarity and PostgreSQL FTS with RRF-style score fusion.
-     * Metadata boosts for trust level, source type, and chunk kind are applied in SQL.
+     * HYBRID SEARCH = vector search + full-text search + metadata boost.
+     *
+     * Combines three signals:
+     *   1. Vector rank: how semantically similar the chunk is to the query
+     *   2. Text rank: how many query keywords match in the chunk text (PostgreSQL FTS)
+     *   3. Metadata boost: official/trusted sources get a score boost
+     *
+     * Uses Reciprocal Rank Fusion (RRF): 1/(60 + rank) for each signal.
+     * The constant 60 prevents any single signal from dominating.
      */
     @Query(value = """
         WITH vector_ranked AS (

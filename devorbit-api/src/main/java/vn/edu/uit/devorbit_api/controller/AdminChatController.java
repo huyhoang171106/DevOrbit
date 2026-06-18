@@ -14,6 +14,18 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Admin controller for managing chat support sessions.
+ * <p>
+ * Endpoints:
+ * <ul>
+ *   <li>GET /api/admin/chat/sessions - List all chat sessions with message counts</li>
+ *   <li>GET /api/admin/chat/sessions/{id}/messages - List messages in a session</li>
+ * </ul>
+ * <p>
+ * Security: ADMIN role required. Read-only by default (transactional).
+ * Request flow: Admin views sessions, then drills into individual session messages.
+ */
 @RestController
 @RequestMapping("/api/admin/chat")
 @RequiredArgsConstructor
@@ -23,6 +35,14 @@ public class AdminChatController {
     private final ChatSessionRepository chatSessionRepo;
     private final ChatMessageRepository chatMessageRepo;
 
+    /**
+     * List all chat sessions with their message counts.
+     * <p>
+     * Returns each session with student name, title, message count, and creation timestamp.
+     *
+     * @return 200 OK with list of ChatSessionAdminResponse
+     * @apiNote GET /api/admin/chat/sessions
+     */
     @GetMapping("/sessions")
     public ResponseEntity<List<ChatSessionAdminResponse>> listSessions() {
         return ResponseEntity.ok(chatSessionRepo.findAllWithStudentAndCount()
@@ -40,6 +60,13 @@ public class AdminChatController {
             .collect(Collectors.toList()));
     }
 
+    /**
+     * List all messages in a specific chat session, ordered by creation time ascending.
+     *
+     * @param id UUID of the chat session
+     * @return 200 OK with list of ChatMessageAdminResponse
+     * @apiNote GET /api/admin/chat/sessions/{id}/messages
+     */
     @GetMapping("/sessions/{id}/messages")
     public ResponseEntity<List<ChatMessageAdminResponse>> listMessages(@PathVariable UUID id) {
         return ResponseEntity.ok(chatMessageRepo.findBySessionIdOrderByCreatedAtAsc(id)

@@ -45,6 +45,10 @@ export type RepoSummary = {
   lastPushedAt?: string | null
   reviewCount?: number | null
   averageRating?: number | null
+  repoType?: string | null
+  usefulnessRating?: string | null
+  usefulnessScore?: number | null
+  readyToUseLevel?: string | null
 }
 
 export type RepoCandidate = {

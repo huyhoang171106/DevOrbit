@@ -6,6 +6,9 @@ import vn.edu.uit.devorbit_api.entity.CourseObjective;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * COURSE OBJECTIVE REPOSITORY = learning goals extracted from course syllabi.
+ */
 @Repository
 public interface CourseObjectiveRepository extends JpaRepository<CourseObjective, UUID> {
     List<CourseObjective> findByCourseCode(String courseCode);

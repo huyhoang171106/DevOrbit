@@ -11,6 +11,17 @@ import vn.edu.uit.devorbit_api.repository.CourseReviewRepository;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Admin controller for managing course reviews.
+ * <p>
+ * Endpoints:
+ * <ul>
+ *   <li>GET /api/admin/reviews/courses - List all course reviews</li>
+ *   <li>DELETE /api/admin/reviews/courses/{id} - Delete a course review</li>
+ * </ul>
+ * <p>
+ * Security: ADMIN role required. Read-only by default; delete is explicitly transactional.
+ */
 @RestController
 @RequestMapping("/api/admin/reviews/courses")
 @RequiredArgsConstructor
@@ -19,6 +30,13 @@ public class AdminCourseReviewController {
 
     private final CourseReviewRepository courseReviewRepo;
 
+    /**
+     * List all course reviews ordered by creation date descending.
+     * Student/course names fall back to "Deleted" if the related entity is missing.
+     *
+     * @return 200 OK with list of CourseReviewAdminResponse
+     * @apiNote GET /api/admin/reviews/courses
+     */
     @GetMapping
     public ResponseEntity<List<CourseReviewAdminResponse>> listCourseReviews() {
         return ResponseEntity.ok(courseReviewRepo.findAllByOrderByCreatedAtDesc()
@@ -33,6 +51,14 @@ public class AdminCourseReviewController {
             .collect(Collectors.toList()));
     }
 
+    /**
+     * Permanently delete a course review by ID.
+     *
+     * @param id Long ID of the course review to delete
+     * @return 204 No Content if successful
+     * @throws NotFoundException if review not found
+     * @apiNote DELETE /api/admin/reviews/courses/{id}
+     */
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity<Void> deleteCourseReview(@PathVariable Long id) {

@@ -31,6 +31,7 @@ public class ChatService {
     private final ChatMessageRepository messageRepository;
     private final ObjectMapper objectMapper;
     private final LlmContextBuilder contextBuilder;
+    private final vn.edu.uit.devorbit_api.repository.CourseRepository courseRepository;
 
     private static final int MAX_HISTORY_MESSAGES = 10;
 
@@ -144,15 +145,40 @@ public class ChatService {
         return sb.toString();
     }
 
-    /**
-     * Extract course code from user message (e.g., "SE104", "SE101").
-     */
     private String extractCourseCode(String message) {
-        if (message == null) return null;
+        if (message == null || message.isBlank()) return null;
+        
+        // 1. Try matching using course code pattern (e.g. IT007, SE104)
         java.util.regex.Matcher matcher = java.util.regex.Pattern
                 .compile("\\b([A-Z]{2}[0-9]{3})\\b")
                 .matcher(message);
-        return matcher.find() ? matcher.group(1) : null;
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+
+        // 2. Try fuzzy matching against database courses by name
+        try {
+            String normalizedMessage = message.toLowerCase();
+            List<vn.edu.uit.devorbit_api.entity.Course> courses = courseRepository.findAll();
+            for (vn.edu.uit.devorbit_api.entity.Course course : courses) {
+                if (course.getTenMH() != null && !course.getTenMH().isBlank()) {
+                    String name = course.getTenMH().toLowerCase();
+                    if (normalizedMessage.contains(name)) {
+                        return course.getMaMH();
+                    }
+                }
+                if (course.getTenMH_EN() != null && !course.getTenMH_EN().isBlank()) {
+                    String nameEn = course.getTenMH_EN().toLowerCase();
+                    if (normalizedMessage.contains(nameEn)) {
+                        return course.getMaMH();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Error matching course name to code: {}", e.getMessage());
+        }
+        
+        return null;
     }
 
     private String generateOfflineResponse(String message) {

@@ -54,6 +54,19 @@ function setCachedCourse(id: string, data: CourseDetail) {
   } catch {}
 }
 
+const sortRepos = (items: RepoSummary[]): RepoSummary[] => {
+  return [...items].sort((a, b) => {
+    const scoreA = a.usefulnessScore ?? 0
+    const scoreB = b.usefulnessScore ?? 0
+    if (scoreB !== scoreA) {
+      return scoreB - scoreA
+    }
+    const starsA = a.stars ?? 0
+    const starsB = b.stars ?? 0
+    return starsB - starsA
+  })
+}
+
 export function CourseDetailPage() {
   const { courseId } = useParams<{ courseId: string }>()
   const location = useLocation()
@@ -65,8 +78,8 @@ export function CourseDetailPage() {
   const cachedRef = useRef(cached)
   cachedRef.current = cached
   const [course, setCourse] = useState<CourseDetail | null>(cached)
-  const [repos, setRepos] = useState<RepoSummary[]>(cached?.repos || [])
-  const [filtered, setFiltered] = useState<RepoSummary[]>(cached?.repos || [])
+  const [repos, setRepos] = useState<RepoSummary[]>(sortRepos(cached?.repos || []))
+  const [filtered, setFiltered] = useState<RepoSummary[]>(sortRepos(cached?.repos || []))
   const [loading, setLoading] = useState(!cached)
   const [bookmarked, setBookmarked] = useState(false)
   const [bookmarking, setBookmarking] = useState(false)
@@ -101,8 +114,9 @@ export function CourseDetailPage() {
     apiGet<CourseDetail>(`/api/courses/${courseId}`)
       .then((data) => {
         setCourse(data)
-        setRepos(data.repos || [])
-        setFiltered(data.repos || [])
+        const sorted = sortRepos(data.repos || [])
+        setRepos(sorted)
+        setFiltered(sorted)
         setCachedCourse(courseId, data)
       })
       .catch(console.error)

@@ -15,6 +15,7 @@ import vn.edu.uit.devorbit_api.exception.BadRequestException;
 import vn.edu.uit.devorbit_api.exception.NotFoundException;
 import vn.edu.uit.devorbit_api.repository.GithubRepoRepository;
 import vn.edu.uit.devorbit_api.repository.RepoCandidateRepository;
+import vn.edu.uit.devorbit_api.service.ai.RepoEvaluationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ public class RepoCandidateService {
     private final GithubRepoService githubRepoService;
     private final GithubScanService githubScanService;
     private final CacheManager cacheManager;
+    private final RepoEvaluationService repoEvaluationService;
 
     @Transactional(readOnly = true)
     public List<RepoCandidateResponse> getPendingCandidates(String reviewer) {
@@ -78,6 +80,7 @@ public class RepoCandidateService {
             repo.setTechStacks(githubRepoService.resolveTechStacks(List.of(candidate.getPrimaryLanguage())));
         }
 
+        repoEvaluationService.evaluateRepo(repo);
         githubRepoRepository.save(repo);
 
         evictReposCache();

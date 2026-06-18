@@ -34,25 +34,7 @@ public class PublicDiscoveryController {
     @GetMapping("/recent-repos")
     public List<RepoSummaryResponse> getRecentRepos() {
         return repoRepository.findTop10ByActiveTrueOrderByIdDesc().stream()
-                .map(repo -> new RepoSummaryResponse(
-                        repo.getId(),
-                        repo.getDisplayName(),
-                        repo.getDescription(),
-                        repo.getGithubUrl(),
-                        repo.getPrimaryLanguage(),
-                        repo.getStars() != null ? repo.getStars() : 0,
-                        repo.getTechStacks().stream()
-                                .map(ts -> new TechStackResponse(ts.getName()))
-                                .toList(),
-                        repo.getCourse() != null ? repo.getCourse().getId() : null,
-                        repo.getCourse() != null ? repo.getCourse().getMaMH() : null,
-                        repo.getCourse() != null ? repo.getCourse().getTenMH() : null,
-                        repo.getReadmeExcerpt(),
-                        repo.getFileTree(),
-                        repo.getHasReadme(),
-                        repo.getLastPushedAt(),
-                        null,
-                        null))
+                .map(githubRepoService::mapToRepoSummary)
                 .toList();
     }
 

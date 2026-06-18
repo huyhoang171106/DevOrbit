@@ -18,6 +18,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Admin controller for managing tech stacks.
+ * <p>
+ * Endpoints:
+ * <ul>
+ *   <li>GET /api/admin/techstack - List all tech stacks</li>
+ *   <li>POST /api/admin/techstack - Create a new tech stack</li>
+ *   <li>DELETE /api/admin/techstack/{id} - Delete a tech stack</li>
+ * </ul>
+ * <p>
+ * Security: ADMIN role required.
+ * Creating a tech stack also auto-creates a community chat channel (TECH_STACK type).
+ * Deleting either hard-deletes the associated channel (if no messages exist)
+ * or deactivates it (if messages exist) to preserve history.
+ */
 @RestController
 @RequestMapping("/api/admin/techstack")
 @RequiredArgsConstructor
@@ -28,6 +43,13 @@ public class AdminTechStackController {
     private final ChatChannelRepository chatChannelRepository;
     private final CommunityMessageRepository communityMessageRepository;
 
+    /**
+     * List all distinct tech stacks ordered by name.
+     * Response has Cache-Control: no-cache, must-revalidate.
+     *
+     * @return 200 OK with list of AdminTechStackResponse
+     * @apiNote GET /api/admin/techstack
+     */
     @GetMapping
     public ResponseEntity<List<AdminTechStackResponse>> list() {
         return ResponseEntity.ok()
@@ -37,6 +59,16 @@ public class AdminTechStackController {
                 .collect(Collectors.toList()));
     }
 
+    /**
+     * Create a new tech stack.
+     * <p>
+     * Also auto-creates a community chat channel (TECH_STACK type) linked to this tech stack.
+     * Duplicate names (case-insensitive) are rejected with 409 Conflict.
+     *
+     * @param body JSON map containing "name" field
+     * @return 200 OK with created AdminTechStackResponse, or 400 if name blank, or 409 if duplicate
+     * @apiNote POST /api/admin/techstack
+     */
     @PostMapping
     public ResponseEntity<AdminTechStackResponse> create(@RequestBody Map<String, String> body) {
         String name = body.get("name");
@@ -52,6 +84,18 @@ public class AdminTechStackController {
         return ResponseEntity.ok(toResponse(saved));
     }
 
+    /**
+     * Delete a tech stack by ID.
+     * <p>
+     * If the associated chat channel has messages, it is deactivated (soft-delete)
+     * to preserve message history. Otherwise the channel is hard-deleted.
+     * Returns a JSON map with "channelDeactivated" boolean.
+     *
+     * @param id Long ID of the tech stack to delete
+     * @return 200 OK with JSON map {"channelDeactivated": true/false}
+     * @throws NotFoundException if tech stack not found
+     * @apiNote DELETE /api/admin/techstack/{id}
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, Object>> delete(@PathVariable Long id) {
         if (!techStackRepo.existsById(id)) {
@@ -73,6 +117,12 @@ public class AdminTechStackController {
         return ResponseEntity.ok(Map.of("channelDeactivated", channelDeactivated));
     }
 
+    /**
+     * Map a TechStack entity to AdminTechStackResponse DTO.
+     *
+     * @param ts TechStack entity
+     * @return AdminTechStackResponse with id and name
+     */
     private AdminTechStackResponse toResponse(TechStack ts) {
         return AdminTechStackResponse.builder()
             .id(ts.getId())

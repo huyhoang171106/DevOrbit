@@ -22,6 +22,14 @@ const LANGUAGE_COLORS: Record<string, string> = {
   Shell: '#89E051',
 }
 
+const RATING_BADGES: Record<string, { label: string; className: string }> = {
+  highly_recommended: { label: 'Rất nên xem', className: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
+  recommended: { label: 'Nên xem', className: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
+  selective: { label: 'Có chọn lọc', className: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
+  quick_reference: { label: 'Tham khảo', className: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20' },
+  low_priority: { label: 'Không ưu tiên', className: 'bg-rose-500/10 text-rose-400 border-rose-500/20' },
+}
+
 export function RepoCard({ repo }: { repo: RepoSummary }) {
   const langColor = LANGUAGE_COLORS[repo.primaryLanguage] ?? '#6b7280'
 
@@ -55,6 +63,11 @@ export function RepoCard({ repo }: { repo: RepoSummary }) {
               <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[11px] font-bold tabular-nums ${repo.stars > 0 ? 'bg-orbit-surface border-orbit-border text-orbit-text-muted' : 'bg-orbit-surface/50 border-orbit-border/50 text-orbit-text-muted/60'}`}>
                 <Star className={`h-3.5 w-3.5 ${repo.stars > 0 ? 'text-amber-400' : 'text-orbit-text-muted/40'}`} weight="fill" />
                 {repo.stars.toLocaleString('en-US')}
+              </span>
+            )}
+            {repo.usefulnessRating && RATING_BADGES[repo.usefulnessRating] && (
+              <span className={`inline-flex items-center px-2.5 py-1 rounded-lg border text-[10px] font-semibold tracking-wide uppercase ${RATING_BADGES[repo.usefulnessRating].className}`}>
+                {RATING_BADGES[repo.usefulnessRating].label}
               </span>
             )}
             {repo.reviewCount != null && repo.reviewCount > 0 && (

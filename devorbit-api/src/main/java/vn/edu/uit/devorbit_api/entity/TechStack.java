@@ -4,15 +4,26 @@ import jakarta.persistence.*;
 import lombok.*;
 
 /**
- * TECH STACK = a technology name that can be tagged to repos.
+ * TECH STACK = a technology label that can be tagged to GitHub repos.
  *
  * Maps to the "tech_stacks" table.
  * Each row is one technology (e.g., "React", "Spring Boot", "PostgreSQL").
- * A GithubRepo can have MULTIPLE tech stacks via the ManyToMany relationship.
  *
- * Legacy note: The `repo` field exists for backward compatibility with older
- * schemas where each tech stack was tied to one repo. NEW repos use
- * GithubRepo.techStacks (the ManyToMany join table).
+ * ┌──────────────────────────────────────────────────────────────────┐
+ * │ RELATIONSHIP WITH GITHUBREPO                                    │
+ * │                                                                  │
+ * │   GithubRepo ----< repo_tech_stacks >---- TechStack             │
+ * │   (ManyToMany join table)                                       │
+ * │                                                                  │
+ * │   A repo can have MANY tech stacks (e.g., React + Node + Docker)│
+ * │   A tech stack can be on MANY repos                             │
+ * └──────────────────────────────────────────────────────────────────┘
+ *
+ * ⚠️ LEGACY NOTE:
+ *    The `repo` field (ManyToOne) is an OLD design where each tech stack
+ *    was tied to exactly ONE repo. This still exists for old database rows.
+ *    NEW repos use GithubRepo.techStacks (the ManyToMany join table).
+ *    The `repo` field will be removed in a future migration.
  */
 @Entity
 @Table(name = "tech_stacks", uniqueConstraints = @UniqueConstraint(name = "uk_tech_stack_name", columnNames = "name"))
@@ -25,14 +36,22 @@ public class TechStack {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** The name of the technology (e.g., "React", "Spring Boot") */
+    /**
+     * The technology name.
+     * Must be unique (e.g., only one "React" row).
+     * Examples: "React", "Spring Boot", "Docker", "PostgreSQL"
+     */
     @Column(nullable = false, length = 120)
     private String name;
 
     /**
-     * LEGACY FIELD: kept for old database rows.
-     * New code uses GithubRepo.techStacks instead of this.
-     * In the future, this field may be removed.
+     * ⚠️ LEGACY FIELD — DO NOT USE FOR NEW DATA.
+     *
+     * This was used in the old schema where each TechStack belonged to
+     * exactly one repo. Now replaced by GithubRepo.techStacks (ManyToMany).
+     *
+     * Kept for backward compatibility with existing database rows.
+     * Will be removed in a future database migration.
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "repo_id")

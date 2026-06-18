@@ -1,11 +1,18 @@
 package vn.edu.uit.devorbit_api.entity;
 
 /**
- * What a Note is attached to.
+ * WHAT a student's note is ABOUT.
  *
- * COURSE — The note is about a specific course
- * REPO   — The note is about a specific GitHub repo
- * NONE   — General note not attached to anything specific
+ * COURSE — Note attached to a course (e.g., summary of a lecture).
+ *          targetId = Course.id
+ *
+ * REPO   — Note attached to a GitHub repo (e.g., code review notes).
+ *          targetId = GithubRepo.id
+ *
+ * NONE   — General-purpose note with no specific attachment.
+ *          targetId is null.
+ *
+ * Used together with Note.targetId to locate the referenced object.
  */
 public enum NoteTargetType {
     COURSE,

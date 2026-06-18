@@ -198,7 +198,7 @@ export function RepoDetailPage() {
               <div className="space-y-5">
                 <span className="badge inline-flex">
                   <Code className="h-3 w-3" weight="fill" />
-                  Repository
+                  Kho mã nguồn
                 </span>
                 <h1 className="display-md">{repo.displayName}</h1>
               </div>
@@ -208,7 +208,7 @@ export function RepoDetailPage() {
                   <div className={`flex items-center gap-2.5 px-5 py-3 rounded-2xl border ${repo.stars > 0 ? 'bg-amber-500/5 border-amber-500/20' : 'bg-orbit-surface border-orbit-border'}`}>
                     <Star className={`h-5 w-5 ${repo.stars > 0 ? 'text-amber-400' : 'text-orbit-text-muted/50'}`} weight="fill" />
                     <span className={`text-xl font-black tabular-nums ${repo.stars > 0 ? 'text-amber-300' : 'text-orbit-text-muted'}`}>
-                      {repo.stars.toLocaleString('en-US')}
+                      {repo.stars.toLocaleString('vi-VN')}
                     </span>
                   </div>
                   <span className="text-[10px] font-black uppercase tracking-[0.15em] text-orbit-text-muted/50 mt-2">Lượt yêu thích</span>

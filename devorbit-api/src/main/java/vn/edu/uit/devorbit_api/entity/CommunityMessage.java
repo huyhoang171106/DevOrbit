@@ -10,6 +10,21 @@ import org.hibernate.annotations.NotFoundAction;
 
 import java.time.LocalDateTime;
 
+/**
+ * COMMUNITY MESSAGE = a public message in a course community chat channel.
+ *
+ * Maps to the "community_messages" table.
+ * Unlike ChatMessage (private AI chat), this is PUBLIC — everyone
+ * in the channel can see it.
+ *
+ * Messages can be "soft-deleted" (deleted = true) instead of actually
+ * being removed from the database. This keeps the conversation flow
+ * intact for other participants while hiding the content.
+ *
+ * Compare with ChatMessage:
+ *   ChatMessage        → private AI tutor chat (sender = STUDENT or AI)
+ *   CommunityMessage   → public peer-to-peer chat (sender = StudentUser)
+ */
 @Entity
 @Table(name = "community_messages")
 @Getter @Setter
@@ -21,22 +36,30 @@ public class CommunityMessage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /** Which channel this message was posted in. */
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @NotFound(action = NotFoundAction.IGNORE)
     @JoinColumn(name = "channel_id", nullable = false)
     private ChatChannel channel;
 
+    /** Which student sent this message. */
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @NotFound(action = NotFoundAction.IGNORE)
     @JoinColumn(name = "student_id", nullable = false)
     private StudentUser student;
 
+    /** The message body text. */
     @NotBlank
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
+    /**
+     * Soft delete flag.
+     * true = message is hidden from users but stays in DB.
+     * This preserves replies and conversation context.
+     */
     @Column(nullable = false)
     @Builder.Default
     private boolean deleted = false;

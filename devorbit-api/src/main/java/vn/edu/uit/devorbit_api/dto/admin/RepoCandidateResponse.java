@@ -21,7 +21,8 @@ public record RepoCandidateResponse(
     Long courseId,
     String courseCode,
     String courseName,
-    String reviewNote
+    String reviewNote,
+    String approvedAt
 ) {
     public static RepoCandidateResponse from(RepoCandidate candidate) {
         return new RepoCandidateResponse(
@@ -43,7 +44,8 @@ public record RepoCandidateResponse(
             candidate.getCourse() != null ? candidate.getCourse().getId() : null,
             candidate.getCourse() != null ? candidate.getCourse().getMaMH() : null,
             candidate.getCourse() != null ? candidate.getCourse().getTenMH() : null,
-            candidate.getReviewNote()
+            candidate.getReviewNote(),
+            candidate.getApprovedAt() != null ? candidate.getApprovedAt().toString() : null
         );
     }
 }

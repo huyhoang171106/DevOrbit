@@ -13,13 +13,18 @@ import vn.edu.uit.devorbit_api.service.GithubRepoService;
 import java.util.List;
 
 /**
- * PUBLIC DISCOVERY CONTROLLER = explore recent repos and popular tech stacks.
+ * PUBLIC DISCOVERY CONTROLLER = khám phá repo mới và công nghệ phổ biến (public).
  *
- * Used by the "Discover" page on the frontend to show:
- * - Recently added GitHub repos
- * - Most popular tech stacks
+ * Được trang "Khám phá" ở frontend sử dụng để hiển thị:
+ * - Repo GitHub mới thêm gần đây
+ * - Công nghệ phổ biến nhất
  *
- * No authentication required.
+ * Endpoints:
+ *   GET /api/discovery/recent-repos — 10 repo mới nhất
+ *   GET /api/discovery/repos        — tất cả repo đã duyệt
+ *   GET /api/discovery/top-stacks   — 10 công nghệ được dùng nhiều nhất
+ *
+ * Authentication: không yêu cầu (public)
  */
 @RestController
 @RequestMapping("/api/discovery")
@@ -30,7 +35,7 @@ public class PublicDiscoveryController {
     private final TechStackRepository techStackRepository;
     private final GithubRepoService githubRepoService;
 
-    /** Get the 10 most recently added active repos */
+    /** GET 10 repo hoạt động gần đây nhất */
     @GetMapping("/recent-repos")
     public List<RepoSummaryResponse> getRecentRepos() {
         return repoRepository.findTop10ByActiveTrueOrderByIdDesc().stream()
@@ -50,17 +55,18 @@ public class PublicDiscoveryController {
                         repo.getReadmeExcerpt(),
                         repo.getFileTree(),
                         repo.getHasReadme(),
-                        repo.getLastPushedAt()))
+                        repo.getLastPushedAt(),
+                        repo.getApprovedAt() != null ? repo.getApprovedAt().toString() : null))
                 .toList();
     }
 
-    /** Get all approved repos for cross-course search */
+    /** GET tất cả repo đã duyệt (dùng cho tìm kiếm xuyên khoá học) */
     @GetMapping("/repos")
     public List<RepoSummaryResponse> getAllRepos() {
         return githubRepoService.getAllApprovedRepos();
     }
 
-    /** Get the 10 most used tech stacks */
+    /** GET 10 công nghệ được sử dụng nhiều nhất */
     @GetMapping("/top-stacks")
     public List<String> getTopStacks() {
         return techStackRepository.findTop10TechStacksByUsage();

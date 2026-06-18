@@ -237,7 +237,8 @@ public class GithubRepoService {
                 repo.getReadmeExcerpt(),
                 repo.getFileTree(),
                 repo.getHasReadme(),
-                repo.getLastPushedAt()
+                repo.getLastPushedAt(),
+                repo.getApprovedAt() != null ? repo.getApprovedAt().toString() : null
         );
     }
 

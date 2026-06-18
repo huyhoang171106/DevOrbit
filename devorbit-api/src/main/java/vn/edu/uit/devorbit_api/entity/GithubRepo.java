@@ -1,6 +1,7 @@
 package vn.edu.uit.devorbit_api.entity;
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -104,4 +105,8 @@ public class GithubRepo {
     /** Short, newline-separated repository tree used by frontend evaluation */
     @Column(name = "file_tree", columnDefinition = "TEXT")
     private String fileTree;
+
+    /** Timestamp when this repo was approved by an admin */
+    @Column(name = "approved_at")
+    private LocalDateTime approvedAt;
 }

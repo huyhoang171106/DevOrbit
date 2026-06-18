@@ -27,5 +27,6 @@ public record RepoSummaryResponse(
     String readmeExcerpt,
     String fileTree,
     Boolean hasReadme,
-    String lastPushedAt
+    String lastPushedAt,
+    String approvedAt
 ) {}

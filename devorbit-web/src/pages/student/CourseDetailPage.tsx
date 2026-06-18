@@ -56,14 +56,22 @@ function setCachedCourse(id: string, data: CourseDetail) {
 
 const sortRepos = (items: RepoSummary[]): RepoSummary[] => {
   return [...items].sort((a, b) => {
-    const scoreA = a.usefulnessScore ?? 0
-    const scoreB = b.usefulnessScore ?? 0
-    if (scoreB !== scoreA) {
-      return scoreB - scoreA
-    }
-    const starsA = a.stars ?? 0
-    const starsB = b.stars ?? 0
-    return starsB - starsA
+    // 1. lastPushedAt descending (newest GitHub push first)
+    const dateA = a.lastPushedAt ?? ''
+    const dateB = b.lastPushedAt ?? ''
+    if (dateA && dateB) return dateB.localeCompare(dateA)
+    if (dateB) return 1
+    if (dateA) return -1
+    // 2. approvedAt descending (newest approval first)
+    const appA = a.approvedAt ?? ''
+    const appB = b.approvedAt ?? ''
+    if (appA && appB) return appB.localeCompare(appA)
+    if (appB) return 1
+    if (appA) return -1
+    // 3. id descending (newest id first)
+    const idA = a.id ?? 0
+    const idB = b.id ?? 0
+    return idB - idA
   })
 }
 
@@ -179,7 +187,23 @@ export function CourseDetailPage() {
 
   function applySortAndFilter(source: RepoSummary[], stack: string | null, sort: SortOption) {
     let result = stack ? source.filter((r) => r.techStacks.includes(stack)) : source
-    if (sort === 'mostStars') {
+    if (sort === 'default') {
+      result = [...result].sort((a, b) => {
+        const dateA = a.lastPushedAt ?? ''
+        const dateB = b.lastPushedAt ?? ''
+        if (dateA && dateB) return dateB.localeCompare(dateA)
+        if (dateB) return 1
+        if (dateA) return -1
+        const appA = a.approvedAt ?? ''
+        const appB = b.approvedAt ?? ''
+        if (appA && appB) return appB.localeCompare(appA)
+        if (appB) return 1
+        if (appA) return -1
+        const idA = a.id ?? 0
+        const idB = b.id ?? 0
+        return idB - idA
+      })
+    } else if (sort === 'mostStars') {
       result = [...result].sort((a, b) => (b.stars ?? 0) - (a.stars ?? 0))
     } else if (sort === 'mostReviews') {
       result = [...result].sort((a, b) => (b.reviewCount ?? 0) - (a.reviewCount ?? 0))

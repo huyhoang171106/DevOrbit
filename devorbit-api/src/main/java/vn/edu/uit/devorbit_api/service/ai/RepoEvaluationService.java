@@ -59,6 +59,7 @@ public class RepoEvaluationService {
         evaluateAndSaveAll();
     }
 
+    @Transactional
     public void evaluateAndSaveAll() {
         try {
             List<GithubRepo> repos = githubRepoRepository.findAll();
@@ -108,7 +109,10 @@ public class RepoEvaluationService {
         String primaryLanguage = repo.getPrimaryLanguage() != null ? repo.getPrimaryLanguage() : "";
         
         List<String> techStacks = repo.getTechStacks() != null
-                ? repo.getTechStacks().stream().map(TechStack::getName).toList()
+                ? repo.getTechStacks().stream()
+                        .filter(Objects::nonNull)
+                        .map(TechStack::getName)
+                        .toList()
                 : Collections.emptyList();
 
         String readmeText = repo.getReadmeExcerpt() != null ? repo.getReadmeExcerpt() : "";

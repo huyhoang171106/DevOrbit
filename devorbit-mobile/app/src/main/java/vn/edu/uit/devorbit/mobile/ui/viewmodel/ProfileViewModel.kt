@@ -44,9 +44,11 @@ class ProfileViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            bookmarkRepository.getAllBookmarks().collect { bookmarks ->
-                _state.update { it.copy(bookmarks = bookmarks) }
-            }
+            bookmarkRepository.getAllBookmarks()
+                .catch { emit(emptyList()) }
+                .collect { bookmarks ->
+                    _state.update { it.copy(bookmarks = bookmarks) }
+                }
         }
     }
 

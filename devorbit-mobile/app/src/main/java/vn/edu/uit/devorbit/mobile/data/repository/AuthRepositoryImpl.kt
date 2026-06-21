@@ -56,6 +56,35 @@ class AuthRepositoryImpl @Inject constructor(
         AuthResult(token, studentCode, fullName, email)
     }
 
+    override suspend fun forgotPassword(studentCode: String): Result<Unit> = runCatching {
+        apiService.forgotPassword(mapOf("studentCode" to studentCode))
+        Unit
+    }
+
+    override suspend fun resetPassword(
+        studentCode: String, otpCode: String, newPassword: String
+    ): Result<AuthResult> = runCatching {
+        val response = apiService.resetPassword(mapOf(
+            "studentCode" to studentCode,
+            "otpCode" to otpCode,
+            "newPassword" to newPassword
+        ))
+        val token = response["token"] as? String ?: throw Exception("Reset password failed")
+        val fullName = response["fullName"] as? String ?: ""
+        val email = response["email"] as? String ?: ""
+        settingsDataStore.saveToken(token)
+        settingsDataStore.saveStudentName(fullName)
+        settingsDataStore.saveStudentCode(studentCode)
+        AuthResult(token, studentCode, fullName, email)
+    }
+
+    override suspend fun resendOtp(email: String, purpose: String?): Result<Unit> = runCatching {
+        val body = mutableMapOf("email" to email)
+        purpose?.let { body["purpose"] = it }
+        apiService.resendOtp(body)
+        Unit
+    }
+
     override suspend fun getProfile(): Result<StudentInfo> = runCatching {
         val response = apiService.getStudentProfile()
         StudentInfo(
@@ -71,6 +100,7 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun logout() {
+        runCatching { apiService.studentLogout() }
         settingsDataStore.clearToken()
     }
 }

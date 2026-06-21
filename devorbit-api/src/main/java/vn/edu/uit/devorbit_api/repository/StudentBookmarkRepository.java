@@ -33,6 +33,9 @@ public interface StudentBookmarkRepository extends JpaRepository<StudentBookmark
     /** Remove a bookmark (unbookmark action). */
     void deleteByStudentIdAndTargetTypeAndTargetId(Long studentId, String targetType, Long targetId);
 
+    /** Find bookmarks by target type and id. */
+    List<StudentBookmark> findByTargetTypeAndTargetId(String targetType, Long targetId);
+
     /** Remove bookmarks for a target (cascade cleanup on target deletion). */
     void deleteByTargetTypeAndTargetId(String targetType, Long targetId);
 

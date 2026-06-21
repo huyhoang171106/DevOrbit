@@ -6,6 +6,7 @@ import retrofit2.http.Query
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import vn.edu.uit.devorbit.mobile.data.remote.dto.*
 
 interface ApiService {
@@ -109,4 +110,17 @@ interface ApiService {
 
     @POST("/api/ai/generate-roadmap")
     suspend fun generateRoadmap(@Body body: RoadmapGenerationRequest): RoadmapRecommendationResponse
+
+    // Student Notifications
+    @GET("/api/student/notifications")
+    suspend fun getNotifications(): List<StudentNotificationResponse>
+
+    @GET("/api/student/notifications/unread-count")
+    suspend fun getUnreadNotificationCount(): UnreadCountResponse
+
+    @PUT("/api/student/notifications/{id}/read")
+    suspend fun markNotificationRead(@Path("id") id: Long): Map<String, Any>
+
+    @PUT("/api/student/notifications/read-all")
+    suspend fun markAllNotificationsRead(): Map<String, Any>
 }

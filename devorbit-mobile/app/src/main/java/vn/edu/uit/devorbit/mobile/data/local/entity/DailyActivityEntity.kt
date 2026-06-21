@@ -8,5 +8,6 @@ data class DailyActivityEntity(
     val date: String,
     val reposViewed: Int = 0,
     val tasksCompleted: Int = 0,
-    val tasksTotal: Int = 0
+    val tasksTotal: Int = 0,
+    val studyMinutes: Int = 0
 )

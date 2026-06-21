@@ -21,8 +21,22 @@ object DevOrbitMigrations {
         }
     }
 
+    val MIGRATION_5_6 = object : Migration(5, 6) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS `tech_stacks` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL)")
+        }
+    }
+
+    val MIGRATION_6_7 = object : Migration(6, 7) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE `daily_activity` ADD COLUMN `studyMinutes` INTEGER NOT NULL DEFAULT 0")
+        }
+    }
+
     val ALL_MIGRATIONS = arrayOf(
         MIGRATION_3_4,
-        MIGRATION_4_5
+        MIGRATION_4_5,
+        MIGRATION_5_6,
+        MIGRATION_6_7
     )
 }

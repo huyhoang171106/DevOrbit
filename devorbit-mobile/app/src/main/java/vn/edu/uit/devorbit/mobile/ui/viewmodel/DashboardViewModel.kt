@@ -7,12 +7,15 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import vn.edu.uit.devorbit.mobile.data.local.dao.DailyActivityDao
 import vn.edu.uit.devorbit.mobile.data.local.dao.SemesterCourseDao
+import vn.edu.uit.devorbit.mobile.data.local.dao.TechStackDao
 import vn.edu.uit.devorbit.mobile.data.local.entity.CourseEntity
 import vn.edu.uit.devorbit.mobile.data.local.entity.DailyActivityEntity
 import vn.edu.uit.devorbit.mobile.data.local.entity.SemesterCourseEntity
 import vn.edu.uit.devorbit.mobile.data.local.entity.TaskEntity
+import vn.edu.uit.devorbit.mobile.data.local.entity.TechStackEntity
 import vn.edu.uit.devorbit.mobile.data.repository.AcademicRepository
 import vn.edu.uit.devorbit.mobile.data.datastore.SettingsDataStore
+import vn.edu.uit.devorbit.mobile.network.ApiService
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
@@ -31,6 +34,8 @@ data class DashboardUiState(
     val weekDates: List<WeekDay> = emptyList(),
     val currentWeekOffset: Int = 0,
     val maxWeekOffset: Int = 0,
+    val techStacks: List<TechStackEntity> = emptyList(),
+    val allTechStacks: List<String> = emptyList(),
     val isLoading: Boolean = false
 )
 
@@ -47,6 +52,8 @@ class DashboardViewModel @Inject constructor(
     private val settingsDataStore: SettingsDataStore,
     private val semesterCourseDao: SemesterCourseDao,
     private val dailyActivityDao: DailyActivityDao,
+    private val techStackDao: TechStackDao,
+    private val apiService: ApiService,
     private val academicRepository: AcademicRepository
 ) : ViewModel() {
 
@@ -79,8 +86,9 @@ class DashboardViewModel @Inject constructor(
         observeProfile()
         observeSemesterCourses()
         observeTasks()
-        observeStudyHours()
+        observeTechStacks()
         loadWeekDays()
+        loadAllTechStacks()
         startStudyTimer()
     }
 
@@ -102,10 +110,18 @@ class DashboardViewModel @Inject constructor(
                     currentStudentCode = c
                     launch {
                         loadWeekDays()
+                        loadTodayStudyMinutes()
                     }
                 }
             }
         }
+    }
+
+    private suspend fun loadTodayStudyMinutes() {
+        val today = dateFormat.format(Date())
+        val activity = dailyActivityDao.getActivity(currentStudentCode, today)
+        val hours = (activity?.studyMinutes ?: 0) / 60
+        _state.update { it.copy(studyHoursToday = hours) }
     }
 
     private fun updateGreeting(name: String) {
@@ -124,14 +140,6 @@ class DashboardViewModel @Inject constructor(
             greeting = "$greeting,\n$displayName",
             dateText = dateText
         ) }
-    }
-
-    private fun observeStudyHours() {
-        viewModelScope.launch {
-            settingsDataStore.studyHoursToday.collect { hours ->
-                _state.update { it.copy(studyHoursToday = hours) }
-            }
-        }
     }
 
     private fun observeSemesterCourses() {
@@ -161,6 +169,36 @@ class DashboardViewModel @Inject constructor(
                     completedTaskCount = completed
                 ) }
             }
+        }
+    }
+
+    private fun observeTechStacks() {
+        viewModelScope.launch {
+            techStackDao.getAllTechStacks().collect { stacks ->
+                _state.update { it.copy(techStacks = stacks) }
+            }
+        }
+    }
+
+    fun loadAllTechStacks() {
+        viewModelScope.launch {
+            val stacks = runCatching { apiService.getTechStacks().map { it.name } }
+                .getOrDefault(emptyList())
+            _state.update { it.copy(allTechStacks = stacks) }
+        }
+    }
+
+    fun addTechStack(name: String) {
+        viewModelScope.launch {
+            if (!techStackDao.isTechStackAdded(name)) {
+                techStackDao.insertTechStack(TechStackEntity(name = name))
+            }
+        }
+    }
+
+    fun removeTechStack(id: Int) {
+        viewModelScope.launch {
+            techStackDao.deleteTechStack(id)
         }
     }
 
@@ -298,7 +336,20 @@ class DashboardViewModel @Inject constructor(
         studyTimerJob = viewModelScope.launch {
             while (true) {
                 kotlinx.coroutines.delay(60_000)
-                settingsDataStore.addAccumulatedSeconds(60)
+                if (currentStudentCode.isNotBlank()) {
+                    val today = dateFormat.format(Date())
+                    val existing = dailyActivityDao.getActivity(currentStudentCode, today)
+                    dailyActivityDao.upsertActivity(DailyActivityEntity(
+                        studentCode = currentStudentCode,
+                        date = today,
+                        reposViewed = existing?.reposViewed ?: 0,
+                        tasksCompleted = existing?.tasksCompleted ?: 0,
+                        tasksTotal = existing?.tasksTotal ?: 0,
+                        studyMinutes = (existing?.studyMinutes ?: 0) + 1
+                    ))
+                    val hours = ((existing?.studyMinutes ?: 0) + 1) / 60
+                    _state.update { it.copy(studyHoursToday = hours) }
+                }
             }
         }
     }

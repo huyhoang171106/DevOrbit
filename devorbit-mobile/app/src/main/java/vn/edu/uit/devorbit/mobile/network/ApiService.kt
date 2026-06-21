@@ -80,7 +80,7 @@ interface ApiService {
 
     // Tech & Discovery
     @GET("/api/tech-stacks")
-    suspend fun getTechStacks(): List<Map<String, String>>
+    suspend fun getTechStacks(): List<TechStack>
 
     @GET("/api/discovery/recent-repos")
     suspend fun getRecentDiscoveryRepos(): List<RepoSummary>

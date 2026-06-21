@@ -211,6 +211,7 @@ public class SupabaseDatabaseHardeningInitializer {
                     'roadmap_items',
                     'roadmap_phases',
                     'student_bookmarks',
+                    'student_notifications',
                     'student_users',
                     'tech_stacks'
                 ]

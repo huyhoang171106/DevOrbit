@@ -31,6 +31,7 @@ public class RepoCandidateService {
     private final GithubScanService githubScanService;
     private final CacheManager cacheManager;
     private final RepoEvaluationService repoEvaluationService;
+    private final StudentNotificationService studentNotificationService;
 
     @Transactional(readOnly = true)
     public List<RepoCandidateResponse> getPendingCandidates(String reviewer) {
@@ -93,6 +94,14 @@ public class RepoCandidateService {
         repoCandidateRepository.save(candidate);
 
         log.info("approveCandidate: candidate id={} url={} -> GithubRepo id={}", candidateId, candidate.getGithubUrl(), repo.getId());
+
+        if (candidate.getCourse() != null) {
+            try {
+                studentNotificationService.notifyCourseSubscribers(repo, candidate.getCourse());
+            } catch (Exception e) {
+                log.warn("Failed to notify course subscribers: {}", e.getMessage());
+            }
+        }
 
         distributeCandidates();
 

@@ -35,16 +35,19 @@ import vn.edu.uit.devorbit.mobile.ui.screen.plan.StudyPlannerScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.profile.ProfileScreen
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.AcademicViewModel
+import vn.edu.uit.devorbit.mobile.ui.viewmodel.NotificationViewModel
 import vn.edu.uit.devorbit.mobile.domain.model.GraphNode
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.CourseViewModel
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.StudyPlanViewModel
 
 @Composable
 fun MainScreen(
-    academicVm: AcademicViewModel = hiltViewModel()
+    academicVm: AcademicViewModel = hiltViewModel(),
+    notificationVm: NotificationViewModel = hiltViewModel()
 ) {
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Dashboard) }
     var showPopup by remember { mutableStateOf(false) }
+    val unreadCount by notificationVm.unreadCount.collectAsStateWithLifecycle()
 
     val navItemColors = NavigationBarItemDefaults.colors(
         selectedIconColor = CosmicTheme.colors.plasma,
@@ -84,7 +87,25 @@ fun MainScreen(
                         NavigationBarItem(
                             selected = currentScreen == Screen.Notifications && !showPopup,
                             onClick = { currentScreen = Screen.Notifications; showPopup = false },
-                            icon = { Icon(Icons.Rounded.Notifications, contentDescription = "Thông báo") },
+                            icon = {
+                                BadgedBox(
+                                    badge = {
+                                        if (unreadCount > 0) {
+                                            Badge(
+                                                containerColor = CosmicTheme.colors.plasma,
+                                                contentColor = Color.Black
+                                            ) {
+                                                Text(
+                                                    text = if (unreadCount > 99) "99+" else unreadCount.toString(),
+                                                    fontSize = 10.sp
+                                                )
+                                            }
+                                        }
+                                    }
+                                ) {
+                                    Icon(Icons.Rounded.Notifications, contentDescription = "Thông báo")
+                                }
+                            },
                             colors = navItemColors
                         )
                         NavigationBarItem(
@@ -125,7 +146,7 @@ fun MainScreen(
                             Screen.Courses -> CourseHubScreen()
                             Screen.Knowledge -> KnowledgeTabView()
                             Screen.Explore -> ExploreScreen()
-                            Screen.Notifications -> NotificationScreen()
+                            Screen.Notifications -> NotificationScreen(viewModel = notificationVm)
                             Screen.Plan -> PlanTabView()
                             Screen.Profile -> ProfileScreen()
                         }

@@ -14,7 +14,7 @@ class DiscoveryRepositoryImpl @Inject constructor(
 ) : DiscoveryRepository {
 
     override suspend fun getTechStacks(): List<TechStackInfo> = try {
-        apiService.getTechStacks().map { TechStackInfo(it["name"] ?: "") }
+        apiService.getTechStacks().map { TechStackInfo(it.name) }
     } catch (e: Exception) { emptyList() }
 
     override suspend fun getRecentRepos(): List<RecentRepo> = try {

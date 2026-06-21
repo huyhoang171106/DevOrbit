@@ -30,6 +30,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import vn.edu.uit.devorbit.mobile.data.local.entity.CourseEntity
 import vn.edu.uit.devorbit.mobile.data.local.entity.TaskEntity
+import vn.edu.uit.devorbit.mobile.data.local.entity.TechStackEntity
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.DashboardViewModel
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.WeekDay
@@ -108,6 +109,15 @@ fun DashboardScreen(
                 onNextWeek = { viewModel.navigateWeek(-1) }
             )
         }
+
+        item {
+            TechStackSection(
+                techStacks = state.techStacks,
+                allTechStacks = state.allTechStacks,
+                onAddTechStack = { viewModel.addTechStack(it) },
+                onRemoveTechStack = { viewModel.removeTechStack(it) }
+            )
+        }
     }
 }
 
@@ -151,7 +161,7 @@ private fun GreetingSection(
                 if (studyHours >= 1) {
                     StatBadge(
                         value = "${studyHours}h",
-                        label = "Thời gian học hôm nay",
+                        label = "Thời gian học\nhôm nay",
                         color = CosmicTheme.colors.plasma
                     )
                 }
@@ -531,6 +541,206 @@ private fun DaySquare(day: WeekDay) {
             }
         }
     }
+}
+
+// ── Section 4: Tech Stack ─────────────────────────────────────────
+
+@Composable
+private fun TechStackSection(
+    techStacks: List<TechStackEntity>,
+    allTechStacks: List<String>,
+    onAddTechStack: (String) -> Unit,
+    onRemoveTechStack: (Int) -> Unit
+) {
+    var showDialog by remember { mutableStateOf(false) }
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        color = CosmicTheme.colors.nebula,
+        border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Tech Stack bạn quan tâm",
+                    style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
+                    color = CosmicTheme.colors.textPrimary
+                )
+                TextButton(onClick = { showDialog = true }) {
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = CosmicTheme.colors.plasma
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text("Thêm", color = CosmicTheme.colors.plasma)
+                }
+            }
+            if (techStacks.isEmpty()) {
+                Text(
+                    text = "Bạn chưa có tech stack nào",
+                    style = CosmicTheme.typography.label,
+                    color = CosmicTheme.colors.textTertiary,
+                    modifier = Modifier.padding(vertical = 4.dp)
+                )
+                Text(
+                    text = "Nhấn + Thêm để bắt đầu",
+                    style = CosmicTheme.typography.label,
+                    color = CosmicTheme.colors.plasma,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+            } else {
+                techStacks.forEach { stack ->
+                    TechStackChip(
+                        name = stack.name,
+                        onRemove = { onRemoveTechStack(stack.id) }
+                    )
+                }
+            }
+        }
+    }
+
+    if (showDialog) {
+        AddTechStackDialog(
+            allTechStacks = allTechStacks,
+            addedNames = techStacks.map { it.name }.toSet(),
+            onAdd = { name ->
+                onAddTechStack(name)
+                showDialog = false
+            },
+            onDismiss = { showDialog = false }
+        )
+    }
+}
+
+@Composable
+private fun TechStackChip(name: String, onRemove: () -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(10.dp),
+        color = CosmicTheme.colors.plasma.copy(alpha = 0.08f)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = name,
+                style = CosmicTheme.typography.body,
+                color = CosmicTheme.colors.textPrimary,
+                modifier = Modifier.weight(1f)
+            )
+            IconButton(
+                onClick = onRemove,
+                modifier = Modifier.size(28.dp)
+            ) {
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = "Xoá",
+                    tint = CosmicTheme.colors.textTertiary,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
+    }
+    Spacer(modifier = Modifier.height(6.dp))
+}
+
+@Composable
+private fun AddTechStackDialog(
+    allTechStacks: List<String>,
+    addedNames: Set<String>,
+    onAdd: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var search by remember { mutableStateOf("") }
+
+    val filtered = remember(allTechStacks, addedNames, search) {
+        allTechStacks.filter { it !in addedNames }
+            .filter { search.isBlank() || it.contains(search, ignoreCase = true) }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text("Thêm tech stack", style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold))
+        },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = search,
+                    onValueChange = { search = it },
+                    placeholder = { Text("Tìm tech stack...") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
+                        cursorColor = CosmicTheme.colors.plasma,
+                        focusedTextColor = CosmicTheme.colors.textPrimary,
+                        unfocusedTextColor = CosmicTheme.colors.textPrimary
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                )
+                if (filtered.isEmpty()) {
+                    Text(
+                        if (search.isNotBlank()) "Không tìm thấy" else "Không còn tech stack nào để thêm",
+                        style = CosmicTheme.typography.label,
+                        color = CosmicTheme.colors.textTertiary,
+                        modifier = Modifier.padding(vertical = 12.dp)
+                    )
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.heightIn(max = 300.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        items(filtered) { name ->
+                            Surface(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { search = name },
+                                shape = RoundedCornerShape(8.dp),
+                                color = if (search == name)
+                                    CosmicTheme.colors.plasma.copy(alpha = 0.12f)
+                                else Color.Transparent
+                            ) {
+                                Text(
+                                    text = name,
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                                    style = CosmicTheme.typography.body,
+                                    color = CosmicTheme.colors.textPrimary
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val name = search.trim()
+                    if (name.isNotBlank() && name !in addedNames) {
+                        onAdd(name)
+                    }
+                },
+                enabled = search.isNotBlank() && search.trim() !in addedNames
+            ) {
+                Text("Thêm", color = CosmicTheme.colors.plasma)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Huỷ", color = CosmicTheme.colors.textSecondary)
+            }
+        }
+    )
 }
 
 // ── Section 3: Tasks ─────────────────────────────────────────────

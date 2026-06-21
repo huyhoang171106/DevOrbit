@@ -8,11 +8,12 @@ import vn.edu.uit.devorbit.mobile.data.local.dao.RepoDao
 import vn.edu.uit.devorbit.mobile.data.local.dao.RelationshipDao
 import vn.edu.uit.devorbit.mobile.data.local.dao.SemesterCourseDao
 import vn.edu.uit.devorbit.mobile.data.local.dao.TaskDao
+import vn.edu.uit.devorbit.mobile.data.local.dao.TechStackDao
 import vn.edu.uit.devorbit.mobile.data.local.entity.*
 
 @Database(
-    entities = [CourseEntity::class, RepoEntity::class, CourseRelationshipEntity::class, TaskEntity::class, DailyActivityEntity::class, SemesterCourseEntity::class],
-    version = 5,
+    entities = [CourseEntity::class, RepoEntity::class, CourseRelationshipEntity::class, TaskEntity::class, DailyActivityEntity::class, SemesterCourseEntity::class, TechStackEntity::class],
+    version = 7,
     exportSchema = true
 )
 abstract class DevOrbitDatabase : RoomDatabase() {
@@ -22,6 +23,7 @@ abstract class DevOrbitDatabase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
     abstract fun dailyActivityDao(): DailyActivityDao
     abstract fun semesterCourseDao(): SemesterCourseDao
+    abstract fun techStackDao(): TechStackDao
 
     companion object {
         const val DATABASE_NAME = "devorbit_db"

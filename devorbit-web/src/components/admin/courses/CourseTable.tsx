@@ -11,6 +11,33 @@ interface CourseTableProps {
 
 type SortKey = 'code' | 'credits' | 'loaiMonHoc'
 
+function SortHeader({ sortable, children, sortKey, sortDir, onSort }: {
+  sortable: SortKey
+  children: React.ReactNode
+  sortKey: SortKey | null
+  sortDir: 'asc' | 'desc'
+  onSort: (key: SortKey) => void
+}) {
+  const active = sortKey === sortable
+  return (
+    <th
+      className="px-4 py-3 text-center text-xs font-medium text-orbit-text uppercase cursor-pointer select-none hover:text-orbit-accent transition-colors"
+      onClick={() => onSort(sortable)}
+    >
+      <span className="inline-flex items-center gap-1">
+        {children}
+        {active ? (
+          sortDir === 'asc'
+            ? <CaretUp className="h-3 w-3" weight="bold" />
+            : <CaretDown className="h-3 w-3" weight="bold" />
+        ) : (
+          <div className="h-3 w-3" />
+        )}
+      </span>
+    </th>
+  )
+}
+
 export function CourseTable({ courses, onEdit, onDelete }: CourseTableProps) {
   const [sortKey, setSortKey] = useState<SortKey | null>(null)
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
@@ -38,27 +65,6 @@ export function CourseTable({ courses, onEdit, onDelete }: CourseTableProps) {
     }
   }
 
-  function SortHeader({ sortable, children }: { sortable: SortKey; children: React.ReactNode }) {
-    const active = sortKey === sortable
-    return (
-      <th
-        className="px-4 py-3 text-center text-xs font-medium text-orbit-text uppercase cursor-pointer select-none hover:text-orbit-accent transition-colors"
-        onClick={() => toggleSort(sortable)}
-      >
-        <span className="inline-flex items-center gap-1">
-          {children}
-          {active ? (
-            sortDir === 'asc'
-              ? <CaretUp className="h-3 w-3" weight="bold" />
-              : <CaretDown className="h-3 w-3" weight="bold" />
-          ) : (
-            <div className="h-3 w-3" />
-          )}
-        </span>
-      </th>
-    )
-  }
-
   if (courses.length === 0) {
     return (
       <div className="glass-card p-8 text-center">
@@ -72,10 +78,10 @@ export function CourseTable({ courses, onEdit, onDelete }: CourseTableProps) {
       <table className="w-full">
         <thead>
           <tr className="border-b border-orbit-border bg-orbit-surface/50">
-            <SortHeader sortable="code">Mã MH</SortHeader>
+            <SortHeader sortable="code" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort}>Mã MH</SortHeader>
             <th className="px-4 py-3 text-center text-xs font-medium text-orbit-text uppercase">Tên môn học</th>
-            <SortHeader sortable="credits">TC</SortHeader>
-            <SortHeader sortable="loaiMonHoc">Loại</SortHeader>
+            <SortHeader sortable="credits" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort}>TC</SortHeader>
+            <SortHeader sortable="loaiMonHoc" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort}>Loại</SortHeader>
             <th className="px-4 py-3 text-center text-xs font-medium text-orbit-text uppercase">Thao tác</th>
           </tr>
         </thead>

@@ -261,7 +261,7 @@ export class PhotoCompositor {
         }
         break;
 
-      case "circle":
+      case "circle": {
         ctx.beginPath();
         const radius =
           overlay.radius ||
@@ -279,6 +279,7 @@ export class PhotoCompositor {
         }
         if (overlay.strokeWidth) ctx.stroke();
         break;
+      }
 
       case "line":
         ctx.beginPath();
@@ -290,7 +291,7 @@ export class PhotoCompositor {
         ctx.stroke();
         break;
 
-      case "text":
+      case "text": {
         ctx.fillStyle = overlay.color || "#ffffff";
         ctx.font = `${overlay.fontWeight || 400} ${overlay.fontSize || 16}px Sora, sans-serif`;
         ctx.textAlign = overlay.textAlign || "center";
@@ -306,6 +307,7 @@ export class PhotoCompositor {
           overlay.width || 1000,
         );
         break;
+      }
     }
   }
 

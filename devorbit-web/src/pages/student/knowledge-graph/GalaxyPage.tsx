@@ -97,7 +97,7 @@ export default function GalaxyPage() {
     }
     // Safe to toggle
     const next = new Set(selectedElectiveCodes)
-    next.has(code) ? next.delete(code) : next.add(code)
+    if (next.has(code)) next.delete(code); else next.add(code)
     setSelectedElectiveCodes(next)
   }
 

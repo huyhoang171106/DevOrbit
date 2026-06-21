@@ -51,7 +51,7 @@ function buildTree(items: RepoTreeItem[]): TreeNode[] {
   return root
 }
 
-function fileIcon(name: string) {
+function renderFileIcon(name: string) {
   const ext = name.includes('.') ? name.split('.').pop()!.toLowerCase() : ''
   if (!ext) return FileLock
   const iconMap: Record<string, typeof FileCode> = {
@@ -81,10 +81,11 @@ function formatSize(bytes: number | null): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
+const LOADING_BAR_WIDTHS = [65, 70, 55, 80, 60, 75, 50, 68]
+
 function TreeNodeRow({ node, depth }: { node: TreeNode; depth: number }) {
   const [expanded, setExpanded] = useState(node.expanded)
   const isDir = node.type === 'tree'
-  const Icon = isDir ? (expanded ? FolderOpen : Folder) : fileIcon(node.name)
   const hasChildren = isDir && node.children.length > 0
 
   return (
@@ -105,11 +106,14 @@ function TreeNodeRow({ node, depth }: { node: TreeNode; depth: number }) {
           </motion.div>
         )}
         {!isDir && <span className="w-3 shrink-0" />}
-        <Icon
-          size={16}
-          weight={isDir ? 'fill' : 'regular'}
-          className={`shrink-0 ${isDir ? 'text-orbit-accent/70' : 'text-orbit-text-muted'}`}
-        />
+        {isDir ? (
+          expanded
+            ? <FolderOpen size={16} weight="fill" className="shrink-0 text-orbit-accent/70" />
+            : <Folder size={16} weight="fill" className="shrink-0 text-orbit-accent/70" />
+        ) : (() => {
+          const FileIcon = renderFileIcon(node.name)
+          return <FileIcon size={16} weight="regular" className="shrink-0 text-orbit-text-muted" />
+        })()}
         <span className="truncate flex-1">{node.name}</span>
         {!isDir && node.size !== null && (
           <span className="text-[11px] text-orbit-text-muted tabular-nums opacity-0 group-hover:opacity-100 transition-opacity">
@@ -150,7 +154,7 @@ export function FileTreeExplorer({ items, loading }: { items: RepoTreeItem[]; lo
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="flex items-center gap-2 px-2 py-2">
             <div className="h-3 w-3 rounded bg-orbit-elevated animate-pulse" />
-            <div className={`h-3 rounded bg-orbit-elevated animate-pulse`} style={{ width: `${60 + Math.random() * 30}%` }} />
+            <div className={`h-3 rounded bg-orbit-elevated animate-pulse`} style={{ width: `${LOADING_BAR_WIDTHS[i % LOADING_BAR_WIDTHS.length]}%` }} />
           </div>
         ))}
       </div>

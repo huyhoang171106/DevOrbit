@@ -29,7 +29,7 @@ export function useDebouncedCallback<Args extends unknown[]>(
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => callbackRef.current(...args), delay);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/use-memo
     [delay, ...deps]
   );
 }

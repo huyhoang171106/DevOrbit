@@ -250,9 +250,9 @@ export function KnowledgeGraphPage() {
           // Use the pre-calculated topological level (computed server-side)
           const level = node.level || 0;
 
-          let nodeColor = '#10b981'; // Default Emerald
-          let glowColor = 'rgba(16, 185, 129, 0.4)';
-          let glowColorMuted = 'rgba(16, 185, 129, 0.1)';
+          let nodeColor: string;
+          let glowColor: string;
+          let glowColorMuted: string;
 
           if (isFailed) {
             const pulse = (Math.sin(Date.now() / 200) + 1) / 2; // 0 to 1 pulse

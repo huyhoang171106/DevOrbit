@@ -591,7 +591,7 @@ export function buildReadyToUse(repoType: RepoType, courseGroup: CourseGroup, si
   if (repoType === 'unknown' && signals.evidence.length <= 2) {
     return { level: 'insufficient_data', label: readyToUseLabels.insufficient_data, stars: 1, note: 'Thiếu README, cây thư mục và mô tả nên cần mở GitHub để xem trước.' }
   }
-  let score = 0
+  let score: number
   if (repoType === 'programming_exercise') {
     score = scoreSignals([[signals.hasReadme, 1], [signals.hasAssignments, 1], [signals.hasSourceCode, 1], [signals.hasTests, 1], [signals.hasSolutions || signals.organizedFolders, 1], [courseGroup === 'foundation_algorithms' && signals.hasFileList, 1]])
   } else if (repoType === 'project_practice') {

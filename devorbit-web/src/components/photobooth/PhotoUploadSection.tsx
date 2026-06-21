@@ -104,20 +104,6 @@ function SlotCard({
   const imgRef = useRef<HTMLImageElement | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (!file) { imgRef.current = null; return; }
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        imgRef.current = img;
-        drawThumb(img, slotAspect, offset, color);
-      };
-      img.src = e.target?.result as string;
-    };
-    reader.readAsDataURL(file);
-  }, [file, slotAspect, offset, color]);
-
   function drawThumb(
     img: HTMLImageElement,
     aspect: number,
@@ -134,7 +120,6 @@ function SlotCard({
     ctx.fillStyle = "#1a1a2e";
     ctx.fillRect(0, 0, cw, ch);
 
-    // Fit full image letterboxed into canvas
     const imgAspect = img.width / img.height;
     let fullW: number, fullH: number, fullX: number, fullY: number;
     if (imgAspect > 1) {
@@ -149,7 +134,6 @@ function SlotCard({
       fullY = 0;
     }
 
-    // Draw full image dimmed
     const flt = off.filter && off.filter !== "normal" ? FILTER_PRESETS[off.filter]?.css : undefined;
     ctx.globalAlpha = 0.35;
     if (flt) ctx.filter = flt;
@@ -157,7 +141,6 @@ function SlotCard({
     ctx.filter = "none";
     ctx.globalAlpha = 1;
 
-    // Calculate crop region (same logic as compositor)
     let baseW = img.width, baseH = img.height;
     if (imgAspect > aspect) {
       baseW = img.height * aspect;
@@ -174,7 +157,6 @@ function SlotCard({
     const srcX = (img.width - viewW) / 2 + Math.max(-maxDx, Math.min(maxDx, off.dx));
     const srcY = (img.height - viewH) / 2 + Math.max(-maxDy, Math.min(maxDy, off.dy));
 
-    // Draw crop region full brightness
     const scaleX = fullW / img.width;
     const scaleY = fullH / img.height;
     const cropX = fullX + srcX * scaleX;
@@ -190,7 +172,6 @@ function SlotCard({
     ctx.drawImage(img, fullX, fullY, fullW, fullH);
     ctx.restore();
 
-    // Dim outside crop
     ctx.save();
     ctx.beginPath();
     ctx.rect(0, 0, cw, ch);
@@ -200,19 +181,32 @@ function SlotCard({
     ctx.fillRect(0, 0, cw, ch);
     ctx.restore();
 
-    // Crop border (dashed green)
     ctx.strokeStyle = borderColor;
     ctx.lineWidth = 2.5;
     ctx.setLineDash([6, 4]);
     ctx.strokeRect(cropX, cropY, cropW, cropH);
     ctx.setLineDash([]);
 
-    // Label
     ctx.fillStyle = "#ffffff";
     ctx.font = "bold 11px monospace";
     ctx.textAlign = "center";
     ctx.fillText(`#${index + 1}${off.filter && off.filter !== "normal" ? ` · ${FILTER_PRESETS[off.filter].emoji}` : ""}`, cw / 2, 14);
   }
+
+  useEffect(() => {
+    if (!file) { imgRef.current = null; return; }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        imgRef.current = img;
+        drawThumb(img, slotAspect, offset, color);
+      };
+      img.src = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  }, [file, slotAspect, offset, color]);
+
 
   return (
     <div className="orbit-card p-3">

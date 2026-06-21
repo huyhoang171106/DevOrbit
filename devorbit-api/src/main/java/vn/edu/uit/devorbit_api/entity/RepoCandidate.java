@@ -15,6 +15,10 @@ import java.time.LocalDateTime;
  *   REJECT  — discards it (won't appear anywhere)
  *
  * Once approved, a new GithubRepo entity is created from this candidate's data.
+ *
+ * Each candidate can also carry an AI evaluation result (aiScore, aiRecommendation)
+ * computed by CandidateEvaluationService, used during admin review to surface
+ * repos that warrant closer attention.
  */
 @Entity
 @Table(name = "repo_candidates")
@@ -73,6 +77,14 @@ public class RepoCandidate {
     /** Whether GitHub reported a README or the file tree contains one */
     @Column(name = "has_readme")
     private Boolean hasReadme;
+
+    /** AI score 0-100, computed by CandidateEvaluationService */
+    @Column(name = "ai_score")
+    private Integer aiScore;
+
+    /** AI recommendation: APPROVE / REVIEW / REJECT, computed by CandidateEvaluationService */
+    @Column(name = "ai_recommendation", length = 20)
+    private String aiRecommendation;
 
     /** Short, newline-separated repository tree used by frontend evaluation */
     @Column(name = "file_tree", columnDefinition = "TEXT")

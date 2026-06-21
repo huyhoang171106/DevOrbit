@@ -1,5 +1,5 @@
 import { Star, Eye, ThumbsUp, ThumbsDown, Books, Code } from '@phosphor-icons/react'
-import type { DevOrbitRepoInfo } from '../../hooks/useSubjectQa'
+import type { DevOrbitRepoInfo } from '../../types/api'
 
 interface DevOrbitRepoCardsProps {
     repos: DevOrbitRepoInfo[]

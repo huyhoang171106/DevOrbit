@@ -52,6 +52,24 @@ export type RepoSummary = {
   readyToUseLevel?: string | null
 }
 
+export type DevOrbitRepoInfo = {
+  id: number
+  name: string
+  description: string | null
+  githubUrl: string
+  primaryLanguage: string | null
+  stars: number | null
+  techStacks: string[]
+  courseCode: string | null
+  courseName: string | null
+  voteScore: number
+  averageRating: number
+  reviewCount: number | null
+  viewCount: number | null
+  usefulnessRating: string | null
+  usefulnessScore: number | null
+}
+
 export type RepoCandidate = {
   id: number
   githubOwner: string

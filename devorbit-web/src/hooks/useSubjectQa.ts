@@ -127,9 +127,7 @@ export async function streamSubjectQa(
                     handlers.onError?.((parsed as any).message)
                     break
             }
-        } catch {
-            // Ignore malformed JSON in stream
-        }
+        } catch { /* ignore */ }
 
         eventType = ''
         dataLines = []

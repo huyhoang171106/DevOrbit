@@ -31,7 +31,7 @@ function getCachedChannels(): ChatChannelResponse[] | undefined {
 function setCachedChannels(data: ChatChannelResponse[]) {
   try {
     localStorage.setItem(CHANNELS_CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }))
-  } catch {}
+  } catch { /* ignore */ }
 }
 
 // ─── Messages cache ───────────────────────────────────────────────────────────
@@ -67,7 +67,7 @@ export function setCachedMessages(channelId: number, messages: ChatMessageRespon
       getMessagesCacheKey(channelId),
       JSON.stringify({ messages, totalPages, fetchedAt: Date.now() }),
     )
-  } catch {}
+  } catch { /* ignore */ }
 }
 
 // ─── Parallel fetch all pages ──────────────────────────────────────────────────

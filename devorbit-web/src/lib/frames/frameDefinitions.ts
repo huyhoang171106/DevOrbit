@@ -145,7 +145,7 @@ async function toFrameDefinition(stored: StoredFrame): Promise<FrameDefinition> 
       const ls = getLogicalSize(size.w, size.h);
       logicalW = ls.w;
       logicalH = ls.h;
-    } catch {}
+    } catch { /* ignore */ }
   }
 
   // Detect old square format: any slot coord > proportional logical max

@@ -48,7 +48,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
       const parsed = JSON.parse(body)
       if (parsed.error) message = parsed.error
       if (parsed.detail) message = parsed.detail
-    } catch {}
+    } catch { /* ignore */ }
     throw new Error(message)
   }
 

@@ -55,6 +55,7 @@ export function useAdminFetch<T>(
     } finally {
       setLoading(false)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/use-memo
   }, [token, ...deps])
 
   useEffect(() => { refetch() }, [refetch])

@@ -51,7 +51,7 @@ function getCachedCourse(id: string): CourseDetail | null {
 function setCachedCourse(id: string, data: CourseDetail) {
   try {
     localStorage.setItem(COURSE_CACHE_PREFIX + id, JSON.stringify({ data, ts: Date.now() }))
-  } catch {}
+  } catch { /* ignore */ }
 }
 
 const sortRepos = (items: RepoSummary[]): RepoSummary[] => {

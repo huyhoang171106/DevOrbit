@@ -321,7 +321,10 @@ export function RepoStatsTab() {
                   fontSize: 13,
                   boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
                 }}
-                formatter={(value: any) => [value, 'Số repo']}
+                formatter={(value: unknown) => {
+                  const n = typeof value === 'number' ? value : 0
+                  return [n, 'Số repo']
+                }}
               />
               <Bar
                 dataKey="count"

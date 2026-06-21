@@ -59,7 +59,7 @@ export function ReviewsPage() {
   const sortedCourseReviews = useMemo(() => {
     if (!courseReviews) return null
     const q = search.trim().toLowerCase()
-    let filtered = q
+    const filtered = q
       ? courseReviews.filter(
           (r) => r.studentName.toLowerCase().includes(q) || r.courseName.toLowerCase().includes(q) || (r.comment && r.comment.toLowerCase().includes(q))
         )
@@ -80,7 +80,7 @@ export function ReviewsPage() {
   const sortedRepoReviews = useMemo(() => {
     if (!repoReviews) return null
     const q = search.trim().toLowerCase()
-    let filtered = q
+    const filtered = q
       ? repoReviews.filter(
           (r) => r.studentName.toLowerCase().includes(q) || r.repoName.toLowerCase().includes(q) || (r.comment && r.comment.toLowerCase().includes(q))
         )

@@ -15,14 +15,18 @@ class BookmarkRepositoryImpl @Inject constructor(
 ) : BookmarkRepository {
 
     override fun getAllBookmarks(): Flow<List<Bookmark>> = flow {
-        emit(apiService.getBookmarks().map {
-            Bookmark(
-                id = it.id,
-                targetType = it.targetType,
-                targetId = it.targetId,
-                title = it.title
-            )
-        })
+        emit(
+            runCatching { apiService.getBookmarks() }
+                .getOrDefault(emptyList())
+                .map {
+                    Bookmark(
+                        id = it.id,
+                        targetType = it.targetType,
+                        targetId = it.targetId,
+                        title = it.title
+                    )
+                }
+        )
     }
 
     override suspend fun addBookmark(bookmark: Bookmark) {

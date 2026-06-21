@@ -5,10 +5,12 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -24,12 +26,18 @@ class SettingsDataStore @Inject constructor(
         val STUDENT_NAME = stringPreferencesKey("student_name")
         val STUDENT_CODE = stringPreferencesKey("student_code")
         val DARK_MODE = booleanPreferencesKey("dark_mode")
+        val STUDY_HOURS_TODAY = intPreferencesKey("study_hours_today")
+        val STUDY_DATE = stringPreferencesKey("study_date")
+        val STUDY_ACCUMULATED_SECONDS = intPreferencesKey("study_accumulated_seconds")
     }
 
     val token: Flow<String?> = context.settingsStore.data.map { it[Keys.JWT_TOKEN] }
     val studentName: Flow<String?> = context.settingsStore.data.map { it[Keys.STUDENT_NAME] }
     val studentCode: Flow<String?> = context.settingsStore.data.map { it[Keys.STUDENT_CODE] }
     val darkMode: Flow<Boolean> = context.settingsStore.data.map { it[Keys.DARK_MODE] ?: true }
+    val studyHoursToday: Flow<Int> = context.settingsStore.data.map { it[Keys.STUDY_HOURS_TODAY] ?: 0 }
+    val studyDate: Flow<String?> = context.settingsStore.data.map { it[Keys.STUDY_DATE] }
+    val studyAccumulatedSeconds: Flow<Int> = context.settingsStore.data.map { it[Keys.STUDY_ACCUMULATED_SECONDS] ?: 0 }
 
     suspend fun saveToken(token: String) {
         context.settingsStore.edit { it[Keys.JWT_TOKEN] = token }
@@ -53,5 +61,36 @@ class SettingsDataStore @Inject constructor(
 
     suspend fun clearAll() {
         context.settingsStore.edit { it.clear() }
+    }
+
+    suspend fun addAccumulatedSeconds(seconds: Int) {
+        context.settingsStore.edit { prefs ->
+            val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date())
+            val savedDate = prefs[Keys.STUDY_DATE]
+            if (savedDate != today) {
+                prefs[Keys.STUDY_ACCUMULATED_SECONDS] = seconds
+                prefs[Keys.STUDY_DATE] = today
+            } else {
+                val current = prefs[Keys.STUDY_ACCUMULATED_SECONDS] ?: 0
+                prefs[Keys.STUDY_ACCUMULATED_SECONDS] = current + seconds
+            }
+            val total = prefs[Keys.STUDY_ACCUMULATED_SECONDS] ?: seconds
+            prefs[Keys.STUDY_HOURS_TODAY] = total / 3600
+        }
+    }
+
+    suspend fun getStreakCount(code: String): Int {
+        return context.settingsStore.data.map { it[intPreferencesKey("streak_count_$code")] ?: 0 }.first()
+    }
+
+    suspend fun setStreak(code: String, count: Int, date: String) {
+        context.settingsStore.edit {
+            it[intPreferencesKey("streak_count_$code")] = count
+            it[stringPreferencesKey("last_streak_date_$code")] = date
+        }
+    }
+
+    suspend fun getLastStreakDate(code: String): String? {
+        return context.settingsStore.data.map { it[stringPreferencesKey("last_streak_date_$code")] }.first()
     }
 }

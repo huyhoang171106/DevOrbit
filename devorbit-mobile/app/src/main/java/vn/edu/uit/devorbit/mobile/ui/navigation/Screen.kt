@@ -10,5 +10,6 @@ sealed class Screen(val route: String, val label: String, val icon: ImageVector)
     object Knowledge : Screen("knowledge", "Kiến thức", Icons.Rounded.Star)
     object Explore : Screen("explore", "Khám phá", Icons.Rounded.Search)
     object Plan : Screen("plan", "Kế hoạch", Icons.Rounded.DateRange)
+    object Notifications : Screen("notifications", "Thông báo", Icons.Rounded.Notifications)
     object Profile : Screen("profile", "Cá nhân", Icons.Rounded.Person)
 }

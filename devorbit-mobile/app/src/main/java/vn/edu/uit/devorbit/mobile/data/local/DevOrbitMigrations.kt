@@ -3,28 +3,26 @@
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-/**
- * Room database migrations for DevOrbitDatabase.
- *
- * Migration pattern:
- * - Each Migration(fromVersion, toVersion) defines SQL to upgrade the schema.
- * - Always test migrations on a device/emulator before shipping.
- * - Exported schemas live in app/schemas/ for verification.
- */
 object DevOrbitMigrations {
 
-    /**
-     * Placeholder migration from version 3 to 4.
-     * When the next schema change is made, replace this with actual ALTER TABLE / CREATE TABLE statements.
-     */
     val MIGRATION_3_4 = object : Migration(3, 4) {
         override fun migrate(db: SupportSQLiteDatabase) {
-            // No-op placeholder - add DDL here when version 4 schema changes are defined.
+            db.execSQL("CREATE TABLE IF NOT EXISTS `daily_activity` (`date` TEXT NOT NULL, `reposViewed` INTEGER NOT NULL DEFAULT 0, `tasksCompleted` INTEGER NOT NULL DEFAULT 0, `tasksTotal` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`date`))")
+            db.execSQL("CREATE TABLE IF NOT EXISTS `semester_courses` (`courseId` INTEGER NOT NULL, `addedAt` INTEGER NOT NULL, PRIMARY KEY(`courseId`))")
         }
     }
 
-    /** List of all migrations, passed to Room.databaseBuilder().addMigrations(...) */
+    val MIGRATION_4_5 = object : Migration(4, 5) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS `daily_activity_new` (`studentCode` TEXT NOT NULL, `date` TEXT NOT NULL, `reposViewed` INTEGER NOT NULL DEFAULT 0, `tasksCompleted` INTEGER NOT NULL DEFAULT 0, `tasksTotal` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`studentCode`, `date`))")
+            db.execSQL("INSERT INTO daily_activity_new (studentCode, date, reposViewed, tasksCompleted, tasksTotal) SELECT '', date, reposViewed, tasksCompleted, tasksTotal FROM daily_activity")
+            db.execSQL("DROP TABLE daily_activity")
+            db.execSQL("ALTER TABLE daily_activity_new RENAME TO daily_activity")
+        }
+    }
+
     val ALL_MIGRATIONS = arrayOf(
-        MIGRATION_3_4
+        MIGRATION_3_4,
+        MIGRATION_4_5
     )
 }

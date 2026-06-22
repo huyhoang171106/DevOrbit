@@ -30,7 +30,6 @@ data class TaskManagementUiState(
     val inputRecurrenceDays: Int? = null,
     val creatingPlan: Boolean = false,
     val planTitle: String = "",
-    val planDeadline: String = "",
     val showCreatePlanDialog: Boolean = false,
     val planError: String? = null
 )
@@ -185,7 +184,7 @@ class TaskManagementViewModel @Inject constructor(
     // ── Group Plan ──
 
     fun showCreatePlanDialog() {
-        _state.update { it.copy(showCreatePlanDialog = true, planTitle = "", planDeadline = "", planError = null) }
+        _state.update { it.copy(showCreatePlanDialog = true, planTitle = "", planError = null) }
     }
 
     fun hideCreatePlanDialog() {
@@ -194,10 +193,6 @@ class TaskManagementViewModel @Inject constructor(
 
     fun updatePlanTitle(title: String) {
         _state.update { it.copy(planTitle = title) }
-    }
-
-    fun updatePlanDeadline(deadline: String) {
-        _state.update { it.copy(planDeadline = deadline) }
     }
 
     fun createGroupPlan(onSuccess: (Long) -> Unit) {
@@ -210,7 +205,7 @@ class TaskManagementViewModel @Inject constructor(
                     CreateGroupPlanRequest(
                         title = title,
                         description = null,
-                        deadline = _state.value.planDeadline.ifBlank { null }
+                        deadline = null
                     )
                 )
                 _state.update { it.copy(creatingPlan = false, showCreatePlanDialog = false) }

@@ -71,22 +71,6 @@ fun TaskManagementScreen(
                         ),
                         shape = RoundedCornerShape(12.dp)
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = state.planDeadline,
-                        onValueChange = { viewModel.updatePlanDeadline(it) },
-                        placeholder = { Text("Thời hạn (YYYY-MM-DD, không bắt buộc)", color = CosmicTheme.colors.textTertiary) },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
-                            unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
-                            cursorColor = CosmicTheme.colors.plasma,
-                            focusedTextColor = CosmicTheme.colors.textPrimary,
-                            unfocusedTextColor = CosmicTheme.colors.textPrimary
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    )
                     if (state.planError != null) {
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(state.planError!!, color = CosmicTheme.colors.supernova, fontSize = 12.sp)
@@ -269,85 +253,134 @@ fun TaskManagementScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun RecurrenceSelector(
+private fun RecurrenceDropdown(
     recurrence: String?,
     recurrenceDays: Int?,
     onRecurrenceChange: (String?) -> Unit,
     onDayToggle: (DayOfWeek) -> Unit
 ) {
-    Column {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            modifier = Modifier.fillMaxWidth()
+    val days = listOf(
+        DayOfWeek.MONDAY to "Mỗi thứ 2",
+        DayOfWeek.TUESDAY to "Mỗi thứ 3",
+        DayOfWeek.WEDNESDAY to "Mỗi thứ 4",
+        DayOfWeek.THURSDAY to "Mỗi thứ 5",
+        DayOfWeek.FRIDAY to "Mỗi thứ 6",
+        DayOfWeek.SATURDAY to "Mỗi thứ 7",
+        DayOfWeek.SUNDAY to "Mỗi chủ nhật"
+    )
+
+    val isKhongLap = recurrence == null
+    val isMoiNgay = recurrence == "DAILY"
+
+    val summary = when {
+        isKhongLap -> "Không lặp"
+        isMoiNgay -> "Mỗi ngày"
+        else -> {
+            days.filter { (day, _) ->
+                val bit = 1 shl (day.value - 1)
+                recurrenceDays != null && recurrenceDays and bit != 0
+            }.joinToString(", ") { it.second }
+        }
+    }
+
+    val isDayDisabled = isKhongLap || isMoiNgay
+
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = it }
+    ) {
+        OutlinedTextField(
+            value = summary,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Lặp lại", color = CosmicTheme.colors.textTertiary) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier.fillMaxWidth().menuAnchor(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
+                unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
+                cursorColor = CosmicTheme.colors.plasma,
+                focusedTextColor = CosmicTheme.colors.textPrimary,
+                unfocusedTextColor = CosmicTheme.colors.textPrimary
+            ),
+            shape = RoundedCornerShape(12.dp)
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
         ) {
-            listOf(
-                null to "Không lặp",
-                "DAILY" to "Mỗi ngày",
-                "WEEKLY" to "Mỗi tuần",
-                "WEEKLY_DAYS" to "Chọn thứ",
-                "MONTHLY" to "Mỗi tháng"
-            ).forEach { (value, label) ->
-                val selected = when (value) {
-                    null -> recurrence == null
-                    "WEEKLY_DAYS" -> recurrence == "WEEKLY" && recurrenceDays != null
-                    else -> recurrence == value && (value != "WEEKLY" || recurrenceDays == null)
+            DropdownMenuItem(
+                text = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = isKhongLap,
+                            onCheckedChange = {
+                                onRecurrenceChange(null)
+                                expanded = false
+                            },
+                            colors = CheckboxDefaults.colors(checkedColor = CosmicTheme.colors.plasma)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text("Không lặp")
+                    }
+                },
+                onClick = {
+                    onRecurrenceChange(null)
+                    expanded = false
                 }
-                FilterChip(
-                    selected = selected,
-                    onClick = {
-                        when (value) {
-                            null -> onRecurrenceChange(null)
-                            "WEEKLY_DAYS" -> onRecurrenceChange("WEEKLY")
-                            else -> onRecurrenceChange(value)
+            )
+            DropdownMenuItem(
+                text = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = isMoiNgay,
+                            onCheckedChange = {
+                                onRecurrenceChange("DAILY")
+                                expanded = false
+                            },
+                            colors = CheckboxDefaults.colors(checkedColor = CosmicTheme.colors.plasma)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text("Mỗi ngày")
+                    }
+                },
+                onClick = {
+                    onRecurrenceChange("DAILY")
+                    expanded = false
+                }
+            )
+            HorizontalDivider()
+            days.forEach { (day, label) ->
+                val bit = 1 shl (day.value - 1)
+                val isSelected = recurrenceDays != null && recurrenceDays and bit != 0
+                DropdownMenuItem(
+                    text = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = isSelected,
+                                onCheckedChange = {
+                                    onDayToggle(day)
+                                    expanded = false
+                                },
+                                enabled = !isDayDisabled,
+                                colors = CheckboxDefaults.colors(checkedColor = CosmicTheme.colors.plasma)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(label, color = if (isDayDisabled) CosmicTheme.colors.textTertiary else Color.Unspecified)
                         }
                     },
-                    label = { Text(label, fontSize = 11.sp) },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = CosmicTheme.colors.plasma.copy(alpha = 0.15f),
-                        selectedLabelColor = CosmicTheme.colors.plasma
-                    ),
-                    border = FilterChipDefaults.filterChipBorder(
-                        borderColor = CosmicTheme.colors.glassBorder,
-                        selectedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
-                        enabled = true,
-                        selected = selected
-                    )
+                    onClick = {
+                        if (!isDayDisabled) {
+                            onDayToggle(day)
+                            expanded = false
+                        }
+                    },
+                    enabled = !isDayDisabled
                 )
-            }
-        }
-
-        if (recurrence == "WEEKLY" && recurrenceDays != null) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                val days = listOf(
-                    DayOfWeek.MONDAY to "T2",
-                    DayOfWeek.TUESDAY to "T3",
-                    DayOfWeek.WEDNESDAY to "T4",
-                    DayOfWeek.THURSDAY to "T5",
-                    DayOfWeek.FRIDAY to "T6",
-                    DayOfWeek.SATURDAY to "T7",
-                    DayOfWeek.SUNDAY to "CN"
-                )
-                days.forEach { (day, label) ->
-                    val bit = 1 shl (day.value - 1)
-                    val isDaySelected = recurrenceDays and bit != 0
-                    FilterChip(
-                        selected = isDaySelected,
-                        onClick = { onDayToggle(day) },
-                        label = { Text(label, fontSize = 11.sp) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = CosmicTheme.colors.plasma.copy(alpha = 0.15f),
-                            selectedLabelColor = CosmicTheme.colors.plasma
-                        ),
-                        border = FilterChipDefaults.filterChipBorder(
-                            borderColor = CosmicTheme.colors.glassBorder,
-                            selectedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
-                            enabled = true,
-                            selected = isDaySelected
-                        )
-                    )
-                }
             }
         }
     }
@@ -472,7 +505,7 @@ private fun AddTaskModal(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            RecurrenceSelector(
+            RecurrenceDropdown(
                 recurrence = recurrence,
                 recurrenceDays = recurrenceDays,
                 onRecurrenceChange = onRecurrenceChange,

@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -46,6 +47,7 @@ fun TaskManagementScreen(
     viewModel: TaskManagementViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    var showAddTaskModal by remember { mutableStateOf(false) }
 
     // Create plan dialog
     if (state.showCreatePlanDialog) {
@@ -112,155 +114,40 @@ fun TaskManagementScreen(
         )
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)
-    ) {
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // ── Header ──
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)
         ) {
-            Text(
-                text = "Quản lý nhiệm vụ",
-                style = CosmicTheme.typography.display.copy(fontSize = 22.sp),
-                color = CosmicTheme.colors.textPrimary
-            )
-            TextButton(onClick = onNavigateBack) {
-                Icon(
-                    Icons.Default.Close,
-                    contentDescription = "Đóng",
-                    tint = CosmicTheme.colors.textSecondary
-                )
-            }
-        }
+            Spacer(modifier = Modifier.height(16.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // ── Input Section ──
-        InputSection(
-            title = state.inputTitle,
-            onTitleChange = { viewModel.updateTitle(it) },
-            deadline = state.inputDeadline,
-            onDeadlineClick = { viewModel.showDatePicker() },
-            onAdd = { viewModel.addTask() },
-            showDatePicker = state.showDatePicker,
-            onDateSelected = { viewModel.updateDeadline(it) },
-            onDismissDatePicker = { viewModel.hideDatePicker() },
-            showTimePicker = state.showTimePicker,
-            onTimeSelected = { h, m -> viewModel.updateTime(h, m) },
-            onDismissTimePicker = { viewModel.hideTimePicker() },
-            recurrence = state.inputRecurrence,
-            onRecurrenceChange = { viewModel.updateRecurrence(it) },
-            recurrenceDays = state.inputRecurrenceDays,
-            onRecurrenceDayToggle = { viewModel.toggleRecurrenceDay(it) }
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // ── Group Plan Button ──
-        OutlinedButton(
-            onClick = { viewModel.showCreatePlanDialog() },
-            enabled = !state.creatingPlan,
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = CosmicTheme.colors.plasma,
-                disabledContentColor = CosmicTheme.colors.textTertiary
-            ),
-            border = BorderStroke(1.dp, CosmicTheme.colors.plasma.copy(alpha = 0.4f))
-        ) {
-            if (state.creatingPlan) {
-                CircularProgressIndicator(
-                    strokeWidth = 2.dp,
-                    modifier = Modifier.size(16.dp),
-                    color = CosmicTheme.colors.plasma
-                )
-                Spacer(Modifier.width(8.dp))
-            }
-            Text("Tạo kế hoạch nhóm", style = CosmicTheme.typography.body)
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // ── Filter Tabs ──
-        FilterTabs(
-            selectedFilter = state.filter,
-            onSelectFilter = { viewModel.setFilter(it) }
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // ── Task List ──
-        if (state.tasks.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+            // ── Header ──
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Không có nhiệm vụ nào",
-                    style = CosmicTheme.typography.body,
-                    color = CosmicTheme.colors.textTertiary,
-                    textAlign = TextAlign.Center
+                    text = "Quản lý nhiệm vụ",
+                    style = CosmicTheme.typography.display.copy(fontSize = 22.sp),
+                    color = CosmicTheme.colors.textPrimary
                 )
-            }
-        } else {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(bottom = 100.dp)
-            ) {
-                items(state.tasks, key = { it.id }) { task ->
-                    TaskItem(
-                        task = task,
-                        onToggle = { viewModel.toggleTask(task.id, !task.completed) }
+                TextButton(onClick = onNavigateBack) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = "Đóng",
+                        tint = CosmicTheme.colors.textSecondary
                     )
                 }
             }
-        }
-    }
-}
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun InputSection(
-    title: String,
-    onTitleChange: (String) -> Unit,
-    deadline: Long?,
-    onDeadlineClick: () -> Unit,
-    onAdd: () -> Unit,
-    showDatePicker: Boolean,
-    onDateSelected: (Long?) -> Unit,
-    onDismissDatePicker: () -> Unit,
-    showTimePicker: Boolean,
-    onTimeSelected: (Int, Int) -> Unit,
-    onDismissTimePicker: () -> Unit,
-    recurrence: String?,
-    onRecurrenceChange: (String?) -> Unit,
-    recurrenceDays: Int?,
-    onRecurrenceDayToggle: (DayOfWeek) -> Unit
-) {
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = deadline ?: System.currentTimeMillis()
-    )
+            Spacer(modifier = Modifier.height(16.dp))
 
-    val timePickerState = rememberTimePickerState(
-        initialHour = 0,
-        initialMinute = 0,
-        is24Hour = true
-    )
-
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = CosmicTheme.colors.nebula,
-        border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+            // ── Search Bar ──
             OutlinedTextField(
-                value = title,
-                onValueChange = onTitleChange,
-                placeholder = { Text("Tên nhiệm vụ", style = CosmicTheme.typography.body) },
+                value = state.searchQuery,
+                onValueChange = { viewModel.updateSearchQuery(it) },
+                placeholder = { Text("Tìm nhiệm vụ...", color = CosmicTheme.colors.textTertiary) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = CosmicTheme.colors.textSecondary) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -275,137 +162,109 @@ private fun InputSection(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Row(
+            // ── Group Plan Button ──
+            OutlinedButton(
+                onClick = { viewModel.showCreatePlanDialog() },
+                enabled = !state.creatingPlan,
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = CosmicTheme.colors.plasma,
+                    disabledContentColor = CosmicTheme.colors.textTertiary
+                ),
+                border = BorderStroke(1.dp, CosmicTheme.colors.plasma.copy(alpha = 0.4f))
             ) {
-                OutlinedCard(
-                    onClick = onDeadlineClick,
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.outlinedCardColors(
-                        containerColor = Color.White.copy(alpha = 0.03f)
-                    ),
-                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.DateRange,
-                            contentDescription = null,
-                            tint = CosmicTheme.colors.textSecondary,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Text(
-                            text = if (deadline != null) formatDeadline(deadline) else "Chọn deadline",
-                            style = CosmicTheme.typography.body,
-                            color = if (deadline != null) CosmicTheme.colors.textPrimary else CosmicTheme.colors.textTertiary
-                        )
-                    }
+                if (state.creatingPlan) {
+                    CircularProgressIndicator(
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(16.dp),
+                        color = CosmicTheme.colors.plasma
+                    )
+                    Spacer(Modifier.width(8.dp))
                 }
-
-                Button(
-                    onClick = onAdd,
-                    enabled = title.isNotBlank(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = CosmicTheme.colors.plasma,
-                        disabledContainerColor = CosmicTheme.colors.plasma.copy(alpha = 0.3f)
-                    ),
-                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(4.dp))
-                    Text("Thêm", style = CosmicTheme.typography.body)
-                }
+                Text("Tạo kế hoạch nhóm", style = CosmicTheme.typography.body)
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            RecurrenceSelector(
-                recurrence = recurrence,
-                recurrenceDays = recurrenceDays,
-                onRecurrenceChange = onRecurrenceChange,
-                onDayToggle = onRecurrenceDayToggle
+            // ── Filter Tabs ──
+            FilterTabs(
+                selectedFilter = state.filter,
+                onSelectFilter = { viewModel.setFilter(it) }
             )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // ── Task List ──
+            Box(modifier = Modifier.weight(1f)) {
+                if (state.tasks.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Không có nhiệm vụ nào",
+                            style = CosmicTheme.typography.body,
+                            color = CosmicTheme.colors.textTertiary,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(bottom = 100.dp)
+                    ) {
+                        items(state.tasks, key = { it.id }) { task ->
+                            TaskItem(
+                                task = task,
+                                onToggle = { viewModel.toggleTask(task.id, !task.completed) }
+                            )
+                        }
+                    }
+                }
+            }
         }
-    }
 
-    if (showDatePicker) {
-        DatePickerDialog(
-            onDismissRequest = onDismissDatePicker,
-            confirmButton = {
-                TextButton(onClick = {
-                    onDateSelected(datePickerState.selectedDateMillis)
-                    onDismissDatePicker()
-                }) {
-                    Text("Chọn", color = CosmicTheme.colors.plasma)
-                }
+        // ── FAB ──
+        FloatingActionButton(
+            onClick = {
+                viewModel.resetInput()
+                showAddTaskModal = true
             },
-            dismissButton = {
-                TextButton(onClick = {
-                    onDateSelected(null)
-                    onDismissDatePicker()
-                }) {
-                    Text("Bỏ", color = CosmicTheme.colors.textSecondary)
-                }
-            },
-            colors = DatePickerDefaults.colors(
-                containerColor = CosmicTheme.colors.nebula,
-                titleContentColor = CosmicTheme.colors.textPrimary,
-                headlineContentColor = CosmicTheme.colors.textPrimary,
-                weekdayContentColor = CosmicTheme.colors.textSecondary,
-                subheadContentColor = CosmicTheme.colors.textSecondary,
-                yearContentColor = CosmicTheme.colors.textPrimary,
-                currentYearContentColor = CosmicTheme.colors.plasma,
-                selectedYearContentColor = Color.White,
-                dayContentColor = CosmicTheme.colors.textPrimary,
-                selectedDayContentColor = Color.White,
-                selectedDayContainerColor = CosmicTheme.colors.plasma,
-                todayContentColor = CosmicTheme.colors.plasma,
-                todayDateBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f)
-            )
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+            containerColor = CosmicTheme.colors.plasma,
+            contentColor = Color.Black
         ) {
-            DatePicker(state = datePickerState)
+            Icon(Icons.Default.Add, contentDescription = "Thêm nhiệm vụ")
         }
     }
 
-    if (showTimePicker) {
-        AlertDialog(
-            onDismissRequest = onDismissTimePicker,
-            title = { Text("Chọn giờ", color = CosmicTheme.colors.textPrimary) },
-            text = {
-                TimePicker(
-                    state = timePickerState,
-                    colors = TimePickerDefaults.colors(
-                        clockDialColor = CosmicTheme.colors.plasma.copy(alpha = 0.2f),
-                        clockDialSelectedContentColor = CosmicTheme.colors.textPrimary,
-                        clockDialUnselectedContentColor = CosmicTheme.colors.textSecondary,
-                        selectorColor = CosmicTheme.colors.plasma,
-                        timeSelectorSelectedContainerColor = CosmicTheme.colors.plasma.copy(alpha = 0.2f),
-                        timeSelectorSelectedContentColor = CosmicTheme.colors.plasma,
-                        timeSelectorUnselectedContainerColor = Color.White.copy(alpha = 0.05f),
-                        timeSelectorUnselectedContentColor = CosmicTheme.colors.textSecondary
-                    )
-                )
+    // ── Add Task Modal ──
+    if (showAddTaskModal) {
+        AddTaskModal(
+            title = state.inputTitle,
+            onTitleChange = { viewModel.updateTitle(it) },
+            description = state.inputDescription,
+            onDescriptionChange = { viewModel.updateDescription(it) },
+            deadline = state.inputDeadline,
+            onDeadlineClick = { viewModel.showDatePicker() },
+            showDatePicker = state.showDatePicker,
+            onDateSelected = { viewModel.updateDeadline(it) },
+            onDismissDatePicker = { viewModel.hideDatePicker() },
+            showTimePicker = state.showTimePicker,
+            onTimeSelected = { h, m -> viewModel.updateTime(h, m) },
+            onDismissTimePicker = { viewModel.hideTimePicker() },
+            recurrence = state.inputRecurrence,
+            onRecurrenceChange = { viewModel.updateRecurrence(it) },
+            recurrenceDays = state.inputRecurrenceDays,
+            onRecurrenceDayToggle = { viewModel.toggleRecurrenceDay(it) },
+            onConfirm = {
+                viewModel.addTask()
+                showAddTaskModal = false
             },
-            confirmButton = {
-                TextButton(onClick = {
-                    onTimeSelected(timePickerState.hour, timePickerState.minute)
-                }) {
-                    Text("Chọn", color = CosmicTheme.colors.plasma)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = onDismissTimePicker) {
-                    Text("Huỷ", color = CosmicTheme.colors.textSecondary)
-                }
-            },
-            containerColor = CosmicTheme.colors.nebula
+            onDismiss = { showAddTaskModal = false }
         )
     }
 }
@@ -491,6 +350,224 @@ private fun RecurrenceSelector(
                 }
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AddTaskModal(
+    title: String,
+    onTitleChange: (String) -> Unit,
+    description: String,
+    onDescriptionChange: (String) -> Unit,
+    deadline: Long?,
+    onDeadlineClick: () -> Unit,
+    showDatePicker: Boolean,
+    onDateSelected: (Long?) -> Unit,
+    onDismissDatePicker: () -> Unit,
+    showTimePicker: Boolean,
+    onTimeSelected: (Int, Int) -> Unit,
+    onDismissTimePicker: () -> Unit,
+    recurrence: String?,
+    onRecurrenceChange: (String?) -> Unit,
+    recurrenceDays: Int?,
+    onRecurrenceDayToggle: (DayOfWeek) -> Unit,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = deadline ?: System.currentTimeMillis()
+    )
+
+    val timePickerState = rememberTimePickerState(
+        initialHour = 0,
+        initialMinute = 0,
+        is24Hour = true
+    )
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = CosmicTheme.colors.nebula,
+        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .padding(bottom = 32.dp)
+        ) {
+            Text(
+                text = "Thêm nhiệm vụ",
+                color = CosmicTheme.colors.textPrimary,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = title,
+                onValueChange = onTitleChange,
+                placeholder = { Text("Tên nhiệm vụ", color = CosmicTheme.colors.textTertiary) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
+                    unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
+                    cursorColor = CosmicTheme.colors.plasma,
+                    focusedTextColor = CosmicTheme.colors.textPrimary,
+                    unfocusedTextColor = CosmicTheme.colors.textPrimary
+                ),
+                shape = RoundedCornerShape(12.dp)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = description,
+                onValueChange = onDescriptionChange,
+                placeholder = { Text("Mô tả (không bắt buộc)", color = CosmicTheme.colors.textTertiary) },
+                modifier = Modifier.fillMaxWidth(),
+                maxLines = 3,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
+                    unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
+                    cursorColor = CosmicTheme.colors.plasma,
+                    focusedTextColor = CosmicTheme.colors.textPrimary,
+                    unfocusedTextColor = CosmicTheme.colors.textPrimary
+                ),
+                shape = RoundedCornerShape(12.dp)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // ── Deadline picker ──
+            OutlinedCard(
+                onClick = onDeadlineClick,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.outlinedCardColors(
+                    containerColor = Color.White.copy(alpha = 0.03f)
+                ),
+                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        Icons.Default.DateRange,
+                        contentDescription = null,
+                        tint = CosmicTheme.colors.textSecondary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(
+                        text = if (deadline != null) formatDeadline(deadline) else "Chọn deadline",
+                        style = CosmicTheme.typography.body,
+                        color = if (deadline != null) CosmicTheme.colors.textPrimary else CosmicTheme.colors.textTertiary
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            RecurrenceSelector(
+                recurrence = recurrence,
+                recurrenceDays = recurrenceDays,
+                onRecurrenceChange = onRecurrenceChange,
+                onDayToggle = onRecurrenceDayToggle
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Button(
+                onClick = onConfirm,
+                enabled = title.isNotBlank(),
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = CosmicTheme.colors.plasma,
+                    disabledContainerColor = CosmicTheme.colors.plasma.copy(alpha = 0.3f)
+                )
+            ) {
+                Text("Thêm", color = Color.Black, fontWeight = FontWeight.SemiBold)
+            }
+        }
+    }
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = onDismissDatePicker,
+            confirmButton = {
+                TextButton(onClick = {
+                    onDateSelected(datePickerState.selectedDateMillis)
+                    onDismissDatePicker()
+                }) {
+                    Text("Chọn", color = CosmicTheme.colors.plasma)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    onDateSelected(null)
+                    onDismissDatePicker()
+                }) {
+                    Text("Bỏ", color = CosmicTheme.colors.textSecondary)
+                }
+            },
+            colors = DatePickerDefaults.colors(
+                containerColor = CosmicTheme.colors.nebula,
+                titleContentColor = CosmicTheme.colors.textPrimary,
+                headlineContentColor = CosmicTheme.colors.textPrimary,
+                weekdayContentColor = CosmicTheme.colors.textSecondary,
+                subheadContentColor = CosmicTheme.colors.textSecondary,
+                yearContentColor = CosmicTheme.colors.textPrimary,
+                currentYearContentColor = CosmicTheme.colors.plasma,
+                selectedYearContentColor = Color.White,
+                dayContentColor = CosmicTheme.colors.textPrimary,
+                selectedDayContentColor = Color.White,
+                selectedDayContainerColor = CosmicTheme.colors.plasma,
+                todayContentColor = CosmicTheme.colors.plasma,
+                todayDateBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f)
+            )
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    if (showTimePicker) {
+        AlertDialog(
+            onDismissRequest = onDismissTimePicker,
+            title = { Text("Chọn giờ", color = CosmicTheme.colors.textPrimary) },
+            text = {
+                TimePicker(
+                    state = timePickerState,
+                    colors = TimePickerDefaults.colors(
+                        clockDialColor = CosmicTheme.colors.plasma.copy(alpha = 0.2f),
+                        clockDialSelectedContentColor = CosmicTheme.colors.textPrimary,
+                        clockDialUnselectedContentColor = CosmicTheme.colors.textSecondary,
+                        selectorColor = CosmicTheme.colors.plasma,
+                        timeSelectorSelectedContainerColor = CosmicTheme.colors.plasma.copy(alpha = 0.2f),
+                        timeSelectorSelectedContentColor = CosmicTheme.colors.plasma,
+                        timeSelectorUnselectedContainerColor = Color.White.copy(alpha = 0.05f),
+                        timeSelectorUnselectedContentColor = CosmicTheme.colors.textSecondary
+                    )
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    onTimeSelected(timePickerState.hour, timePickerState.minute)
+                }) {
+                    Text("Chọn", color = CosmicTheme.colors.plasma)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismissTimePicker) {
+                    Text("Huỷ", color = CosmicTheme.colors.textSecondary)
+                }
+            },
+            containerColor = CosmicTheme.colors.nebula
+        )
     }
 }
 

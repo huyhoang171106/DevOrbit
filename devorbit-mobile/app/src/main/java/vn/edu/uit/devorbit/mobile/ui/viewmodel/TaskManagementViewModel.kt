@@ -20,7 +20,9 @@ import javax.inject.Inject
 data class TaskManagementUiState(
     val tasks: List<TaskEntity> = emptyList(),
     val filter: TaskFilter = TaskFilter.TODAY,
+    val searchQuery: String = "",
     val inputTitle: String = "",
+    val inputDescription: String = "",
     val inputDeadline: Long? = null,
     val showDatePicker: Boolean = false,
     val showTimePicker: Boolean = false,
@@ -48,11 +50,18 @@ class TaskManagementViewModel @Inject constructor(
 
     private fun observeTasks() {
         viewModelScope.launch {
-            combine(academicRepository.allTasks, _state.map { it.filter }.distinctUntilChanged()) { tasks, filter ->
-                val filtered = when (filter) {
+            combine(
+                academicRepository.allTasks,
+                _state.map { it.filter }.distinctUntilChanged(),
+                _state.map { it.searchQuery }.distinctUntilChanged()
+            ) { tasks, filter, query ->
+                var filtered = when (filter) {
                     TaskFilter.TODAY -> tasks.filter { isTaskToday(it) }
                     TaskFilter.WEEK -> tasks.filter { isTaskThisWeek(it) }
                     TaskFilter.ALL -> tasks
+                }
+                if (query.isNotBlank()) {
+                    filtered = filtered.filter { it.title.contains(query, ignoreCase = true) }
                 }
                 filtered.sortedBy { it.completed }
             }.collect { filtered ->
@@ -63,6 +72,18 @@ class TaskManagementViewModel @Inject constructor(
 
     fun setFilter(filter: TaskFilter) {
         _state.update { it.copy(filter = filter) }
+    }
+
+    fun updateSearchQuery(query: String) {
+        _state.update { it.copy(searchQuery = query) }
+    }
+
+    fun updateDescription(desc: String) {
+        _state.update { it.copy(inputDescription = desc) }
+    }
+
+    fun resetInput() {
+        _state.update { it.copy(inputTitle = "", inputDescription = "", inputDeadline = null, inputRecurrence = null, inputRecurrenceDays = null) }
     }
 
     fun updateTitle(title: String) {
@@ -127,13 +148,14 @@ class TaskManagementViewModel @Inject constructor(
         viewModelScope.launch {
             val task = TaskEntity(
                 title = title,
+                description = _state.value.inputDescription,
                 deadline = _state.value.inputDeadline,
                 taskType = "general",
                 recurrence = _state.value.inputRecurrence,
                 recurrenceDaysOfWeek = _state.value.inputRecurrenceDays
             )
             academicRepository.saveTask(task)
-            _state.update { it.copy(inputTitle = "", inputDeadline = null, inputRecurrence = null, inputRecurrenceDays = null) }
+            _state.update { it.copy(inputTitle = "", inputDescription = "", inputDeadline = null, inputRecurrence = null, inputRecurrenceDays = null) }
         }
     }
 

@@ -17,8 +17,10 @@ import vn.edu.uit.devorbit.mobile.data.repository.AcademicRepository
 import vn.edu.uit.devorbit.mobile.data.datastore.SettingsDataStore
 import vn.edu.uit.devorbit.mobile.network.ApiService
 import java.time.DayOfWeek
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import javax.inject.Inject
@@ -42,6 +44,8 @@ data class DashboardUiState(
     val isLoading: Boolean = false
 )
 
+enum class TaskFilter { TODAY, WEEK, ALL }
+
 data class WeekDay(
     val date: String,
     val label: String,
@@ -62,6 +66,11 @@ class DashboardViewModel @Inject constructor(
 
     private val _state = MutableStateFlow(DashboardUiState())
     val state: StateFlow<DashboardUiState> = _state.asStateFlow()
+
+    private val _taskFilter = MutableStateFlow(TaskFilter.TODAY)
+    val taskFilter: StateFlow<TaskFilter> = _taskFilter.asStateFlow()
+
+    fun setTaskFilter(filter: TaskFilter) { _taskFilter.value = filter }
 
     private val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     private val displayDateFormat = DateTimeFormatter.ofPattern("EEEE, dd/MM", Locale("vi", "VN"))
@@ -156,17 +165,37 @@ class DashboardViewModel @Inject constructor(
 
     private fun observeTasks() {
         viewModelScope.launch {
-            academicRepository.allTasks.collect { tasks ->
-                val total = tasks.size
-                val completed = tasks.count { it.completed }
-                val sorted = tasks.sortedBy { it.completed }
+            combine(academicRepository.allTasks, _taskFilter) { tasks, filter ->
+                val filtered = when (filter) {
+                    TaskFilter.TODAY -> tasks.filter { isTaskToday(it) }
+                    TaskFilter.WEEK -> tasks.filter { isTaskThisWeek(it) }
+                    TaskFilter.ALL -> tasks
+                }
+                val sorted = filtered.sortedBy { it.completed }
+                val total = sorted.size
+                val completed = sorted.count { it.completed }
                 _state.update { it.copy(
                     sortedTasks = sorted,
                     totalTaskCount = total,
                     completedTaskCount = completed
                 ) }
-            }
+            }.collect()
         }
+    }
+
+    private fun isTaskToday(task: TaskEntity): Boolean {
+        if (task.deadline == null) return false
+        val date = Instant.ofEpochMilli(task.deadline!!).atZone(ZoneId.systemDefault()).toLocalDate()
+        return date == LocalDate.now()
+    }
+
+    private fun isTaskThisWeek(task: TaskEntity): Boolean {
+        if (task.deadline == null) return false
+        val date = Instant.ofEpochMilli(task.deadline!!).atZone(ZoneId.systemDefault()).toLocalDate()
+        val now = LocalDate.now()
+        val monday = now.with(DayOfWeek.MONDAY)
+        val sunday = now.with(DayOfWeek.SUNDAY)
+        return date >= monday && date <= sunday
     }
 
     private fun observeTechStacks() {

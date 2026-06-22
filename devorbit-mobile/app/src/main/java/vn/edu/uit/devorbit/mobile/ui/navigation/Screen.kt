@@ -12,4 +12,5 @@ sealed class Screen(val route: String, val label: String, val icon: ImageVector)
     object Plan : Screen("plan", "Kế hoạch", Icons.Rounded.DateRange)
     object Notifications : Screen("notifications", "Thông báo", Icons.Rounded.Notifications)
     object Profile : Screen("profile", "Cá nhân", Icons.Rounded.Person)
+    object TaskManagement : Screen("tasks", "Nhiệm vụ", Icons.Rounded.CheckCircle)
 }

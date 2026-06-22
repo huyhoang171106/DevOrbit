@@ -36,12 +36,14 @@ import vn.edu.uit.devorbit.mobile.data.local.entity.TaskEntity
 import vn.edu.uit.devorbit.mobile.data.local.entity.TechStackEntity
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.DashboardViewModel
+import vn.edu.uit.devorbit.mobile.ui.viewmodel.TaskFilter
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.WeekDay
 
 @Composable
 fun DashboardScreen(
     onNavigateToCourse: (Long) -> Unit = {},
     onNavigateToPlan: () -> Unit = {},
+    onNavigateToCreateTask: () -> Unit = {},
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -79,15 +81,12 @@ fun DashboardScreen(
         }
 
         item {
-            SectionLabel("Nhiệm vụ hôm nay")
-        }
-
-        item {
-            Text(
-                text = "Hôm nay: ${state.totalTaskCount} nhiệm vụ, ${state.completedTaskCount} hoàn thành",
-                style = CosmicTheme.typography.label,
-                color = CosmicTheme.colors.textTertiary,
-                modifier = Modifier.padding(bottom = 4.dp)
+            TaskFilterSection(
+                selectedFilter = viewModel.taskFilter.collectAsState().value,
+                onSelectFilter = { viewModel.setTaskFilter(it) },
+                taskCount = state.totalTaskCount,
+                completedCount = state.completedTaskCount,
+                onNavigateToCreateTask = onNavigateToCreateTask
             )
         }
 
@@ -845,6 +844,94 @@ private fun EmptyTaskState(onNavigateToPlan: () -> Unit) {
                 textDecoration = TextDecoration.Underline
             )
         }
+    }
+}
+
+@Composable
+private fun TaskFilterSection(
+    selectedFilter: TaskFilter,
+    onSelectFilter: (TaskFilter) -> Unit,
+    taskCount: Int,
+    completedCount: Int,
+    onNavigateToCreateTask: () -> Unit
+) {
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Nhiệm vụ",
+                style = CosmicTheme.typography.command,
+                color = CosmicTheme.colors.textTertiary
+            )
+            IconButton(onClick = onNavigateToCreateTask) {
+                Icon(
+                    Icons.Default.Add,
+                    contentDescription = "Thêm nhiệm vụ",
+                    tint = CosmicTheme.colors.plasma
+                )
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            FilterChip(
+                selected = selectedFilter == TaskFilter.TODAY,
+                onClick = { onSelectFilter(TaskFilter.TODAY) },
+                label = { Text("Hôm nay", style = CosmicTheme.typography.label) },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = CosmicTheme.colors.plasma.copy(alpha = 0.15f),
+                    selectedLabelColor = CosmicTheme.colors.plasma
+                ),
+                border = FilterChipDefaults.filterChipBorder(
+                    borderColor = CosmicTheme.colors.glassBorder,
+                    selectedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
+                    enabled = true,
+                    selected = selectedFilter == TaskFilter.TODAY
+                )
+            )
+            FilterChip(
+                selected = selectedFilter == TaskFilter.WEEK,
+                onClick = { onSelectFilter(TaskFilter.WEEK) },
+                label = { Text("Tuần này", style = CosmicTheme.typography.label) },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = CosmicTheme.colors.plasma.copy(alpha = 0.15f),
+                    selectedLabelColor = CosmicTheme.colors.plasma
+                ),
+                border = FilterChipDefaults.filterChipBorder(
+                    borderColor = CosmicTheme.colors.glassBorder,
+                    selectedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
+                    enabled = true,
+                    selected = selectedFilter == TaskFilter.WEEK
+                )
+            )
+            FilterChip(
+                selected = selectedFilter == TaskFilter.ALL,
+                onClick = { onSelectFilter(TaskFilter.ALL) },
+                label = { Text("Tất cả", style = CosmicTheme.typography.label) },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = CosmicTheme.colors.plasma.copy(alpha = 0.15f),
+                    selectedLabelColor = CosmicTheme.colors.plasma
+                ),
+                border = FilterChipDefaults.filterChipBorder(
+                    borderColor = CosmicTheme.colors.glassBorder,
+                    selectedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
+                    enabled = true,
+                    selected = selectedFilter == TaskFilter.ALL
+                )
+            )
+        }
+
+        Text(
+            text = "$completedCount/$taskCount hoàn thành",
+            style = CosmicTheme.typography.label,
+            color = CosmicTheme.colors.textTertiary,
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
     }
 }
 

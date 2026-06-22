@@ -28,6 +28,7 @@ import vn.edu.uit.devorbit.mobile.ui.components.CosmicBackground
 import vn.edu.uit.devorbit.mobile.ui.navigation.Screen
 import vn.edu.uit.devorbit.mobile.ui.screen.courses.CourseHubScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.dashboard.DashboardScreen
+import vn.edu.uit.devorbit.mobile.ui.screen.dashboard.TaskManagementScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.explore.ExploreScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.knowledge.KnowledgeGraphScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.notification.NotificationScreen
@@ -141,6 +142,15 @@ fun MainScreen(
                                 onNavigateToPlan = {
                                     currentScreen = Screen.Plan
                                     showPopup = false
+                                },
+                                onNavigateToCreateTask = {
+                                    currentScreen = Screen.TaskManagement
+                                    showPopup = false
+                                }
+                            )
+                            Screen.TaskManagement -> TaskManagementScreen(
+                                onNavigateBack = {
+                                    currentScreen = Screen.Dashboard
                                 }
                             )
                             Screen.Courses -> CourseHubScreen()

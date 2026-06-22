@@ -34,14 +34,14 @@ import vn.edu.uit.devorbit.mobile.ui.screen.knowledge.KnowledgeGraphScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.notification.NotificationScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.plan.GroupPlanDetailScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.plan.GroupPlanListScreen
-import vn.edu.uit.devorbit.mobile.ui.screen.plan.StudyPlannerScreen
+
 import vn.edu.uit.devorbit.mobile.ui.screen.profile.ProfileScreen
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.AcademicViewModel
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.NotificationViewModel
 import vn.edu.uit.devorbit.mobile.domain.model.GraphNode
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.CourseViewModel
-import vn.edu.uit.devorbit.mobile.ui.viewmodel.StudyPlanViewModel
+
 
 @Composable
 fun MainScreen(
@@ -74,7 +74,7 @@ fun MainScreen(
                         )
                         NavigationBarItem(
                             selected = showPopup || currentScreen in listOf(
-                                Screen.Courses, Screen.Explore, Screen.Plan, Screen.Knowledge
+                                Screen.Courses, Screen.Explore, Screen.Knowledge
                             ),
                             onClick = { showPopup = !showPopup },
                             icon = {
@@ -141,10 +141,6 @@ fun MainScreen(
                                     currentScreen = Screen.Courses
                                     showPopup = false
                                 },
-                                onNavigateToPlan = {
-                                    currentScreen = Screen.Plan
-                                    showPopup = false
-                                },
                                 onNavigateToCreateTask = {
                                     currentScreen = Screen.TaskManagement
                                     showPopup = false
@@ -184,8 +180,8 @@ fun MainScreen(
                                     currentScreen = Screen.GroupPlanDetail(planId)
                                 }
                             )
-                            Screen.Plan -> PlanTabView()
                             Screen.Profile -> ProfileScreen()
+                            else -> {}
                         }
                     }
                 }
@@ -243,14 +239,6 @@ fun MainScreen(
                         )
                         PopupText("Khám phá") {
                             currentScreen = Screen.Explore
-                            showPopup = false
-                        }
-                        HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            color = CosmicTheme.colors.glassBorder.copy(alpha = 0.3f)
-                        )
-                        PopupText("Kế hoạch") {
-                            currentScreen = Screen.Plan
                             showPopup = false
                         }
                         HorizontalDivider(
@@ -319,18 +307,4 @@ private fun KnowledgeTabView(courseViewModel: CourseViewModel = hiltViewModel())
     }
 }
 
-@Composable
-private fun PlanTabView(viewModel: StudyPlanViewModel = hiltViewModel()) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
 
-    StudyPlannerScreen(
-        studyPlan = state.plan,
-        loading = state.loading,
-        error = state.error,
-        onGeneratePlan = { learningGoals, careerPath ->
-            viewModel.generateRoadmap(learningGoals, careerPath)
-        },
-        onToggleItem = { viewModel.toggleItem(it) },
-        onBreakdownTask = { }
-    )
-}

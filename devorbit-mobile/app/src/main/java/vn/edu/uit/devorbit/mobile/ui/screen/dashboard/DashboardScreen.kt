@@ -42,7 +42,6 @@ import vn.edu.uit.devorbit.mobile.ui.viewmodel.WeekDay
 @Composable
 fun DashboardScreen(
     onNavigateToCourse: (Long) -> Unit = {},
-    onNavigateToPlan: () -> Unit = {},
     onNavigateToCreateTask: () -> Unit = {},
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
@@ -92,13 +91,13 @@ fun DashboardScreen(
 
         if (state.sortedTasks.isEmpty()) {
             item {
-                EmptyTaskState(onNavigateToPlan = onNavigateToPlan)
+                EmptyTaskState(onNavigateToCreateTask = onNavigateToCreateTask)
             }
         } else {
             items(state.sortedTasks, key = { it.id }) { task ->
                 TaskCard(
                     task = task,
-                    onClick = { onNavigateToPlan() }
+                    onClick = { onNavigateToCreateTask() }
                 )
             }
         }
@@ -818,11 +817,11 @@ private fun TaskCard(task: TaskEntity, onClick: () -> Unit) {
 }
 
 @Composable
-private fun EmptyTaskState(onNavigateToPlan: () -> Unit) {
+private fun EmptyTaskState(onNavigateToCreateTask: () -> Unit) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onNavigateToPlan),
+            .clickable(onClick = onNavigateToCreateTask),
         shape = RoundedCornerShape(12.dp),
         color = CosmicTheme.colors.nebula,
         border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
@@ -838,7 +837,7 @@ private fun EmptyTaskState(onNavigateToPlan: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Bấm vào đây để lập kế hoạch cho hôm nay",
+                text = "Bấm vào đây để lập kế hoạch",
                 style = CosmicTheme.typography.label,
                 color = CosmicTheme.colors.plasma,
                 textDecoration = TextDecoration.Underline

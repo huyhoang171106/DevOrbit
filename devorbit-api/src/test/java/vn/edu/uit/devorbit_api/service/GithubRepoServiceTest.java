@@ -13,6 +13,7 @@ import vn.edu.uit.devorbit_api.service.ai.RepoEvaluationService;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -77,6 +78,6 @@ class GithubRepoServiceTest {
         RepoSummaryResponse response = service.getApprovedRepoById(1L);
 
         assertThat(response.lastPushedAt()).isEqualTo("2026-04-20T10:00:00Z");
-        verify(githubRepoRepository).save(repo);
+        verify(githubRepoRepository, times(2)).save(repo);
     }
 }

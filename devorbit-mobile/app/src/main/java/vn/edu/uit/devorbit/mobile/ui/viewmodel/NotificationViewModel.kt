@@ -58,7 +58,7 @@ class NotificationViewModel @Inject constructor(
     private fun startPolling() {
         viewModelScope.launch {
             while (true) {
-                delay(60_000)
+                delay(15_000)
                 try {
                     val countResponse = apiService.getUnreadNotificationCount()
                     _unreadCount.value = countResponse.count

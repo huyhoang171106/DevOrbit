@@ -162,6 +162,9 @@ fun MainScreen(
                                 planId = screen.planId,
                                 onNavigateBack = {
                                     currentScreen = Screen.TaskManagement
+                                },
+                                onNavigateLeave = {
+                                    currentScreen = Screen.TaskManagement
                                 }
                             )
                             Screen.GroupPlanList -> GroupPlanListScreen(
@@ -248,6 +251,14 @@ fun MainScreen(
                         )
                         PopupText("Kế hoạch") {
                             currentScreen = Screen.Plan
+                            showPopup = false
+                        }
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            color = CosmicTheme.colors.glassBorder.copy(alpha = 0.3f)
+                        )
+                        PopupText("Kế hoạch nhóm") {
+                            currentScreen = Screen.GroupPlanList
                             showPopup = false
                         }
                         HorizontalDivider(

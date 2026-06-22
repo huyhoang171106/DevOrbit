@@ -137,4 +137,32 @@ class GroupPlanViewModel @Inject constructor(
             }
         }
     }
+
+    fun leavePlan(planId: Long, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            _detail.update { it.copy(actionLoading = true, actionError = null) }
+            try {
+                apiService.leavePlan(planId)
+                onSuccess()
+            } catch (e: Exception) {
+                _detail.update { it.copy(actionError = "Không thể rời kế hoạch") }
+            } finally {
+                _detail.update { it.copy(actionLoading = false) }
+            }
+        }
+    }
+
+    fun deletePlan(planId: Long, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            _detail.update { it.copy(actionLoading = true, actionError = null) }
+            try {
+                apiService.deleteGroupPlan(planId)
+                onSuccess()
+            } catch (e: Exception) {
+                _detail.update { it.copy(actionError = "Không thể xoá kế hoạch") }
+            } finally {
+                _detail.update { it.copy(actionLoading = false) }
+            }
+        }
+    }
 }

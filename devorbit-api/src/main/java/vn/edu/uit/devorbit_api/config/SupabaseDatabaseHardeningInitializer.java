@@ -213,7 +213,10 @@ public class SupabaseDatabaseHardeningInitializer {
                     'student_bookmarks',
                     'student_notifications',
                     'student_users',
-                    'tech_stacks'
+                    'tech_stacks',
+                    'group_plans',
+                    'group_plan_members',
+                    'group_tasks'
                 ]
                 LOOP
                     IF to_regclass('public.' || table_name) IS NOT NULL

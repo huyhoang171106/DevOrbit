@@ -34,11 +34,15 @@ import vn.edu.uit.devorbit.mobile.ui.viewmodel.GroupPlanViewModel
 fun GroupPlanDetailScreen(
     planId: Long,
     onNavigateBack: () -> Unit = {},
+    onNavigateLeave: () -> Unit = {},
     viewModel: GroupPlanViewModel = hiltViewModel()
 ) {
     val state by viewModel.detail.collectAsStateWithLifecycle()
     var showAddTaskSheet by remember { mutableStateOf(false) }
     var showInviteDialog by remember { mutableStateOf(false) }
+    var showMenu by remember { mutableStateOf(false) }
+    var showLeaveDialog by remember { mutableStateOf(false) }
+    var showDeletePlanDialog by remember { mutableStateOf(false) }
     var taskToDelete by remember { mutableStateOf<GroupTaskResponse?>(null) }
     var selectedTab by remember { mutableIntStateOf(0) }
 
@@ -46,7 +50,7 @@ fun GroupPlanDetailScreen(
         viewModel.loadPlan(planId)
     }
 
-    // Delete confirmation dialog
+    // Task delete confirmation
     if (taskToDelete != null) {
         AlertDialog(
             onDismissRequest = { taskToDelete = null },
@@ -62,6 +66,86 @@ fun GroupPlanDetailScreen(
             },
             dismissButton = {
                 TextButton(onClick = { taskToDelete = null }) {
+                    Text("Huỷ", color = CosmicTheme.colors.textSecondary)
+                }
+            },
+            containerColor = CosmicTheme.colors.nebula
+        )
+    }
+
+    // Leave plan confirmation
+    if (showLeaveDialog) {
+        AlertDialog(
+            onDismissRequest = { showLeaveDialog = false; viewModel.clearActionError() },
+            title = { Text("Rời kế hoạch", color = CosmicTheme.colors.textPrimary) },
+            text = {
+                Column {
+                    Text("Bạn có chắc muốn rời kế hoạch này?", color = CosmicTheme.colors.textSecondary)
+                    if (state.actionError != null) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(state.actionError!!, color = CosmicTheme.colors.supernova, fontSize = 12.sp)
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.leavePlan(planId) { showLeaveDialog = false; onNavigateLeave() }
+                    },
+                    enabled = !state.actionLoading
+                ) {
+                    if (state.actionLoading) {
+                        CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(16.dp), color = CosmicTheme.colors.plasma)
+                    } else {
+                        Text("Rời", color = CosmicTheme.colors.supernova)
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showLeaveDialog = false; viewModel.clearActionError() },
+                    enabled = !state.actionLoading
+                ) {
+                    Text("Huỷ", color = CosmicTheme.colors.textSecondary)
+                }
+            },
+            containerColor = CosmicTheme.colors.nebula
+        )
+    }
+
+    // Delete plan confirmation
+    if (showDeletePlanDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeletePlanDialog = false; viewModel.clearActionError() },
+            title = { Text("Xoá kế hoạch", color = CosmicTheme.colors.textPrimary) },
+            text = {
+                Column {
+                    Text("Xoá kế hoạch này sẽ ảnh hưởng đến tất cả thành viên. Bạn có chắc?", color = CosmicTheme.colors.textSecondary)
+                    if (state.actionError != null) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(state.actionError!!, color = CosmicTheme.colors.supernova, fontSize = 12.sp)
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deletePlan(planId) { showDeletePlanDialog = false; onNavigateLeave() }
+                    },
+                    enabled = !state.actionLoading
+                ) {
+                    if (state.actionLoading) {
+                        CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(16.dp), color = CosmicTheme.colors.plasma)
+                    } else {
+                        Text("Xoá", color = CosmicTheme.colors.supernova)
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showDeletePlanDialog = false; viewModel.clearActionError() },
+                    enabled = !state.actionLoading
+                ) {
                     Text("Huỷ", color = CosmicTheme.colors.textSecondary)
                 }
             },
@@ -89,6 +173,29 @@ fun GroupPlanDetailScreen(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+            }
+            // Menu button
+            Box {
+                IconButton(onClick = { showMenu = true }) {
+                    Icon(Icons.Default.MoreVert, contentDescription = "Tuỳ chọn", tint = CosmicTheme.colors.textPrimary)
+                }
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Rời kế hoạch") },
+                        onClick = { showMenu = false; showLeaveDialog = true },
+                        leadingIcon = { Icon(Icons.Default.ExitToApp, contentDescription = null) }
+                    )
+                    if (state.plan?.creatorStudentCode != null) {
+                        DropdownMenuItem(
+                            text = { Text("Xoá kế hoạch", color = CosmicTheme.colors.supernova) },
+                            onClick = { showMenu = false; showDeletePlanDialog = true },
+                            leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null, tint = CosmicTheme.colors.supernova) }
+                        )
+                    }
+                }
             }
         }
 

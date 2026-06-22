@@ -13,6 +13,7 @@ import vn.edu.uit.devorbit.mobile.network.ApiService
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneId
 import javax.inject.Inject
 
@@ -22,6 +23,9 @@ data class TaskManagementUiState(
     val inputTitle: String = "",
     val inputDeadline: Long? = null,
     val showDatePicker: Boolean = false,
+    val showTimePicker: Boolean = false,
+    val inputRecurrence: String? = null,
+    val inputRecurrenceDays: Int? = null,
     val creatingPlan: Boolean = false,
     val planTitle: String = "",
     val planDeadline: String = "",
@@ -66,7 +70,11 @@ class TaskManagementViewModel @Inject constructor(
     }
 
     fun updateDeadline(millis: Long?) {
-        _state.update { it.copy(inputDeadline = millis, showDatePicker = false) }
+        if (millis != null) {
+            _state.update { it.copy(inputDeadline = millis, showDatePicker = false, showTimePicker = true) }
+        } else {
+            _state.update { it.copy(inputDeadline = null, showDatePicker = false) }
+        }
     }
 
     fun showDatePicker() {
@@ -77,6 +85,42 @@ class TaskManagementViewModel @Inject constructor(
         _state.update { it.copy(showDatePicker = false) }
     }
 
+    fun showTimePicker() {
+        _state.update { it.copy(showTimePicker = true) }
+    }
+
+    fun hideTimePicker() {
+        _state.update { it.copy(showTimePicker = false) }
+    }
+
+    fun updateTime(hour: Int, minute: Int) {
+        val dateMillis = _state.value.inputDeadline ?: return
+        val date = Instant.ofEpochMilli(dateMillis).atZone(ZoneId.systemDefault()).toLocalDate()
+        val dateTime = date.atTime(hour, minute)
+        val combined = dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        _state.update { it.copy(inputDeadline = combined, showTimePicker = false) }
+    }
+
+    fun updateRecurrence(recurrence: String?) {
+        _state.update { state ->
+            state.copy(
+                inputRecurrence = recurrence,
+                inputRecurrenceDays = when {
+                    recurrence == "WEEKLY" && state.inputRecurrenceDays == null -> 0
+                    recurrence != "WEEKLY" -> null
+                    else -> state.inputRecurrenceDays
+                }
+            )
+        }
+    }
+
+    fun toggleRecurrenceDay(dayOfWeek: DayOfWeek) {
+        val bit = 1 shl (dayOfWeek.value - 1)
+        val current = _state.value.inputRecurrenceDays ?: 0
+        val updated = current xor bit
+        _state.update { it.copy(inputRecurrenceDays = if (updated != 0) updated else null) }
+    }
+
     fun addTask() {
         val title = _state.value.inputTitle.trim()
         if (title.isBlank()) return
@@ -84,16 +128,35 @@ class TaskManagementViewModel @Inject constructor(
             val task = TaskEntity(
                 title = title,
                 deadline = _state.value.inputDeadline,
-                taskType = "general"
+                taskType = "general",
+                recurrence = _state.value.inputRecurrence,
+                recurrenceDaysOfWeek = _state.value.inputRecurrenceDays
             )
             academicRepository.saveTask(task)
-            _state.update { it.copy(inputTitle = "", inputDeadline = null) }
+            _state.update { it.copy(inputTitle = "", inputDeadline = null, inputRecurrence = null, inputRecurrenceDays = null) }
         }
     }
 
     fun toggleTask(taskId: Long, completed: Boolean) {
         viewModelScope.launch {
-            academicRepository.completeTask(taskId)
+            if (completed) {
+                val currentTask = _state.value.tasks.find { it.id == taskId }
+                academicRepository.setTaskCompleted(taskId, true)
+                if (currentTask?.recurrence != null) {
+                    val nextDeadline = computeNextDeadline(currentTask)
+                    if (nextDeadline != null) {
+                        val nextTask = currentTask.copy(
+                            id = 0,
+                            completed = false,
+                            deadline = nextDeadline,
+                            createdAt = System.currentTimeMillis()
+                        )
+                        academicRepository.saveTask(nextTask)
+                    }
+                }
+            } else {
+                academicRepository.setTaskCompleted(taskId, false)
+            }
         }
     }
 
@@ -150,4 +213,36 @@ class TaskManagementViewModel @Inject constructor(
         val sunday = now.with(DayOfWeek.SUNDAY)
         return date >= monday && date <= sunday
     }
+}
+
+private fun computeNextDeadline(task: TaskEntity): Long? {
+    val deadline = task.deadline ?: return null
+    val recurrence = task.recurrence ?: return null
+    val zdt = Instant.ofEpochMilli(deadline).atZone(ZoneId.systemDefault())
+    val currentDate = zdt.toLocalDate()
+    val currentTime = zdt.toLocalTime()
+    val nextDate = when (recurrence) {
+        "DAILY" -> currentDate.plusDays(1)
+        "WEEKLY" -> {
+            val bitmask = task.recurrenceDaysOfWeek
+            if (bitmask != null) {
+                val currentDow = currentDate.dayOfWeek.value
+                var nextLocalDate: LocalDate? = null
+                for (offset in 1..7) {
+                    val dowValue = ((currentDow - 1 + offset) % 7) + 1
+                    val bit = 1 shl (dowValue - 1)
+                    if (bitmask and bit != 0) {
+                        nextLocalDate = currentDate.plusDays(offset.toLong())
+                        break
+                    }
+                }
+                nextLocalDate ?: currentDate.plusWeeks(1)
+            } else {
+                currentDate.plusWeeks(1)
+            }
+        }
+        "MONTHLY" -> currentDate.plusMonths(1)
+        else -> return null
+    }
+    return nextDate.atTime(currentTime).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 }

@@ -160,5 +160,6 @@ class AcademicRepository @Inject constructor(
 
     suspend fun saveTask(task: TaskEntity) = taskDao.upsertTask(task)
     suspend fun completeTask(id: Long) = taskDao.setCompleted(id, true)
+    suspend fun setTaskCompleted(id: Long, completed: Boolean) = taskDao.setCompleted(id, completed)
     suspend fun deleteTask(task: TaskEntity) = taskDao.deleteTask(task)
 }

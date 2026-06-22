@@ -33,10 +33,18 @@ object DevOrbitMigrations {
         }
     }
 
+    val MIGRATION_7_8 = object : Migration(7, 8) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE `tasks` ADD COLUMN `recurrence` TEXT DEFAULT NULL")
+            db.execSQL("ALTER TABLE `tasks` ADD COLUMN `recurrenceDaysOfWeek` INTEGER DEFAULT NULL")
+        }
+    }
+
     val ALL_MIGRATIONS = arrayOf(
         MIGRATION_3_4,
         MIGRATION_4_5,
         MIGRATION_5_6,
-        MIGRATION_6_7
+        MIGRATION_6_7,
+        MIGRATION_7_8
     )
 }

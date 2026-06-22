@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,6 +32,7 @@ import vn.edu.uit.devorbit.mobile.data.local.entity.TaskEntity
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.TaskFilter
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.TaskManagementViewModel
+import java.time.DayOfWeek
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -146,7 +148,14 @@ fun TaskManagementScreen(
             onAdd = { viewModel.addTask() },
             showDatePicker = state.showDatePicker,
             onDateSelected = { viewModel.updateDeadline(it) },
-            onDismissDatePicker = { viewModel.hideDatePicker() }
+            onDismissDatePicker = { viewModel.hideDatePicker() },
+            showTimePicker = state.showTimePicker,
+            onTimeSelected = { h, m -> viewModel.updateTime(h, m) },
+            onDismissTimePicker = { viewModel.hideTimePicker() },
+            recurrence = state.inputRecurrence,
+            onRecurrenceChange = { viewModel.updateRecurrence(it) },
+            recurrenceDays = state.inputRecurrenceDays,
+            onRecurrenceDayToggle = { viewModel.toggleRecurrenceDay(it) }
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -223,10 +232,23 @@ private fun InputSection(
     onAdd: () -> Unit,
     showDatePicker: Boolean,
     onDateSelected: (Long?) -> Unit,
-    onDismissDatePicker: () -> Unit
+    onDismissDatePicker: () -> Unit,
+    showTimePicker: Boolean,
+    onTimeSelected: (Int, Int) -> Unit,
+    onDismissTimePicker: () -> Unit,
+    recurrence: String?,
+    onRecurrenceChange: (String?) -> Unit,
+    recurrenceDays: Int?,
+    onRecurrenceDayToggle: (DayOfWeek) -> Unit
 ) {
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = deadline ?: System.currentTimeMillis()
+    )
+
+    val timePickerState = rememberTimePickerState(
+        initialHour = 0,
+        initialMinute = 0,
+        is24Hour = true
     )
 
     Surface(
@@ -279,7 +301,7 @@ private fun InputSection(
                             modifier = Modifier.size(18.dp)
                         )
                         Text(
-                            text = if (deadline != null) formatDate(deadline) else "Chọn deadline",
+                            text = if (deadline != null) formatDeadline(deadline) else "Chọn deadline",
                             style = CosmicTheme.typography.body,
                             color = if (deadline != null) CosmicTheme.colors.textPrimary else CosmicTheme.colors.textTertiary
                         )
@@ -301,6 +323,15 @@ private fun InputSection(
                     Text("Thêm", style = CosmicTheme.typography.body)
                 }
             }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            RecurrenceSelector(
+                recurrence = recurrence,
+                recurrenceDays = recurrenceDays,
+                onRecurrenceChange = onRecurrenceChange,
+                onDayToggle = onRecurrenceDayToggle
+            )
         }
     }
 
@@ -340,6 +371,125 @@ private fun InputSection(
             )
         ) {
             DatePicker(state = datePickerState)
+        }
+    }
+
+    if (showTimePicker) {
+        AlertDialog(
+            onDismissRequest = onDismissTimePicker,
+            title = { Text("Chọn giờ", color = CosmicTheme.colors.textPrimary) },
+            text = {
+                TimePicker(
+                    state = timePickerState,
+                    colors = TimePickerDefaults.colors(
+                        clockDialColor = CosmicTheme.colors.plasma.copy(alpha = 0.2f),
+                        clockDialSelectedContentColor = CosmicTheme.colors.textPrimary,
+                        clockDialUnselectedContentColor = CosmicTheme.colors.textSecondary,
+                        selectorColor = CosmicTheme.colors.plasma,
+                        timeSelectorSelectedContainerColor = CosmicTheme.colors.plasma.copy(alpha = 0.2f),
+                        timeSelectorSelectedContentColor = CosmicTheme.colors.plasma,
+                        timeSelectorUnselectedContainerColor = Color.White.copy(alpha = 0.05f),
+                        timeSelectorUnselectedContentColor = CosmicTheme.colors.textSecondary
+                    )
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    onTimeSelected(timePickerState.hour, timePickerState.minute)
+                }) {
+                    Text("Chọn", color = CosmicTheme.colors.plasma)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismissTimePicker) {
+                    Text("Huỷ", color = CosmicTheme.colors.textSecondary)
+                }
+            },
+            containerColor = CosmicTheme.colors.nebula
+        )
+    }
+}
+
+@Composable
+private fun RecurrenceSelector(
+    recurrence: String?,
+    recurrenceDays: Int?,
+    onRecurrenceChange: (String?) -> Unit,
+    onDayToggle: (DayOfWeek) -> Unit
+) {
+    Column {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            listOf(
+                null to "Không lặp",
+                "DAILY" to "Mỗi ngày",
+                "WEEKLY" to "Mỗi tuần",
+                "WEEKLY_DAYS" to "Chọn thứ",
+                "MONTHLY" to "Mỗi tháng"
+            ).forEach { (value, label) ->
+                val selected = when (value) {
+                    null -> recurrence == null
+                    "WEEKLY_DAYS" -> recurrence == "WEEKLY" && recurrenceDays != null
+                    else -> recurrence == value && (value != "WEEKLY" || recurrenceDays == null)
+                }
+                FilterChip(
+                    selected = selected,
+                    onClick = {
+                        when (value) {
+                            null -> onRecurrenceChange(null)
+                            "WEEKLY_DAYS" -> onRecurrenceChange("WEEKLY")
+                            else -> onRecurrenceChange(value)
+                        }
+                    },
+                    label = { Text(label, fontSize = 11.sp) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = CosmicTheme.colors.plasma.copy(alpha = 0.15f),
+                        selectedLabelColor = CosmicTheme.colors.plasma
+                    ),
+                    border = FilterChipDefaults.filterChipBorder(
+                        borderColor = CosmicTheme.colors.glassBorder,
+                        selectedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
+                        enabled = true,
+                        selected = selected
+                    )
+                )
+            }
+        }
+
+        if (recurrence == "WEEKLY" && recurrenceDays != null) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                val days = listOf(
+                    DayOfWeek.MONDAY to "T2",
+                    DayOfWeek.TUESDAY to "T3",
+                    DayOfWeek.WEDNESDAY to "T4",
+                    DayOfWeek.THURSDAY to "T5",
+                    DayOfWeek.FRIDAY to "T6",
+                    DayOfWeek.SATURDAY to "T7",
+                    DayOfWeek.SUNDAY to "CN"
+                )
+                days.forEach { (day, label) ->
+                    val bit = 1 shl (day.value - 1)
+                    val isDaySelected = recurrenceDays and bit != 0
+                    FilterChip(
+                        selected = isDaySelected,
+                        onClick = { onDayToggle(day) },
+                        label = { Text(label, fontSize = 11.sp) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = CosmicTheme.colors.plasma.copy(alpha = 0.15f),
+                            selectedLabelColor = CosmicTheme.colors.plasma
+                        ),
+                        border = FilterChipDefaults.filterChipBorder(
+                            borderColor = CosmicTheme.colors.glassBorder,
+                            selectedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
+                            enabled = true,
+                            selected = isDaySelected
+                        )
+                    )
+                }
+            }
         }
     }
 }
@@ -454,15 +604,26 @@ private fun TaskItem(
             }
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = task.title,
-                    style = CosmicTheme.typography.body,
-                    color = if (task.completed) CosmicTheme.colors.textTertiary else CosmicTheme.colors.textPrimary,
-                    textDecoration = if (task.completed) TextDecoration.LineThrough else TextDecoration.None
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = task.title,
+                        style = CosmicTheme.typography.body,
+                        modifier = Modifier.weight(1f),
+                        color = if (task.completed) CosmicTheme.colors.textTertiary else CosmicTheme.colors.textPrimary,
+                        textDecoration = if (task.completed) TextDecoration.LineThrough else TextDecoration.None
+                    )
+                    if (task.recurrence != null) {
+                        Icon(
+                            Icons.Default.Repeat,
+                            contentDescription = "Lặp lại",
+                            modifier = Modifier.size(16.dp),
+                            tint = CosmicTheme.colors.plasma
+                        )
+                    }
+                }
                 if (task.deadline != null) {
                     Text(
-                        text = "Hạn: ${formatDate(task.deadline)}",
+                        text = "Hạn: ${formatDeadline(task.deadline)}",
                         style = CosmicTheme.typography.label,
                         color = CosmicTheme.colors.textTertiary
                     )
@@ -472,8 +633,12 @@ private fun TaskItem(
     }
 }
 
-private fun formatDate(millis: Long): String {
-    val formatter = DateTimeFormatter.ofPattern("dd/MM", Locale("vi", "VN"))
-    val date = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate()
-    return date.format(formatter)
+private fun formatDeadline(millis: Long): String {
+    val ldt = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDateTime()
+    val formatter = if (ldt.hour == 0 && ldt.minute == 0) {
+        DateTimeFormatter.ofPattern("dd/MM", Locale("vi", "VN"))
+    } else {
+        DateTimeFormatter.ofPattern("dd/MM HH:mm", Locale("vi", "VN"))
+    }
+    return ldt.format(formatter)
 }

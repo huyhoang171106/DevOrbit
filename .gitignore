@@ -153,7 +153,7 @@ data_updated.sql
 migration_*.sql
 
 # Root-level artifacts
-devorbit/
+/devorbit/
 
 # Backup and temp files
 *_old

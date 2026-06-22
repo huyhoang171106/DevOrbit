@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import vn.edu.uit.devorbit.mobile.data.remote.dto.ApproveDeleteRequest
+import vn.edu.uit.devorbit.mobile.data.remote.dto.RespondInviteRequest
 import vn.edu.uit.devorbit.mobile.data.remote.dto.StudentNotificationResponse
 import vn.edu.uit.devorbit.mobile.network.ApiService
 import javax.inject.Inject
@@ -28,6 +30,9 @@ class NotificationViewModel @Inject constructor(
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
+
+    private val _actionLoadingId = MutableStateFlow<Long?>(null)
+    val actionLoadingId: StateFlow<Long?> = _actionLoadingId.asStateFlow()
 
     init {
         loadNotifications()
@@ -81,6 +86,54 @@ class NotificationViewModel @Inject constructor(
                 _unreadCount.value = 0
                 loadNotifications()
             } catch (_: Exception) { }
+        }
+    }
+
+    fun acceptInvite(notificationId: Long, planId: Long) {
+        viewModelScope.launch {
+            _actionLoadingId.value = notificationId
+            try {
+                apiService.respondInvite(planId, RespondInviteRequest("accept"))
+                markAsRead(notificationId)
+                loadNotifications()
+            } catch (_: Exception) { }
+            _actionLoadingId.value = null
+        }
+    }
+
+    fun declineInvite(notificationId: Long, planId: Long) {
+        viewModelScope.launch {
+            _actionLoadingId.value = notificationId
+            try {
+                apiService.respondInvite(planId, RespondInviteRequest("decline"))
+                markAsRead(notificationId)
+                loadNotifications()
+            } catch (_: Exception) { }
+            _actionLoadingId.value = null
+        }
+    }
+
+    fun approveDelete(notificationId: Long, taskId: Long) {
+        viewModelScope.launch {
+            _actionLoadingId.value = notificationId
+            try {
+                apiService.approveDeleteTask(taskId, ApproveDeleteRequest("approve"))
+                markAsRead(notificationId)
+                loadNotifications()
+            } catch (_: Exception) { }
+            _actionLoadingId.value = null
+        }
+    }
+
+    fun rejectDelete(notificationId: Long, taskId: Long) {
+        viewModelScope.launch {
+            _actionLoadingId.value = notificationId
+            try {
+                apiService.approveDeleteTask(taskId, ApproveDeleteRequest("reject"))
+                markAsRead(notificationId)
+                loadNotifications()
+            } catch (_: Exception) { }
+            _actionLoadingId.value = null
         }
     }
 }

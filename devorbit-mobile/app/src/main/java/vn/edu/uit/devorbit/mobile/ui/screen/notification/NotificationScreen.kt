@@ -14,12 +14,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import vn.edu.uit.devorbit.mobile.data.NotificationActionType
 import vn.edu.uit.devorbit.mobile.data.remote.dto.StudentNotificationResponse
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.NotificationViewModel
@@ -30,11 +32,13 @@ import java.util.Locale
 
 @Composable
 fun NotificationScreen(
+    onNavigateToGroupPlan: (Long) -> Unit = {},
     viewModel: NotificationViewModel = hiltViewModel()
 ) {
     val notifications by viewModel.notifications.collectAsStateWithLifecycle()
     val loading by viewModel.loading.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
+    val actionLoadingId by viewModel.actionLoadingId.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -100,9 +104,47 @@ fun NotificationScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(notifications, key = { it.id }) { notification ->
+                    val actionType = NotificationActionType.fromType(notification.type)
+                    val isActionLoading = actionLoadingId == notification.id
+
                     NotificationItem(
                         notification = notification,
-                        onClick = { viewModel.markAsRead(notification.id) }
+                        actionType = actionType,
+                        actionLoading = isActionLoading,
+                        onClick = {
+                            viewModel.markAsRead(notification.id)
+                            if (notification.groupPlanId != null && actionType in listOf(
+                                    NotificationActionType.GROUP_TASK_ADDED,
+                                    NotificationActionType.GROUP_PLAN_RESPONSE,
+                                    NotificationActionType.GROUP_TASK_DELETE_APPROVED,
+                                    NotificationActionType.OTHER
+                                )
+                            ) {
+                                onNavigateToGroupPlan(notification.groupPlanId)
+                            }
+                        },
+                        onAccept = {
+                            if (notification.groupPlanId != null) {
+                                viewModel.acceptInvite(notification.id, notification.groupPlanId)
+                            }
+                        },
+                        onDecline = {
+                            if (notification.groupPlanId != null) {
+                                viewModel.declineInvite(notification.id, notification.groupPlanId)
+                            }
+                        },
+                        onApprove = {
+                            val taskId = notification.body.split(":").lastOrNull()?.trim()?.toLongOrNull()
+                            if (taskId != null) {
+                                viewModel.approveDelete(notification.id, taskId)
+                            }
+                        },
+                        onReject = {
+                            val taskId = notification.body.split(":").lastOrNull()?.trim()?.toLongOrNull()
+                            if (taskId != null) {
+                                viewModel.rejectDelete(notification.id, taskId)
+                            }
+                        }
                     )
                 }
             }
@@ -113,12 +155,26 @@ fun NotificationScreen(
 @Composable
 private fun NotificationItem(
     notification: StudentNotificationResponse,
-    onClick: () -> Unit
+    actionType: NotificationActionType,
+    actionLoading: Boolean,
+    onClick: () -> Unit,
+    onAccept: () -> Unit,
+    onDecline: () -> Unit,
+    onApprove: () -> Unit,
+    onReject: () -> Unit
 ) {
+    val showActions = actionType in listOf(
+        NotificationActionType.GROUP_PLAN_INVITE,
+        NotificationActionType.GROUP_TASK_DELETE_REQUEST
+    ) && !notification.isRead
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .clickable(
+                enabled = !actionLoading && !showActions,
+                onClick = onClick
+            ),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (notification.isRead)
@@ -128,48 +184,119 @@ private fun NotificationItem(
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(14.dp),
-            verticalAlignment = Alignment.Top
+                .padding(14.dp)
         ) {
-            if (!notification.isRead) {
-                Icon(
-                    Icons.Rounded.Circle,
-                    contentDescription = null,
-                    tint = CosmicTheme.colors.plasma,
-                    modifier = Modifier
-                        .size(8.dp)
-                        .offset(y = 6.dp)
-                )
-                Spacer(modifier = Modifier.width(10.dp))
-            }
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = notification.title,
-                    color = CosmicTheme.colors.textPrimary,
-                    fontSize = 14.sp,
-                    fontWeight = if (notification.isRead) FontWeight.Normal else FontWeight.SemiBold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                if (notification.body.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(4.dp))
+            Row(verticalAlignment = Alignment.Top) {
+                if (!notification.isRead) {
+                    Icon(
+                        Icons.Rounded.Circle,
+                        contentDescription = null,
+                        tint = CosmicTheme.colors.plasma,
+                        modifier = Modifier
+                            .size(8.dp)
+                            .offset(y = 6.dp)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                }
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = notification.body,
-                        color = CosmicTheme.colors.textSecondary,
-                        fontSize = 13.sp,
+                        text = notification.title,
+                        color = CosmicTheme.colors.textPrimary,
+                        fontSize = 14.sp,
+                        fontWeight = if (notification.isRead) FontWeight.Normal else FontWeight.SemiBold,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
+                    if (notification.body.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = notification.body,
+                            color = CosmicTheme.colors.textSecondary,
+                            fontSize = 13.sp,
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = formatTime(notification.createdAt),
+                        color = CosmicTheme.colors.textTertiary,
+                        fontSize = 11.sp
+                    )
                 }
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = formatTime(notification.createdAt),
-                    color = CosmicTheme.colors.textTertiary,
-                    fontSize = 11.sp
-                )
+            }
+
+            // Action buttons for group plan notifications
+            if (showActions) {
+                Spacer(modifier = Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (actionLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp,
+                            color = CosmicTheme.colors.plasma
+                        )
+                    } else {
+                        if (actionType == NotificationActionType.GROUP_PLAN_INVITE) {
+                            TextButton(
+                                onClick = onDecline,
+                                colors = ButtonDefaults.textButtonColors(
+                                    contentColor = CosmicTheme.colors.textSecondary
+                                )
+                            ) {
+                                Text("Từ chối", fontSize = 13.sp)
+                            }
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Button(
+                                onClick = onAccept,
+                                shape = RoundedCornerShape(8.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = CosmicTheme.colors.aurora
+                                ),
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp)
+                            ) {
+                                Text(
+                                    "Chấp nhận",
+                                    color = Color.Black,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        } else if (actionType == NotificationActionType.GROUP_TASK_DELETE_REQUEST) {
+                            TextButton(
+                                onClick = onReject,
+                                colors = ButtonDefaults.textButtonColors(
+                                    contentColor = CosmicTheme.colors.textSecondary
+                                )
+                            ) {
+                                Text("Từ chối", fontSize = 13.sp)
+                            }
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Button(
+                                onClick = onApprove,
+                                shape = RoundedCornerShape(8.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = CosmicTheme.colors.supernova
+                                ),
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp)
+                            ) {
+                                Text(
+                                    "Phê duyệt",
+                                    color = Color.Black,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }

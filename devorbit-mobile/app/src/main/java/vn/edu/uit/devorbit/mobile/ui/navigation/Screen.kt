@@ -13,4 +13,8 @@ sealed class Screen(val route: String, val label: String, val icon: ImageVector)
     object Notifications : Screen("notifications", "Thông báo", Icons.Rounded.Notifications)
     object Profile : Screen("profile", "Cá nhân", Icons.Rounded.Person)
     object TaskManagement : Screen("tasks", "Nhiệm vụ", Icons.Rounded.CheckCircle)
+    object GroupPlanList : Screen("group_plans", "Kế hoạch nhóm", Icons.Rounded.Group)
+    data class GroupPlanDetail(val planId: Long) : Screen(
+        "group_plan_detail/$planId", "", Icons.Rounded.CheckCircle
+    )
 }

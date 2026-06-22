@@ -8,6 +8,7 @@ data class StudentNotificationResponse(
     val type: String,
     val repoId: Long?,
     val courseId: Long?,
+    val groupPlanId: Long?,
     val techStackName: String?,
     val isRead: Boolean,
     val createdAt: String,

@@ -32,6 +32,8 @@ import vn.edu.uit.devorbit.mobile.ui.screen.dashboard.TaskManagementScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.explore.ExploreScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.knowledge.KnowledgeGraphScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.notification.NotificationScreen
+import vn.edu.uit.devorbit.mobile.ui.screen.plan.GroupPlanDetailScreen
+import vn.edu.uit.devorbit.mobile.ui.screen.plan.GroupPlanListScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.plan.StudyPlannerScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.profile.ProfileScreen
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
@@ -151,12 +153,34 @@ fun MainScreen(
                             Screen.TaskManagement -> TaskManagementScreen(
                                 onNavigateBack = {
                                     currentScreen = Screen.Dashboard
+                                },
+                                onNavigateToGroupPlan = { planId ->
+                                    currentScreen = Screen.GroupPlanDetail(planId)
+                                }
+                            )
+                            is Screen.GroupPlanDetail -> GroupPlanDetailScreen(
+                                planId = screen.planId,
+                                onNavigateBack = {
+                                    currentScreen = Screen.TaskManagement
+                                }
+                            )
+                            Screen.GroupPlanList -> GroupPlanListScreen(
+                                onNavigateToPlan = { planId ->
+                                    currentScreen = Screen.GroupPlanDetail(planId)
+                                },
+                                onNavigateBack = {
+                                    currentScreen = Screen.Notifications
                                 }
                             )
                             Screen.Courses -> CourseHubScreen()
                             Screen.Knowledge -> KnowledgeTabView()
                             Screen.Explore -> ExploreScreen()
-                            Screen.Notifications -> NotificationScreen(viewModel = notificationVm)
+                            Screen.Notifications -> NotificationScreen(
+                                viewModel = notificationVm,
+                                onNavigateToGroupPlan = { planId ->
+                                    currentScreen = Screen.GroupPlanDetail(planId)
+                                }
+                            )
                             Screen.Plan -> PlanTabView()
                             Screen.Profile -> ProfileScreen()
                         }

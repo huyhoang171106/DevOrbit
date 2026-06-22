@@ -123,4 +123,47 @@ interface ApiService {
 
     @PUT("/api/student/notifications/read-all")
     suspend fun markAllNotificationsRead(): Map<String, Any>
+
+    // Group Plans
+    @POST("/api/student/group-plans")
+    suspend fun createGroupPlan(@Body request: CreateGroupPlanRequest): GroupPlanResponse
+
+    @GET("/api/student/group-plans")
+    suspend fun getMyGroupPlans(): List<GroupPlanResponse>
+
+    @GET("/api/student/group-plans/{id}")
+    suspend fun getGroupPlanDetail(@Path("id") id: Long): GroupPlanResponse
+
+    @DELETE("/api/student/group-plans/{id}")
+    suspend fun deleteGroupPlan(@Path("id") id: Long)
+
+    @POST("/api/student/group-plans/{id}/invite")
+    suspend fun inviteMember(@Path("id") planId: Long, @Body request: InviteMemberRequest)
+
+    @GET("/api/student/group-plans/{id}/members")
+    suspend fun getGroupPlanMembers(@Path("id") planId: Long): List<GroupPlanMemberResponse>
+
+    @POST("/api/student/group-plans/{id}/respond")
+    suspend fun respondInvite(@Path("id") planId: Long, @Body request: RespondInviteRequest)
+
+    @POST("/api/student/group-plans/{id}/leave")
+    suspend fun leavePlan(@Path("id") planId: Long)
+
+    @GET("/api/student/group-plans/{id}/tasks")
+    suspend fun getGroupTasks(@Path("id") planId: Long): List<GroupTaskResponse>
+
+    @POST("/api/student/group-plans/{id}/tasks")
+    suspend fun addGroupTask(@Path("id") planId: Long, @Body request: AddGroupTaskRequest): GroupTaskResponse
+
+    @PUT("/api/student/group-plans/tasks/{taskId}")
+    suspend fun updateGroupTask(
+        @Path("taskId") taskId: Long,
+        @Body request: UpdateGroupTaskRequest
+    ): GroupTaskResponse
+
+    @POST("/api/student/group-plans/tasks/{taskId}/request-delete")
+    suspend fun requestDeleteTask(@Path("taskId") taskId: Long)
+
+    @POST("/api/student/group-plans/tasks/{taskId}/approve-delete")
+    suspend fun approveDeleteTask(@Path("taskId") taskId: Long, @Body request: ApproveDeleteRequest)
 }

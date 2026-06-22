@@ -19,9 +19,8 @@ fun DevOrbitApp() {
 
     if (loginState.isLoggedIn) {
         val academicVm: AcademicViewModel = hiltViewModel()
-        val isBurnedOut = academicVm.burnout.value.riskLevel != vn.edu.uit.devorbit.mobile.domain.model.BurnoutRisk.NONE
 
-        DevOrbitTheme(isBurnedOut = isBurnedOut) {
+        DevOrbitTheme() {
             MainScreen(academicVm = academicVm)
         }
     } else {

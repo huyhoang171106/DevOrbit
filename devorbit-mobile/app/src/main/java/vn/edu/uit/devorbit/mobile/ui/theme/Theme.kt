@@ -32,21 +32,9 @@ private val GroundedColorScheme = darkColorScheme(
 
 @Composable
 fun DevOrbitTheme(
-    isBurnedOut: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colors = if (isBurnedOut) {
-        // Warm, muted tones for burnout: reduce amber intensity, soften contrast
-        LocalCosmicColors.current.copy(
-            plasma = Color(0xFFB8906A),       // muted warm brown
-            void = Color(0xFF14161C),          // slightly warmer base
-            nebula = Color(0xFF1A1D24),        // slightly warmer surface
-            textPrimary = Color(0xFFD0D4DA),   // reduced contrast
-            supernova = Color(0xFFB87070)      // softer red
-        )
-    } else {
-        LocalCosmicColors.current
-    }
+    val colors = LocalCosmicColors.current
 
     val view = LocalView.current
     if (!view.isInEditMode) {

@@ -16,8 +16,11 @@ import vn.edu.uit.devorbit.mobile.data.local.entity.TechStackEntity
 import vn.edu.uit.devorbit.mobile.data.repository.AcademicRepository
 import vn.edu.uit.devorbit.mobile.data.datastore.SettingsDataStore
 import vn.edu.uit.devorbit.mobile.network.ApiService
-import java.text.SimpleDateFormat
-import java.util.*
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import javax.inject.Inject
 
 data class DashboardUiState(
@@ -60,24 +63,16 @@ class DashboardViewModel @Inject constructor(
     private val _state = MutableStateFlow(DashboardUiState())
     val state: StateFlow<DashboardUiState> = _state.asStateFlow()
 
-    private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale("vi", "VN"))
-    private val displayDateFormat = SimpleDateFormat("EEEE, dd/MM", Locale("vi", "VN"))
+    private val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    private val displayDateFormat = DateTimeFormatter.ofPattern("EEEE, dd/MM", Locale("vi", "VN"))
 
-    private val minDate: Calendar = Calendar.getInstance().apply {
-        set(2026, Calendar.JUNE, 8, 0, 0, 0)
-        set(Calendar.MILLISECOND, 0)
-    }
+    private val minDate: LocalDate = LocalDate.of(2026, 6, 8)
 
     private fun computeMaxWeekOffset(): Int {
-        val now = Calendar.getInstance()
-        now.set(Calendar.DAY_OF_WEEK, now.firstDayOfWeek)
-        now.set(Calendar.HOUR_OF_DAY, 0)
-        now.set(Calendar.MINUTE, 0)
-        now.set(Calendar.SECOND, 0)
-        now.set(Calendar.MILLISECOND, 0)
-        val diff = now.timeInMillis - minDate.timeInMillis
+        val now = LocalDate.now().with(DayOfWeek.MONDAY)
+        val diff = now.toEpochDay() - minDate.toEpochDay()
         if (diff < 0) return 0
-        return (diff / (7L * 24 * 60 * 60 * 1000)).toInt()
+        return (diff / 7).toInt()
     }
 
     private var currentStudentCode: String = ""
@@ -87,7 +82,6 @@ class DashboardViewModel @Inject constructor(
         observeSemesterCourses()
         observeTasks()
         observeTechStacks()
-        loadWeekDays()
         loadAllTechStacks()
         startStudyTimer()
     }
@@ -108,6 +102,8 @@ class DashboardViewModel @Inject constructor(
                 val c = code.orEmpty()
                 if (c.isNotBlank()) {
                     currentStudentCode = c
+                    val streak = settingsDataStore.getStreakCount(c)
+                    _state.update { it.copy(streakCount = streak) }
                     launch {
                         loadWeekDays()
                         loadTodayStudyMinutes()
@@ -118,22 +114,23 @@ class DashboardViewModel @Inject constructor(
     }
 
     private suspend fun loadTodayStudyMinutes() {
-        val today = dateFormat.format(Date())
+        val today = LocalDate.now().format(dateFormat)
         val activity = dailyActivityDao.getActivity(currentStudentCode, today)
         val hours = (activity?.studyMinutes ?: 0) / 60
         _state.update { it.copy(studyHoursToday = hours) }
     }
 
     private fun updateGreeting(name: String) {
-        val calendar = Calendar.getInstance()
-        val hour = calendar.get(Calendar.HOUR_OF_DAY)
+        val now = LocalTime.now()
+        val today = LocalDate.now()
+        val hour = now.hour
         val greeting = when (hour) {
             in 5..11 -> "Chào buổi sáng"
             in 12..17 -> "Chào buổi chiều"
             else -> "Chào buổi tối"
         }
         val displayName = name.ifBlank { "bạn" }
-        val dateText = displayDateFormat.format(calendar.time)
+        val dateText = today.format(displayDateFormat)
             .replaceFirstChar { it.uppercase() }
         _state.update { it.copy(
             studentName = name,
@@ -188,6 +185,12 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
+    fun refreshDate() {
+        val name = _state.value.studentName
+        updateGreeting(name)
+        loadWeekDays()
+    }
+
     fun addTechStack(name: String) {
         viewModelScope.launch {
             if (!techStackDao.isTechStackAdded(name)) {
@@ -233,7 +236,7 @@ class DashboardViewModel @Inject constructor(
     fun addReposViewed(count: Int = 1) {
         viewModelScope.launch {
             if (currentStudentCode.isBlank()) return@launch
-            val today = dateFormat.format(Date())
+            val today = LocalDate.now().format(dateFormat)
             val existing = dailyActivityDao.getActivity(currentStudentCode, today)
             val current = existing?.reposViewed ?: 0
             dailyActivityDao.upsertActivity(DailyActivityEntity(
@@ -251,7 +254,7 @@ class DashboardViewModel @Inject constructor(
     fun recordTaskProgress(completedCount: Int, totalCount: Int) {
         viewModelScope.launch {
             if (currentStudentCode.isBlank()) return@launch
-            val today = dateFormat.format(Date())
+            val today = LocalDate.now().format(dateFormat)
             val existing = dailyActivityDao.getActivity(currentStudentCode, today)
             dailyActivityDao.upsertActivity(DailyActivityEntity(
                 studentCode = currentStudentCode,
@@ -266,10 +269,8 @@ class DashboardViewModel @Inject constructor(
 
     private suspend fun checkStreak() {
         if (currentStudentCode.isBlank()) return
-        val today = dateFormat.format(Date())
-        val calendar = Calendar.getInstance()
-        calendar.add(Calendar.DAY_OF_YEAR, -1)
-        val yesterday = dateFormat.format(calendar.time)
+        val today = LocalDate.now().format(dateFormat)
+        val yesterday = LocalDate.now().minusDays(1).format(dateFormat)
 
         val yesterdayActivity = dailyActivityDao.getActivity(currentStudentCode, yesterday)
         val yesterdayRepos = yesterdayActivity?.reposViewed ?: 0
@@ -293,25 +294,21 @@ class DashboardViewModel @Inject constructor(
         viewModelScope.launch {
             val offset = _state.value.currentWeekOffset
             val maxOffset = computeMaxWeekOffset()
-            val calendar = Calendar.getInstance()
-            calendar.add(Calendar.WEEK_OF_YEAR, -offset)
-            val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
-            calendar.add(Calendar.DAY_OF_YEAR, -(dayOfWeek - Calendar.MONDAY + 7) % 7)
+            var date = LocalDate.now().minusWeeks(offset.toLong()).with(DayOfWeek.MONDAY)
 
             val days = mutableListOf<WeekDay>()
-            val todayStr = dateFormat.format(Date())
+            val todayStr = LocalDate.now().format(dateFormat)
 
             for (i in 0..6) {
-                val dateStr = dateFormat.format(calendar.time)
-                val dayLabel = when (calendar.get(Calendar.DAY_OF_WEEK)) {
-                    Calendar.MONDAY -> "T2"
-                    Calendar.TUESDAY -> "T3"
-                    Calendar.WEDNESDAY -> "T4"
-                    Calendar.THURSDAY -> "T5"
-                    Calendar.FRIDAY -> "T6"
-                    Calendar.SATURDAY -> "T7"
-                    Calendar.SUNDAY -> "CN"
-                    else -> ""
+                val dateStr = date.format(dateFormat)
+                val dayLabel = when (date.dayOfWeek) {
+                    DayOfWeek.MONDAY -> "T2"
+                    DayOfWeek.TUESDAY -> "T3"
+                    DayOfWeek.WEDNESDAY -> "T4"
+                    DayOfWeek.THURSDAY -> "T5"
+                    DayOfWeek.FRIDAY -> "T6"
+                    DayOfWeek.SATURDAY -> "T7"
+                    DayOfWeek.SUNDAY -> "CN"
                 }
                 val activity = if (currentStudentCode.isNotBlank()) {
                     dailyActivityDao.getActivity(currentStudentCode, dateStr)
@@ -323,7 +320,7 @@ class DashboardViewModel @Inject constructor(
                     isToday = dateStr == todayStr,
                     qualifiesForStreak = activity != null && activity.reposViewed >= 3
                 ))
-                calendar.add(Calendar.DAY_OF_YEAR, 1)
+                date = date.plusDays(1)
             }
             _state.update { it.copy(weekDates = days, maxWeekOffset = maxOffset) }
         }
@@ -337,7 +334,7 @@ class DashboardViewModel @Inject constructor(
             while (true) {
                 kotlinx.coroutines.delay(60_000)
                 if (currentStudentCode.isNotBlank()) {
-                    val today = dateFormat.format(Date())
+                    val today = LocalDate.now().format(dateFormat)
                     val existing = dailyActivityDao.getActivity(currentStudentCode, today)
                     dailyActivityDao.upsertActivity(DailyActivityEntity(
                         studentCode = currentStudentCode,

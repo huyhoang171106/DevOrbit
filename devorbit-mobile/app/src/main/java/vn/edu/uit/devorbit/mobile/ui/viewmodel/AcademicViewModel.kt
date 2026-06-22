@@ -29,17 +29,7 @@ class AcademicViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // ─── Derived UI State (Reactive) ───
-    val academicHealth = combine(courses, tasks) { _, _ ->
-        // Simplified for now, will implement full engine logic later
-        AcademicHealth(0.85, emptyList())
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AcademicHealth(1.0, emptyList()))
-
-    val recommendations = MutableStateFlow<List<StudyRecommendation>>(emptyList())
-    
     val nextAction = MutableStateFlow<BreakdownStep?>(null)
-    
-    private val _burnout = mutableStateOf(BurnoutStatus(BurnoutRisk.NONE, emptyList()))
-    val burnout: State<BurnoutStatus> = _burnout
 
     private val _focusTask = mutableStateOf<TaskEntity?>(null)
     val focusTask: State<TaskEntity?> = _focusTask

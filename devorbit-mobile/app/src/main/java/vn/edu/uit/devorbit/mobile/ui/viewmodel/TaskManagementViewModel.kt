@@ -21,6 +21,8 @@ data class TaskManagementUiState(
     val tasks: List<TaskEntity> = emptyList(),
     val filter: TaskFilter = TaskFilter.TODAY,
     val searchQuery: String = "",
+    val isEditing: Boolean = false,
+    val editingTaskId: Long? = null,
     val inputTitle: String = "",
     val inputDescription: String = "",
     val inputDeadline: Long? = null,
@@ -82,7 +84,19 @@ class TaskManagementViewModel @Inject constructor(
     }
 
     fun resetInput() {
-        _state.update { it.copy(inputTitle = "", inputDescription = "", inputDeadline = null, inputRecurrence = null, inputRecurrenceDays = null) }
+        _state.update { it.copy(inputTitle = "", inputDescription = "", inputDeadline = null, inputRecurrence = null, inputRecurrenceDays = null, isEditing = false, editingTaskId = null) }
+    }
+
+    fun startEdit(task: TaskEntity) {
+        _state.update { it.copy(
+            isEditing = true,
+            editingTaskId = task.id,
+            inputTitle = task.title,
+            inputDescription = task.description,
+            inputDeadline = task.deadline,
+            inputRecurrence = task.recurrence,
+            inputRecurrenceDays = task.recurrenceDaysOfWeek
+        ) }
     }
 
     fun updateTitle(title: String) {
@@ -141,20 +155,35 @@ class TaskManagementViewModel @Inject constructor(
         _state.update { it.copy(inputRecurrenceDays = if (updated != 0) updated else null) }
     }
 
-    fun addTask() {
-        val title = _state.value.inputTitle.trim()
+    fun saveTask() {
+        val s = _state.value
+        val title = s.inputTitle.trim()
         if (title.isBlank()) return
         viewModelScope.launch {
-            val task = TaskEntity(
-                title = title,
-                description = _state.value.inputDescription,
-                deadline = _state.value.inputDeadline,
-                taskType = "general",
-                recurrence = _state.value.inputRecurrence,
-                recurrenceDaysOfWeek = _state.value.inputRecurrenceDays
-            )
+            val task = if (s.isEditing && s.editingTaskId != null) {
+                TaskEntity(
+                    id = s.editingTaskId,
+                    title = title,
+                    description = s.inputDescription,
+                    deadline = s.inputDeadline,
+                    taskType = "general",
+                    recurrence = s.inputRecurrence,
+                    recurrenceDaysOfWeek = s.inputRecurrenceDays,
+                    completed = _state.value.tasks.find { it.id == s.editingTaskId }?.completed ?: false,
+                    createdAt = _state.value.tasks.find { it.id == s.editingTaskId }?.createdAt ?: System.currentTimeMillis()
+                )
+            } else {
+                TaskEntity(
+                    title = title,
+                    description = s.inputDescription,
+                    deadline = s.inputDeadline,
+                    taskType = "general",
+                    recurrence = s.inputRecurrence,
+                    recurrenceDaysOfWeek = s.inputRecurrenceDays
+                )
+            }
             academicRepository.saveTask(task)
-            _state.update { it.copy(inputTitle = "", inputDescription = "", inputDeadline = null, inputRecurrence = null, inputRecurrenceDays = null) }
+            _state.update { it.copy(inputTitle = "", inputDescription = "", inputDeadline = null, inputRecurrence = null, inputRecurrenceDays = null, isEditing = false, editingTaskId = null) }
         }
     }
 
@@ -178,6 +207,13 @@ class TaskManagementViewModel @Inject constructor(
             } else {
                 academicRepository.setTaskCompleted(taskId, false)
             }
+        }
+    }
+
+    fun deleteTask(taskId: Long) {
+        viewModelScope.launch {
+            val task = _state.value.tasks.find { it.id == taskId } ?: return@launch
+            academicRepository.deleteTask(task)
         }
     }
 

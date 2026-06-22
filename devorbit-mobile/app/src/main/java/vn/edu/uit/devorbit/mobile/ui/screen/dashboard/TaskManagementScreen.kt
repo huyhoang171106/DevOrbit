@@ -201,7 +201,11 @@ fun TaskManagementScreen(
                         items(state.tasks, key = { it.id }) { task ->
                             TaskItem(
                                 task = task,
-                                onToggle = { viewModel.toggleTask(task.id, !task.completed) }
+                                onToggle = { viewModel.toggleTask(task.id, !task.completed) },
+                                onEdit = {
+                                    viewModel.startEdit(task)
+                                    showAddTaskModal = true
+                                }
                             )
                         }
                     }
@@ -225,9 +229,10 @@ fun TaskManagementScreen(
         }
     }
 
-    // ── Add Task Modal ──
-    if (showAddTaskModal) {
+    // ── Add/Edit Task Modal ──
+    if (showAddTaskModal || state.isEditing) {
         AddTaskModal(
+            isEditing = state.isEditing,
             title = state.inputTitle,
             onTitleChange = { viewModel.updateTitle(it) },
             description = state.inputDescription,
@@ -245,10 +250,20 @@ fun TaskManagementScreen(
             recurrenceDays = state.inputRecurrenceDays,
             onRecurrenceDayToggle = { viewModel.toggleRecurrenceDay(it) },
             onConfirm = {
-                viewModel.addTask()
+                viewModel.saveTask()
                 showAddTaskModal = false
             },
-            onDismiss = { showAddTaskModal = false }
+            onDelete = state.isEditing.takeIf { it }?.let {
+                {
+                    state.editingTaskId?.let { viewModel.deleteTask(it) }
+                    viewModel.resetInput()
+                    showAddTaskModal = false
+                }
+            },
+            onDismiss = {
+                viewModel.resetInput()
+                showAddTaskModal = false
+            }
         )
     }
 }
@@ -389,6 +404,7 @@ private fun RecurrenceDropdown(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AddTaskModal(
+    isEditing: Boolean,
     title: String,
     onTitleChange: (String) -> Unit,
     description: String,
@@ -406,6 +422,7 @@ private fun AddTaskModal(
     recurrenceDays: Int?,
     onRecurrenceDayToggle: (DayOfWeek) -> Unit,
     onConfirm: () -> Unit,
+    onDelete: (() -> Unit)? = null,
     onDismiss: () -> Unit
 ) {
     val datePickerState = rememberDatePickerState(
@@ -417,6 +434,8 @@ private fun AddTaskModal(
         initialMinute = 0,
         is24Hour = true
     )
+
+    var showDeleteConfirm by remember { mutableStateOf(false) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -430,7 +449,7 @@ private fun AddTaskModal(
                 .padding(bottom = 32.dp)
         ) {
             Text(
-                text = "Thêm nhiệm vụ",
+                text = if (isEditing) "Chỉnh sửa nhiệm vụ" else "Thêm nhiệm vụ",
                 color = CosmicTheme.colors.textPrimary,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
@@ -514,6 +533,16 @@ private fun AddTaskModal(
 
             Spacer(modifier = Modifier.height(20.dp))
 
+            if (isEditing && onDelete != null) {
+                TextButton(
+                    onClick = { showDeleteConfirm = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Xoá nhiệm vụ", color = CosmicTheme.colors.supernova, fontWeight = FontWeight.SemiBold)
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
             Button(
                 onClick = onConfirm,
                 enabled = title.isNotBlank(),
@@ -524,9 +553,31 @@ private fun AddTaskModal(
                     disabledContainerColor = CosmicTheme.colors.plasma.copy(alpha = 0.3f)
                 )
             ) {
-                Text("Thêm", color = Color.Black, fontWeight = FontWeight.SemiBold)
+                Text(if (isEditing) "Lưu" else "Thêm", color = Color.Black, fontWeight = FontWeight.SemiBold)
             }
         }
+    }
+
+    if (showDeleteConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title = { Text("Xoá nhiệm vụ", color = CosmicTheme.colors.textPrimary) },
+            text = { Text("Bạn có chắc muốn xoá nhiệm vụ này?", color = CosmicTheme.colors.textSecondary) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteConfirm = false
+                    onDelete?.invoke()
+                }) {
+                    Text("Xoá", color = CosmicTheme.colors.supernova)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirm = false }) {
+                    Text("Huỷ", color = CosmicTheme.colors.textSecondary)
+                }
+            },
+            containerColor = CosmicTheme.colors.nebula
+        )
     }
 
     if (showDatePicker) {
@@ -664,7 +715,8 @@ private fun FilterTabs(
 @Composable
 private fun TaskItem(
     task: TaskEntity,
-    onToggle: () -> Unit
+    onToggle: () -> Unit,
+    onEdit: () -> Unit
 ) {
     val bgColor = if (task.completed)
         Color(0xFF2E7D32).copy(alpha = 0.08f)
@@ -683,15 +735,14 @@ private fun TaskItem(
         border = androidx.compose.foundation.BorderStroke(1.dp, borderColor)
     ) {
         Row(
-            modifier = Modifier
-                .clickable(onClick = onToggle)
-                .padding(horizontal = 16.dp, vertical = 14.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
                     .size(22.dp)
                     .clip(CircleShape)
+                    .clickable(onClick = onToggle)
                     .background(
                         if (task.completed) Color(0xFF2E7D32) else Color.Transparent,
                         CircleShape
@@ -713,7 +764,9 @@ private fun TaskItem(
                 }
             }
             Spacer(modifier = Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier.weight(1f).clickable(onClick = onEdit)
+            ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = task.title,

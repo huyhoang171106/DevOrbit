@@ -238,7 +238,7 @@ fun TaskManagementScreen(
             description = state.inputDescription,
             onDescriptionChange = { viewModel.updateDescription(it) },
             deadline = state.inputDeadline,
-            onDeadlineClick = { viewModel.showDatePicker() },
+            onDeadlineClick = if (state.inputRecurrence != null) { { viewModel.showTimePicker() } } else { { viewModel.showDatePicker() } },
             showDatePicker = state.showDatePicker,
             onDateSelected = { viewModel.updateDeadline(it) },
             onDismissDatePicker = { viewModel.hideDatePicker() },
@@ -249,6 +249,16 @@ fun TaskManagementScreen(
             onRecurrenceChange = { viewModel.updateRecurrence(it) },
             recurrenceDays = state.inputRecurrenceDays,
             onRecurrenceDayToggle = { viewModel.toggleRecurrenceDay(it) },
+            recurrenceStartDate = state.inputRecurrenceStartDate,
+            onRecurrenceStartDateClick = { viewModel.showRecurrenceStartPicker() },
+            showRecurrenceStartPicker = state.showRecurrenceStartPicker,
+            onRecurrenceStartDateSelected = { viewModel.updateRecurrenceStartDate(it) },
+            onDismissRecurrenceStartPicker = { viewModel.hideRecurrenceStartPicker() },
+            recurrenceEndDate = state.inputRecurrenceEndDate,
+            onRecurrenceEndDateClick = { viewModel.showRecurrenceEndPicker() },
+            showRecurrenceEndPicker = state.showRecurrenceEndPicker,
+            onRecurrenceEndDateSelected = { viewModel.updateRecurrenceEndDate(it) },
+            onDismissRecurrenceEndPicker = { viewModel.hideRecurrenceEndPicker() },
             onConfirm = {
                 viewModel.saveTask()
                 showAddTaskModal = false
@@ -378,8 +388,7 @@ private fun RecurrenceDropdown(
                             Checkbox(
                                 checked = isSelected,
                                 onCheckedChange = {
-                                    onDayToggle(day)
-                                    expanded = false
+                                    if (!isDayDisabled) onDayToggle(day)
                                 },
                                 enabled = !isDayDisabled,
                                 colors = CheckboxDefaults.colors(checkedColor = CosmicTheme.colors.plasma)
@@ -389,10 +398,7 @@ private fun RecurrenceDropdown(
                         }
                     },
                     onClick = {
-                        if (!isDayDisabled) {
-                            onDayToggle(day)
-                            expanded = false
-                        }
+                        if (!isDayDisabled) onDayToggle(day)
                     },
                     enabled = !isDayDisabled
                 )
@@ -418,6 +424,16 @@ private fun AddTaskModal(
     onTimeSelected: (Int, Int) -> Unit,
     onDismissTimePicker: () -> Unit,
     recurrence: String?,
+    recurrenceStartDate: Long?,
+    onRecurrenceStartDateClick: () -> Unit,
+    showRecurrenceStartPicker: Boolean,
+    onRecurrenceStartDateSelected: (Long?) -> Unit,
+    onDismissRecurrenceStartPicker: () -> Unit,
+    recurrenceEndDate: Long?,
+    onRecurrenceEndDateClick: () -> Unit,
+    showRecurrenceEndPicker: Boolean,
+    onRecurrenceEndDateSelected: (Long?) -> Unit,
+    onDismissRecurrenceEndPicker: () -> Unit,
     onRecurrenceChange: (String?) -> Unit,
     recurrenceDays: Int?,
     onRecurrenceDayToggle: (DayOfWeek) -> Unit,
@@ -427,6 +443,14 @@ private fun AddTaskModal(
 ) {
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = deadline ?: System.currentTimeMillis()
+    )
+
+    val startDatePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = recurrenceStartDate ?: System.currentTimeMillis()
+    )
+
+    val endDatePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = recurrenceEndDate ?: System.currentTimeMillis()
     )
 
     val timePickerState = rememberTimePickerState(
@@ -493,43 +517,137 @@ private fun AddTaskModal(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // ── Deadline picker ──
-            OutlinedCard(
-                onClick = onDeadlineClick,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.outlinedCardColors(
-                    containerColor = Color.White.copy(alpha = 0.03f)
-                ),
-                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Icon(
-                        Icons.Default.DateRange,
-                        contentDescription = null,
-                        tint = CosmicTheme.colors.textSecondary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Text(
-                        text = if (deadline != null) formatDeadline(deadline) else "Chọn deadline",
-                        style = CosmicTheme.typography.body,
-                        color = if (deadline != null) CosmicTheme.colors.textPrimary else CosmicTheme.colors.textTertiary
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
+            // ── Recurrence Dropdown ──
             RecurrenceDropdown(
                 recurrence = recurrence,
                 recurrenceDays = recurrenceDays,
                 onRecurrenceChange = onRecurrenceChange,
                 onDayToggle = onRecurrenceDayToggle
             )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            if (recurrence == null) {
+                // ── Deadline (date + time) ──
+                OutlinedCard(
+                    onClick = onDeadlineClick,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.outlinedCardColors(
+                        containerColor = Color.White.copy(alpha = 0.03f)
+                    ),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.DateRange,
+                            contentDescription = null,
+                            tint = CosmicTheme.colors.textSecondary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Text(
+                            text = if (deadline != null) formatDeadline(deadline) else "Chọn deadline",
+                            style = CosmicTheme.typography.body,
+                            color = if (deadline != null) CosmicTheme.colors.textPrimary else CosmicTheme.colors.textTertiary
+                        )
+                    }
+                }
+            } else {
+                // ── Time only (for recurring tasks) ──
+                OutlinedCard(
+                    onClick = onDeadlineClick,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.outlinedCardColors(
+                        containerColor = Color.White.copy(alpha = 0.03f)
+                    ),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.DateRange,
+                            contentDescription = null,
+                            tint = CosmicTheme.colors.textSecondary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Text(
+                            text = if (deadline != null) formatTime(deadline) else "Chọn giờ",
+                            style = CosmicTheme.typography.body,
+                            color = if (deadline != null) CosmicTheme.colors.textPrimary else CosmicTheme.colors.textTertiary
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // ── Start date ──
+                OutlinedCard(
+                    onClick = onRecurrenceStartDateClick,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.outlinedCardColors(
+                        containerColor = Color.White.copy(alpha = 0.03f)
+                    ),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.DateRange,
+                            contentDescription = null,
+                            tint = CosmicTheme.colors.textSecondary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Text(
+                            text = if (recurrenceStartDate != null) formatDate(recurrenceStartDate) else "Ngày bắt đầu",
+                            style = CosmicTheme.typography.body,
+                            color = if (recurrenceStartDate != null) CosmicTheme.colors.textPrimary else CosmicTheme.colors.textTertiary
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // ── End date ──
+                OutlinedCard(
+                    onClick = onRecurrenceEndDateClick,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.outlinedCardColors(
+                        containerColor = Color.White.copy(alpha = 0.03f)
+                    ),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.DateRange,
+                            contentDescription = null,
+                            tint = CosmicTheme.colors.textSecondary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Text(
+                            text = if (recurrenceEndDate != null) formatDate(recurrenceEndDate) else "Ngày kết thúc",
+                            style = CosmicTheme.typography.body,
+                            color = if (recurrenceEndDate != null) CosmicTheme.colors.textPrimary else CosmicTheme.colors.textTertiary
+                        )
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -652,6 +770,84 @@ private fun AddTaskModal(
             },
             containerColor = CosmicTheme.colors.nebula
         )
+    }
+
+    if (showRecurrenceStartPicker) {
+        DatePickerDialog(
+            onDismissRequest = onDismissRecurrenceStartPicker,
+            confirmButton = {
+                TextButton(onClick = {
+                    onRecurrenceStartDateSelected(startDatePickerState.selectedDateMillis)
+                    onDismissRecurrenceStartPicker()
+                }) {
+                    Text("Chọn", color = CosmicTheme.colors.plasma)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    onRecurrenceStartDateSelected(null)
+                    onDismissRecurrenceStartPicker()
+                }) {
+                    Text("Bỏ", color = CosmicTheme.colors.textSecondary)
+                }
+            },
+            colors = DatePickerDefaults.colors(
+                containerColor = CosmicTheme.colors.nebula,
+                titleContentColor = CosmicTheme.colors.textPrimary,
+                headlineContentColor = CosmicTheme.colors.textPrimary,
+                weekdayContentColor = CosmicTheme.colors.textSecondary,
+                subheadContentColor = CosmicTheme.colors.textSecondary,
+                yearContentColor = CosmicTheme.colors.textPrimary,
+                currentYearContentColor = CosmicTheme.colors.plasma,
+                selectedYearContentColor = Color.White,
+                dayContentColor = CosmicTheme.colors.textPrimary,
+                selectedDayContentColor = Color.White,
+                selectedDayContainerColor = CosmicTheme.colors.plasma,
+                todayContentColor = CosmicTheme.colors.plasma,
+                todayDateBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f)
+            )
+        ) {
+            DatePicker(state = startDatePickerState)
+        }
+    }
+
+    if (showRecurrenceEndPicker) {
+        DatePickerDialog(
+            onDismissRequest = onDismissRecurrenceEndPicker,
+            confirmButton = {
+                TextButton(onClick = {
+                    onRecurrenceEndDateSelected(endDatePickerState.selectedDateMillis)
+                    onDismissRecurrenceEndPicker()
+                }) {
+                    Text("Chọn", color = CosmicTheme.colors.plasma)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    onRecurrenceEndDateSelected(null)
+                    onDismissRecurrenceEndPicker()
+                }) {
+                    Text("Bỏ", color = CosmicTheme.colors.textSecondary)
+                }
+            },
+            colors = DatePickerDefaults.colors(
+                containerColor = CosmicTheme.colors.nebula,
+                titleContentColor = CosmicTheme.colors.textPrimary,
+                headlineContentColor = CosmicTheme.colors.textPrimary,
+                weekdayContentColor = CosmicTheme.colors.textSecondary,
+                subheadContentColor = CosmicTheme.colors.textSecondary,
+                yearContentColor = CosmicTheme.colors.textPrimary,
+                currentYearContentColor = CosmicTheme.colors.plasma,
+                selectedYearContentColor = Color.White,
+                dayContentColor = CosmicTheme.colors.textPrimary,
+                selectedDayContentColor = Color.White,
+                selectedDayContainerColor = CosmicTheme.colors.plasma,
+                todayContentColor = CosmicTheme.colors.plasma,
+                todayDateBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f)
+            )
+        ) {
+            DatePicker(state = endDatePickerState)
+        }
     }
 }
 
@@ -804,4 +1000,14 @@ private fun formatDeadline(millis: Long): String {
         DateTimeFormatter.ofPattern("dd/MM HH:mm", Locale("vi", "VN"))
     }
     return ldt.format(formatter)
+}
+
+private fun formatTime(millis: Long): String {
+    val lt = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalTime()
+    return lt.format(DateTimeFormatter.ofPattern("HH:mm", Locale("vi", "VN")))
+}
+
+private fun formatDate(millis: Long): String {
+    val ld = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate()
+    return ld.format(DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale("vi", "VN")))
 }

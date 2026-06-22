@@ -10,12 +10,15 @@ import vn.edu.uit.devorbit.mobile.data.local.entity.TaskEntity
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CreateGroupPlanRequest
 import vn.edu.uit.devorbit.mobile.data.repository.AcademicRepository
 import vn.edu.uit.devorbit.mobile.network.ApiService
+import android.util.Log
+import java.io.IOException
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import javax.inject.Inject
+import retrofit2.HttpException
 
 data class TaskManagementUiState(
     val tasks: List<TaskEntity> = emptyList(),
@@ -30,6 +33,10 @@ data class TaskManagementUiState(
     val showTimePicker: Boolean = false,
     val inputRecurrence: String? = null,
     val inputRecurrenceDays: Int? = null,
+    val inputRecurrenceStartDate: Long? = null,
+    val inputRecurrenceEndDate: Long? = null,
+    val showRecurrenceStartPicker: Boolean = false,
+    val showRecurrenceEndPicker: Boolean = false,
     val creatingPlan: Boolean = false,
     val planTitle: String = "",
     val showCreatePlanDialog: Boolean = false,
@@ -84,7 +91,7 @@ class TaskManagementViewModel @Inject constructor(
     }
 
     fun resetInput() {
-        _state.update { it.copy(inputTitle = "", inputDescription = "", inputDeadline = null, inputRecurrence = null, inputRecurrenceDays = null, isEditing = false, editingTaskId = null) }
+        _state.update { it.copy(inputTitle = "", inputDescription = "", inputDeadline = null, inputRecurrence = null, inputRecurrenceDays = null, inputRecurrenceStartDate = null, inputRecurrenceEndDate = null, showRecurrenceStartPicker = false, showRecurrenceEndPicker = false, isEditing = false, editingTaskId = null) }
     }
 
     fun startEdit(task: TaskEntity) {
@@ -95,7 +102,9 @@ class TaskManagementViewModel @Inject constructor(
             inputDescription = task.description,
             inputDeadline = task.deadline,
             inputRecurrence = task.recurrence,
-            inputRecurrenceDays = task.recurrenceDaysOfWeek
+            inputRecurrenceDays = task.recurrenceDaysOfWeek,
+            inputRecurrenceStartDate = task.recurrenceStartDate,
+            inputRecurrenceEndDate = task.recurrenceEndDate
         ) }
     }
 
@@ -128,11 +137,17 @@ class TaskManagementViewModel @Inject constructor(
     }
 
     fun updateTime(hour: Int, minute: Int) {
-        val dateMillis = _state.value.inputDeadline ?: return
-        val date = Instant.ofEpochMilli(dateMillis).atZone(ZoneId.systemDefault()).toLocalDate()
-        val dateTime = date.atTime(hour, minute)
-        val combined = dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-        _state.update { it.copy(inputDeadline = combined, showTimePicker = false) }
+        val s = _state.value
+        if (s.inputRecurrence != null) {
+            val today = LocalDate.now()
+            val millis = today.atTime(hour, minute).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            _state.update { it.copy(inputDeadline = millis, showTimePicker = false) }
+        } else {
+            val dateMillis = s.inputDeadline ?: return
+            val date = Instant.ofEpochMilli(dateMillis).atZone(ZoneId.systemDefault()).toLocalDate()
+            val combined = date.atTime(hour, minute).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            _state.update { it.copy(inputDeadline = combined, showTimePicker = false) }
+        }
     }
 
     fun updateRecurrence(recurrence: String?) {
@@ -148,6 +163,30 @@ class TaskManagementViewModel @Inject constructor(
         }
     }
 
+    fun showRecurrenceStartPicker() {
+        _state.update { it.copy(showRecurrenceStartPicker = true) }
+    }
+
+    fun hideRecurrenceStartPicker() {
+        _state.update { it.copy(showRecurrenceStartPicker = false) }
+    }
+
+    fun updateRecurrenceStartDate(millis: Long?) {
+        _state.update { it.copy(inputRecurrenceStartDate = millis, showRecurrenceStartPicker = false) }
+    }
+
+    fun showRecurrenceEndPicker() {
+        _state.update { it.copy(showRecurrenceEndPicker = true) }
+    }
+
+    fun hideRecurrenceEndPicker() {
+        _state.update { it.copy(showRecurrenceEndPicker = false) }
+    }
+
+    fun updateRecurrenceEndDate(millis: Long?) {
+        _state.update { it.copy(inputRecurrenceEndDate = millis, showRecurrenceEndPicker = false) }
+    }
+
     fun toggleRecurrenceDay(dayOfWeek: DayOfWeek) {
         val bit = 1 shl (dayOfWeek.value - 1)
         val current = _state.value.inputRecurrenceDays ?: 0
@@ -160,15 +199,28 @@ class TaskManagementViewModel @Inject constructor(
         val title = s.inputTitle.trim()
         if (title.isBlank()) return
         viewModelScope.launch {
+            val deadline = if (s.inputRecurrence != null) {
+                val startDate = s.inputRecurrenceStartDate?.let {
+                    Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate()
+                } ?: LocalDate.now()
+                val time = s.inputDeadline?.let {
+                    Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalTime()
+                } ?: LocalTime.now()
+                startDate.atTime(time).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            } else {
+                s.inputDeadline
+            }
             val task = if (s.isEditing && s.editingTaskId != null) {
                 TaskEntity(
                     id = s.editingTaskId,
                     title = title,
                     description = s.inputDescription,
-                    deadline = s.inputDeadline,
+                    deadline = deadline,
                     taskType = "general",
                     recurrence = s.inputRecurrence,
                     recurrenceDaysOfWeek = s.inputRecurrenceDays,
+                    recurrenceStartDate = s.inputRecurrenceStartDate,
+                    recurrenceEndDate = s.inputRecurrenceEndDate,
                     completed = _state.value.tasks.find { it.id == s.editingTaskId }?.completed ?: false,
                     createdAt = _state.value.tasks.find { it.id == s.editingTaskId }?.createdAt ?: System.currentTimeMillis()
                 )
@@ -176,14 +228,16 @@ class TaskManagementViewModel @Inject constructor(
                 TaskEntity(
                     title = title,
                     description = s.inputDescription,
-                    deadline = s.inputDeadline,
+                    deadline = deadline,
                     taskType = "general",
                     recurrence = s.inputRecurrence,
-                    recurrenceDaysOfWeek = s.inputRecurrenceDays
+                    recurrenceDaysOfWeek = s.inputRecurrenceDays,
+                    recurrenceStartDate = s.inputRecurrenceStartDate,
+                    recurrenceEndDate = s.inputRecurrenceEndDate
                 )
             }
             academicRepository.saveTask(task)
-            _state.update { it.copy(inputTitle = "", inputDescription = "", inputDeadline = null, inputRecurrence = null, inputRecurrenceDays = null, isEditing = false, editingTaskId = null) }
+            _state.update { it.copy(inputTitle = "", inputDescription = "", inputDeadline = null, inputRecurrence = null, inputRecurrenceDays = null, inputRecurrenceStartDate = null, inputRecurrenceEndDate = null, showRecurrenceStartPicker = false, showRecurrenceEndPicker = false, isEditing = false, editingTaskId = null) }
         }
     }
 
@@ -233,7 +287,10 @@ class TaskManagementViewModel @Inject constructor(
 
     fun createGroupPlan(onSuccess: (Long) -> Unit) {
         val title = _state.value.planTitle.trim()
-        if (title.isBlank()) return
+        if (title.isBlank()) {
+            _state.update { it.copy(planError = "Vui lòng nhập tên kế hoạch") }
+            return
+        }
         viewModelScope.launch {
             _state.update { it.copy(creatingPlan = true, planError = null) }
             try {
@@ -246,7 +303,20 @@ class TaskManagementViewModel @Inject constructor(
                 )
                 _state.update { it.copy(creatingPlan = false, showCreatePlanDialog = false) }
                 onSuccess(response.id)
+            } catch (e: HttpException) {
+                val errorBody = e.response()?.errorBody()?.string()
+                Log.e("GroupPlan", "HTTP ${e.code()}: $errorBody")
+                val msg = when (e.code()) {
+                    400 -> "Tên kế hoạch không hợp lệ"
+                    401, 403 -> "Phiên đăng nhập hết hạn, vui lòng đăng nhập lại"
+                    else -> "Không thể tạo kế hoạch (lỗi ${e.code()})"
+                }
+                _state.update { it.copy(creatingPlan = false, planError = msg) }
+            } catch (e: IOException) {
+                Log.e("GroupPlan", "Network: ${e.message}")
+                _state.update { it.copy(creatingPlan = false, planError = "Mất kết nối mạng, vui lòng thử lại") }
             } catch (e: Exception) {
+                Log.e("GroupPlan", "Unexpected", e)
                 _state.update { it.copy(creatingPlan = false, planError = "Không thể tạo kế hoạch") }
             }
         }
@@ -274,6 +344,10 @@ private fun computeNextDeadline(task: TaskEntity): Long? {
     val zdt = Instant.ofEpochMilli(deadline).atZone(ZoneId.systemDefault())
     val currentDate = zdt.toLocalDate()
     val currentTime = zdt.toLocalTime()
+    // Stop recurring if past end date
+    if (task.recurrenceEndDate != null && currentDate >= Instant.ofEpochMilli(task.recurrenceEndDate).atZone(ZoneId.systemDefault()).toLocalDate()) {
+        return null
+    }
     val nextDate = when (recurrence) {
         "DAILY" -> currentDate.plusDays(1)
         "WEEKLY" -> {

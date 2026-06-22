@@ -18,5 +18,7 @@ data class TaskEntity(
     val parentTaskId: Long? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val recurrence: String? = null,
-    val recurrenceDaysOfWeek: Int? = null
+    val recurrenceDaysOfWeek: Int? = null,
+    val recurrenceStartDate: Long? = null,
+    val recurrenceEndDate: Long? = null
 )

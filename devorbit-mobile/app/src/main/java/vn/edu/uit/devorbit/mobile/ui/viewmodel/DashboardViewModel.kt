@@ -113,6 +113,7 @@ class DashboardViewModel @Inject constructor(
                     currentStudentCode = c
                     val streak = settingsDataStore.getStreakCount(c)
                     _state.update { it.copy(streakCount = streak) }
+                    checkStreak()
                     launch {
                         loadWeekDays()
                         loadTodayStudyMinutes()
@@ -313,9 +314,11 @@ class DashboardViewModel @Inject constructor(
                 settingsDataStore.setStreak(currentStudentCode, newStreak, today)
                 _state.update { it.copy(streakCount = newStreak) }
             }
-        } else if (yesterdayActivity != null) {
-            settingsDataStore.setStreak(currentStudentCode, 0, today)
-            _state.update { it.copy(streakCount = 0) }
+        } else {
+            if (lastStreakDate != today) {
+                settingsDataStore.setStreak(currentStudentCode, 0, today)
+                _state.update { it.copy(streakCount = 0) }
+            }
         }
     }
 

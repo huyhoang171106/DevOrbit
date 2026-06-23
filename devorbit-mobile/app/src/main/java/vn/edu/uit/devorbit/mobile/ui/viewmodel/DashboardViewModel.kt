@@ -327,10 +327,8 @@ class DashboardViewModel @Inject constructor(
         val today = LocalDate.now().format(dateFormat)
         val todayActivity = dailyActivityDao.getActivity(currentStudentCode, today)
         val todayRepos = todayActivity?.reposViewed ?: 0
-        val todayTasksCompleted = todayActivity?.tasksCompleted ?: 0
-        val todayTasksTotal = todayActivity?.tasksTotal ?: 0
 
-        val qualifiesForToday = todayRepos >= 3 || (todayTasksTotal > 0 && todayTasksCompleted == todayTasksTotal)
+        val qualifiesForToday = todayRepos >= 3
         if (!qualifiesForToday) return
 
         val lastStreakDate = settingsDataStore.getLastStreakDate(currentStudentCode)
@@ -339,9 +337,7 @@ class DashboardViewModel @Inject constructor(
         val yesterday = LocalDate.now().minusDays(1).format(dateFormat)
         val yesterdayActivity = dailyActivityDao.getActivity(currentStudentCode, yesterday)
         val yesterdayRepos = yesterdayActivity?.reposViewed ?: 0
-        val yesterdayTasksCompleted = yesterdayActivity?.tasksCompleted ?: 0
-        val yesterdayTasksTotal = yesterdayActivity?.tasksTotal ?: 0
-        val qualifiesForYesterday = yesterdayRepos >= 3 || (yesterdayTasksTotal > 0 && yesterdayTasksCompleted == yesterdayTasksTotal)
+        val qualifiesForYesterday = yesterdayRepos >= 3
         val currentStreak = settingsDataStore.getStreakCount(currentStudentCode)
 
         val newStreak = if (qualifiesForYesterday && lastStreakDate == yesterday) {
@@ -381,7 +377,7 @@ class DashboardViewModel @Inject constructor(
                     label = dayLabel,
                     activity = activity,
                     isToday = dateStr == todayStr,
-                    qualifiesForStreak = activity != null && (activity.reposViewed >= 3 || (activity.tasksTotal > 0 && activity.tasksCompleted == activity.tasksTotal))
+                    qualifiesForStreak = activity != null && activity.reposViewed >= 3
                 ))
                 date = date.plusDays(1)
             }

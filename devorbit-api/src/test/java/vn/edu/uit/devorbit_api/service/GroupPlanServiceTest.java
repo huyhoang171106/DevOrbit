@@ -212,4 +212,106 @@ class GroupPlanServiceTest {
         assertThatThrownBy(() -> service.respondToInvite("member1", 10L, new RespondInviteRequest("accept")))
             .isInstanceOf(BadRequestException.class);
     }
+
+    @Test
+    void requestDeletePlan_success() {
+        GroupPlanMember member = GroupPlanMember.builder()
+            .id(1L).groupPlan(plan).studentCode("member1").status(MemberStatus.ACCEPTED).build();
+        when(groupPlanRepository.findById(10L)).thenReturn(Optional.of(plan));
+        when(memberRepository.existsByGroupPlanIdAndStudentCodeAndStatus(10L, "member1", MemberStatus.ACCEPTED))
+            .thenReturn(true);
+        when(groupPlanRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        service.requestDeletePlan("member1", 10L);
+
+        assertThat(plan.isDeleteRequested()).isTrue();
+        assertThat(plan.getDeleteRequestedBy()).isEqualTo("member1");
+        verify(notificationService).notifyGroupPlanDeleteRequest(eq(plan), eq("member1"));
+    }
+
+    @Test
+    void requestDeletePlan_creatorThrows() {
+        when(groupPlanRepository.findById(10L)).thenReturn(Optional.of(plan));
+
+        assertThatThrownBy(() -> service.requestDeletePlan("creator1", 10L))
+            .isInstanceOf(BadRequestException.class);
+    }
+
+    @Test
+    void requestDeletePlan_alreadyRequestedThrows() {
+        plan.setDeleteRequested(true);
+        plan.setDeleteRequestedBy("other");
+        GroupPlanMember member = GroupPlanMember.builder()
+            .id(1L).groupPlan(plan).studentCode("member1").status(MemberStatus.ACCEPTED).build();
+        when(groupPlanRepository.findById(10L)).thenReturn(Optional.of(plan));
+        when(memberRepository.existsByGroupPlanIdAndStudentCodeAndStatus(10L, "member1", MemberStatus.ACCEPTED))
+            .thenReturn(true);
+
+        assertThatThrownBy(() -> service.requestDeletePlan("member1", 10L))
+            .isInstanceOf(BadRequestException.class);
+    }
+
+    @Test
+    void approveDeletePlan_approve() {
+        plan.setDeleteRequested(true);
+        plan.setDeleteRequestedBy("member1");
+        when(groupPlanRepository.findById(10L)).thenReturn(Optional.of(plan));
+        when(groupPlanRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        service.approveDeletePlan("creator1", 10L, new ApproveDeleteRequest("approve"));
+
+        assertThat(plan.isActive()).isFalse();
+        verify(notificationService).notifyGroupPlanDeleteApproved(eq(plan), eq("member1"), eq(true));
+    }
+
+    @Test
+    void approveDeletePlan_reject() {
+        plan.setDeleteRequested(true);
+        plan.setDeleteRequestedBy("member1");
+        when(groupPlanRepository.findById(10L)).thenReturn(Optional.of(plan));
+        when(groupPlanRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        service.approveDeletePlan("creator1", 10L, new ApproveDeleteRequest("reject"));
+
+        assertThat(plan.isDeleteRequested()).isFalse();
+        assertThat(plan.getDeleteRequestedBy()).isNull();
+        verify(notificationService).notifyGroupPlanDeleteApproved(eq(plan), eq("member1"), eq(false));
+    }
+
+    @Test
+    void approveDeletePlan_notCreatorThrows() {
+        plan.setDeleteRequested(true);
+        when(groupPlanRepository.findById(10L)).thenReturn(Optional.of(plan));
+
+        assertThatThrownBy(() -> service.approveDeletePlan("member1", 10L, new ApproveDeleteRequest("approve")))
+            .isInstanceOf(BadRequestException.class);
+    }
+
+    @Test
+    void approveDeletePlan_noRequestPendingThrows() {
+        when(groupPlanRepository.findById(10L)).thenReturn(Optional.of(plan));
+
+        assertThatThrownBy(() -> service.approveDeletePlan("creator1", 10L, new ApproveDeleteRequest("approve")))
+            .isInstanceOf(BadRequestException.class);
+    }
+
+    @Test
+    void leavePlan_success() {
+        GroupPlanMember member = GroupPlanMember.builder()
+            .id(1L).groupPlan(plan).studentCode("member1").status(MemberStatus.ACCEPTED).build();
+        when(groupPlanRepository.findById(10L)).thenReturn(Optional.of(plan));
+        when(memberRepository.findByGroupPlanIdAndStudentCode(10L, "member1")).thenReturn(Optional.of(member));
+
+        service.leavePlan("member1", 10L);
+
+        verify(memberRepository).delete(member);
+    }
+
+    @Test
+    void leavePlan_creatorCannotLeave() {
+        when(groupPlanRepository.findById(10L)).thenReturn(Optional.of(plan));
+
+        assertThatThrownBy(() -> service.leavePlan("creator1", 10L))
+            .isInstanceOf(BadRequestException.class);
+    }
 }

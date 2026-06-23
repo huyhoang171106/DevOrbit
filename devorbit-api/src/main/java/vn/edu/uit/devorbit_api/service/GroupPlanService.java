@@ -74,6 +74,57 @@ public class GroupPlanService {
         groupPlanRepository.save(plan);
         log.info("Group plan deleted: id={}, creator={}", planId, studentCode);
     }
+    @Transactional
+    public void requestDeletePlan(String studentCode, Long planId) {
+        GroupPlan plan = groupPlanRepository.findById(planId)
+            .orElseThrow(() -> new NotFoundException("Group plan not found: " + planId));
+        validateMember(studentCode, plan);
+
+        if (plan.isDeleteRequested()) {
+            throw new BadRequestException("Delete already requested for this plan");
+        }
+        if (plan.getCreatorStudentCode().equals(studentCode)) {
+            throw new BadRequestException("Creator should use delete directly");
+        }
+
+        plan.setDeleteRequested(true);
+        plan.setDeleteRequestedBy(studentCode);
+        groupPlanRepository.save(plan);
+
+        notificationService.notifyGroupPlanDeleteRequest(plan, studentCode);
+        log.info("Delete requested for plan id={} by user={}", planId, studentCode);
+    }
+
+    @Transactional
+    public void approveDeletePlan(String studentCode, Long planId, ApproveDeleteRequest request) {
+        GroupPlan plan = groupPlanRepository.findById(planId)
+            .orElseThrow(() -> new NotFoundException("Group plan not found: " + planId));
+
+        if (!plan.getCreatorStudentCode().equals(studentCode)) {
+            throw new BadRequestException("Only the creator can approve delete requests");
+        }
+        if (!plan.isDeleteRequested()) {
+            throw new BadRequestException("No delete request pending for this plan");
+        }
+
+        String action = request.action().toUpperCase();
+        String requester = plan.getDeleteRequestedBy();
+
+        if ("APPROVE".equals(action)) {
+            plan.setActive(false);
+            groupPlanRepository.save(plan);
+            notificationService.notifyGroupPlanDeleteApproved(plan, requester, true);
+            log.info("Delete approved for plan id={} by creator={}", planId, studentCode);
+        } else if ("REJECT".equals(action)) {
+            plan.setDeleteRequested(false);
+            plan.setDeleteRequestedBy(null);
+            groupPlanRepository.save(plan);
+            notificationService.notifyGroupPlanDeleteApproved(plan, requester, false);
+            log.info("Delete rejected for plan id={} by creator={}", planId, studentCode);
+        } else {
+            throw new BadRequestException("Action must be APPROVE or REJECT");
+        }
+    }
 
     @Transactional
     public GroupPlanMemberResponse inviteMember(String inviterStudentCode, Long planId, InviteMemberRequest request) {
@@ -157,6 +208,22 @@ public class GroupPlanService {
         notificationService.notifyGroupPlanResponse(plan, studentCode, plan.getCreatorStudentCode(), newStatus);
         log.info("Student {} {}d invitation to group plan id={}", studentCode, action.toLowerCase(), planId);
     }
+    @Transactional
+    public void leavePlan(String studentCode, Long planId) {
+        GroupPlan plan = groupPlanRepository.findById(planId)
+            .orElseThrow(() -> new NotFoundException("Group plan not found: " + planId));
+        if (plan.getCreatorStudentCode().equals(studentCode)) {
+            throw new BadRequestException("Creator cannot leave their own plan");
+        }
+        GroupPlanMember member = memberRepository.findByGroupPlanIdAndStudentCode(planId, studentCode)
+            .orElseThrow(() -> new NotFoundException("You are not a member of this plan"));
+        if (member.getStatus() != MemberStatus.ACCEPTED) {
+            throw new BadRequestException("You are not an active member");
+        }
+        memberRepository.delete(member);
+        log.info("Student {} left group plan id={}", studentCode, planId);
+    }
+
 
     private void validateMember(String studentCode, GroupPlan plan) {
         if (!plan.getCreatorStudentCode().equals(studentCode) &&

@@ -165,4 +165,34 @@ public class StudentNotificationService {
         notificationRepository.save(notification);
         log.info("notifyGroupTaskDeleteApproved: sent to requester {} for task id={}, approved={}", requesterCode, task.getId(), approved);
     }
+    @Transactional
+    public void notifyGroupPlanDeleteRequest(GroupPlan plan, String requesterCode) {
+        StudentUser requester = studentUserRepository.findByStudentCode(requesterCode).orElse(null);
+        String requesterName = requester != null ? requester.getFullName() : requesterCode;
+
+        StudentNotification notification = StudentNotification.builder()
+            .studentCode(plan.getCreatorStudentCode())
+            .title("Yêu cầu xoá kế hoạch nhóm")
+            .body(requesterName + " muốn xoá kế hoạch \"" + plan.getTitle() + "\"")
+            .type("GROUP_PLAN_DELETE_REQUEST")
+            .groupPlan(plan)
+            .build();
+        notificationRepository.save(notification);
+    }
+
+    @Transactional
+    public void notifyGroupPlanDeleteApproved(GroupPlan plan, String requesterCode, boolean approved) {
+        if (requesterCode == null) return;
+        String action = approved ? "đã được duyệt" : "đã bị từ chối";
+
+        StudentNotification notification = StudentNotification.builder()
+            .studentCode(requesterCode)
+            .title("Kết quả yêu cầu xoá kế hoạch")
+            .body("Yêu cầu xoá kế hoạch \"" + plan.getTitle() + "\" " + action)
+            .type("GROUP_PLAN_DELETE_APPROVED")
+            .groupPlan(plan)
+            .build();
+        notificationRepository.save(notification);
+    }
+
 }

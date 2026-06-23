@@ -11,7 +11,9 @@ public record GroupPlanResponse(
     String creatorStudentCode,
     LocalDate deadline,
     boolean active,
-    String createdAt
+    String createdAt,
+    boolean deleteRequested,
+    String deleteRequestedBy
 ) {
     public static GroupPlanResponse from(GroupPlan gp) {
         return new GroupPlanResponse(
@@ -21,7 +23,9 @@ public record GroupPlanResponse(
             gp.getCreatorStudentCode(),
             gp.getDeadline(),
             gp.isActive(),
-            gp.getCreatedAt() != null ? gp.getCreatedAt().toString() : null
+            gp.getCreatedAt() != null ? gp.getCreatedAt().toString() : null,
+            gp.isDeleteRequested(),
+            gp.getDeleteRequestedBy()
         );
     }
 }

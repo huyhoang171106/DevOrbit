@@ -33,6 +33,12 @@ public class GroupPlan {
     @Column(name = "is_active", nullable = false)
     @Builder.Default
     private boolean active = true;
+    @Column(name = "delete_requested", nullable = false)
+    @Builder.Default
+    private boolean deleteRequested = false;
+
+    @Column(name = "delete_requested_by")
+    private String deleteRequestedBy;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     @Builder.Default

@@ -51,6 +51,21 @@ public class StudentGroupPlanController {
             @PathVariable Long id) {
         groupPlanService.deletePlan(studentCode, id);
     }
+    @PostMapping("/{id}/request-delete")
+    public void requestDeletePlan(
+            @AuthenticationPrincipal String studentCode,
+            @PathVariable Long id) {
+        groupPlanService.requestDeletePlan(studentCode, id);
+    }
+
+    @PostMapping("/{id}/approve-delete")
+    public void approveDeletePlan(
+            @AuthenticationPrincipal String studentCode,
+            @PathVariable Long id,
+            @RequestBody @Valid ApproveDeleteRequest request) {
+        groupPlanService.approveDeletePlan(studentCode, id, request);
+    }
+
 
     // ─── Members ───
 
@@ -76,6 +91,13 @@ public class StudentGroupPlanController {
             @RequestBody @Valid RespondInviteRequest request) {
         groupPlanService.respondToInvite(studentCode, id, request);
     }
+    @PostMapping("/{id}/leave")
+    public void leavePlan(
+            @AuthenticationPrincipal String studentCode,
+            @PathVariable Long id) {
+        groupPlanService.leavePlan(studentCode, id);
+    }
+
 
     // ─── Tasks ───
 

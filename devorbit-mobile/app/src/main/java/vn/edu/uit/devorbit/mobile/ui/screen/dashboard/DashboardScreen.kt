@@ -97,19 +97,9 @@ fun DashboardScreen(
             items(state.sortedTasks, key = { it.id }) { task ->
                 TaskCard(
                     task = task,
-                    onClick = { onNavigateToCreateTask() }
+                    onClick = { viewModel.toggleTask(task.id, !task.completed) }
                 )
             }
-        }
-
-        item {
-            SemesterCoursesSection(
-                courses = state.semesterCourses,
-                allCourses = state.allCourses,
-                onAddCourse = { viewModel.addSemesterCourse(it) },
-                onRemoveCourse = { viewModel.removeSemesterCourse(it) },
-                onCourseClick = onNavigateToCourse
-            )
         }
 
         item {
@@ -119,6 +109,16 @@ fun DashboardScreen(
                 maxWeekOffset = state.maxWeekOffset,
                 onPrevWeek = { viewModel.navigateWeek(1) },
                 onNextWeek = { viewModel.navigateWeek(-1) }
+            )
+        }
+
+        item {
+            SemesterCoursesSection(
+                courses = state.semesterCourses,
+                allCourses = state.allCourses,
+                onAddCourse = { viewModel.addSemesterCourse(it) },
+                onRemoveCourse = { viewModel.removeSemesterCourse(it) },
+                onCourseClick = onNavigateToCourse
             )
         }
 

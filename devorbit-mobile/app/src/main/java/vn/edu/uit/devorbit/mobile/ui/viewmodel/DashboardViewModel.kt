@@ -398,4 +398,10 @@ class DashboardViewModel @Inject constructor(
             academicRepository.saveTask(task)
         }
     }
+
+    fun toggleTask(taskId: Long, completed: Boolean) {
+        viewModelScope.launch {
+            academicRepository.setTaskCompleted(taskId, completed)
+        }
+    }
 }

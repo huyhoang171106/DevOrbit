@@ -10,7 +10,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import vn.edu.uit.devorbit.mobile.data.remote.dto.*
 import vn.edu.uit.devorbit.mobile.network.ApiService
+import java.io.IOException
 import javax.inject.Inject
+import retrofit2.HttpException
 
 data class GroupPlanDetailState(
     val plan: GroupPlanResponse? = null,
@@ -94,9 +96,34 @@ class GroupPlanViewModel @Inject constructor(
                 apiService.inviteMember(planId, InviteMemberRequest(studentCode))
                 val members = apiService.getGroupPlanMembers(planId)
                 _detail.update { it.copy(members = members, inviteCode = "", inviteLoading = false) }
+            } catch (e: HttpException) {
+                val errorBody = e.response()?.errorBody()?.string()
+                val msg = parseInviteError(errorBody) ?: "Không thể mời thành viên (lỗi ${e.code()})"
+                _detail.update { it.copy(inviteLoading = false, inviteError = msg) }
+            } catch (e: IOException) {
+                _detail.update { it.copy(inviteLoading = false, inviteError = "Mất kết nối mạng, vui lòng thử lại") }
             } catch (e: Exception) {
                 _detail.update { it.copy(inviteLoading = false, inviteError = "Không thể mời thành viên") }
             }
+        }
+    }
+
+    private fun parseInviteError(errorBody: String?): String? {
+        if (errorBody.isNullOrBlank()) return null
+        return try {
+            val json = com.google.gson.JsonParser.parseString(errorBody).asJsonObject
+            val error = json.get("error")?.asString ?: return null
+            when {
+                error.contains("Cannot invite yourself") -> "Không thể mời chính mình"
+                error.contains("already a member") -> "Sinh viên đã là thành viên của kế hoạch này"
+                error.contains("Invitation already sent") -> "Đã gửi lời mời đến sinh viên này"
+                error.contains("Only the creator can invite") -> "Chỉ người tạo mới có thể mời thành viên"
+                error.contains("Student not found") -> "Không tìm thấy sinh viên này"
+                error.contains("Group plan not found") -> "Không tìm thấy kế hoạch"
+                else -> null
+            }
+        } catch (_: Exception) {
+            null
         }
     }
 

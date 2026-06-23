@@ -62,10 +62,14 @@ fun parseDeadlineToMillis(iso: String): Long {
             .toInstant()
             .toEpochMilli()
     } catch (_: Exception) {
-        LocalDate.parse(iso)
-            .atStartOfDay(ZoneId.systemDefault())
-            .toInstant()
-            .toEpochMilli()
+        try {
+            LocalDate.parse(iso)
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli()
+        } catch (_: Exception) {
+            System.currentTimeMillis()
+        }
     }
 }
 

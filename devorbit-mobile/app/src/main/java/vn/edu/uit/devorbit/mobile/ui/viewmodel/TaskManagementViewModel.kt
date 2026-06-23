@@ -49,7 +49,9 @@ data class TaskManagementUiState(
     val groupPlans: List<GroupPlanResponse> = emptyList(),
     val groupPlansLoading: Boolean = false,
     val error: String? = null,
-    val taskLoading: Boolean = false
+    val taskLoading: Boolean = false,
+    val saveLoading: Boolean = false,
+    val deleteLoading: Boolean = false
 )
 
 @HiltViewModel
@@ -71,18 +73,17 @@ class TaskManagementViewModel @Inject constructor(
         refreshTasks()
     }
 
-    private fun refreshTasks() {
+    private fun refreshTasks(filter: TaskFilter = _state.value.filter, searchQuery: String = _state.value.searchQuery) {
         viewModelScope.launch {
             try {
-                val s = _state.value
-                val filterParam = when (s.filter) {
+                val filterParam = when (filter) {
                     TaskFilter.TODAY -> "today"
                     TaskFilter.WEEK -> "week"
                     TaskFilter.ALL -> "all"
                 }
                 var tasks = apiService.getPersonalTasks(filterParam).map { it.toTaskItem() }
-                if (s.searchQuery.isNotBlank()) {
-                    tasks = tasks.filter { it.title.contains(s.searchQuery, ignoreCase = true) }
+                if (searchQuery.isNotBlank()) {
+                    tasks = tasks.filter { it.title.contains(searchQuery, ignoreCase = true) }
                 }
                 _state.update { it.copy(tasks = tasks.sortedBy { it.completed }) }
             } catch (_: Exception) {
@@ -222,7 +223,7 @@ class TaskManagementViewModel @Inject constructor(
             return
         }
         viewModelScope.launch {
-            _state.update { it.copy(taskLoading = true) }
+            _state.update { it.copy(saveLoading = true) }
             try {
                 val deadline = if (s.inputRecurrence != null) {
                     val startDate = s.inputRecurrenceStartDate?.let {
@@ -264,10 +265,10 @@ class TaskManagementViewModel @Inject constructor(
                         }
                     ))
                 }
-                _state.update { it.copy(inputTitle = "", inputDescription = "", inputDeadline = null, inputRecurrence = null, inputRecurrenceDays = null, inputRecurrenceStartDate = null, inputRecurrenceEndDate = null, showRecurrenceStartPicker = false, showRecurrenceEndPicker = false, isEditing = false, editingTaskId = null, taskLoading = false) }
+                _state.update { it.copy(inputTitle = "", inputDescription = "", inputDeadline = null, inputRecurrence = null, inputRecurrenceDays = null, inputRecurrenceStartDate = null, inputRecurrenceEndDate = null, showRecurrenceStartPicker = false, showRecurrenceEndPicker = false, isEditing = false, editingTaskId = null, saveLoading = false) }
                 refreshTasks()
             } catch (_: Exception) {
-                _state.update { it.copy(error = "Không thể lưu nhiệm vụ", taskLoading = false) }
+                _state.update { it.copy(error = "Không thể lưu nhiệm vụ", saveLoading = false) }
             }
         }
     }
@@ -310,13 +311,13 @@ class TaskManagementViewModel @Inject constructor(
 
     fun deleteTask(taskId: Long) {
         viewModelScope.launch {
-            _state.update { it.copy(taskLoading = true) }
+            _state.update { it.copy(deleteLoading = true) }
             try {
                 apiService.deletePersonalTask(taskId)
-                _state.update { it.copy(taskLoading = false) }
+                _state.update { it.copy(deleteLoading = false) }
                 refreshTasks()
             } catch (_: Exception) {
-                _state.update { it.copy(error = "Không thể xoá nhiệm vụ", taskLoading = false) }
+                _state.update { it.copy(error = "Không thể xoá nhiệm vụ", deleteLoading = false) }
             }
         }
     }

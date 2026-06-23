@@ -17,7 +17,6 @@ import vn.edu.uit.devorbit.mobile.data.local.entity.DailyActivityEntity
 import vn.edu.uit.devorbit.mobile.data.local.entity.SemesterCourseEntity
 import vn.edu.uit.devorbit.mobile.data.local.entity.TechStackEntity
 import vn.edu.uit.devorbit.mobile.data.datastore.SettingsDataStore
-import vn.edu.uit.devorbit.mobile.data.remote.dto.CreatePersonalTaskRequest
 import vn.edu.uit.devorbit.mobile.domain.model.TaskItem
 import vn.edu.uit.devorbit.mobile.domain.model.toTaskItem
 import vn.edu.uit.devorbit.mobile.network.ApiService
@@ -419,17 +418,6 @@ class DashboardViewModel @Inject constructor(
     private fun stopStudyTimer() {
         studyTimerJob?.cancel()
         studyTimerJob = null
-    }
-
-    fun createTask(title: String) {
-        viewModelScope.launch {
-            try {
-                apiService.createPersonalTask(CreatePersonalTaskRequest(title = title))
-                refreshTasks()
-            } catch (_: Exception) {
-                _state.update { it.copy(error = "Không thể tạo nhiệm vụ") }
-            }
-        }
     }
 
     fun toggleTask(taskId: Long, completed: Boolean) {

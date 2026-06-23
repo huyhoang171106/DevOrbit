@@ -19,8 +19,9 @@ import java.time.format.DateTimeFormatter
 fun AddTaskSheet(
     creatorStudentCode: String,
     members: List<String>,
+    loading: Boolean = false,
     onDismiss: () -> Unit,
-    onConfirm: (title: String, description: String?, assignedTo: String, deadline: String) -> Unit
+    onConfirm: (title: String, description: String?, assignedTo: String, deadline: String?) -> Unit
 ) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -199,10 +200,10 @@ fun AddTaskSheet(
                 onClick = {
                     val isoDeadline = deadlineMillis?.let {
                         Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().format(apiFormatter)
-                    } ?: ""
+                    }
                     onConfirm(title, description.ifBlank { null }, assignedTo, isoDeadline)
                 },
-                enabled = canSubmit,
+                enabled = canSubmit && !loading,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(

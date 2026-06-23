@@ -51,19 +51,18 @@ fun TaskManagementScreen(
     var showAddTaskModal by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Close modal when save/delete completes
-    LaunchedEffect(state.taskLoading) {
-        if (!state.taskLoading && (showAddTaskModal || state.isEditing)) {
+    // Close modal when save completes
+    LaunchedEffect(state.saveLoading) {
+        if (!state.saveLoading && (showAddTaskModal || state.isEditing)) {
             showAddTaskModal = false
         }
     }
 
     // Show error as snackbar
     LaunchedEffect(state.error) {
-        if (state.error != null) {
-            snackbarHostState.showSnackbar(state.error!!)
-            viewModel.clearError()
-        }
+        val msg = state.error ?: return@LaunchedEffect
+        snackbarHostState.showSnackbar(msg)
+        viewModel.clearError()
     }
 
     // Create plan dialog
@@ -523,9 +522,14 @@ private fun AddTaskModal(
         initialSelectedDateMillis = recurrenceEndDate ?: System.currentTimeMillis()
     )
 
+    val initialLocalTime = if (deadline != null) {
+        java.time.Instant.ofEpochMilli(deadline).atZone(java.time.ZoneId.systemDefault()).toLocalTime()
+    } else {
+        java.time.LocalTime.of(0, 0)
+    }
     val timePickerState = rememberTimePickerState(
-        initialHour = 0,
-        initialMinute = 0,
+        initialHour = initialLocalTime.hour,
+        initialMinute = initialLocalTime.minute,
         is24Hour = true
     )
 

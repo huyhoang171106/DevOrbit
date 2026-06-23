@@ -51,11 +51,12 @@ fun GroupPlanDetailScreen(
     }
 
     // Task delete confirmation
-    if (taskToDelete != null) {
+    val taskToDeleteSafe = taskToDelete
+    if (taskToDeleteSafe != null) {
         AlertDialog(
             onDismissRequest = { taskToDelete = null },
             title = { Text("Xác nhận xoá", color = CosmicTheme.colors.textPrimary) },
-            text = { Text("Yêu cầu xoá nhiệm vụ \"${taskToDelete!!.title}\"?", color = CosmicTheme.colors.textSecondary) },
+            text = { Text("Yêu cầu xoá nhiệm vụ \"${taskToDeleteSafe.title}\"?", color = CosmicTheme.colors.textSecondary) },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.requestDeleteTask(taskToDelete!!.id)
@@ -187,12 +188,14 @@ fun GroupPlanDetailScreen(
 
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { showAddTaskSheet = true },
-                containerColor = CosmicTheme.colors.plasma,
-                contentColor = Color.Black
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Thêm nhiệm vụ")
+            if (!state.loading && state.error == null) {
+                FloatingActionButton(
+                    onClick = { showAddTaskSheet = true },
+                    containerColor = CosmicTheme.colors.plasma,
+                    contentColor = Color.Black
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Thêm nhiệm vụ")
+                }
             }
         },
         containerColor = Color.Transparent
@@ -252,9 +255,10 @@ fun GroupPlanDetailScreen(
         }
 
         if (state.error != null) {
+            val errorMsg = state.error ?: ""
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = state.error!!, color = CosmicTheme.colors.supernova, fontSize = 14.sp)
+                    Text(text = errorMsg, color = CosmicTheme.colors.supernova, fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(8.dp))
                     TextButton(onClick = { viewModel.loadPlan(planId) }) {
                         Text("Thử lại", color = CosmicTheme.colors.plasma)
@@ -281,7 +285,11 @@ fun GroupPlanDetailScreen(
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                         Text("Người tạo: ${plan.creatorStudentCode}", color = CosmicTheme.colors.textTertiary, fontSize = 12.sp)
                         if (plan.deadline != null) {
-                            Text("Hạn: ${plan.deadline}", color = CosmicTheme.colors.textTertiary, fontSize = 12.sp)
+                            val formattedDeadline = try {
+                                val date = java.time.LocalDate.parse(plan.deadline)
+                                date.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                            } catch (_: Exception) { plan.deadline }
+                            Text("Hạn: $formattedDeadline", color = CosmicTheme.colors.textTertiary, fontSize = 12.sp)
                         }
                     }
                 }
@@ -376,7 +384,7 @@ fun GroupPlanDetailScreen(
         // ── Task list ──
         val filteredTasks = state.tasks
             .filter { if (selectedTab == 0) !it.completed else it.completed }
-            .sortedByDescending { it.createdAt }
+            .sortedByDescending { it.createdAt?.let { c -> try { java.time.LocalDateTime.parse(c, java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME).atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli() } catch (_: Exception) { 0L } } ?: 0L }
 
         if (filteredTasks.isEmpty()) {
             Box(
@@ -412,6 +420,7 @@ fun GroupPlanDetailScreen(
         AddTaskSheet(
             creatorStudentCode = state.plan?.creatorStudentCode ?: "",
             members = state.members.map { it.studentCode },
+            loading = state.actionLoading,
             onDismiss = { showAddTaskSheet = false },
             onConfirm = { title, description, assignedTo, deadline ->
                 viewModel.addTask(planId, title, description, assignedTo, deadline)

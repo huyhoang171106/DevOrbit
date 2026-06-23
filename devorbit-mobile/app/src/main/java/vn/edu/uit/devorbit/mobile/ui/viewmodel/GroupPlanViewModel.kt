@@ -68,10 +68,11 @@ class GroupPlanViewModel @Inject constructor(
         viewModelScope.launch {
             _detail.update { it.copy(loading = true, error = null) }
             try {
+                val currentUserCode = settingsDataStore.studentCode.first().orEmpty()
+                _detail.update { it.copy(currentUserCode = currentUserCode) }
                 val plan = apiService.getGroupPlanDetail(planId)
                 val tasks = apiService.getGroupTasks(planId)
                 val members = apiService.getGroupPlanMembers(planId)
-                val currentUserCode = _detail.value.currentUserCode
                 _detail.update { it.copy(
                     plan = plan, tasks = tasks, members = members, loading = false,
                     isCreator = plan.creatorStudentCode == currentUserCode
@@ -246,6 +247,8 @@ class GroupPlanViewModel @Inject constructor(
                 onSuccess()
             } catch (e: Exception) {
                 _detail.update { it.copy(actionLoading = false, actionError = "Không thể xử lý yêu cầu") }
+            } finally {
+                _detail.update { it.copy(actionLoading = false) }
             }
         }
     }

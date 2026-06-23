@@ -50,6 +50,10 @@ class NotificationViewModel @Inject constructor(
         pollingJob = null
     }
 
+    fun clearError() {
+        _error.value = null
+    }
+
     fun loadNotifications() {
         viewModelScope.launch {
             _loading.value = true
@@ -72,8 +76,6 @@ class NotificationViewModel @Inject constructor(
             while (true) {
                 delay(15_000)
                 try {
-                    val countResponse = apiService.getUnreadNotificationCount()
-                    _unreadCount.value = countResponse.count
                     loadNotifications()
                 } catch (_: Exception) { }
             }

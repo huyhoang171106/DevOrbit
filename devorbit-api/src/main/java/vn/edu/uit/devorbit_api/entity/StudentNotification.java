@@ -43,6 +43,9 @@ public class StudentNotification {
     @JoinColumn(name = "group_plan_id")
     private GroupPlan groupPlan;
 
+    @Column(name = "task_id")
+    private Long taskId;
+
     @Column(name = "tech_stack_name")
     private String techStackName;
 

@@ -145,6 +145,7 @@ public class StudentNotificationService {
             .body(requesterName + " muốn xoá nhiệm vụ \"" + task.getTitle() + "\" trong kế hoạch \"" + plan.getTitle() + "\"")
             .type("GROUP_TASK_DELETE_REQUEST")
             .groupPlan(plan)
+            .taskId(task.getId())
             .build();
         notificationRepository.save(notification);
         log.info("notifyGroupTaskDeleteRequest: sent to creator {} for task id={}", creatorCode, task.getId());
@@ -161,6 +162,7 @@ public class StudentNotificationService {
             .body("Yêu cầu xoá nhiệm vụ \"" + task.getTitle() + "\" trong kế hoạch \"" + plan.getTitle() + "\" " + action)
             .type("GROUP_TASK_DELETE_APPROVED")
             .groupPlan(plan)
+            .taskId(task.getId())
             .build();
         notificationRepository.save(notification);
         log.info("notifyGroupTaskDeleteApproved: sent to requester {} for task id={}, approved={}", requesterCode, task.getId(), approved);

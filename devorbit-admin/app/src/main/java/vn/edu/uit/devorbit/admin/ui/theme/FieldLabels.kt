@@ -10,7 +10,7 @@ fun subjectTypeLabel(raw: String?): String = when (raw) {
     "DAI_CUONG" -> "Đại cương"
     "CO_SO" -> "Cơ sở"
     "CHUYEN_NGANH" -> "Chuyên ngành"
-    "MAU" -> "Mẫu"
+    "CO_SO_NGANH" -> "Cơ sở ngành"
     null, "" -> "Chưa phân loại"
     else -> raw
 }

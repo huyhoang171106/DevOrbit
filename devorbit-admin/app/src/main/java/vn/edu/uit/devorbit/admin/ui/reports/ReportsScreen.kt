@@ -67,7 +67,7 @@ fun ReportsScreen(
                     if (stats.topFavoritedRepos.isEmpty()) {
                         item { ObsidianEmptyState(message = "Chưa có dữ liệu", icon = Icons.Rounded.FavoriteBorder) }
                     } else {
-                        items(stats.topFavoritedRepos, key = { it.repoId }) { repo ->
+                        items(stats.topFavoritedRepos, key = { "fav-${it.repoId}" }) { repo ->
                             RepoStatsCard(repo, rank = stats.topFavoritedRepos.indexOf(repo) + 1, metricLabel = "Yêu thích", metricValue = "${repo.bookmarkCount}")
                         }
                     }
@@ -84,7 +84,7 @@ fun ReportsScreen(
                     if (stats.topViewedRepos.isEmpty()) {
                         item { ObsidianEmptyState(message = "Chưa có dữ liệu", icon = Icons.Rounded.Visibility) }
                     } else {
-                        items(stats.topViewedRepos, key = { it.repoId }) { repo ->
+                        items(stats.topViewedRepos, key = { "view-${it.repoId}" }) { repo ->
                             RepoStatsCard(repo, rank = stats.topViewedRepos.indexOf(repo) + 1, metricLabel = "Lượt xem", metricValue = "${repo.viewCount}")
                         }
                     }

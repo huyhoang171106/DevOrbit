@@ -8,6 +8,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Chat
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Person
@@ -31,6 +32,7 @@ import vn.edu.uit.devorbit.mobile.ui.screen.dashboard.DashboardScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.explore.ExploreScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.knowledge.KnowledgeGraphScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.notification.NotificationScreen
+import vn.edu.uit.devorbit.mobile.ui.screen.community.CommunityScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.plan.StudyPlannerScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.profile.ProfileScreen
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
@@ -67,6 +69,12 @@ fun MainScreen(
                             selected = currentScreen == Screen.Dashboard && !showPopup,
                             onClick = { currentScreen = Screen.Dashboard; showPopup = false },
                             icon = { Icon(Icons.Rounded.Home, contentDescription = "Tổng quan") },
+                            colors = navItemColors
+                        )
+                        NavigationBarItem(
+                            selected = currentScreen == Screen.Community && !showPopup,
+                            onClick = { currentScreen = Screen.Community; showPopup = false },
+                            icon = { Icon(Icons.Rounded.Chat, contentDescription = "Cộng đồng") },
                             colors = navItemColors
                         )
                         NavigationBarItem(
@@ -149,6 +157,7 @@ fun MainScreen(
                             Screen.Notifications -> NotificationScreen(viewModel = notificationVm)
                             Screen.Plan -> PlanTabView()
                             Screen.Profile -> ProfileScreen()
+                            Screen.Community -> CommunityScreen()
                         }
                     }
                 }

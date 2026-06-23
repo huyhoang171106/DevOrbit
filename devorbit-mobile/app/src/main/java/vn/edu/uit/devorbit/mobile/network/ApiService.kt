@@ -123,4 +123,15 @@ interface ApiService {
 
     @PUT("/api/student/notifications/read-all")
     suspend fun markAllNotificationsRead(): Map<String, Any>
+
+    // Community
+    @GET("/api/student/community")
+    suspend fun getCommunityChannels(): List<ChatChannelResponse>
+
+    @GET("/api/student/community/channels/{channelId}/messages")
+    suspend fun getChannelMessages(
+        @Path("channelId") channelId: Long,
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 50
+    ): PaginatedMessagesResponse
 }

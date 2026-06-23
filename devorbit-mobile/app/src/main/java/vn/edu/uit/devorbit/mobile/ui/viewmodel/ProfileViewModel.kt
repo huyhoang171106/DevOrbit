@@ -1,5 +1,6 @@
 package vn.edu.uit.devorbit.mobile.ui.viewmodel
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -12,9 +13,12 @@ import javax.inject.Inject
 data class ProfileUiState(
     val studentName: String = "",
     val studentCode: String = "",
+    val avatar: String? = null,
     val isLoggedIn: Boolean = false,
     val bookmarks: List<Bookmark> = emptyList(),
-    val darkMode: Boolean = true
+    val darkMode: Boolean = true,
+    val isUploadingAvatar: Boolean = false,
+    val avatarUploadSuccess: Boolean = false
 )
 
 @HiltViewModel
@@ -50,6 +54,37 @@ class ProfileViewModel @Inject constructor(
                     _state.update { it.copy(bookmarks = bookmarks) }
                 }
         }
+        loadProfile()
+    }
+
+    private fun loadProfile() {
+        viewModelScope.launch {
+            val result = authRepository.getProfile()
+            result.onSuccess { profile ->
+                _state.update { it.copy(avatar = profile.avatar) }
+            }
+        }
+    }
+
+    fun uploadAvatar(uri: Uri) {
+        viewModelScope.launch {
+            _state.update { it.copy(isUploadingAvatar = true) }
+            val result = authRepository.uploadAvatar(uri)
+            result.onSuccess { avatarUrl ->
+                _state.update { 
+                    it.copy(
+                        avatar = avatarUrl,
+                        isUploadingAvatar = false,
+                        avatarUploadSuccess = true
+                    ) 
+                }
+                kotlinx.coroutines.delay(2000)
+                _state.update { it.copy(avatarUploadSuccess = false) }
+            }
+            result.onFailure {
+                _state.update { it.copy(isUploadingAvatar = false) }
+            }
+        }
     }
 
     fun removeBookmark(id: Long) {
@@ -65,7 +100,7 @@ class ProfileViewModel @Inject constructor(
     fun logout() {
         viewModelScope.launch {
             authRepository.logout()
-            _state.update { it.copy(studentName = "", studentCode = "", isLoggedIn = false) }
+            _state.update { it.copy(studentName = "", studentCode = "", avatar = null, isLoggedIn = false) }
         }
     }
 }

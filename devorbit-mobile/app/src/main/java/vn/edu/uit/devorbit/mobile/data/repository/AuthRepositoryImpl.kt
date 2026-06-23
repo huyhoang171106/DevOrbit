@@ -1,16 +1,24 @@
 package vn.edu.uit.devorbit.mobile.data.repository
 
+import android.content.Context
+import android.net.Uri
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import vn.edu.uit.devorbit.mobile.data.datastore.SettingsDataStore
 import vn.edu.uit.devorbit.mobile.domain.repository.AuthRepository
 import vn.edu.uit.devorbit.mobile.domain.repository.AuthResult
 import vn.edu.uit.devorbit.mobile.domain.repository.StudentInfo
 import vn.edu.uit.devorbit.mobile.network.ApiService
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class AuthRepositoryImpl @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val apiService: ApiService,
     private val settingsDataStore: SettingsDataStore
 ) : AuthRepository {
@@ -93,8 +101,28 @@ class AuthRepositoryImpl @Inject constructor(
             studentCode = response["studentCode"] as? String ?: "",
             fullName = response["fullName"] as? String ?: "",
             email = response["email"] as? String ?: "",
-            active = response["active"] as? Boolean ?: true
+            active = response["active"] as? Boolean ?: true,
+            avatar = response["avatar"] as? String
         )
+    }
+
+    override suspend fun uploadAvatar(uri: Uri): Result<String> = runCatching {
+        val inputStream = context.contentResolver.openInputStream(uri)
+            ?: throw Exception("Cannot open image")
+        
+        val tempFile = File.createTempFile("avatar_", ".jpg", context.cacheDir)
+        tempFile.outputStream().use { output ->
+            inputStream.copyTo(output)
+        }
+        inputStream.close()
+
+        val requestBody = tempFile.asRequestBody("image/*".toMediaTypeOrNull())
+        val multipart = MultipartBody.Part.createFormData("file", tempFile.name, requestBody)
+
+        val response = apiService.uploadAvatar(multipart)
+        tempFile.delete()
+
+        response["avatar"] as? String ?: throw Exception("No avatar URL in response")
     }
 
     override suspend fun getToken(): String? {

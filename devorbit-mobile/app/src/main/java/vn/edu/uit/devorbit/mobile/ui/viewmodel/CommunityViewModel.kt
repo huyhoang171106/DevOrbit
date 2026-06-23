@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import vn.edu.uit.devorbit.mobile.data.remote.dto.*
 import vn.edu.uit.devorbit.mobile.data.datastore.SettingsDataStore
+import vn.edu.uit.devorbit.mobile.domain.repository.AuthRepository
 import vn.edu.uit.devorbit.mobile.domain.repository.CommunityRepository
 import vn.edu.uit.devorbit.mobile.network.stomp.StompEventListener
 import com.google.gson.Gson
@@ -55,6 +56,7 @@ data class CommunityUiState(
 @HiltViewModel
 class CommunityViewModel @Inject constructor(
     private val repository: CommunityRepository,
+    private val authRepository: AuthRepository,
     private val settingsDataStore: SettingsDataStore
 ) : ViewModel() {
 
@@ -69,8 +71,16 @@ class CommunityViewModel @Inject constructor(
 
     private fun loadCurrentUser() {
         viewModelScope.launch {
-            val id = settingsDataStore.studentId.first()
+            var id = settingsDataStore.studentId.first()
             val name = settingsDataStore.studentName.first() ?: ""
+            
+            if (id == null) {
+                val result = authRepository.getProfile()
+                result.onSuccess { profile ->
+                    id = settingsDataStore.studentId.first()
+                }
+            }
+            
             _uiState.update { it.copy(currentUserId = id?.toLong(), currentUserName = name) }
         }
     }

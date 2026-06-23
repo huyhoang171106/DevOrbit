@@ -5,9 +5,12 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 import retrofit2.http.Body
 import retrofit2.http.DELETE
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.PUT
 import vn.edu.uit.devorbit.mobile.data.remote.dto.*
+import okhttp3.MultipartBody
 
 interface ApiService {
     @GET("/api/courses")
@@ -69,6 +72,10 @@ interface ApiService {
 
     @GET("/api/student/me")
     suspend fun getStudentProfile(): Map<String, Any>
+
+    @Multipart
+    @POST("/api/student/me/avatar/upload")
+    suspend fun uploadAvatar(@Part file: MultipartBody.Part): Map<String, Any>
 
     @GET("/api/student/bookmarks")
     suspend fun getBookmarks(): List<StudentBookmarkResponse>

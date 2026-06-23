@@ -32,7 +32,7 @@ fun ChatInputBar(
     ) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 12.dp, vertical = 8.dp)
+                .padding(horizontal = 12.dp, vertical = 12.dp)
                 .navigationBarsPadding(),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -42,11 +42,12 @@ fun ChatInputBar(
                 enabled = enabled,
                 modifier = Modifier
                     .weight(1f)
+                    .heightIn(min = 48.dp)
                     .background(
                         androidx.compose.material3.MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
-                        RoundedCornerShape(20.dp)
+                        RoundedCornerShape(24.dp)
                     )
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
                 textStyle = TextStyle(
                     fontSize = 14.sp,
                     color = CosmicTheme.colors.textPrimary

@@ -63,7 +63,8 @@ fun MainScreen(
                 bottomBar = {
                     NavigationBar(
                         containerColor = Color.Transparent,
-                        tonalElevation = 0.dp
+                        tonalElevation = 0.dp,
+                        modifier = Modifier.height(56.dp)
                     ) {
                         NavigationBarItem(
                             selected = currentScreen == Screen.Dashboard && !showPopup,

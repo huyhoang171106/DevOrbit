@@ -44,28 +44,28 @@ fun ChatMessageBubble(
         }
 
         Row(
-            verticalAlignment = Alignment.Bottom,
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = if (isMine) Arrangement.End else Arrangement.Start,
             modifier = Modifier.fillMaxWidth()
         ) {
             if (!isMine) {
                 Box(
                     modifier = Modifier
-                        .size(32.dp)
+                        .size(36.dp)
                         .background(
                             CosmicTheme.colors.plasma.copy(alpha = 0.2f),
-                            RoundedCornerShape(16.dp)
+                            RoundedCornerShape(18.dp)
                         ),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = message.senderName.take(1).uppercase(),
-                        fontSize = 14.sp,
+                        fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         color = CosmicTheme.colors.plasma
                     )
                 }
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(10.dp))
             }
 
             Column(
@@ -83,7 +83,7 @@ fun ChatMessageBubble(
                                 bottomEnd = if (isMine) 4.dp else 16.dp
                             )
                         )
-                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                        .padding(horizontal = 12.dp, vertical = 10.dp)
                 ) {
                     Text(
                         text = if (message.deleted) "Tin nhắn đã bị xóa" else message.content,

@@ -6,8 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -84,7 +82,7 @@ fun DashboardScreen(
 
         item {
             TaskFilterSection(
-                selectedFilter = viewModel.taskFilter.collectAsState().value,
+                selectedFilter = viewModel.taskFilter.collectAsStateWithLifecycle().value,
                 onSelectFilter = { viewModel.setTaskFilter(it) },
                 taskCount = state.totalTaskCount,
                 completedCount = state.completedTaskCount,
@@ -92,22 +90,16 @@ fun DashboardScreen(
             )
         }
 
-        item {
-            if (state.sortedTasks.isEmpty()) {
+        if (state.sortedTasks.isEmpty()) {
+            item {
                 EmptyTaskState(onNavigateToCreateTask = onNavigateToCreateTask)
-            } else {
-                Column(
-                    modifier = Modifier
-                        .heightIn(max = 360.dp)
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    state.sortedTasks.forEach { task ->
-                        TaskCard(
-                            task = task,
-                            onClick = { viewModel.toggleTask(task.id, !task.completed) }
-                        )
-                    }
-                }
+            }
+        } else {
+            items(state.sortedTasks, key = { it.id }) { task ->
+                TaskCard(
+                    task = task,
+                    onClick = { viewModel.toggleTask(task.id, !task.completed) }
+                )
             }
         }
 
@@ -952,11 +944,4 @@ private fun TaskFilterSection(
     }
 }
 
-@Composable
-private fun SectionLabel(title: String) {
-    Text(
-        text = title,
-        style = CosmicTheme.typography.command,
-        color = CosmicTheme.colors.textTertiary
-    )
-}
+

@@ -272,50 +272,52 @@ fun TaskManagementScreen(
 
     // ── Add/Edit Task Modal ──
     if (showAddTaskModal || state.isEditing) {
-        AddTaskModal(
-            isEditing = state.isEditing,
-            title = state.inputTitle,
-            onTitleChange = { viewModel.updateTitle(it) },
-            description = state.inputDescription,
-            onDescriptionChange = { viewModel.updateDescription(it) },
-            deadline = state.inputDeadline,
-            onDeadlineClick = if (state.inputRecurrence != null) { { viewModel.showTimePicker() } } else { { viewModel.showDatePicker() } },
-            showDatePicker = state.showDatePicker,
-            onDateSelected = { viewModel.updateDeadline(it) },
-            onDismissDatePicker = { viewModel.hideDatePicker() },
-            showTimePicker = state.showTimePicker,
-            onTimeSelected = { h, m -> viewModel.updateTime(h, m) },
-            onDismissTimePicker = { viewModel.hideTimePicker() },
-            recurrence = state.inputRecurrence,
-            onRecurrenceChange = { viewModel.updateRecurrence(it) },
-            recurrenceDays = state.inputRecurrenceDays,
-            onRecurrenceDayToggle = { viewModel.toggleRecurrenceDay(it) },
-            recurrenceStartDate = state.inputRecurrenceStartDate,
-            onRecurrenceStartDateClick = { viewModel.showRecurrenceStartPicker() },
-            showRecurrenceStartPicker = state.showRecurrenceStartPicker,
-            onRecurrenceStartDateSelected = { viewModel.updateRecurrenceStartDate(it) },
-            onDismissRecurrenceStartPicker = { viewModel.hideRecurrenceStartPicker() },
-            recurrenceEndDate = state.inputRecurrenceEndDate,
-            onRecurrenceEndDateClick = { viewModel.showRecurrenceEndPicker() },
-            showRecurrenceEndPicker = state.showRecurrenceEndPicker,
-            onRecurrenceEndDateSelected = { viewModel.updateRecurrenceEndDate(it) },
-            onDismissRecurrenceEndPicker = { viewModel.hideRecurrenceEndPicker() },
-            onConfirm = {
-                viewModel.saveTask()
-                showAddTaskModal = false
-            },
-            onDelete = state.isEditing.takeIf { it }?.let {
-                {
-                    state.editingTaskId?.let { viewModel.deleteTask(it) }
+        key(state.editingTaskId ?: "new") {
+            AddTaskModal(
+                isEditing = state.isEditing,
+                title = state.inputTitle,
+                onTitleChange = { viewModel.updateTitle(it) },
+                description = state.inputDescription,
+                onDescriptionChange = { viewModel.updateDescription(it) },
+                deadline = state.inputDeadline,
+                onDeadlineClick = if (state.inputRecurrence != null) { { viewModel.showTimePicker() } } else { { viewModel.showDatePicker() } },
+                showDatePicker = state.showDatePicker,
+                onDateSelected = { viewModel.updateDeadline(it) },
+                onDismissDatePicker = { viewModel.hideDatePicker() },
+                showTimePicker = state.showTimePicker,
+                onTimeSelected = { h, m -> viewModel.updateTime(h, m) },
+                onDismissTimePicker = { viewModel.hideTimePicker() },
+                recurrence = state.inputRecurrence,
+                onRecurrenceChange = { viewModel.updateRecurrence(it) },
+                recurrenceDays = state.inputRecurrenceDays,
+                onRecurrenceDayToggle = { viewModel.toggleRecurrenceDay(it) },
+                recurrenceStartDate = state.inputRecurrenceStartDate,
+                onRecurrenceStartDateClick = { viewModel.showRecurrenceStartPicker() },
+                showRecurrenceStartPicker = state.showRecurrenceStartPicker,
+                onRecurrenceStartDateSelected = { viewModel.updateRecurrenceStartDate(it) },
+                onDismissRecurrenceStartPicker = { viewModel.hideRecurrenceStartPicker() },
+                recurrenceEndDate = state.inputRecurrenceEndDate,
+                onRecurrenceEndDateClick = { viewModel.showRecurrenceEndPicker() },
+                showRecurrenceEndPicker = state.showRecurrenceEndPicker,
+                onRecurrenceEndDateSelected = { viewModel.updateRecurrenceEndDate(it) },
+                onDismissRecurrenceEndPicker = { viewModel.hideRecurrenceEndPicker() },
+                onConfirm = {
+                    viewModel.saveTask()
+                    showAddTaskModal = false
+                },
+                onDelete = state.isEditing.takeIf { it }?.let {
+                    {
+                        state.editingTaskId?.let { viewModel.deleteTask(it) }
+                        viewModel.resetInput()
+                        showAddTaskModal = false
+                    }
+                },
+                onDismiss = {
                     viewModel.resetInput()
                     showAddTaskModal = false
                 }
-            },
-            onDismiss = {
-                viewModel.resetInput()
-                showAddTaskModal = false
-            }
-        )
+            )
+        }
     }
 }
 
@@ -480,6 +482,7 @@ private fun AddTaskModal(
     onRecurrenceDayToggle: (DayOfWeek) -> Unit,
     onConfirm: () -> Unit,
     onDelete: (() -> Unit)? = null,
+    deleteLoading: Boolean = false,
     onDismiss: () -> Unit
 ) {
     val datePickerState = rememberDatePickerState(
@@ -723,11 +726,20 @@ private fun AddTaskModal(
             title = { Text("Xoá nhiệm vụ", color = CosmicTheme.colors.textPrimary) },
             text = { Text("Bạn có chắc muốn xoá nhiệm vụ này?", color = CosmicTheme.colors.textSecondary) },
             confirmButton = {
-                TextButton(onClick = {
-                    showDeleteConfirm = false
-                    onDelete?.invoke()
-                }) {
-                    Text("Xoá", color = CosmicTheme.colors.supernova)
+                TextButton(
+                    onClick = {
+                        if (!deleteLoading) {
+                            showDeleteConfirm = false
+                            onDelete?.invoke()
+                        }
+                    },
+                    enabled = !deleteLoading
+                ) {
+                    if (deleteLoading) {
+                        CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(16.dp), color = CosmicTheme.colors.supernova)
+                    } else {
+                        Text("Xoá", color = CosmicTheme.colors.supernova)
+                    }
                 }
             },
             dismissButton = {
@@ -1035,12 +1047,7 @@ private fun TaskItem(
 
 private fun formatDeadline(millis: Long): String {
     val ldt = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDateTime()
-    val formatter = if (ldt.hour == 0 && ldt.minute == 0) {
-        DateTimeFormatter.ofPattern("dd/MM", Locale("vi", "VN"))
-    } else {
-        DateTimeFormatter.ofPattern("dd/MM HH:mm", Locale("vi", "VN"))
-    }
-    return ldt.format(formatter)
+    return ldt.format(DateTimeFormatter.ofPattern("dd/MM HH:mm", Locale("vi", "VN")))
 }
 
 private fun formatTime(millis: Long): String {

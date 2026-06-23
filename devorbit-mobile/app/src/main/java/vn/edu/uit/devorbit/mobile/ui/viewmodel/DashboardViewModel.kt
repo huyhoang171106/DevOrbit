@@ -80,7 +80,7 @@ class DashboardViewModel @Inject constructor(
     private val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     private val displayDateFormat = DateTimeFormatter.ofPattern("EEEE, dd/MM", Locale("vi", "VN"))
 
-    private val minDate: LocalDate = LocalDate.of(2026, 6, 8)
+    private val minDate: LocalDate = LocalDate.now().minusMonths(6).with(DayOfWeek.MONDAY)
 
     private fun computeMaxWeekOffset(): Int {
         val now = LocalDate.now().with(DayOfWeek.MONDAY)
@@ -157,16 +157,18 @@ class DashboardViewModel @Inject constructor(
 
     private fun observeSemesterCourses() {
         viewModelScope.launch {
-            semesterCourseDao.getAllSemesterCourses().collect { semesterCourses ->
+            combine(
+                semesterCourseDao.getAllSemesterCourses(),
+                courseDao.getAllCourses()
+            ) { semesterCourses, allCourses ->
                 val courseIds = semesterCourses.map { it.courseId }
                 if (courseIds.isEmpty()) {
                     _state.update { it.copy(semesterCourses = emptyList()) }
                 } else {
-                    val allCourses = courseDao.getAllCourses().first()
                     val selected = allCourses.filter { it.id in courseIds }
                     _state.update { it.copy(semesterCourses = selected) }
                 }
-            }
+            }.collect()
         }
     }
 

@@ -3,6 +3,8 @@ package vn.edu.uit.devorbit.mobile.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CreateGroupPlanRequest
@@ -56,6 +58,8 @@ class TaskManagementViewModel @Inject constructor(
     private val _state = MutableStateFlow(TaskManagementUiState())
     val state: StateFlow<TaskManagementUiState> = _state.asStateFlow()
 
+    private var searchJob: Job? = null
+
     init {
         observeTasks()
         loadGroupPlans()
@@ -90,7 +94,11 @@ class TaskManagementViewModel @Inject constructor(
 
     fun updateSearchQuery(query: String) {
         _state.update { it.copy(searchQuery = query) }
-        refreshTasks()
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            delay(300)
+            refreshTasks()
+        }
     }
 
     fun updateDescription(desc: String) {
@@ -205,6 +213,7 @@ class TaskManagementViewModel @Inject constructor(
         val s = _state.value
         val title = s.inputTitle.trim()
         if (title.isBlank()) return
+        if (s.inputRecurrence == null && s.inputDeadline == null) return
         viewModelScope.launch {
             try {
                 val deadline = if (s.inputRecurrence != null) {

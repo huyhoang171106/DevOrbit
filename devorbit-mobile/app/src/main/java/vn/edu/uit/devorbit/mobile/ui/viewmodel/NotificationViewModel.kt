@@ -34,9 +34,20 @@ class NotificationViewModel @Inject constructor(
     private val _actionLoadingId = MutableStateFlow<Long?>(null)
     val actionLoadingId: StateFlow<Long?> = _actionLoadingId.asStateFlow()
 
+    private var pollingJob: kotlinx.coroutines.Job? = null
+
     init {
         loadNotifications()
         startPolling()
+    }
+
+    fun resumePolling() {
+        if (pollingJob?.isActive != true) startPolling()
+    }
+
+    fun stopPolling() {
+        pollingJob?.cancel()
+        pollingJob = null
     }
 
     fun loadNotifications() {
@@ -56,7 +67,8 @@ class NotificationViewModel @Inject constructor(
     }
 
     private fun startPolling() {
-        viewModelScope.launch {
+        pollingJob?.cancel()
+        pollingJob = viewModelScope.launch {
             while (true) {
                 delay(15_000)
                 try {
@@ -75,7 +87,9 @@ class NotificationViewModel @Inject constructor(
                 val current = _unreadCount.value
                 if (current > 0) _unreadCount.value = current - 1
                 loadNotifications()
-            } catch (_: Exception) { }
+            } catch (e: Exception) {
+                _error.value = "Không thể đánh dấu đã đọc"
+            }
         }
     }
 
@@ -85,7 +99,9 @@ class NotificationViewModel @Inject constructor(
                 apiService.markAllNotificationsRead()
                 _unreadCount.value = 0
                 loadNotifications()
-            } catch (_: Exception) { }
+            } catch (e: Exception) {
+                _error.value = "Không thể đánh dấu tất cả đã đọc"
+            }
         }
     }
 
@@ -96,7 +112,9 @@ class NotificationViewModel @Inject constructor(
                 apiService.respondInvite(planId, RespondInviteRequest("accept"))
                 markAsRead(notificationId)
                 loadNotifications()
-            } catch (_: Exception) { }
+            } catch (e: Exception) {
+                _error.value = "Không thể chấp nhận lời mời"
+            }
             _actionLoadingId.value = null
         }
     }
@@ -108,7 +126,9 @@ class NotificationViewModel @Inject constructor(
                 apiService.respondInvite(planId, RespondInviteRequest("decline"))
                 markAsRead(notificationId)
                 loadNotifications()
-            } catch (_: Exception) { }
+            } catch (e: Exception) {
+                _error.value = "Không thể từ chối lời mời"
+            }
             _actionLoadingId.value = null
         }
     }
@@ -120,7 +140,9 @@ class NotificationViewModel @Inject constructor(
                 apiService.approveDeleteTask(taskId, ApproveDeleteRequest("approve"))
                 markAsRead(notificationId)
                 loadNotifications()
-            } catch (_: Exception) { }
+            } catch (e: Exception) {
+                _error.value = "Không thể phê duyệt xoá"
+            }
             _actionLoadingId.value = null
         }
     }
@@ -132,7 +154,9 @@ class NotificationViewModel @Inject constructor(
                 apiService.approveDeleteTask(taskId, ApproveDeleteRequest("reject"))
                 markAsRead(notificationId)
                 loadNotifications()
-            } catch (_: Exception) { }
+            } catch (e: Exception) {
+                _error.value = "Không thể từ chối xoá"
+            }
             _actionLoadingId.value = null
         }
     }

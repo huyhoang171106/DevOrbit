@@ -32,7 +32,7 @@ fun ChatInputBar(
     ) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 12.dp, vertical = 12.dp)
+                .padding(horizontal = 12.dp, vertical = 8.dp)
                 .navigationBarsPadding(),
             verticalAlignment = Alignment.CenterVertically
         ) {

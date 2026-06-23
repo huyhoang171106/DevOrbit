@@ -25,12 +25,14 @@ class SettingsDataStore @Inject constructor(
         val JWT_TOKEN = stringPreferencesKey("jwt_token")
         val STUDENT_NAME = stringPreferencesKey("student_name")
         val STUDENT_CODE = stringPreferencesKey("student_code")
+        val STUDENT_ID = intPreferencesKey("student_id")
         val DARK_MODE = booleanPreferencesKey("dark_mode")
     }
 
     val token: Flow<String?> = context.settingsStore.data.map { it[Keys.JWT_TOKEN] }
     val studentName: Flow<String?> = context.settingsStore.data.map { it[Keys.STUDENT_NAME] }
     val studentCode: Flow<String?> = context.settingsStore.data.map { it[Keys.STUDENT_CODE] }
+    val studentId: Flow<Int?> = context.settingsStore.data.map { it[Keys.STUDENT_ID] }
     val darkMode: Flow<Boolean> = context.settingsStore.data.map { it[Keys.DARK_MODE] ?: true }
 
     suspend fun saveToken(token: String) {
@@ -47,6 +49,10 @@ class SettingsDataStore @Inject constructor(
 
     suspend fun saveStudentCode(code: String) {
         context.settingsStore.edit { it[Keys.STUDENT_CODE] = code }
+    }
+
+    suspend fun saveStudentId(id: Int) {
+        context.settingsStore.edit { it[Keys.STUDENT_ID] = id }
     }
 
     suspend fun setDarkMode(enabled: Boolean) {

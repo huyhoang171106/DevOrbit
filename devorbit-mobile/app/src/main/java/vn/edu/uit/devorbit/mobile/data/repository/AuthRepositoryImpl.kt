@@ -87,6 +87,8 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun getProfile(): Result<StudentInfo> = runCatching {
         val response = apiService.getStudentProfile()
+        val id = response["id"] as? Number
+        id?.let { settingsDataStore.saveStudentId(it.toInt()) }
         StudentInfo(
             studentCode = response["studentCode"] as? String ?: "",
             fullName = response["fullName"] as? String ?: "",

@@ -105,11 +105,27 @@ fun ChatMessageBubble(
 }
 
 private fun formatMessageTime(isoString: String): String {
+    if (isoString.isBlank()) return ""
     return try {
-        val instant = Instant.parse(isoString)
+        val instant = try {
+            Instant.parse(isoString)
+        } catch (_: Exception) {
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss[.SSS][XXX][X]")
+            try {
+                java.time.LocalDateTime.parse(isoString, formatter).atZone(ZoneId.systemDefault()).toInstant()
+            } catch (_: Exception) {
+                return ""
+            }
+        }
         val local = instant.atZone(ZoneId.systemDefault())
-        val formatter = DateTimeFormatter.ofPattern("HH:mm")
-        local.format(formatter)
+        val now = java.time.ZonedDateTime.now()
+        val timeStr = local.format(DateTimeFormatter.ofPattern("HH:mm"))
+        when {
+            local.toLocalDate() == now.toLocalDate() -> timeStr
+            local.toLocalDate() == now.toLocalDate().minusDays(1) -> "Hôm qua $timeStr"
+            local.year == now.year -> local.format(DateTimeFormatter.ofPattern("dd 'thg' M, HH:mm"))
+            else -> local.format(DateTimeFormatter.ofPattern("dd 'thg' M/yyyy, HH:mm"))
+        }
     } catch (_: Exception) {
         ""
     }

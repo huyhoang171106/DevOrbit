@@ -48,6 +48,7 @@ data class CommunityUiState(
     val isLoadingChannels: Boolean = false,
     val isLoadingMessages: Boolean = false,
     val currentUserId: Long? = null,
+    val currentUserName: String = "",
     val error: String? = null
 )
 
@@ -68,7 +69,9 @@ class CommunityViewModel @Inject constructor(
 
     private fun loadCurrentUser() {
         viewModelScope.launch {
-            val code = settingsDataStore.studentCode.first()
+            val id = settingsDataStore.studentId.first()
+            val name = settingsDataStore.studentName.first() ?: ""
+            _uiState.update { it.copy(currentUserId = id?.toLong(), currentUserName = name) }
         }
     }
 
@@ -152,7 +155,7 @@ class CommunityViewModel @Inject constructor(
         val tempId = -(System.currentTimeMillis())
         val optimistic = ChatMessage(
             id = tempId, channelId = channel.id, studentId = _uiState.value.currentUserId ?: 0,
-            senderName = "You", senderAvatar = null, content = trimmed,
+            senderName = _uiState.value.currentUserName.ifBlank { "Bạn" }, senderAvatar = null, content = trimmed,
             createdAt = java.time.Instant.now().toString(), isSending = true
         )
         _uiState.update { it.copy(messages = it.messages + optimistic) }
@@ -169,7 +172,10 @@ class CommunityViewModel @Inject constructor(
                 val msg = Gson().fromJson(body, ChatMessageResponse::class.java)
                 if (msg.channelId == currentChannelId) {
                     _uiState.update { state ->
-                        val filtered = state.messages.filterNot { m -> m.isSending && m.studentId == msg.studentId && m.content == msg.content }
+                        val myId = state.currentUserId
+                        val filtered = state.messages.filterNot { m ->
+                            m.isSending && m.studentId == myId && m.content == msg.content
+                        }
                         val exists = filtered.indexOfFirst { it.id == msg.id }
                         val updated = if (exists >= 0) {
                             filtered.toMutableList().apply { set(exists, msg.toDomain()) }

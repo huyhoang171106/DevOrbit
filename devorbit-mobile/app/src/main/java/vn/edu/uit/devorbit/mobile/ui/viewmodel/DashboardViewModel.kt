@@ -1,10 +1,13 @@
 package vn.edu.uit.devorbit.mobile.ui.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import vn.edu.uit.devorbit.mobile.data.local.dao.CourseDao
 import vn.edu.uit.devorbit.mobile.data.local.dao.DailyActivityDao
 import vn.edu.uit.devorbit.mobile.data.local.dao.SemesterCourseDao
@@ -87,6 +90,7 @@ class DashboardViewModel @Inject constructor(
     }
 
     private var currentStudentCode: String = ""
+    private val dailyUpdateMutex = Mutex()
 
     init {
         observeProfile()
@@ -175,14 +179,15 @@ class DashboardViewModel @Inject constructor(
                         TaskFilter.WEEK -> "week"
                         TaskFilter.ALL -> "all"
                     }
-                    val tasks = apiService.getPersonalTasks(filterParam).map { it.toTaskItem() }
-                    val sorted = tasks.sortedBy { it.completed }
+                    val personalTasks = apiService.getPersonalTasks(filterParam).map { it.toTaskItem() }
+                    val groupTasks = apiService.getAssignedGroupTasks().map { it.toTaskItem() }
+                    val allTasks = (personalTasks + groupTasks).sortedBy { it.completed }
                     _state.update { it.copy(
-                        sortedTasks = sorted,
-                        totalTaskCount = sorted.size,
-                        completedTaskCount = sorted.count { it.completed }
+                        sortedTasks = allTasks,
+                        totalTaskCount = allTasks.size,
+                        completedTaskCount = allTasks.count { it.completed }
                     ) }
-                    val todayTasks = sorted.filter { isTaskItemToday(it) }
+                    val todayTasks = allTasks.filter { isTaskItemToday(it) }
                     recordTaskProgress(todayTasks.count { it.completed }, todayTasks.size)
                 } catch (_: Exception) { }
             }
@@ -193,15 +198,6 @@ class DashboardViewModel @Inject constructor(
         if (task.deadline == null) return false
         val date = Instant.ofEpochMilli(task.deadline).atZone(ZoneId.systemDefault()).toLocalDate()
         return date == LocalDate.now()
-    }
-
-    private fun isTaskItemThisWeek(task: TaskItem): Boolean {
-        if (task.deadline == null) return false
-        val date = Instant.ofEpochMilli(task.deadline).atZone(ZoneId.systemDefault()).toLocalDate()
-        val now = LocalDate.now()
-        val monday = now.with(DayOfWeek.MONDAY)
-        val sunday = now.with(DayOfWeek.SUNDAY)
-        return date >= monday && date <= sunday
     }
 
     private fun observeTechStacks() {
@@ -270,61 +266,63 @@ class DashboardViewModel @Inject constructor(
 
     fun addReposViewed(count: Int = 1) {
         viewModelScope.launch {
-            if (currentStudentCode.isBlank()) return@launch
-            val today = LocalDate.now().format(dateFormat)
-            val existing = dailyActivityDao.getActivity(currentStudentCode, today)
-            val current = existing?.reposViewed ?: 0
-            dailyActivityDao.upsertActivity(DailyActivityEntity(
-                studentCode = currentStudentCode,
-                date = today,
-                reposViewed = current + count,
-                tasksCompleted = existing?.tasksCompleted ?: 0,
-                tasksTotal = existing?.tasksTotal ?: 0
-            ))
-            loadWeekDays()
+            dailyUpdateMutex.withLock {
+                if (currentStudentCode.isBlank()) return@withLock
+                val today = LocalDate.now().format(dateFormat)
+                val existing = dailyActivityDao.getActivity(currentStudentCode, today)
+                dailyActivityDao.upsertActivity(DailyActivityEntity(
+                    studentCode = currentStudentCode,
+                    date = today,
+                    reposViewed = (existing?.reposViewed ?: 0) + count,
+                    tasksCompleted = existing?.tasksCompleted ?: 0,
+                    tasksTotal = existing?.tasksTotal ?: 0
+                ))
+                loadWeekDays()
+            }
             checkStreak()
         }
     }
 
     fun recordTaskProgress(completedCount: Int, totalCount: Int) {
         viewModelScope.launch {
-            if (currentStudentCode.isBlank()) return@launch
-            val today = LocalDate.now().format(dateFormat)
-            val existing = dailyActivityDao.getActivity(currentStudentCode, today)
-            dailyActivityDao.upsertActivity(DailyActivityEntity(
-                studentCode = currentStudentCode,
-                date = today,
-                reposViewed = existing?.reposViewed ?: 0,
-                tasksCompleted = completedCount,
-                tasksTotal = totalCount
-            ))
-            loadWeekDays()
+            dailyUpdateMutex.withLock {
+                if (currentStudentCode.isBlank()) return@withLock
+                val today = LocalDate.now().format(dateFormat)
+                val existing = dailyActivityDao.getActivity(currentStudentCode, today)
+                dailyActivityDao.upsertActivity(DailyActivityEntity(
+                    studentCode = currentStudentCode,
+                    date = today,
+                    reposViewed = existing?.reposViewed ?: 0,
+                    tasksCompleted = completedCount,
+                    tasksTotal = totalCount
+                ))
+                loadWeekDays()
+            }
         }
     }
 
     private suspend fun checkStreak() {
         if (currentStudentCode.isBlank()) return
         val today = LocalDate.now().format(dateFormat)
-        val yesterday = LocalDate.now().minusDays(1).format(dateFormat)
-
-        val yesterdayActivity = dailyActivityDao.getActivity(currentStudentCode, yesterday)
-        val yesterdayRepos = yesterdayActivity?.reposViewed ?: 0
+        val todayActivity = dailyActivityDao.getActivity(currentStudentCode, today)
+        val todayRepos = todayActivity?.reposViewed ?: 0
+        if (todayRepos < 3) return
 
         val lastStreakDate = settingsDataStore.getLastStreakDate(currentStudentCode)
+        if (lastStreakDate == today) return
+
+        val yesterday = LocalDate.now().minusDays(1).format(dateFormat)
+        val yesterdayActivity = dailyActivityDao.getActivity(currentStudentCode, yesterday)
+        val yesterdayRepos = yesterdayActivity?.reposViewed ?: 0
         val currentStreak = settingsDataStore.getStreakCount(currentStudentCode)
 
-        if (yesterdayRepos >= 3) {
-            if (lastStreakDate != today) {
-                val newStreak = currentStreak + 1
-                settingsDataStore.setStreak(currentStudentCode, newStreak, today)
-                _state.update { it.copy(streakCount = newStreak) }
-            }
+        val newStreak = if (yesterdayRepos >= 3 && lastStreakDate == yesterday) {
+            currentStreak + 1
         } else {
-            if (lastStreakDate != today) {
-                settingsDataStore.setStreak(currentStudentCode, 0, today)
-                _state.update { it.copy(streakCount = 0) }
-            }
+            1
         }
+        settingsDataStore.setStreak(currentStudentCode, newStreak, today)
+        _state.update { it.copy(streakCount = newStreak) }
     }
 
     private fun loadWeekDays() {
@@ -370,19 +368,25 @@ class DashboardViewModel @Inject constructor(
         studyTimerJob = viewModelScope.launch {
             while (true) {
                 kotlinx.coroutines.delay(60_000)
-                if (currentStudentCode.isNotBlank()) {
-                    val today = LocalDate.now().format(dateFormat)
-                    val existing = dailyActivityDao.getActivity(currentStudentCode, today)
-                    dailyActivityDao.upsertActivity(DailyActivityEntity(
-                        studentCode = currentStudentCode,
-                        date = today,
-                        reposViewed = existing?.reposViewed ?: 0,
-                        tasksCompleted = existing?.tasksCompleted ?: 0,
-                        tasksTotal = existing?.tasksTotal ?: 0,
-                        studyMinutes = (existing?.studyMinutes ?: 0) + 1
-                    ))
-                    val hours = ((existing?.studyMinutes ?: 0) + 1) / 60
-                    _state.update { it.copy(studyHoursToday = hours) }
+                dailyUpdateMutex.withLock {
+                    if (currentStudentCode.isNotBlank()) {
+                        try {
+                            val today = LocalDate.now().format(dateFormat)
+                            val existing = dailyActivityDao.getActivity(currentStudentCode, today)
+                            dailyActivityDao.upsertActivity(DailyActivityEntity(
+                                studentCode = currentStudentCode,
+                                date = today,
+                                reposViewed = existing?.reposViewed ?: 0,
+                                tasksCompleted = existing?.tasksCompleted ?: 0,
+                                tasksTotal = existing?.tasksTotal ?: 0,
+                                studyMinutes = (existing?.studyMinutes ?: 0) + 1
+                            ))
+                            val hours = ((existing?.studyMinutes ?: 0) + 1) / 60
+                            _state.update { it.copy(studyHoursToday = hours) }
+                        } catch (e: Exception) {
+                            Log.e("DashboardVM", "Study timer DB error", e)
+                        }
+                    }
                 }
             }
         }

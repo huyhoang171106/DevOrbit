@@ -3,11 +3,11 @@ package vn.edu.uit.devorbit.mobile.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CreateGroupPlanRequest
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CreatePersonalTaskRequest
+import vn.edu.uit.devorbit.mobile.data.remote.dto.GroupPlanResponse
 import vn.edu.uit.devorbit.mobile.data.remote.dto.UpdatePersonalTaskRequest
 import vn.edu.uit.devorbit.mobile.domain.model.TaskItem
 import vn.edu.uit.devorbit.mobile.domain.model.millisToIso
@@ -43,7 +43,9 @@ data class TaskManagementUiState(
     val creatingPlan: Boolean = false,
     val planTitle: String = "",
     val showCreatePlanDialog: Boolean = false,
-    val planError: String? = null
+    val planError: String? = null,
+    val groupPlans: List<GroupPlanResponse> = emptyList(),
+    val groupPlansLoading: Boolean = false
 )
 
 @HiltViewModel
@@ -56,6 +58,7 @@ class TaskManagementViewModel @Inject constructor(
 
     init {
         observeTasks()
+        loadGroupPlans()
     }
 
     private fun observeTasks() {
@@ -288,6 +291,18 @@ class TaskManagementViewModel @Inject constructor(
                 apiService.deletePersonalTask(taskId)
                 refreshTasks()
             } catch (_: Exception) { }
+        }
+    }
+
+    fun loadGroupPlans() {
+        viewModelScope.launch {
+            _state.update { it.copy(groupPlansLoading = true) }
+            try {
+                val plans = apiService.getMyGroupPlans()
+                _state.update { it.copy(groupPlans = plans, groupPlansLoading = false) }
+            } catch (_: Exception) {
+                _state.update { it.copy(groupPlansLoading = false) }
+            }
         }
     }
 

@@ -814,13 +814,22 @@ private fun TaskCard(task: TaskItem, onClick: () -> Unit) {
                 }
             }
             Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = task.title,
-                style = CosmicTheme.typography.body,
-                color = if (task.completed) CosmicTheme.colors.textTertiary else CosmicTheme.colors.textPrimary,
-                textDecoration = if (task.completed) TextDecoration.LineThrough else TextDecoration.None,
-                modifier = Modifier.weight(1f)
-            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = task.title,
+                    style = CosmicTheme.typography.body,
+                    color = if (task.completed) CosmicTheme.colors.textTertiary else CosmicTheme.colors.textPrimary,
+                    textDecoration = if (task.completed) TextDecoration.LineThrough else TextDecoration.None
+                )
+                if (task.isGroupTask) {
+                    Text(
+                        text = "Nhóm",
+                        fontSize = 10.sp,
+                        color = CosmicTheme.colors.plasma,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
         }
     }
 }

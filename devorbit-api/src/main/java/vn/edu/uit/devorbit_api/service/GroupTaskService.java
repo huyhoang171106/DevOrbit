@@ -146,6 +146,17 @@ public class GroupTaskService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public List<GroupTaskResponse> getAssignedTasks(String studentCode) {
+        List<GroupPlan> plans = groupPlanRepository.findActiveByStudentCode(studentCode);
+        if (plans.isEmpty()) return List.of();
+        List<Long> planIds = plans.stream().map(GroupPlan::getId).toList();
+        return taskRepository.findByGroupPlanIdsAndAssignedTo(planIds, studentCode)
+            .stream()
+            .map(GroupTaskResponse::from)
+            .toList();
+    }
+
     private void validateAcceptedMember(String studentCode, GroupPlan plan) {
         if (!plan.getCreatorStudentCode().equals(studentCode) &&
             !memberRepository.existsByGroupPlanIdAndStudentCodeAndStatus(plan.getId(), studentCode, MemberStatus.ACCEPTED)) {

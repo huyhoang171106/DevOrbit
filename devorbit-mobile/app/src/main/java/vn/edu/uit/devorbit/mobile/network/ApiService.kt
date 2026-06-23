@@ -153,6 +153,9 @@ interface ApiService {
     @GET("/api/student/group-plans/{id}/tasks")
     suspend fun getGroupTasks(@Path("id") planId: Long): List<GroupTaskResponse>
 
+    @GET("/api/student/group-plans/assigned-tasks")
+    suspend fun getAssignedGroupTasks(): List<GroupTaskResponse>
+
     @POST("/api/student/group-plans/{id}/tasks")
     suspend fun addGroupTask(@Path("id") planId: Long, @Body request: AddGroupTaskRequest): GroupTaskResponse
 

@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -146,27 +147,67 @@ fun TaskManagementScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // ── Group Plan Button ──
-            OutlinedButton(
-                onClick = { viewModel.showCreatePlanDialog() },
-                enabled = !state.creatingPlan,
+            // ── Group Plan Section ──
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = CosmicTheme.colors.plasma,
-                    disabledContentColor = CosmicTheme.colors.textTertiary
-                ),
-                border = BorderStroke(1.dp, CosmicTheme.colors.plasma.copy(alpha = 0.4f))
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                if (state.creatingPlan) {
-                    CircularProgressIndicator(
-                        strokeWidth = 2.dp,
-                        modifier = Modifier.size(16.dp),
-                        color = CosmicTheme.colors.plasma
-                    )
-                    Spacer(Modifier.width(8.dp))
+                Text(
+                    text = "Kế hoạch nhóm",
+                    color = CosmicTheme.colors.textPrimary,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                TextButton(onClick = { viewModel.showCreatePlanDialog() }) {
+                    Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp), tint = CosmicTheme.colors.plasma)
+                    Spacer(Modifier.width(4.dp))
+                    Text("Tạo mới", color = CosmicTheme.colors.plasma, fontSize = 13.sp)
                 }
-                Text("Tạo kế hoạch nhóm", style = CosmicTheme.typography.body)
+            }
+            if (state.groupPlansLoading) {
+                Box(modifier = Modifier.fillMaxWidth().height(48.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(20.dp), color = CosmicTheme.colors.plasma)
+                }
+            } else if (state.groupPlans.isEmpty()) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    color = CosmicTheme.colors.nebula
+                ) {
+                    Text(
+                        text = "Bạn chưa tham gia kế hoạch nhóm nào",
+                        color = CosmicTheme.colors.textTertiary,
+                        fontSize = 13.sp,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            } else {
+                state.groupPlans.forEach { plan ->
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onNavigateToGroupPlan(plan.id) },
+                        shape = RoundedCornerShape(12.dp),
+                        color = CosmicTheme.colors.nebula
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.DateRange, contentDescription = null, tint = CosmicTheme.colors.plasma, modifier = Modifier.size(20.dp))
+                            Spacer(Modifier.width(12.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(plan.title, color = CosmicTheme.colors.textPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                                if (plan.deadline != null) {
+                                    Text("Hạn: ${plan.deadline}", color = CosmicTheme.colors.textTertiary, fontSize = 11.sp)
+                                }
+                            }
+                            Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = CosmicTheme.colors.textTertiary, modifier = Modifier.size(18.dp))
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))

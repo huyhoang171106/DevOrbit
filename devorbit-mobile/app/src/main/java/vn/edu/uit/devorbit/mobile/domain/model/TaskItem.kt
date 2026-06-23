@@ -1,5 +1,6 @@
 package vn.edu.uit.devorbit.mobile.domain.model
 
+import vn.edu.uit.devorbit.mobile.data.remote.dto.GroupTaskResponse
 import vn.edu.uit.devorbit.mobile.data.remote.dto.PersonalTaskResponse
 import java.time.Instant
 import java.time.LocalDate
@@ -17,7 +18,9 @@ data class TaskItem(
     val recurrenceDaysOfWeek: Int?,
     val recurrenceStartDate: Long?,
     val recurrenceEndDate: Long?,
-    val createdAt: Long
+    val createdAt: Long,
+    val isGroupTask: Boolean = false,
+    val groupPlanId: Long? = null
 )
 
 fun PersonalTaskResponse.toTaskItem(): TaskItem {
@@ -25,7 +28,7 @@ fun PersonalTaskResponse.toTaskItem(): TaskItem {
         id = id,
         title = title,
         description = description ?: "",
-        deadline = deadline?.let { parseIsoToMillis(it) },
+        deadline = deadline?.let { parseDeadlineToMillis(it) },
         completed = completed,
         recurrence = recurrence,
         recurrenceDaysOfWeek = recurrenceDaysOfWeek,
@@ -33,6 +36,37 @@ fun PersonalTaskResponse.toTaskItem(): TaskItem {
         recurrenceEndDate = recurrenceEndDate?.let { parseIsoDateToMillis(it) },
         createdAt = createdAt?.let { parseIsoToMillis(it) } ?: System.currentTimeMillis()
     )
+}
+
+fun GroupTaskResponse.toTaskItem(): TaskItem {
+    return TaskItem(
+        id = id,
+        title = title,
+        description = description ?: "",
+        deadline = deadline?.let { parseDeadlineToMillis(it) },
+        completed = completed,
+        recurrence = null,
+        recurrenceDaysOfWeek = null,
+        recurrenceStartDate = null,
+        recurrenceEndDate = null,
+        createdAt = createdAt?.let { parseIsoToMillis(it) } ?: System.currentTimeMillis(),
+        isGroupTask = true,
+        groupPlanId = groupPlanId
+    )
+}
+
+fun parseDeadlineToMillis(iso: String): Long {
+    return try {
+        LocalDateTime.parse(iso, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            .atZone(ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
+    } catch (_: Exception) {
+        LocalDate.parse(iso)
+            .atStartOfDay(ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
+    }
 }
 
 fun parseIsoToMillis(iso: String): Long {

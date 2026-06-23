@@ -109,6 +109,12 @@ public class StudentGroupPlanController {
         groupTaskService.requestDeleteTask(studentCode, taskId);
     }
 
+    @GetMapping("/assigned-tasks")
+    public List<GroupTaskResponse> getAssignedTasks(
+            @AuthenticationPrincipal String studentCode) {
+        return groupTaskService.getAssignedTasks(studentCode);
+    }
+
     @PostMapping("/tasks/{taskId}/approve-delete")
     public void approveDeleteTask(
             @AuthenticationPrincipal String studentCode,

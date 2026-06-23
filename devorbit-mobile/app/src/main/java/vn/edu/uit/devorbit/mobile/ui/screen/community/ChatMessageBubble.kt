@@ -2,15 +2,21 @@ package vn.edu.uit.devorbit.mobile.ui.screen.community
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.ChatMessage
 import java.time.Instant
@@ -25,6 +31,7 @@ fun ChatMessageBubble(
     modifier: Modifier = Modifier
 ) {
     val alpha = if (message.isSending) 0.6f else 1f
+    val context = LocalContext.current
 
     Column(
         modifier = modifier
@@ -52,18 +59,36 @@ fun ChatMessageBubble(
                 Box(
                     modifier = Modifier
                         .size(36.dp)
-                        .background(
-                            CosmicTheme.colors.plasma.copy(alpha = 0.2f),
-                            RoundedCornerShape(18.dp)
-                        ),
+                        .clip(CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = message.senderName.take(1).uppercase(),
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = CosmicTheme.colors.plasma
-                    )
+                    if (!message.senderAvatar.isNullOrBlank()) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(context)
+                                .data(message.senderAvatar)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = message.senderName,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(CosmicTheme.colors.plasma.copy(alpha = 0.2f), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = message.senderName.take(1).uppercase(),
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = CosmicTheme.colors.plasma
+                            )
+                        }
+                    }
                 }
                 Spacer(modifier = Modifier.width(10.dp))
             }

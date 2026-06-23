@@ -32,8 +32,8 @@ fun CommunityScreen(
     var showMembers by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        viewModel.connect()
         viewModel.loadChannels()
+        viewModel.connect()
     }
 
     LaunchedEffect(uiState.messages.size) {
@@ -42,7 +42,20 @@ fun CommunityScreen(
         }
     }
 
-    if (!uiState.isConnected && uiState.error != null && uiState.channels.isEmpty()) {
+    if (uiState.isLoadingChannels && uiState.channels.isEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(
+                color = CosmicTheme.colors.plasma,
+                strokeWidth = 2.dp
+            )
+        }
+        return
+    }
+
+    if (uiState.channels.isEmpty()) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center

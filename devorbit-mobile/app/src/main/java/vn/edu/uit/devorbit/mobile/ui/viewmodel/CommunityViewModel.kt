@@ -71,12 +71,19 @@ class CommunityViewModel @Inject constructor(
 
     private fun loadCurrentUser() {
         viewModelScope.launch {
+            val token = settingsDataStore.token.first()
+            if (token.isNullOrBlank()) {
+                val name = settingsDataStore.studentName.first() ?: ""
+                val id = settingsDataStore.studentId.first()
+                _uiState.update { it.copy(currentUserId = id?.toLong(), currentUserName = name) }
+                return@launch
+            }
             var id = settingsDataStore.studentId.first()
             val name = settingsDataStore.studentName.first() ?: ""
             
             if (id == null) {
                 val result = authRepository.getProfile()
-                result.onSuccess { profile ->
+                result.onSuccess {
                     id = settingsDataStore.studentId.first()
                 }
             }

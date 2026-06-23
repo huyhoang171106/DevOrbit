@@ -103,9 +103,11 @@ fun CommunityScreen(
     // ── Chat session detail dialog ──────────────────────────────────────
     sessionDetail?.let { session ->
         ChatSessionDetailDialog(
-            session = session,
-            messages = state.chatMessages,
-            onDismiss = { sessionDetail = null }
+            sessionId = session.id,
+            sessionTitle = session.title ?: "Phiên hỗ trợ",
+            studentName = session.studentName,
+            onDismiss = { sessionDetail = null },
+            viewModel = viewModel
         )
     }
 }
@@ -376,101 +378,3 @@ private fun ChatSessionsTab(
     }
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// CHAT SESSION DETAIL DIALOG
-// ══════════════════════════════════════════════════════════════════════════════
-
-@Composable
-private fun ChatSessionDetailDialog(
-    session: ChatSessionAdminResponse,
-    messages: List<ChatMessageAdminResponse>,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        shape = ObsidianShape.lg,
-        containerColor = MaterialTheme.colorScheme.surface,
-        title = {
-            Column {
-                Text(
-                    session.title ?: "Phiên hỗ trợ",
-                    style = ObsidianType.headlineSmall,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    "${session.studentName} · ${session.messageCount} tin nhắn",
-                    style = ObsidianType.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        },
-        text = {
-            if (messages.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(120.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        "Đang tải tin nhắn...",
-                        style = ObsidianType.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            } else {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 400.dp)
-                        .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    messages.forEach { msg ->
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = ObsidianShape.sm,
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
-                                    alpha = 0.5f
-                                )
-                            )
-                        ) {
-                            Column(modifier = Modifier.padding(12.dp)) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        msg.sender,
-                                        style = ObsidianType.labelMedium,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                    msg.createdAt?.let {
-                                        Text(
-                                            it,
-                                            style = ObsidianType.labelSmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                }
-                                Spacer(Modifier.height(4.dp))
-                                Text(
-                                    msg.content,
-                                    style = ObsidianType.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Đóng")
-            }
-        }
-    )
-}

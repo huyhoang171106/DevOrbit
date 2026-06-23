@@ -42,6 +42,7 @@ import vn.edu.uit.devorbit.admin.ui.repos.ReposScreen
 import vn.edu.uit.devorbit.admin.ui.reviews.ReviewsScreen
 import vn.edu.uit.devorbit.admin.ui.students.StudentsScreen
 import vn.edu.uit.devorbit.admin.ui.techstack.TechStackScreen
+import vn.edu.uit.devorbit.admin.ui.reports.ReportsScreen
 import vn.edu.uit.devorbit.admin.ui.theme.TextPrimary
 import vn.edu.uit.devorbit.admin.ui.theme.UITBlue
 import vn.edu.uit.devorbit.admin.ui.theme.UITBlueSoft
@@ -208,6 +209,7 @@ private fun AdminShell(onLogout: () -> Unit) {
             composable(AdminRoutes.GITHUB) { GithubScreen() }
             composable(AdminRoutes.COMMUNITY) { CommunityScreen() }
             composable(AdminRoutes.TECHSTACK) { TechStackScreen() }
+            composable(AdminRoutes.REPORTS) { ReportsScreen() }
             composable(AdminRoutes.NOTES) { NotesScreen() }
             composable(AdminRoutes.NOTIFICATIONS) { NotificationsScreen() }
         }

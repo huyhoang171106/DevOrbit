@@ -153,6 +153,60 @@ class CourseDetailViewModel @Inject constructor(
         }
     }
 
+    fun updateTutorial(item: TutorialItem, newTitle: String, newUrl: String) {
+        viewModelScope.launch {
+            val courseId = _state.value.courseId
+            if (courseId == 0L) return@launch
+            adminRepository.updateTutorial(courseId, item.id, TutorialRequest(
+                title = newTitle,
+                url = newUrl,
+                type = item.type,
+                description = item.description
+            )).fold(
+                onSuccess = { updated ->
+                    _state.value = _state.value.copy(tutorials = _state.value.tutorials.map { if (it.id == item.id) updated else it })
+                },
+                onFailure = { _state.value = _state.value.copy(error = it.message) }
+            )
+        }
+    }
+
+    fun updatePlaylist(item: YoutubePlaylistResponse, newTitle: String, newUrl: String) {
+        viewModelScope.launch {
+            val courseId = _state.value.courseId
+            if (courseId == 0L) return@launch
+            adminRepository.updateYoutubePlaylist(courseId, item.id, YoutubePlaylistRequest(
+                title = newTitle,
+                url = newUrl,
+                channelName = item.channelName,
+                description = item.description
+            )).fold(
+                onSuccess = { updated ->
+                    _state.value = _state.value.copy(playlists = _state.value.playlists.map { if (it.id == item.id) updated else it })
+                },
+                onFailure = { _state.value = _state.value.copy(error = it.message) }
+            )
+        }
+    }
+
+    fun updateArticle(item: ArticleItem, newTitle: String, newUrl: String) {
+        viewModelScope.launch {
+            val courseId = _state.value.courseId
+            if (courseId == 0L) return@launch
+            adminRepository.updateArticle(courseId, item.id, ArticleRequest(
+                title = newTitle,
+                url = newUrl,
+                author = item.author,
+                description = item.description
+            )).fold(
+                onSuccess = { updated ->
+                    _state.value = _state.value.copy(articles = _state.value.articles.map { if (it.id == item.id) updated else it })
+                },
+                onFailure = { _state.value = _state.value.copy(error = it.message) }
+            )
+        }
+    }
+
     fun updateCourse(request: AdminCourseUpsertRequest) {
         viewModelScope.launch {
             val courseId = _state.value.courseId

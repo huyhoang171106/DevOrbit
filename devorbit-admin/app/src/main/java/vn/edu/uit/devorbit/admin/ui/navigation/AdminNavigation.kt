@@ -18,6 +18,7 @@ object AdminRoutes {
     const val TECHSTACK = "techstack"
     const val NOTES = "notes"
     const val NOTIFICATIONS = "notifications"
+    const val REPORTS = "reports"
 
     fun courseDetail(courseId: Long) = "courses/$courseId"
 }
@@ -48,11 +49,12 @@ sealed class AdminScreen(val route: String, val label: String, val icon: ImageVe
     object Github : AdminScreen(AdminRoutes.GITHUB, "Quét GitHub", Icons.Rounded.Code, "Công cụ")
     object Community : AdminScreen(AdminRoutes.COMMUNITY, "Cộng đồng", Icons.Rounded.Forum, "Quản lý")
     object TechStack : AdminScreen(AdminRoutes.TECHSTACK, "Công nghệ", Icons.Rounded.Settings, "Công cụ")
+    object Reports : AdminScreen(AdminRoutes.REPORTS, "Báo cáo", Icons.Rounded.BarChart, "Quản lý")
     object Notes : AdminScreen(AdminRoutes.NOTES, "Ghi chú", Icons.Rounded.StickyNote2, "Quản lý")
     object Notifications : AdminScreen(AdminRoutes.NOTIFICATIONS, "Thông báo", Icons.Rounded.Notifications, "Hệ thống")
 
     companion object {
         val primaryTabs = listOf(Dashboard, Students, Courses, Repos)
-        val secondaryScreens = listOf(Candidates, Reviews, Github, Community, TechStack, Notes, Notifications)
+        val secondaryScreens = listOf(Candidates, Reviews, Github, Community, TechStack, Reports, Notes, Notifications)
     }
 }

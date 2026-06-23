@@ -5,9 +5,12 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 import retrofit2.http.Body
 import retrofit2.http.DELETE
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.PUT
 import vn.edu.uit.devorbit.mobile.data.remote.dto.*
+import okhttp3.MultipartBody
 
 interface ApiService {
     @GET("/api/courses")
@@ -70,6 +73,16 @@ interface ApiService {
     @GET("/api/student/me")
     suspend fun getStudentProfile(): Map<String, Any>
 
+    @Multipart
+    @POST("/api/student/me/avatar/upload")
+    suspend fun uploadAvatar(@Part file: MultipartBody.Part): Map<String, Any>
+
+    @POST("/api/student/me/name")
+    suspend fun updateFullName(@Body body: Map<String, String>): Map<String, Any>
+
+    @POST("/api/student/me/password")
+    suspend fun changePassword(@Body body: Map<String, String>): Map<String, Any>
+
     @GET("/api/student/bookmarks")
     suspend fun getBookmarks(): List<StudentBookmarkResponse>
 
@@ -123,4 +136,15 @@ interface ApiService {
 
     @PUT("/api/student/notifications/read-all")
     suspend fun markAllNotificationsRead(): Map<String, Any>
+
+    // Community
+    @GET("/api/student/community")
+    suspend fun getCommunityChannels(): List<ChatChannelResponse>
+
+    @GET("/api/student/community/channels/{channelId}/messages")
+    suspend fun getChannelMessages(
+        @Path("channelId") channelId: Long,
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 50
+    ): PaginatedMessagesResponse
 }

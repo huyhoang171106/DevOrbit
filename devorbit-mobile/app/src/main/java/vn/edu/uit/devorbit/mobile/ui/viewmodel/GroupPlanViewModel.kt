@@ -6,8 +6,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import vn.edu.uit.devorbit.mobile.data.datastore.SettingsDataStore
 import vn.edu.uit.devorbit.mobile.data.remote.dto.*
 import vn.edu.uit.devorbit.mobile.network.ApiService
 import java.io.IOException
@@ -20,6 +22,8 @@ data class GroupPlanDetailState(
     val members: List<GroupPlanMemberResponse> = emptyList(),
     val loading: Boolean = false,
     val error: String? = null,
+    val isCreator: Boolean = false,
+    val currentUserCode: String = "",
     val inviteCode: String = "",
     val inviteLoading: Boolean = false,
     val inviteError: String? = null,
@@ -30,7 +34,8 @@ data class GroupPlanDetailState(
 
 @HiltViewModel
 class GroupPlanViewModel @Inject constructor(
-    private val apiService: ApiService
+    private val apiService: ApiService,
+    private val settingsDataStore: SettingsDataStore
 ) : ViewModel() {
 
     private val _myPlans = MutableStateFlow<List<GroupPlanResponse>>(emptyList())
@@ -41,6 +46,13 @@ class GroupPlanViewModel @Inject constructor(
 
     private val _detail = MutableStateFlow(GroupPlanDetailState())
     val detail: StateFlow<GroupPlanDetailState> = _detail.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            val code = settingsDataStore.studentCode.first().orEmpty()
+            _detail.update { it.copy(currentUserCode = code) }
+        }
+    }
 
     fun loadMyPlans() {
         viewModelScope.launch {
@@ -59,7 +71,11 @@ class GroupPlanViewModel @Inject constructor(
                 val plan = apiService.getGroupPlanDetail(planId)
                 val tasks = apiService.getGroupTasks(planId)
                 val members = apiService.getGroupPlanMembers(planId)
-                _detail.update { it.copy(plan = plan, tasks = tasks, members = members, loading = false) }
+                val currentUserCode = _detail.value.currentUserCode
+                _detail.update { it.copy(
+                    plan = plan, tasks = tasks, members = members, loading = false,
+                    isCreator = plan.creatorStudentCode == currentUserCode
+                ) }
             } catch (e: Exception) {
                 _detail.update { it.copy(loading = false, error = "Không thể tải kế hoạch") }
             }
@@ -86,7 +102,9 @@ class GroupPlanViewModel @Inject constructor(
                 val planId = _detail.value.plan?.id ?: return@launch
                 val tasks = apiService.getGroupTasks(planId)
                 _detail.update { it.copy(tasks = tasks) }
-            } catch (_: Exception) { }
+            } catch (_: Exception) {
+                _detail.update { it.copy(actionError = "Không thể cập nhật nhiệm vụ") }
+             }
         }
     }
 
@@ -163,9 +181,10 @@ class GroupPlanViewModel @Inject constructor(
             _detail.update { it.copy(actionLoading = true) }
             try {
                 apiService.respondInvite(planId, RespondInviteRequest(action))
+                loadMyPlans()
                 _detail.update { it.copy(actionLoading = false) }
             } catch (_: Exception) {
-                _detail.update { it.copy(actionLoading = false) }
+                _detail.update { it.copy(actionLoading = false, actionError = "Không thể xử lý lời mời") }
             }
         }
     }
@@ -183,7 +202,6 @@ class GroupPlanViewModel @Inject constructor(
             }
         }
     }
-
     fun deletePlan(planId: Long, onSuccess: () -> Unit) {
         viewModelScope.launch {
             _detail.update { it.copy(actionLoading = true, actionError = null) }
@@ -194,6 +212,40 @@ class GroupPlanViewModel @Inject constructor(
                 _detail.update { it.copy(actionError = "Không thể xoá kế hoạch") }
             } finally {
                 _detail.update { it.copy(actionLoading = false) }
+            }
+        }
+    }
+
+    fun requestDeletePlan(planId: Long) {
+        viewModelScope.launch {
+            _detail.update { it.copy(actionLoading = true, actionError = null) }
+            try {
+                apiService.requestDeletePlan(planId)
+                loadPlan(planId)
+            } catch (e: HttpException) {
+                val msg = when (e.code()) {
+                    400 -> "Chỉ người tạo mới có thể xoá trực tiếp"
+                    else -> "Không thể yêu cầu xoá (lỗi ${e.code()})"
+                }
+                _detail.update { it.copy(actionError = msg) }
+            } catch (e: IOException) {
+                _detail.update { it.copy(actionError = "Mất kết nối mạng") }
+            } catch (e: Exception) {
+                _detail.update { it.copy(actionError = "Không thể yêu cầu xoá") }
+            } finally {
+                _detail.update { it.copy(actionLoading = false) }
+            }
+        }
+    }
+
+    fun approveDeletePlan(planId: Long, approved: Boolean, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            _detail.update { it.copy(actionLoading = true, actionError = null) }
+            try {
+                apiService.approveDeletePlan(planId, ApproveDeleteRequest(if (approved) "APPROVE" else "REJECT"))
+                onSuccess()
+            } catch (e: Exception) {
+                _detail.update { it.copy(actionLoading = false, actionError = "Không thể xử lý yêu cầu") }
             }
         }
     }

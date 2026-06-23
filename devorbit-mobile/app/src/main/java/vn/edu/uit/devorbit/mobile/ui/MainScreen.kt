@@ -30,17 +30,14 @@ import vn.edu.uit.devorbit.mobile.ui.screen.courses.CourseHubScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.dashboard.DashboardScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.dashboard.TaskManagementScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.explore.ExploreScreen
-import vn.edu.uit.devorbit.mobile.ui.screen.knowledge.KnowledgeGraphScreen
+import vn.edu.uit.devorbit.mobile.ui.screen.knowledge.KnowledgeTabView
 import vn.edu.uit.devorbit.mobile.ui.screen.notification.NotificationScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.plan.GroupPlanDetailScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.plan.GroupPlanListScreen
-
 import vn.edu.uit.devorbit.mobile.ui.screen.profile.ProfileScreen
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.AcademicViewModel
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.NotificationViewModel
-import vn.edu.uit.devorbit.mobile.domain.model.GraphNode
-import vn.edu.uit.devorbit.mobile.ui.viewmodel.CourseViewModel
 
 
 @Composable
@@ -168,7 +165,7 @@ fun MainScreen(
                                     currentScreen = Screen.GroupPlanDetail(planId)
                                 },
                                 onNavigateBack = {
-                                    currentScreen = Screen.Notifications
+                                    currentScreen = Screen.Dashboard
                                 }
                             )
                             Screen.Courses -> CourseHubScreen()
@@ -277,34 +274,6 @@ private fun PopupText(text: String, onClick: () -> Unit) {
         fontWeight = FontWeight.Medium,
         textAlign = TextAlign.Center
     )
-}
-
-@Composable
-private fun KnowledgeTabView(courseViewModel: CourseViewModel = hiltViewModel()) {
-    val nodes by courseViewModel.graphNodes.collectAsState()
-    val links by courseViewModel.graphLinks.collectAsState()
-    val loading by courseViewModel.graphLoading.collectAsState()
-
-    var selectedNode by remember { mutableStateOf<GraphNode?>(null) }
-
-    LaunchedEffect(Unit) { courseViewModel.loadGraph() }
-
-    if (loading) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(
-                color = CosmicTheme.colors.plasma,
-                strokeWidth = 2.dp
-            )
-        }
-    } else {
-        KnowledgeGraphScreen(
-            nodes = nodes,
-            links = links,
-            learningPath = emptyList(),
-            selectedNode = selectedNode,
-            onNodeClick = { selectedNode = it }
-        )
-    }
 }
 
 

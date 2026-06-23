@@ -113,14 +113,27 @@ fun GroupPlanDetailScreen(
         )
     }
 
-    // Delete plan confirmation
+    // Delete plan confirmation / approve delete request
     if (showDeletePlanDialog) {
+        val isDeleteRequest = state.plan?.deleteRequested == true
         AlertDialog(
             onDismissRequest = { showDeletePlanDialog = false; viewModel.clearActionError() },
-            title = { Text("Xoá kế hoạch", color = CosmicTheme.colors.textPrimary) },
+            title = {
+                Text(
+                    if (isDeleteRequest) "Duyệt yêu cầu xoá" else "Xoá kế hoạch",
+                    color = CosmicTheme.colors.textPrimary
+                )
+            },
             text = {
                 Column {
-                    Text("Xoá kế hoạch này sẽ ảnh hưởng đến tất cả thành viên. Bạn có chắc?", color = CosmicTheme.colors.textSecondary)
+                    Text(
+                        if (isDeleteRequest) {
+                            "${state.plan?.deleteRequestedBy} muốn xoá kế hoạch này. Bạn có chấp nhận?"
+                        } else {
+                            "Xoá kế hoạch này sẽ ảnh hưởng đến tất cả thành viên. Bạn có chắc?"
+                        },
+                        color = CosmicTheme.colors.textSecondary
+                    )
                     if (state.actionError != null) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(state.actionError!!, color = CosmicTheme.colors.supernova, fontSize = 12.sp)
@@ -130,7 +143,13 @@ fun GroupPlanDetailScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        viewModel.deletePlan(planId) { showDeletePlanDialog = false; onNavigateLeave() }
+                        if (isDeleteRequest) {
+                            viewModel.approveDeletePlan(planId, approved = true) {
+                                showDeletePlanDialog = false; onNavigateLeave()
+                            }
+                        } else {
+                            viewModel.deletePlan(planId) { showDeletePlanDialog = false; onNavigateLeave() }
+                        }
                     },
                     enabled = !state.actionLoading
                 ) {
@@ -142,18 +161,43 @@ fun GroupPlanDetailScreen(
                 }
             },
             dismissButton = {
-                TextButton(
-                    onClick = { showDeletePlanDialog = false; viewModel.clearActionError() },
-                    enabled = !state.actionLoading
-                ) {
-                    Text("Huỷ", color = CosmicTheme.colors.textSecondary)
+                if (isDeleteRequest) {
+                    TextButton(
+                        onClick = {
+                            viewModel.approveDeletePlan(planId, approved = false) {
+                                showDeletePlanDialog = false
+                            }
+                        },
+                        enabled = !state.actionLoading
+                    ) {
+                        Text("Từ chối", color = CosmicTheme.colors.textSecondary)
+                    }
+                } else {
+                    TextButton(
+                        onClick = { showDeletePlanDialog = false; viewModel.clearActionError() },
+                        enabled = !state.actionLoading
+                    ) {
+                        Text("Huỷ", color = CosmicTheme.colors.textSecondary)
+                    }
                 }
             },
             containerColor = CosmicTheme.colors.nebula
         )
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { showAddTaskSheet = true },
+                containerColor = CosmicTheme.colors.plasma,
+                contentColor = Color.Black
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Thêm nhiệm vụ")
+            }
+        },
+        containerColor = Color.Transparent
+    ) { paddingValues ->
+    Column(modifier = Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 16.dp)) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Row(
@@ -183,16 +227,17 @@ fun GroupPlanDetailScreen(
                     expanded = showMenu,
                     onDismissRequest = { showMenu = false }
                 ) {
-                    DropdownMenuItem(
-                        text = { Text("Rời kế hoạch") },
-                        onClick = { showMenu = false; showLeaveDialog = true },
-                        leadingIcon = { Icon(Icons.Default.ExitToApp, contentDescription = null) }
-                    )
-                    if (state.plan?.creatorStudentCode != null) {
+                    if (state.isCreator) {
                         DropdownMenuItem(
                             text = { Text("Xoá kế hoạch", color = CosmicTheme.colors.supernova) },
                             onClick = { showMenu = false; showDeletePlanDialog = true },
                             leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null, tint = CosmicTheme.colors.supernova) }
+                        )
+                    } else {
+                        DropdownMenuItem(
+                            text = { Text("Rời kế hoạch", color = CosmicTheme.colors.supernova) },
+                            onClick = { showMenu = false; showLeaveDialog = true },
+                            leadingIcon = { Icon(Icons.Default.ExitToApp, contentDescription = null, tint = CosmicTheme.colors.supernova) }
                         )
                     }
                 }
@@ -330,7 +375,7 @@ fun GroupPlanDetailScreen(
 
         // ── Task list ──
         val filteredTasks = state.tasks
-            .filter { if (selectedTab == 0) !it.completed && !it.deleteRequested else it.completed }
+            .filter { if (selectedTab == 0) !it.completed else it.completed }
             .sortedByDescending { it.createdAt }
 
         if (filteredTasks.isEmpty()) {
@@ -359,24 +404,13 @@ fun GroupPlanDetailScreen(
             }
         }
     }
+    } // Scaffold
 
-    // ── FAB ──
-    Box(modifier = Modifier.fillMaxSize()) {
-        FloatingActionButton(
-            onClick = { showAddTaskSheet = true },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp),
-            containerColor = CosmicTheme.colors.plasma,
-            contentColor = Color.Black
-        ) {
-            Icon(Icons.Default.Add, contentDescription = "Thêm nhiệm vụ")
-        }
-    }
 
     // ── Add Task BottomSheet ──
     if (showAddTaskSheet) {
         AddTaskSheet(
+            creatorStudentCode = state.plan?.creatorStudentCode ?: "",
             members = state.members.map { it.studentCode },
             onDismiss = { showAddTaskSheet = false },
             onConfirm = { title, description, assignedTo, deadline ->

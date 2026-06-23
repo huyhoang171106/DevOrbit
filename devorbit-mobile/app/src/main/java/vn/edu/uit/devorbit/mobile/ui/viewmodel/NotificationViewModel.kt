@@ -111,7 +111,6 @@ class NotificationViewModel @Inject constructor(
             try {
                 apiService.respondInvite(planId, RespondInviteRequest("accept"))
                 markAsRead(notificationId)
-                loadNotifications()
             } catch (e: Exception) {
                 _error.value = "Không thể chấp nhận lời mời"
             }
@@ -125,7 +124,6 @@ class NotificationViewModel @Inject constructor(
             try {
                 apiService.respondInvite(planId, RespondInviteRequest("decline"))
                 markAsRead(notificationId)
-                loadNotifications()
             } catch (e: Exception) {
                 _error.value = "Không thể từ chối lời mời"
             }
@@ -137,9 +135,8 @@ class NotificationViewModel @Inject constructor(
         viewModelScope.launch {
             _actionLoadingId.value = notificationId
             try {
-                apiService.approveDeleteTask(taskId, ApproveDeleteRequest("approve"))
+                apiService.approveDeleteTask(taskId, ApproveDeleteRequest("APPROVE"))
                 markAsRead(notificationId)
-                loadNotifications()
             } catch (e: Exception) {
                 _error.value = "Không thể phê duyệt xoá"
             }
@@ -151,13 +148,38 @@ class NotificationViewModel @Inject constructor(
         viewModelScope.launch {
             _actionLoadingId.value = notificationId
             try {
-                apiService.approveDeleteTask(taskId, ApproveDeleteRequest("reject"))
+                apiService.approveDeleteTask(taskId, ApproveDeleteRequest("REJECT"))
                 markAsRead(notificationId)
-                loadNotifications()
             } catch (e: Exception) {
                 _error.value = "Không thể từ chối xoá"
             }
             _actionLoadingId.value = null
         }
     }
+    fun approvePlanDelete(notificationId: Long, planId: Long) {
+        viewModelScope.launch {
+            _actionLoadingId.value = notificationId
+            try {
+                apiService.approveDeletePlan(planId, ApproveDeleteRequest("APPROVE"))
+                markAsRead(notificationId)
+            } catch (e: Exception) {
+                _error.value = "Không thể phê duyệt xoá kế hoạch"
+            }
+            _actionLoadingId.value = null
+        }
+    }
+
+    fun rejectPlanDelete(notificationId: Long, planId: Long) {
+        viewModelScope.launch {
+            _actionLoadingId.value = notificationId
+            try {
+                apiService.approveDeletePlan(planId, ApproveDeleteRequest("REJECT"))
+                markAsRead(notificationId)
+            } catch (e: Exception) {
+                _error.value = "Không thể từ chối xoá kế hoạch"
+            }
+            _actionLoadingId.value = null
+        }
+    }
+
 }

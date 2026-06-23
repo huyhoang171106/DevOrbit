@@ -2,30 +2,77 @@ package vn.edu.uit.devorbit.mobile.ui.screen.plan
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTaskSheet(
+    creatorStudentCode: String,
     members: List<String>,
     onDismiss: () -> Unit,
-    onConfirm: (title: String, description: String?, assignedTo: String?, deadline: String?) -> Unit
+    onConfirm: (title: String, description: String?, assignedTo: String, deadline: String) -> Unit
 ) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var assignedTo by remember { mutableStateOf("") }
-    var deadline by remember { mutableStateOf("") }
+    var deadlineMillis by remember { mutableStateOf<Long?>(null) }
     var showMemberDropdown by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
+
+    val displayFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+    val apiFormatter = DateTimeFormatter.ISO_LOCAL_DATE
+    val deadlineDisplay = deadlineMillis?.let {
+        Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().format(displayFormatter)
+    } ?: ""
+
+    // Combine creator + members, deduplicated
+    val allMembers = remember(creatorStudentCode, members) {
+        listOf(creatorStudentCode) + members.filter { it != creatorStudentCode }
+    }
+
+    val canSubmit = title.isNotBlank() && assignedTo.isNotBlank() && deadlineMillis != null
+
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = deadlineMillis ?: System.currentTimeMillis()
+        )
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    deadlineMillis = datePickerState.selectedDateMillis
+                    showDatePicker = false
+                }) {
+                    Text("OK", color = CosmicTheme.colors.plasma)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Huỷ", color = CosmicTheme.colors.textSecondary)
+                }
+            },
+            colors = DatePickerDefaults.colors(containerColor = CosmicTheme.colors.nebula)
+        ) {
+            DatePicker(
+                state = datePickerState,
+                colors = DatePickerDefaults.colors(
+                    containerColor = Color.Transparent,
+                    selectedDayContainerColor = CosmicTheme.colors.plasma,
+                    selectedDayContentColor = Color.Black
+                )
+            )
+        }
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -47,10 +94,11 @@ fun AddTaskSheet(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Title (required)
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
-                placeholder = { Text("Tên nhiệm vụ", color = CosmicTheme.colors.textTertiary) },
+                placeholder = { Text("Tên nhiệm vụ *", color = CosmicTheme.colors.textTertiary) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -65,6 +113,7 @@ fun AddTaskSheet(
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Description (optional)
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
@@ -83,7 +132,7 @@ fun AddTaskSheet(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Assignee dropdown
+            // Assignee dropdown (required) — includes creator
             ExposedDropdownMenuBox(
                 expanded = showMemberDropdown,
                 onExpandedChange = { showMemberDropdown = it }
@@ -92,7 +141,7 @@ fun AddTaskSheet(
                     value = assignedTo,
                     onValueChange = {},
                     readOnly = true,
-                    placeholder = { Text("Giao cho", color = CosmicTheme.colors.textTertiary) },
+                    placeholder = { Text("Giao cho *", color = CosmicTheme.colors.textTertiary) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = showMemberDropdown) },
                     modifier = Modifier.fillMaxWidth().menuAnchor(),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -108,7 +157,7 @@ fun AddTaskSheet(
                     expanded = showMemberDropdown,
                     onDismissRequest = { showMemberDropdown = false }
                 ) {
-                    members.forEach { member ->
+                    allMembers.forEach { member ->
                         DropdownMenuItem(
                             text = { Text(member) },
                             onClick = {
@@ -122,13 +171,16 @@ fun AddTaskSheet(
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Deadline (required) — DatePicker
             OutlinedTextField(
-                value = deadline,
-                onValueChange = { deadline = it },
-                placeholder = { Text("Thời hạn (YYYY-MM-DD, không bắt buộc)", color = CosmicTheme.colors.textTertiary) },
-                singleLine = true,
-                leadingIcon = {
-                    Icon(Icons.Default.DateRange, contentDescription = null, tint = CosmicTheme.colors.textSecondary)
+                value = deadlineDisplay,
+                onValueChange = {},
+                readOnly = true,
+                placeholder = { Text("Thời hạn *", color = CosmicTheme.colors.textTertiary) },
+                trailingIcon = {
+                    TextButton(onClick = { showDatePicker = true }) {
+                        Text("Chọn ngày", color = CosmicTheme.colors.plasma, fontSize = 13.sp)
+                    }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -145,14 +197,12 @@ fun AddTaskSheet(
 
             Button(
                 onClick = {
-                    onConfirm(
-                        title,
-                        description.ifBlank { null },
-                        assignedTo.ifBlank { null },
-                        deadline.ifBlank { null }
-                    )
+                    val isoDeadline = deadlineMillis?.let {
+                        Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().format(apiFormatter)
+                    } ?: ""
+                    onConfirm(title, description.ifBlank { null }, assignedTo, isoDeadline)
                 },
-                enabled = title.isNotBlank(),
+                enabled = canSubmit,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(

@@ -6,6 +6,8 @@ enum class NotificationActionType {
     GROUP_TASK_ADDED,
     GROUP_TASK_DELETE_REQUEST,
     GROUP_TASK_DELETE_APPROVED,
+    GROUP_PLAN_DELETE_REQUEST,
+    GROUP_PLAN_DELETE_APPROVED,
     OTHER;
 
     companion object {

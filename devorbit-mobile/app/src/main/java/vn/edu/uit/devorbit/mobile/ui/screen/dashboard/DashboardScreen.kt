@@ -673,6 +673,7 @@ private fun AddTechStackDialog(
     onDismiss: () -> Unit
 ) {
     var search by remember { mutableStateOf("") }
+    var selectedItem by remember { mutableStateOf<String?>(null) }
 
     val filtered = remember(allTechStacks, addedNames, search) {
         allTechStacks.filter { it !in addedNames }
@@ -688,7 +689,7 @@ private fun AddTechStackDialog(
             Column {
                 OutlinedTextField(
                     value = search,
-                    onValueChange = { search = it },
+                    onValueChange = { search = it; selectedItem = null },
                     placeholder = { Text("Tìm tech stack...") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
@@ -717,9 +718,9 @@ private fun AddTechStackDialog(
                             Surface(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { search = name },
+                                    .clickable { selectedItem = name },
                                 shape = RoundedCornerShape(8.dp),
-                                color = if (search == name)
+                                color = if (selectedItem == name)
                                     CosmicTheme.colors.plasma.copy(alpha = 0.12f)
                                 else Color.Transparent
                             ) {
@@ -738,12 +739,12 @@ private fun AddTechStackDialog(
         confirmButton = {
             TextButton(
                 onClick = {
-                    val name = search.trim()
-                    if (name.isNotBlank() && name !in addedNames) {
+                    val name = selectedItem?.trim()
+                    if (name != null && name !in addedNames) {
                         onAdd(name)
                     }
                 },
-                enabled = search.isNotBlank() && search.trim() !in addedNames
+                enabled = selectedItem != null && selectedItem!!.trim() !in addedNames
             ) {
                 Text("Thêm", color = CosmicTheme.colors.plasma)
             }
@@ -756,7 +757,7 @@ private fun AddTechStackDialog(
     )
 }
 
-// ── Section 3: Tasks ─────────────────────────────────────────────
+// ── Section 4: Tasks ─────────────────────────────────────────────
 
 @Composable
 private fun TaskCard(task: TaskItem, onClick: () -> Unit) {

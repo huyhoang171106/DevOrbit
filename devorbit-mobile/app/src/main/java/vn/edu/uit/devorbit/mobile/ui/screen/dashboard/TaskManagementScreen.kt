@@ -49,6 +49,22 @@ fun TaskManagementScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var showAddTaskModal by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Close modal when save/delete completes
+    LaunchedEffect(state.taskLoading) {
+        if (!state.taskLoading && (showAddTaskModal || state.isEditing)) {
+            showAddTaskModal = false
+        }
+    }
+
+    // Show error as snackbar
+    LaunchedEffect(state.error) {
+        if (state.error != null) {
+            snackbarHostState.showSnackbar(state.error!!)
+            viewModel.clearError()
+        }
+    }
 
     // Create plan dialog
     if (state.showCreatePlanDialog) {
@@ -268,6 +284,19 @@ fun TaskManagementScreen(
         ) {
             Icon(Icons.Default.Add, contentDescription = "Thêm nhiệm vụ")
         }
+
+        // ── Snackbar ──
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 72.dp),
+            snackbar = { data ->
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = CosmicTheme.colors.nebula,
+                    contentColor = CosmicTheme.colors.textPrimary
+                )
+            }
+        )
     }
 
     // ── Add/Edit Task Modal ──
@@ -303,13 +332,10 @@ fun TaskManagementScreen(
                 onDismissRecurrenceEndPicker = { viewModel.hideRecurrenceEndPicker() },
                 onConfirm = {
                     viewModel.saveTask()
-                    showAddTaskModal = false
                 },
                 onDelete = state.isEditing.takeIf { it }?.let {
                     {
                         state.editingTaskId?.let { viewModel.deleteTask(it) }
-                        viewModel.resetInput()
-                        showAddTaskModal = false
                     }
                 },
                 onDismiss = {

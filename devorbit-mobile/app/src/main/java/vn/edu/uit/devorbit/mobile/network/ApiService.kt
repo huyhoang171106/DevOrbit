@@ -137,6 +137,12 @@ interface ApiService {
 
     @DELETE("/api/student/group-plans/{id}")
     suspend fun deleteGroupPlan(@Path("id") id: Long)
+    @POST("/api/student/group-plans/{id}/request-delete")
+    suspend fun requestDeletePlan(@Path("id") id: Long)
+
+    @POST("/api/student/group-plans/{id}/approve-delete")
+    suspend fun approveDeletePlan(@Path("id") id: Long, @Body request: ApproveDeleteRequest)
+
 
     @POST("/api/student/group-plans/{id}/invite")
     suspend fun inviteMember(@Path("id") planId: Long, @Body request: InviteMemberRequest)

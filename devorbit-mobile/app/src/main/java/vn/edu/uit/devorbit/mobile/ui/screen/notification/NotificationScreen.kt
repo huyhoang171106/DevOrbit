@@ -133,6 +133,7 @@ fun NotificationScreen(
                                     NotificationActionType.GROUP_TASK_ADDED,
                                     NotificationActionType.GROUP_PLAN_RESPONSE,
                                     NotificationActionType.GROUP_TASK_DELETE_APPROVED,
+                                    NotificationActionType.GROUP_PLAN_DELETE_APPROVED,
                                     NotificationActionType.OTHER
                                 )
                             ) {
@@ -150,15 +151,23 @@ fun NotificationScreen(
                             }
                         },
                         onApprove = {
-                            val taskId = notification.body.split(":").lastOrNull()?.trim()?.toLongOrNull()
-                            if (taskId != null) {
-                                viewModel.approveDelete(notification.id, taskId)
+                            if (actionType == NotificationActionType.GROUP_PLAN_DELETE_REQUEST && notification.groupPlanId != null) {
+                                viewModel.approvePlanDelete(notification.id, notification.groupPlanId)
+                            } else {
+                                val taskId = notification.body.split(":").lastOrNull()?.trim()?.toLongOrNull()
+                                if (taskId != null) {
+                                    viewModel.approveDelete(notification.id, taskId)
+                                }
                             }
                         },
                         onReject = {
-                            val taskId = notification.body.split(":").lastOrNull()?.trim()?.toLongOrNull()
-                            if (taskId != null) {
-                                viewModel.rejectDelete(notification.id, taskId)
+                            if (actionType == NotificationActionType.GROUP_PLAN_DELETE_REQUEST && notification.groupPlanId != null) {
+                                viewModel.rejectPlanDelete(notification.id, notification.groupPlanId)
+                            } else {
+                                val taskId = notification.body.split(":").lastOrNull()?.trim()?.toLongOrNull()
+                                if (taskId != null) {
+                                    viewModel.rejectDelete(notification.id, taskId)
+                                }
                             }
                         }
                     )

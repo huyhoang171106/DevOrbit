@@ -7,5 +7,7 @@ data class GroupPlanResponse(
     val creatorStudentCode: String,
     val deadline: String?,
     val active: Boolean,
-    val createdAt: String?
+    val createdAt: String?,
+    val deleteRequested: Boolean = false,
+    val deleteRequestedBy: String? = null
 )

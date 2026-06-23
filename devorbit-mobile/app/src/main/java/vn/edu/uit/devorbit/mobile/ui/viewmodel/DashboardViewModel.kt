@@ -46,7 +46,8 @@ data class DashboardUiState(
     val maxWeekOffset: Int = 0,
     val techStacks: List<TechStackEntity> = emptyList(),
     val allTechStacks: List<String> = emptyList(),
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val error: String? = null
 )
 
 enum class TaskFilter { TODAY, WEEK, ALL }
@@ -120,10 +121,8 @@ class DashboardViewModel @Inject constructor(
                     val streak = settingsDataStore.getStreakCount(c)
                     _state.update { it.copy(streakCount = streak) }
                     checkStreak()
-                    launch {
-                        loadWeekDays()
-                        loadTodayStudyMinutes()
-                    }
+                    loadWeekDays()
+                    loadTodayStudyMinutes()
                 }
             }
         }
@@ -176,30 +175,50 @@ class DashboardViewModel @Inject constructor(
         viewModelScope.launch {
             _taskFilter.collect { filter ->
                 try {
-                    val filterParam = when (filter) {
-                        TaskFilter.TODAY -> "today"
-                        TaskFilter.WEEK -> "week"
-                        TaskFilter.ALL -> "all"
-                    }
-                    val personalTasks = apiService.getPersonalTasks(filterParam).map { it.toTaskItem() }
-                    val groupTasks = apiService.getAssignedGroupTasks().map { it.toTaskItem() }
-                    val allTasks = (personalTasks + groupTasks).sortedBy { it.completed }
-                    _state.update { it.copy(
-                        sortedTasks = allTasks,
-                        totalTaskCount = allTasks.size,
-                        completedTaskCount = allTasks.count { it.completed }
-                    ) }
-                    val todayTasks = allTasks.filter { isTaskItemToday(it) }
-                    recordTaskProgress(todayTasks.count { it.completed }, todayTasks.size)
-                } catch (_: Exception) { }
+                    loadTasksForFilter(filter)
+                } catch (_: Exception) {
+                    _state.update { it.copy(error = "Không thể tải nhiệm vụ") }
+                 }
             }
         }
+    }
+
+    private suspend fun loadTasksForFilter(filter: TaskFilter) {
+        val filterParam = when (filter) {
+            TaskFilter.TODAY -> "today"
+            TaskFilter.WEEK -> "week"
+            TaskFilter.ALL -> "all"
+        }
+        val personalTasks = apiService.getPersonalTasks(filterParam).map { it.toTaskItem() }
+        val allGroupTasks = apiService.getAssignedGroupTasks().map { it.toTaskItem() }
+        val groupTasks = when (filter) {
+            TaskFilter.TODAY -> allGroupTasks.filter { isTaskItemToday(it) }
+            TaskFilter.WEEK -> allGroupTasks.filter { isTaskItemInWeek(it) }
+            TaskFilter.ALL -> allGroupTasks
+        }
+        val allTasks = (personalTasks + groupTasks).sortedBy { it.completed }
+        _state.update { it.copy(
+            sortedTasks = allTasks,
+            totalTaskCount = allTasks.size,
+            completedTaskCount = allTasks.count { it.completed }
+        ) }
+        val todayTasks = allTasks.filter { isTaskItemToday(it) }
+        recordTaskProgress(todayTasks.count { it.completed }, todayTasks.size)
     }
 
     private fun isTaskItemToday(task: TaskItem): Boolean {
         if (task.deadline == null) return false
         val date = Instant.ofEpochMilli(task.deadline).atZone(ZoneId.systemDefault()).toLocalDate()
         return date == LocalDate.now()
+    }
+
+    private fun isTaskItemInWeek(task: TaskItem): Boolean {
+        if (task.deadline == null) return false
+        val date = Instant.ofEpochMilli(task.deadline).atZone(ZoneId.systemDefault()).toLocalDate()
+        val now = LocalDate.now()
+        val monday = now.with(java.time.DayOfWeek.MONDAY)
+        val sunday = monday.plusDays(6)
+        return date in monday..sunday
     }
 
     private fun observeTechStacks() {
@@ -308,7 +327,11 @@ class DashboardViewModel @Inject constructor(
         val today = LocalDate.now().format(dateFormat)
         val todayActivity = dailyActivityDao.getActivity(currentStudentCode, today)
         val todayRepos = todayActivity?.reposViewed ?: 0
-        if (todayRepos < 3) return
+        val todayTasksCompleted = todayActivity?.tasksCompleted ?: 0
+        val todayTasksTotal = todayActivity?.tasksTotal ?: 0
+
+        val qualifiesForToday = todayRepos >= 3 || (todayTasksTotal > 0 && todayTasksCompleted == todayTasksTotal)
+        if (!qualifiesForToday) return
 
         val lastStreakDate = settingsDataStore.getLastStreakDate(currentStudentCode)
         if (lastStreakDate == today) return
@@ -316,9 +339,12 @@ class DashboardViewModel @Inject constructor(
         val yesterday = LocalDate.now().minusDays(1).format(dateFormat)
         val yesterdayActivity = dailyActivityDao.getActivity(currentStudentCode, yesterday)
         val yesterdayRepos = yesterdayActivity?.reposViewed ?: 0
+        val yesterdayTasksCompleted = yesterdayActivity?.tasksCompleted ?: 0
+        val yesterdayTasksTotal = yesterdayActivity?.tasksTotal ?: 0
+        val qualifiesForYesterday = yesterdayRepos >= 3 || (yesterdayTasksTotal > 0 && yesterdayTasksCompleted == yesterdayTasksTotal)
         val currentStreak = settingsDataStore.getStreakCount(currentStudentCode)
 
-        val newStreak = if (yesterdayRepos >= 3 && lastStreakDate == yesterday) {
+        val newStreak = if (qualifiesForYesterday && lastStreakDate == yesterday) {
             currentStreak + 1
         } else {
             1
@@ -355,7 +381,7 @@ class DashboardViewModel @Inject constructor(
                     label = dayLabel,
                     activity = activity,
                     isToday = dateStr == todayStr,
-                    qualifiesForStreak = activity != null && activity.reposViewed >= 3
+                    qualifiesForStreak = activity != null && (activity.reposViewed >= 3 || (activity.tasksTotal > 0 && activity.tasksCompleted == activity.tasksTotal))
                 ))
                 date = date.plusDays(1)
             }
@@ -404,7 +430,9 @@ class DashboardViewModel @Inject constructor(
             try {
                 apiService.createPersonalTask(CreatePersonalTaskRequest(title = title))
                 refreshTasks()
-            } catch (_: Exception) { }
+            } catch (_: Exception) {
+                _state.update { it.copy(error = "Không thể tạo nhiệm vụ") }
+            }
         }
     }
 
@@ -413,25 +441,17 @@ class DashboardViewModel @Inject constructor(
             try {
                 apiService.togglePersonalTask(taskId, mapOf("completed" to completed))
                 refreshTasks()
-            } catch (_: Exception) { }
+            } catch (_: Exception) {
+                _state.update { it.copy(error = "Không thể cập nhật nhiệm vụ") }
+            }
         }
     }
 
+    fun clearError() { _state.update { it.copy(error = null) } }
+
     private suspend fun refreshTasks() {
         try {
-            val filter = _taskFilter.value
-            val filterParam = when (filter) {
-                TaskFilter.TODAY -> "today"
-                TaskFilter.WEEK -> "week"
-                TaskFilter.ALL -> "all"
-            }
-            val tasks = apiService.getPersonalTasks(filterParam).map { it.toTaskItem() }
-            val sorted = tasks.sortedBy { it.completed }
-            _state.update { it.copy(
-                sortedTasks = sorted,
-                totalTaskCount = sorted.size,
-                completedTaskCount = sorted.count { it.completed }
-            ) }
+            loadTasksForFilter(_taskFilter.value)
         } catch (_: Exception) { }
     }
 }

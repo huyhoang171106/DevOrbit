@@ -90,8 +90,15 @@ fun parseIsoDateOnly(iso: String): String {
 }
 
 fun parseIsoDateToMillis(iso: String): Long {
-    return LocalDate.parse(iso)
-        .atStartOfDay(ZoneId.systemDefault())
-        .toInstant()
-        .toEpochMilli()
+    return try {
+        LocalDateTime.parse(iso, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            .atZone(ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
+    } catch (_: Exception) {
+        LocalDate.parse(iso)
+            .atStartOfDay(ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
+    }
 }

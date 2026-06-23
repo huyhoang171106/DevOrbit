@@ -47,7 +47,9 @@ data class TaskManagementUiState(
     val showCreatePlanDialog: Boolean = false,
     val planError: String? = null,
     val groupPlans: List<GroupPlanResponse> = emptyList(),
-    val groupPlansLoading: Boolean = false
+    val groupPlansLoading: Boolean = false,
+    val error: String? = null,
+    val taskLoading: Boolean = false
 )
 
 @HiltViewModel
@@ -83,7 +85,9 @@ class TaskManagementViewModel @Inject constructor(
                     tasks = tasks.filter { it.title.contains(s.searchQuery, ignoreCase = true) }
                 }
                 _state.update { it.copy(tasks = tasks.sortedBy { it.completed }) }
-            } catch (_: Exception) { }
+            } catch (_: Exception) {
+                _state.update { it.copy(error = "Không thể tải nhiệm vụ") }
+            }
         }
     }
 
@@ -213,8 +217,12 @@ class TaskManagementViewModel @Inject constructor(
         val s = _state.value
         val title = s.inputTitle.trim()
         if (title.isBlank()) return
-        if (s.inputRecurrence == null && s.inputDeadline == null) return
+        if (s.inputRecurrence == null && s.inputDeadline == null) {
+            _state.update { it.copy(error = "Vui lòng chọn deadline hoặc thiết lập lặp lại") }
+            return
+        }
         viewModelScope.launch {
+            _state.update { it.copy(taskLoading = true) }
             try {
                 val deadline = if (s.inputRecurrence != null) {
                     val startDate = s.inputRecurrenceStartDate?.let {
@@ -256,31 +264,34 @@ class TaskManagementViewModel @Inject constructor(
                         }
                     ))
                 }
-                _state.update { it.copy(inputTitle = "", inputDescription = "", inputDeadline = null, inputRecurrence = null, inputRecurrenceDays = null, inputRecurrenceStartDate = null, inputRecurrenceEndDate = null, showRecurrenceStartPicker = false, showRecurrenceEndPicker = false, isEditing = false, editingTaskId = null) }
+                _state.update { it.copy(inputTitle = "", inputDescription = "", inputDeadline = null, inputRecurrence = null, inputRecurrenceDays = null, inputRecurrenceStartDate = null, inputRecurrenceEndDate = null, showRecurrenceStartPicker = false, showRecurrenceEndPicker = false, isEditing = false, editingTaskId = null, taskLoading = false) }
                 refreshTasks()
-            } catch (_: Exception) { }
+            } catch (_: Exception) {
+                _state.update { it.copy(error = "Không thể lưu nhiệm vụ", taskLoading = false) }
+            }
         }
     }
 
     fun toggleTask(taskId: Long, completed: Boolean) {
         viewModelScope.launch {
+            _state.update { it.copy(taskLoading = true) }
             try {
                 if (completed) {
-                    val currentTask = _state.value.tasks.find { it.id == taskId }
-                    apiService.togglePersonalTask(taskId, mapOf("completed" to true))
-                    if (currentTask?.recurrence != null) {
-                        val nextDeadline = computeNextDeadline(currentTask)
+                    val toggled = apiService.togglePersonalTask(taskId, mapOf("completed" to true))
+                    if (toggled.recurrence != null) {
+                        val taskItem = toggled.toTaskItem()
+                        val nextDeadline = computeNextDeadline(taskItem)
                         if (nextDeadline != null) {
                             apiService.createPersonalTask(CreatePersonalTaskRequest(
-                                title = currentTask.title,
-                                description = currentTask.description.ifBlank { null },
+                                title = taskItem.title,
+                                description = taskItem.description.ifBlank { null },
                                 deadline = millisToIso(nextDeadline),
-                                recurrence = currentTask.recurrence,
-                                recurrenceDaysOfWeek = currentTask.recurrenceDaysOfWeek,
-                                recurrenceStartDate = currentTask.recurrenceStartDate?.let {
+                                recurrence = taskItem.recurrence,
+                                recurrenceDaysOfWeek = taskItem.recurrenceDaysOfWeek,
+                                recurrenceStartDate = taskItem.recurrenceStartDate?.let {
                                     Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().toString()
                                 },
-                                recurrenceEndDate = currentTask.recurrenceEndDate?.let {
+                                recurrenceEndDate = taskItem.recurrenceEndDate?.let {
                                     Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().toString()
                                 }
                             ))
@@ -289,19 +300,28 @@ class TaskManagementViewModel @Inject constructor(
                 } else {
                     apiService.togglePersonalTask(taskId, mapOf("completed" to false))
                 }
+                _state.update { it.copy(taskLoading = false) }
                 refreshTasks()
-            } catch (_: Exception) { }
+            } catch (_: Exception) {
+                _state.update { it.copy(error = "Không thể cập nhật nhiệm vụ", taskLoading = false) }
+            }
         }
     }
 
     fun deleteTask(taskId: Long) {
         viewModelScope.launch {
+            _state.update { it.copy(taskLoading = true) }
             try {
                 apiService.deletePersonalTask(taskId)
+                _state.update { it.copy(taskLoading = false) }
                 refreshTasks()
-            } catch (_: Exception) { }
+            } catch (_: Exception) {
+                _state.update { it.copy(error = "Không thể xoá nhiệm vụ", taskLoading = false) }
+            }
         }
     }
+    fun clearError() { _state.update { it.copy(error = null) } }
+
 
     fun loadGroupPlans() {
         viewModelScope.launch {

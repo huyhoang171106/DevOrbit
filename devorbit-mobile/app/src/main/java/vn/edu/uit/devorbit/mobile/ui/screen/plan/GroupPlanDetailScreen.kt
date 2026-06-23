@@ -505,12 +505,12 @@ private fun InviteMemberDialog(
         title = { Text("Mời thành viên", color = CosmicTheme.colors.textPrimary) },
         text = {
             Column {
-                Text("Nhập mã sinh viên:", color = CosmicTheme.colors.textSecondary, fontSize = 13.sp)
+                Text("Nhập tên đăng nhập:", color = CosmicTheme.colors.textSecondary, fontSize = 13.sp)
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = inviteCode,
                     onValueChange = onCodeChange,
-                    placeholder = { Text("Mã sinh viên") },
+                    placeholder = { Text("Tên đăng nhập") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(

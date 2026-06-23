@@ -180,6 +180,8 @@ class DashboardViewModel @Inject constructor(
                     totalTaskCount = total,
                     completedTaskCount = completed
                 ) }
+                val todayTasks = tasks.filter { isTaskToday(it) }
+                recordTaskProgress(todayTasks.count { it.completed }, todayTasks.size)
             }.collect()
         }
     }

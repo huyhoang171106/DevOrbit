@@ -77,6 +77,12 @@ interface ApiService {
     @POST("/api/student/me/avatar/upload")
     suspend fun uploadAvatar(@Part file: MultipartBody.Part): Map<String, Any>
 
+    @POST("/api/student/me/name")
+    suspend fun updateFullName(@Body body: Map<String, String>): Map<String, Any>
+
+    @POST("/api/student/me/password")
+    suspend fun changePassword(@Body body: Map<String, String>): Map<String, Any>
+
     @GET("/api/student/bookmarks")
     suspend fun getBookmarks(): List<StudentBookmarkResponse>
 

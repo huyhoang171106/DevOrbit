@@ -107,17 +107,15 @@ fun ChatMessageBubble(
 private fun formatMessageTime(isoString: String): String {
     if (isoString.isBlank()) return ""
     return try {
-        val instant = try {
-            Instant.parse(isoString)
+        val local = try {
+            java.time.LocalDateTime.parse(isoString).atZone(ZoneId.systemDefault())
         } catch (_: Exception) {
-            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss[.SSS][XXX][X]")
             try {
-                java.time.LocalDateTime.parse(isoString, formatter).atZone(ZoneId.systemDefault()).toInstant()
+                Instant.parse(isoString).atZone(ZoneId.systemDefault())
             } catch (_: Exception) {
                 return ""
             }
         }
-        val local = instant.atZone(ZoneId.systemDefault())
         val now = java.time.ZonedDateTime.now()
         val timeStr = local.format(DateTimeFormatter.ofPattern("HH:mm"))
         when {

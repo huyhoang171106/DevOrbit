@@ -35,6 +35,7 @@ import vn.edu.uit.devorbit.mobile.ui.screen.notification.NotificationScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.community.CommunityScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.plan.StudyPlannerScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.profile.ProfileScreen
+import vn.edu.uit.devorbit.mobile.ui.screen.profile.ProfileDetailScreen
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.AcademicViewModel
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.NotificationViewModel
@@ -49,6 +50,7 @@ fun MainScreen(
 ) {
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Dashboard) }
     var showPopup by remember { mutableStateOf(false) }
+    var showProfileDetail by remember { mutableStateOf(false) }
     val unreadCount by notificationVm.unreadCount.collectAsStateWithLifecycle()
 
     val navItemColors = NavigationBarItemDefaults.colors(
@@ -157,7 +159,9 @@ fun MainScreen(
                             Screen.Explore -> ExploreScreen()
                             Screen.Notifications -> NotificationScreen(viewModel = notificationVm)
                             Screen.Plan -> PlanTabView()
-                            Screen.Profile -> ProfileScreen()
+                            Screen.Profile -> ProfileScreen(
+                                onNavigateToDetail = { showProfileDetail = true }
+                            )
                             Screen.Community -> CommunityScreen()
                         }
                     }
@@ -236,6 +240,19 @@ fun MainScreen(
                         }
                     }
                 }
+            }
+        }
+
+        // Profile detail overlay
+        if (showProfileDetail) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.55f))
+            ) {
+                ProfileDetailScreen(
+                    onBack = { showProfileDetail = false }
+                )
             }
         }
     }

@@ -125,6 +125,25 @@ class AuthRepositoryImpl @Inject constructor(
         response["avatar"] as? String ?: throw Exception("No avatar URL in response")
     }
 
+    override suspend fun updateFullName(fullName: String): Result<StudentInfo> = runCatching {
+        val response = apiService.updateFullName(mapOf("fullName" to fullName))
+        settingsDataStore.saveStudentName(fullName)
+        StudentInfo(
+            studentCode = response["studentCode"] as? String ?: "",
+            fullName = response["fullName"] as? String ?: fullName,
+            email = response["email"] as? String ?: "",
+            active = response["active"] as? Boolean ?: true,
+            avatar = response["avatar"] as? String
+        )
+    }
+
+    override suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit> = runCatching {
+        apiService.changePassword(mapOf(
+            "currentPassword" to currentPassword,
+            "newPassword" to newPassword
+        ))
+    }
+
     override suspend fun getToken(): String? {
         return settingsDataStore.token.first()
     }

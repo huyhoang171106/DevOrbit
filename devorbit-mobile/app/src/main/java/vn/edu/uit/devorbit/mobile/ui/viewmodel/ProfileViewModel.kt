@@ -14,11 +14,17 @@ data class ProfileUiState(
     val studentName: String = "",
     val studentCode: String = "",
     val avatar: String? = null,
+    val email: String = "",
     val isLoggedIn: Boolean = false,
     val bookmarks: List<Bookmark> = emptyList(),
     val darkMode: Boolean = true,
     val isUploadingAvatar: Boolean = false,
-    val avatarUploadSuccess: Boolean = false
+    val avatarUploadSuccess: Boolean = false,
+    val isUpdatingName: Boolean = false,
+    val nameUpdateSuccess: Boolean = false,
+    val isChangingPassword: Boolean = false,
+    val passwordChangeSuccess: Boolean = false,
+    val error: String? = null
 )
 
 @HiltViewModel
@@ -61,14 +67,21 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             val result = authRepository.getProfile()
             result.onSuccess { profile ->
-                _state.update { it.copy(avatar = profile.avatar) }
+                _state.update { 
+                    it.copy(
+                        avatar = profile.avatar,
+                        email = profile.email,
+                        studentName = profile.fullName
+                    ) 
+                }
+                settingsDataStore.saveStudentName(profile.fullName)
             }
         }
     }
 
     fun uploadAvatar(uri: Uri) {
         viewModelScope.launch {
-            _state.update { it.copy(isUploadingAvatar = true) }
+            _state.update { it.copy(isUploadingAvatar = true, error = null) }
             val result = authRepository.uploadAvatar(uri)
             result.onSuccess { avatarUrl ->
                 _state.update { 
@@ -82,9 +95,54 @@ class ProfileViewModel @Inject constructor(
                 _state.update { it.copy(avatarUploadSuccess = false) }
             }
             result.onFailure {
-                _state.update { it.copy(isUploadingAvatar = false) }
+                _state.update { it.copy(isUploadingAvatar = false, error = "Không thể cập nhật ảnh đại diện") }
             }
         }
+    }
+
+    fun updateFullName(fullName: String) {
+        viewModelScope.launch {
+            _state.update { it.copy(isUpdatingName = true, error = null) }
+            val result = authRepository.updateFullName(fullName)
+            result.onSuccess { profile ->
+                _state.update { 
+                    it.copy(
+                        studentName = profile.fullName,
+                        isUpdatingName = false,
+                        nameUpdateSuccess = true
+                    ) 
+                }
+                kotlinx.coroutines.delay(2000)
+                _state.update { it.copy(nameUpdateSuccess = false) }
+            }
+            result.onFailure {
+                _state.update { it.copy(isUpdatingName = false, error = "Không thể cập nhật tên") }
+            }
+        }
+    }
+
+    fun changePassword(currentPassword: String, newPassword: String) {
+        viewModelScope.launch {
+            _state.update { it.copy(isChangingPassword = true, error = null) }
+            val result = authRepository.changePassword(currentPassword, newPassword)
+            result.onSuccess {
+                _state.update { 
+                    it.copy(
+                        isChangingPassword = false,
+                        passwordChangeSuccess = true
+                    ) 
+                }
+                kotlinx.coroutines.delay(2000)
+                _state.update { it.copy(passwordChangeSuccess = false) }
+            }
+            result.onFailure {
+                _state.update { it.copy(isChangingPassword = false, error = "Mật khẩu hiện tại không đúng") }
+            }
+        }
+    }
+
+    fun clearError() {
+        _state.update { it.copy(error = null) }
     }
 
     fun removeBookmark(id: Long) {

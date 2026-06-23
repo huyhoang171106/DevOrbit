@@ -14,6 +14,8 @@ interface AuthRepository {
     suspend fun resendOtp(email: String, purpose: String?): Result<Unit>
     suspend fun getProfile(): Result<StudentInfo>
     suspend fun uploadAvatar(uri: Uri): Result<String>
+    suspend fun updateFullName(fullName: String): Result<StudentInfo>
+    suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit>
     suspend fun getToken(): String?
     suspend fun logout()
 }

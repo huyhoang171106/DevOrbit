@@ -23,6 +23,7 @@ data class GroupPlanDetailState(
     val inviteCode: String = "",
     val inviteLoading: Boolean = false,
     val inviteError: String? = null,
+    val inviteSuccessCode: String? = null,
     val actionLoading: Boolean = false,
     val actionError: String? = null
 )
@@ -95,7 +96,7 @@ class GroupPlanViewModel @Inject constructor(
             try {
                 apiService.inviteMember(planId, InviteMemberRequest(studentCode))
                 val members = apiService.getGroupPlanMembers(planId)
-                _detail.update { it.copy(members = members, inviteCode = "", inviteLoading = false) }
+                _detail.update { it.copy(members = members, inviteCode = "", inviteLoading = false, inviteSuccessCode = studentCode) }
             } catch (e: HttpException) {
                 val errorBody = e.response()?.errorBody()?.string()
                 val msg = parseInviteError(errorBody) ?: "Không thể mời thành viên (lỗi ${e.code()})"
@@ -133,6 +134,10 @@ class GroupPlanViewModel @Inject constructor(
 
     fun clearInviteError() {
         _detail.update { it.copy(inviteError = null) }
+    }
+
+    fun clearInviteSuccess() {
+        _detail.update { it.copy(inviteSuccessCode = null) }
     }
 
     fun clearActionError() {

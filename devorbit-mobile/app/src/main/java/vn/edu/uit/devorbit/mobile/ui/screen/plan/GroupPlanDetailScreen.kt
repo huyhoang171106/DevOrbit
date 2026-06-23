@@ -252,7 +252,7 @@ fun GroupPlanDetailScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Thành viên (${state.members.size})",
+                text = "Thành viên (${state.members.count { it.status == "ACCEPTED" }})",
                 color = CosmicTheme.colors.textPrimary,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.SemiBold
@@ -400,6 +400,36 @@ fun GroupPlanDetailScreen(
             onConfirm = {
                 viewModel.inviteMember(planId, state.inviteCode)
             }
+        )
+    }
+
+    // ── Invite Success Dialog ──
+    val inviteSuccessCode = state.inviteSuccessCode
+    if (inviteSuccessCode != null) {
+        AlertDialog(
+            onDismissRequest = { viewModel.clearInviteSuccess() },
+            title = { Text("Mời thành viên", color = CosmicTheme.colors.textPrimary) },
+            text = {
+                Text(
+                    text = "Đã mời thành viên $inviteSuccessCode thành công, bạn có muốn tiếp tục mời?",
+                    color = CosmicTheme.colors.textSecondary,
+                    fontSize = 14.sp
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.clearInviteSuccess()
+                    showInviteDialog = true
+                }) {
+                    Text("Tiếp tục", color = CosmicTheme.colors.plasma)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.clearInviteSuccess() }) {
+                    Text("Huỷ", color = CosmicTheme.colors.textSecondary)
+                }
+            },
+            containerColor = CosmicTheme.colors.nebula
         )
     }
 }

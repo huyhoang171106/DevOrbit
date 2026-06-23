@@ -6,6 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -32,8 +34,9 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import vn.edu.uit.devorbit.mobile.data.local.entity.CourseEntity
-import vn.edu.uit.devorbit.mobile.data.local.entity.TaskEntity
 import vn.edu.uit.devorbit.mobile.data.local.entity.TechStackEntity
+import vn.edu.uit.devorbit.mobile.domain.model.TaskItem
+
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.DashboardViewModel
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.TaskFilter
@@ -89,16 +92,22 @@ fun DashboardScreen(
             )
         }
 
-        if (state.sortedTasks.isEmpty()) {
-            item {
+        item {
+            if (state.sortedTasks.isEmpty()) {
                 EmptyTaskState(onNavigateToCreateTask = onNavigateToCreateTask)
-            }
-        } else {
-            items(state.sortedTasks, key = { it.id }) { task ->
-                TaskCard(
-                    task = task,
-                    onClick = { viewModel.toggleTask(task.id, !task.completed) }
-                )
+            } else {
+                Column(
+                    modifier = Modifier
+                        .heightIn(max = 360.dp)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    state.sortedTasks.forEach { task ->
+                        TaskCard(
+                            task = task,
+                            onClick = { viewModel.toggleTask(task.id, !task.completed) }
+                        )
+                    }
+                }
             }
         }
 
@@ -758,7 +767,7 @@ private fun AddTechStackDialog(
 // ── Section 3: Tasks ─────────────────────────────────────────────
 
 @Composable
-private fun TaskCard(task: TaskEntity, onClick: () -> Unit) {
+private fun TaskCard(task: TaskItem, onClick: () -> Unit) {
     val bgColor = if (task.completed)
         Color(0xFF2E7D32).copy(alpha = 0.08f)
     else

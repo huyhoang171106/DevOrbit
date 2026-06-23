@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import vn.edu.uit.devorbit.mobile.data.local.entity.TaskEntity
+import vn.edu.uit.devorbit.mobile.domain.model.TaskItem
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.TaskFilter
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.TaskManagementViewModel
@@ -910,7 +910,7 @@ private fun FilterTabs(
 
 @Composable
 private fun TaskItem(
-    task: TaskEntity,
+    task: TaskItem,
     onToggle: () -> Unit,
     onEdit: () -> Unit
 ) {

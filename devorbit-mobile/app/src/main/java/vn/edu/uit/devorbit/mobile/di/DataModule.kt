@@ -20,7 +20,6 @@ import vn.edu.uit.devorbit.mobile.data.local.dao.DailyActivityDao
 import vn.edu.uit.devorbit.mobile.data.local.dao.RepoDao
 import vn.edu.uit.devorbit.mobile.data.local.dao.RelationshipDao
 import vn.edu.uit.devorbit.mobile.data.local.dao.SemesterCourseDao
-import vn.edu.uit.devorbit.mobile.data.local.dao.TaskDao
 import vn.edu.uit.devorbit.mobile.data.local.dao.TechStackDao
 import vn.edu.uit.devorbit.mobile.data.repository.AcademicRepository
 import androidx.room.Room
@@ -101,12 +100,6 @@ object DataModule {
 
     @Provides
     @Singleton
-    fun provideTaskDao(db: DevOrbitDatabase): TaskDao {
-        return db.taskDao()
-    }
-
-    @Provides
-    @Singleton
     fun provideDailyActivityDao(db: DevOrbitDatabase): DailyActivityDao {
         return db.dailyActivityDao()
     }
@@ -129,9 +122,8 @@ object DataModule {
         apiService: ApiService,
         courseDao: CourseDao,
         repoDao: RepoDao,
-        relationshipDao: RelationshipDao,
-        taskDao: TaskDao
+        relationshipDao: RelationshipDao
     ): AcademicRepository {
-        return AcademicRepository(apiService, courseDao, repoDao, relationshipDao, taskDao)
+        return AcademicRepository(apiService, courseDao, repoDao, relationshipDao)
     }
 }

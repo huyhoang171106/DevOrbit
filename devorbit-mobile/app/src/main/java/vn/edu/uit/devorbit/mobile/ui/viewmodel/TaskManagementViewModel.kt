@@ -6,9 +6,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import vn.edu.uit.devorbit.mobile.data.local.entity.TaskEntity
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CreateGroupPlanRequest
-import vn.edu.uit.devorbit.mobile.data.repository.AcademicRepository
+import vn.edu.uit.devorbit.mobile.data.remote.dto.CreatePersonalTaskRequest
+import vn.edu.uit.devorbit.mobile.data.remote.dto.UpdatePersonalTaskRequest
+import vn.edu.uit.devorbit.mobile.domain.model.TaskItem
+import vn.edu.uit.devorbit.mobile.domain.model.millisToIso
+import vn.edu.uit.devorbit.mobile.domain.model.toTaskItem
 import vn.edu.uit.devorbit.mobile.network.ApiService
 import android.util.Log
 import java.io.IOException
@@ -21,7 +24,7 @@ import javax.inject.Inject
 import retrofit2.HttpException
 
 data class TaskManagementUiState(
-    val tasks: List<TaskEntity> = emptyList(),
+    val tasks: List<TaskItem> = emptyList(),
     val filter: TaskFilter = TaskFilter.TODAY,
     val searchQuery: String = "",
     val isEditing: Boolean = false,
@@ -45,7 +48,6 @@ data class TaskManagementUiState(
 
 @HiltViewModel
 class TaskManagementViewModel @Inject constructor(
-    private val academicRepository: AcademicRepository,
     private val apiService: ApiService
 ) : ViewModel() {
 
@@ -57,33 +59,35 @@ class TaskManagementViewModel @Inject constructor(
     }
 
     private fun observeTasks() {
+        refreshTasks()
+    }
+
+    private fun refreshTasks() {
         viewModelScope.launch {
-            combine(
-                academicRepository.allTasks,
-                _state.map { it.filter }.distinctUntilChanged(),
-                _state.map { it.searchQuery }.distinctUntilChanged()
-            ) { tasks, filter, query ->
-                var filtered = when (filter) {
-                    TaskFilter.TODAY -> tasks.filter { isTaskToday(it) }
-                    TaskFilter.WEEK -> tasks.filter { isTaskThisWeek(it) }
-                    TaskFilter.ALL -> tasks
+            try {
+                val s = _state.value
+                val filterParam = when (s.filter) {
+                    TaskFilter.TODAY -> "today"
+                    TaskFilter.WEEK -> "week"
+                    TaskFilter.ALL -> "all"
                 }
-                if (query.isNotBlank()) {
-                    filtered = filtered.filter { it.title.contains(query, ignoreCase = true) }
+                var tasks = apiService.getPersonalTasks(filterParam).map { it.toTaskItem() }
+                if (s.searchQuery.isNotBlank()) {
+                    tasks = tasks.filter { it.title.contains(s.searchQuery, ignoreCase = true) }
                 }
-                filtered.sortedBy { it.completed }
-            }.collect { filtered ->
-                _state.update { it.copy(tasks = filtered) }
-            }
+                _state.update { it.copy(tasks = tasks.sortedBy { it.completed }) }
+            } catch (_: Exception) { }
         }
     }
 
     fun setFilter(filter: TaskFilter) {
         _state.update { it.copy(filter = filter) }
+        refreshTasks()
     }
 
     fun updateSearchQuery(query: String) {
         _state.update { it.copy(searchQuery = query) }
+        refreshTasks()
     }
 
     fun updateDescription(desc: String) {
@@ -94,7 +98,7 @@ class TaskManagementViewModel @Inject constructor(
         _state.update { it.copy(inputTitle = "", inputDescription = "", inputDeadline = null, inputRecurrence = null, inputRecurrenceDays = null, inputRecurrenceStartDate = null, inputRecurrenceEndDate = null, showRecurrenceStartPicker = false, showRecurrenceEndPicker = false, isEditing = false, editingTaskId = null) }
     }
 
-    fun startEdit(task: TaskEntity) {
+    fun startEdit(task: TaskItem) {
         _state.update { it.copy(
             isEditing = true,
             editingTaskId = task.id,
@@ -199,75 +203,91 @@ class TaskManagementViewModel @Inject constructor(
         val title = s.inputTitle.trim()
         if (title.isBlank()) return
         viewModelScope.launch {
-            val deadline = if (s.inputRecurrence != null) {
-                val startDate = s.inputRecurrenceStartDate?.let {
-                    Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate()
-                } ?: LocalDate.now()
-                val time = s.inputDeadline?.let {
-                    Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalTime()
-                } ?: LocalTime.now()
-                startDate.atTime(time).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-            } else {
-                s.inputDeadline
-            }
-            val task = if (s.isEditing && s.editingTaskId != null) {
-                TaskEntity(
-                    id = s.editingTaskId,
-                    title = title,
-                    description = s.inputDescription,
-                    deadline = deadline,
-                    taskType = "general",
-                    recurrence = s.inputRecurrence,
-                    recurrenceDaysOfWeek = s.inputRecurrenceDays,
-                    recurrenceStartDate = s.inputRecurrenceStartDate,
-                    recurrenceEndDate = s.inputRecurrenceEndDate,
-                    completed = _state.value.tasks.find { it.id == s.editingTaskId }?.completed ?: false,
-                    createdAt = _state.value.tasks.find { it.id == s.editingTaskId }?.createdAt ?: System.currentTimeMillis()
-                )
-            } else {
-                TaskEntity(
-                    title = title,
-                    description = s.inputDescription,
-                    deadline = deadline,
-                    taskType = "general",
-                    recurrence = s.inputRecurrence,
-                    recurrenceDaysOfWeek = s.inputRecurrenceDays,
-                    recurrenceStartDate = s.inputRecurrenceStartDate,
-                    recurrenceEndDate = s.inputRecurrenceEndDate
-                )
-            }
-            academicRepository.saveTask(task)
-            _state.update { it.copy(inputTitle = "", inputDescription = "", inputDeadline = null, inputRecurrence = null, inputRecurrenceDays = null, inputRecurrenceStartDate = null, inputRecurrenceEndDate = null, showRecurrenceStartPicker = false, showRecurrenceEndPicker = false, isEditing = false, editingTaskId = null) }
+            try {
+                val deadline = if (s.inputRecurrence != null) {
+                    val startDate = s.inputRecurrenceStartDate?.let {
+                        Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate()
+                    } ?: LocalDate.now()
+                    val time = s.inputDeadline?.let {
+                        Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalTime()
+                    } ?: LocalTime.now()
+                    startDate.atTime(time).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                } else {
+                    s.inputDeadline
+                }
+                if (s.isEditing && s.editingTaskId != null) {
+                    apiService.updatePersonalTask(s.editingTaskId, UpdatePersonalTaskRequest(
+                        title = title,
+                        description = s.inputDescription.ifBlank { null },
+                        deadline = millisToIso(deadline),
+                        recurrence = s.inputRecurrence,
+                        recurrenceDaysOfWeek = s.inputRecurrenceDays,
+                        recurrenceStartDate = s.inputRecurrenceStartDate?.let {
+                            java.time.Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().toString()
+                        },
+                        recurrenceEndDate = s.inputRecurrenceEndDate?.let {
+                            java.time.Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().toString()
+                        }
+                    ))
+                } else {
+                    apiService.createPersonalTask(CreatePersonalTaskRequest(
+                        title = title,
+                        description = s.inputDescription.ifBlank { null },
+                        deadline = millisToIso(deadline),
+                        recurrence = s.inputRecurrence,
+                        recurrenceDaysOfWeek = s.inputRecurrenceDays,
+                        recurrenceStartDate = s.inputRecurrenceStartDate?.let {
+                            java.time.Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().toString()
+                        },
+                        recurrenceEndDate = s.inputRecurrenceEndDate?.let {
+                            java.time.Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().toString()
+                        }
+                    ))
+                }
+                _state.update { it.copy(inputTitle = "", inputDescription = "", inputDeadline = null, inputRecurrence = null, inputRecurrenceDays = null, inputRecurrenceStartDate = null, inputRecurrenceEndDate = null, showRecurrenceStartPicker = false, showRecurrenceEndPicker = false, isEditing = false, editingTaskId = null) }
+                refreshTasks()
+            } catch (_: Exception) { }
         }
     }
 
     fun toggleTask(taskId: Long, completed: Boolean) {
         viewModelScope.launch {
-            if (completed) {
-                val currentTask = _state.value.tasks.find { it.id == taskId }
-                academicRepository.setTaskCompleted(taskId, true)
-                if (currentTask?.recurrence != null) {
-                    val nextDeadline = computeNextDeadline(currentTask)
-                    if (nextDeadline != null) {
-                        val nextTask = currentTask.copy(
-                            id = 0,
-                            completed = false,
-                            deadline = nextDeadline,
-                            createdAt = System.currentTimeMillis()
-                        )
-                        academicRepository.saveTask(nextTask)
+            try {
+                if (completed) {
+                    val currentTask = _state.value.tasks.find { it.id == taskId }
+                    apiService.togglePersonalTask(taskId, mapOf("completed" to true))
+                    if (currentTask?.recurrence != null) {
+                        val nextDeadline = computeNextDeadline(currentTask)
+                        if (nextDeadline != null) {
+                            apiService.createPersonalTask(CreatePersonalTaskRequest(
+                                title = currentTask.title,
+                                description = currentTask.description.ifBlank { null },
+                                deadline = millisToIso(nextDeadline),
+                                recurrence = currentTask.recurrence,
+                                recurrenceDaysOfWeek = currentTask.recurrenceDaysOfWeek,
+                                recurrenceStartDate = currentTask.recurrenceStartDate?.let {
+                                    Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().toString()
+                                },
+                                recurrenceEndDate = currentTask.recurrenceEndDate?.let {
+                                    Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().toString()
+                                }
+                            ))
+                        }
                     }
+                } else {
+                    apiService.togglePersonalTask(taskId, mapOf("completed" to false))
                 }
-            } else {
-                academicRepository.setTaskCompleted(taskId, false)
-            }
+                refreshTasks()
+            } catch (_: Exception) { }
         }
     }
 
     fun deleteTask(taskId: Long) {
         viewModelScope.launch {
-            val task = _state.value.tasks.find { it.id == taskId } ?: return@launch
-            academicRepository.deleteTask(task)
+            try {
+                apiService.deletePersonalTask(taskId)
+                refreshTasks()
+            } catch (_: Exception) { }
         }
     }
 
@@ -322,23 +342,9 @@ class TaskManagementViewModel @Inject constructor(
         }
     }
 
-    private fun isTaskToday(task: TaskEntity): Boolean {
-        if (task.deadline == null) return false
-        val date = Instant.ofEpochMilli(task.deadline).atZone(ZoneId.systemDefault()).toLocalDate()
-        return date == LocalDate.now()
-    }
-
-    private fun isTaskThisWeek(task: TaskEntity): Boolean {
-        if (task.deadline == null) return false
-        val date = Instant.ofEpochMilli(task.deadline).atZone(ZoneId.systemDefault()).toLocalDate()
-        val now = LocalDate.now()
-        val monday = now.with(DayOfWeek.MONDAY)
-        val sunday = now.with(DayOfWeek.SUNDAY)
-        return date >= monday && date <= sunday
-    }
 }
 
-private fun computeNextDeadline(task: TaskEntity): Long? {
+private fun computeNextDeadline(task: TaskItem): Long? {
     val deadline = task.deadline ?: return null
     val recurrence = task.recurrence ?: return null
     val zdt = Instant.ofEpochMilli(deadline).atZone(ZoneId.systemDefault())

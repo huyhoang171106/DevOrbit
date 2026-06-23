@@ -5,16 +5,18 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import vn.edu.uit.devorbit.mobile.data.local.dao.CourseDao
 import vn.edu.uit.devorbit.mobile.data.local.dao.DailyActivityDao
 import vn.edu.uit.devorbit.mobile.data.local.dao.SemesterCourseDao
 import vn.edu.uit.devorbit.mobile.data.local.dao.TechStackDao
 import vn.edu.uit.devorbit.mobile.data.local.entity.CourseEntity
 import vn.edu.uit.devorbit.mobile.data.local.entity.DailyActivityEntity
 import vn.edu.uit.devorbit.mobile.data.local.entity.SemesterCourseEntity
-import vn.edu.uit.devorbit.mobile.data.local.entity.TaskEntity
 import vn.edu.uit.devorbit.mobile.data.local.entity.TechStackEntity
-import vn.edu.uit.devorbit.mobile.data.repository.AcademicRepository
 import vn.edu.uit.devorbit.mobile.data.datastore.SettingsDataStore
+import vn.edu.uit.devorbit.mobile.data.remote.dto.CreatePersonalTaskRequest
+import vn.edu.uit.devorbit.mobile.domain.model.TaskItem
+import vn.edu.uit.devorbit.mobile.domain.model.toTaskItem
 import vn.edu.uit.devorbit.mobile.network.ApiService
 import java.time.DayOfWeek
 import java.time.Instant
@@ -32,7 +34,7 @@ data class DashboardUiState(
     val studyHoursToday: Int = 0,
     val semesterCourses: List<CourseEntity> = emptyList(),
     val allCourses: List<CourseEntity> = emptyList(),
-    val sortedTasks: List<TaskEntity> = emptyList(),
+    val sortedTasks: List<TaskItem> = emptyList(),
     val completedTaskCount: Int = 0,
     val totalTaskCount: Int = 0,
     val streakCount: Int = 0,
@@ -57,11 +59,11 @@ data class WeekDay(
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
     private val settingsDataStore: SettingsDataStore,
+    private val courseDao: CourseDao,
     private val semesterCourseDao: SemesterCourseDao,
     private val dailyActivityDao: DailyActivityDao,
     private val techStackDao: TechStackDao,
-    private val apiService: ApiService,
-    private val academicRepository: AcademicRepository
+    private val apiService: ApiService
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DashboardUiState())
@@ -156,7 +158,7 @@ class DashboardViewModel @Inject constructor(
                 if (courseIds.isEmpty()) {
                     _state.update { it.copy(semesterCourses = emptyList()) }
                 } else {
-                    val allCourses = academicRepository.allCourses.first()
+                    val allCourses = courseDao.getAllCourses().first()
                     val selected = allCourses.filter { it.id in courseIds }
                     _state.update { it.copy(semesterCourses = selected) }
                 }
@@ -166,35 +168,36 @@ class DashboardViewModel @Inject constructor(
 
     private fun observeTasks() {
         viewModelScope.launch {
-            combine(academicRepository.allTasks, _taskFilter) { tasks, filter ->
-                val filtered = when (filter) {
-                    TaskFilter.TODAY -> tasks.filter { isTaskToday(it) }
-                    TaskFilter.WEEK -> tasks.filter { isTaskThisWeek(it) }
-                    TaskFilter.ALL -> tasks
-                }
-                val sorted = filtered.sortedBy { it.completed }
-                val total = sorted.size
-                val completed = sorted.count { it.completed }
-                _state.update { it.copy(
-                    sortedTasks = sorted,
-                    totalTaskCount = total,
-                    completedTaskCount = completed
-                ) }
-                val todayTasks = tasks.filter { isTaskToday(it) }
-                recordTaskProgress(todayTasks.count { it.completed }, todayTasks.size)
-            }.collect()
+            _taskFilter.collect { filter ->
+                try {
+                    val filterParam = when (filter) {
+                        TaskFilter.TODAY -> "today"
+                        TaskFilter.WEEK -> "week"
+                        TaskFilter.ALL -> "all"
+                    }
+                    val tasks = apiService.getPersonalTasks(filterParam).map { it.toTaskItem() }
+                    val sorted = tasks.sortedBy { it.completed }
+                    _state.update { it.copy(
+                        sortedTasks = sorted,
+                        totalTaskCount = sorted.size,
+                        completedTaskCount = sorted.count { it.completed }
+                    ) }
+                    val todayTasks = sorted.filter { isTaskItemToday(it) }
+                    recordTaskProgress(todayTasks.count { it.completed }, todayTasks.size)
+                } catch (_: Exception) { }
+            }
         }
     }
 
-    private fun isTaskToday(task: TaskEntity): Boolean {
+    private fun isTaskItemToday(task: TaskItem): Boolean {
         if (task.deadline == null) return false
-        val date = Instant.ofEpochMilli(task.deadline!!).atZone(ZoneId.systemDefault()).toLocalDate()
+        val date = Instant.ofEpochMilli(task.deadline).atZone(ZoneId.systemDefault()).toLocalDate()
         return date == LocalDate.now()
     }
 
-    private fun isTaskThisWeek(task: TaskEntity): Boolean {
+    private fun isTaskItemThisWeek(task: TaskItem): Boolean {
         if (task.deadline == null) return false
-        val date = Instant.ofEpochMilli(task.deadline!!).atZone(ZoneId.systemDefault()).toLocalDate()
+        val date = Instant.ofEpochMilli(task.deadline).atZone(ZoneId.systemDefault()).toLocalDate()
         val now = LocalDate.now()
         val monday = now.with(DayOfWeek.MONDAY)
         val sunday = now.with(DayOfWeek.SUNDAY)
@@ -239,7 +242,7 @@ class DashboardViewModel @Inject constructor(
 
     fun loadAllCourses() {
         viewModelScope.launch {
-            val courses = academicRepository.allCourses.first()
+            val courses = courseDao.getAllCourses().first()
             _state.update { it.copy(allCourses = courses) }
         }
     }
@@ -390,20 +393,39 @@ class DashboardViewModel @Inject constructor(
         studyTimerJob = null
     }
 
-    fun createTask(title: String, courseId: Long?) {
+    fun createTask(title: String) {
         viewModelScope.launch {
-            val task = TaskEntity(
-                title = title,
-                courseId = courseId,
-                taskType = "general"
-            )
-            academicRepository.saveTask(task)
+            try {
+                apiService.createPersonalTask(CreatePersonalTaskRequest(title = title))
+                refreshTasks()
+            } catch (_: Exception) { }
         }
     }
 
     fun toggleTask(taskId: Long, completed: Boolean) {
         viewModelScope.launch {
-            academicRepository.setTaskCompleted(taskId, completed)
+            try {
+                apiService.togglePersonalTask(taskId, mapOf("completed" to completed))
+                refreshTasks()
+            } catch (_: Exception) { }
         }
+    }
+
+    private suspend fun refreshTasks() {
+        try {
+            val filter = _taskFilter.value
+            val filterParam = when (filter) {
+                TaskFilter.TODAY -> "today"
+                TaskFilter.WEEK -> "week"
+                TaskFilter.ALL -> "all"
+            }
+            val tasks = apiService.getPersonalTasks(filterParam).map { it.toTaskItem() }
+            val sorted = tasks.sortedBy { it.completed }
+            _state.update { it.copy(
+                sortedTasks = sorted,
+                totalTaskCount = sorted.size,
+                completedTaskCount = sorted.count { it.completed }
+            ) }
+        } catch (_: Exception) { }
     }
 }

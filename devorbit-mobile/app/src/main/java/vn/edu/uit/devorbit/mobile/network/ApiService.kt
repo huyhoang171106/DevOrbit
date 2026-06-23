@@ -7,6 +7,7 @@ import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.POST
 import retrofit2.http.PUT
+import retrofit2.http.PATCH
 import vn.edu.uit.devorbit.mobile.data.remote.dto.*
 
 interface ApiService {
@@ -166,4 +167,28 @@ interface ApiService {
 
     @POST("/api/student/group-plans/tasks/{taskId}/approve-delete")
     suspend fun approveDeleteTask(@Path("taskId") taskId: Long, @Body request: ApproveDeleteRequest)
+
+    // Personal Tasks
+    @GET("/api/student/tasks")
+    suspend fun getPersonalTasks(
+        @Query("filter") filter: String = "all"
+    ): List<PersonalTaskResponse>
+
+    @POST("/api/student/tasks")
+    suspend fun createPersonalTask(@Body request: CreatePersonalTaskRequest): PersonalTaskResponse
+
+    @PUT("/api/student/tasks/{taskId}")
+    suspend fun updatePersonalTask(
+        @Path("taskId") taskId: Long,
+        @Body request: UpdatePersonalTaskRequest
+    ): PersonalTaskResponse
+
+    @DELETE("/api/student/tasks/{taskId}")
+    suspend fun deletePersonalTask(@Path("taskId") taskId: Long)
+
+    @PATCH("/api/student/tasks/{taskId}/toggle")
+    suspend fun togglePersonalTask(
+        @Path("taskId") taskId: Long,
+        @Body body: Map<String, Boolean>
+    ): PersonalTaskResponse
 }

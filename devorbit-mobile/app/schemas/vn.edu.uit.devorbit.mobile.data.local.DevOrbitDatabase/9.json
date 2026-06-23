@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 9,
-    "identityHash": "12842384aed13a7f42f18c4dfe073598",
+    "identityHash": "2e7594f222a88d5d1465ec02d6ae5592",
     "entities": [
       {
         "tableName": "courses",
@@ -183,116 +183,6 @@
         "foreignKeys": []
       },
       {
-        "tableName": "tasks",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `courseId` INTEGER, `estimatedMinutes` INTEGER NOT NULL, `achievedMinutes` INTEGER NOT NULL, `deadline` INTEGER, `priority` INTEGER NOT NULL, `completed` INTEGER NOT NULL, `taskType` TEXT NOT NULL, `parentTaskId` INTEGER, `createdAt` INTEGER NOT NULL, `recurrence` TEXT, `recurrenceDaysOfWeek` INTEGER, `recurrenceStartDate` INTEGER, `recurrenceEndDate` INTEGER)",
-        "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "title",
-            "columnName": "title",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "description",
-            "columnName": "description",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "courseId",
-            "columnName": "courseId",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "estimatedMinutes",
-            "columnName": "estimatedMinutes",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "achievedMinutes",
-            "columnName": "achievedMinutes",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "deadline",
-            "columnName": "deadline",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "priority",
-            "columnName": "priority",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "completed",
-            "columnName": "completed",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "taskType",
-            "columnName": "taskType",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "parentTaskId",
-            "columnName": "parentTaskId",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "createdAt",
-            "columnName": "createdAt",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "recurrence",
-            "columnName": "recurrence",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "recurrenceDaysOfWeek",
-            "columnName": "recurrenceDaysOfWeek",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "recurrenceStartDate",
-            "columnName": "recurrenceStartDate",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "recurrenceEndDate",
-            "columnName": "recurrenceEndDate",
-            "affinity": "INTEGER",
-            "notNull": false
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": true,
-          "columnNames": [
-            "id"
-          ]
-        },
-        "indices": [],
-        "foreignKeys": []
-      },
-      {
         "tableName": "daily_activity",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`studentCode` TEXT NOT NULL, `date` TEXT NOT NULL, `reposViewed` INTEGER NOT NULL, `tasksCompleted` INTEGER NOT NULL, `tasksTotal` INTEGER NOT NULL, `studyMinutes` INTEGER NOT NULL, PRIMARY KEY(`studentCode`, `date`))",
         "fields": [
@@ -399,7 +289,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '12842384aed13a7f42f18c4dfe073598')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2e7594f222a88d5d1465ec02d6ae5592')"
     ]
   }
 }

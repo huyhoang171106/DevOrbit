@@ -14,11 +14,13 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,16 +28,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import vn.edu.uit.devorbit.mobile.domain.model.TaskItem
+import vn.edu.uit.devorbit.mobile.ui.components.WheelTimePicker
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.TaskFilter
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.TaskManagementViewModel
 import java.time.DayOfWeek
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -50,6 +58,26 @@ fun TaskManagementScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     var showAddTaskModal by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    // Auto-refresh group plans when screen resumes (e.g. back from GroupPlanDetail)
+    val lifecycleOwner = LocalLifecycleOwner.current
+    // Refresh group plans when screen re-enters composition (e.g. after leave/delete)
+    LaunchedEffect(Unit) {
+        viewModel.loadGroupPlans()
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.loadGroupPlans()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
     // Close modal when save completes
     LaunchedEffect(state.saveLoading) {
@@ -69,6 +97,7 @@ fun TaskManagementScreen(
     if (state.showCreatePlanDialog) {
         AlertDialog(
             onDismissRequest = { viewModel.hideCreatePlanDialog() },
+            shape = RoundedCornerShape(20.dp),
             title = { Text("Tạo kế hoạch nhóm", color = CosmicTheme.colors.textPrimary) },
             text = {
                 Column {
@@ -94,19 +123,28 @@ fun TaskManagementScreen(
                 }
             },
             confirmButton = {
-                TextButton(
+                Button(
                     onClick = { viewModel.createGroupPlan(onNavigateToGroupPlan) },
-                    enabled = state.planTitle.isNotBlank() && !state.creatingPlan
+                    enabled = state.planTitle.isNotBlank() && !state.creatingPlan,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = CosmicTheme.colors.plasma.copy(alpha = 0.15f),
+                        contentColor = CosmicTheme.colors.plasma
+                    ),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     if (state.creatingPlan) {
                         CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(16.dp), color = CosmicTheme.colors.plasma)
                     } else {
-                        Text("Tạo", color = CosmicTheme.colors.plasma)
+                        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text("Tạo")
                     }
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.hideCreatePlanDialog() }) {
+                    Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(4.dp))
                     Text("Huỷ", color = CosmicTheme.colors.textSecondary)
                 }
             },
@@ -185,25 +223,25 @@ fun TaskManagementScreen(
                     CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(20.dp), color = CosmicTheme.colors.plasma)
                 }
             } else if (state.groupPlans.isEmpty()) {
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    color = CosmicTheme.colors.nebula
-                ) {
-                    Text(
-                        text = "Bạn chưa tham gia kế hoạch nhóm nào",
-                        color = CosmicTheme.colors.textTertiary,
-                        fontSize = 13.sp,
-                        modifier = Modifier.padding(16.dp)
-                    )
-                }
-            } else {
-                state.groupPlans.forEach { plan ->
                     Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onNavigateToGroupPlan(plan.id) },
-                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        color = CosmicTheme.colors.nebula
+                    ) {
+                        Text(
+                            text = "Bạn chưa tham gia kế hoạch nhóm nào",
+                            color = CosmicTheme.colors.textTertiary,
+                            fontSize = 13.sp,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                } else {
+                    state.groupPlans.forEach { plan ->
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onNavigateToGroupPlan(plan.id) },
+                            shape = RoundedCornerShape(16.dp),
                         color = CosmicTheme.colors.nebula
                     ) {
                         Row(
@@ -250,18 +288,72 @@ fun TaskManagementScreen(
                         )
                     }
                 } else {
+                    val now = System.currentTimeMillis()
+                    val transparentTasks = state.tasks.filter { task ->
+                        !task.completed && (task.deadline == null || task.deadline >= now)
+                    }
+                    val overdueTasks = state.tasks.filter { task ->
+                        !task.completed && task.deadline != null && task.deadline < now
+                    }
+                    val completedTasks = state.tasks.filter { it.completed }
+
+                    val overdueGroups = mutableMapOf<LocalDate, MutableList<TaskItem>>()
+                    for (task in overdueTasks) {
+                        if (task.recurrence != null || task.deadline == null) continue
+                        val date = Instant.ofEpochMilli(task.deadline).atZone(ZoneId.systemDefault()).toLocalDate()
+                        overdueGroups.getOrPut(date) { mutableListOf() }.add(task)
+                    }
+                    val sortedOverdueDates = overdueGroups.keys.sortedDescending()
+
                     LazyColumn(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         contentPadding = PaddingValues(bottom = 100.dp)
                     ) {
-                        items(state.tasks, key = { it.id }) { task ->
+                        items(transparentTasks, key = { "t_${it.id}" }) { task ->
                             TaskItem(
                                 task = task,
+                                filter = state.filter,
+                                isLocked = false,
                                 onToggle = { viewModel.toggleTask(task.id, !task.completed) },
                                 onEdit = {
                                     viewModel.startEdit(task)
                                     showAddTaskModal = true
-                                }
+                                },
+                                onContinue = null
+                            )
+                        }
+                        for (date in sortedOverdueDates) {
+                            val alreadyContinued = date in state.continuedDates
+                            val lockedMsg = "Task đã quá hạn, không thể thao tác"
+                            item(key = "header_$date") {
+                                OverdueDateHeader(
+                                    date = date,
+                                    alreadyContinued = alreadyContinued,
+                                    onContinue = { viewModel.continueDateTasks(date) }
+                                )
+                            }
+                            items(overdueGroups[date]!!, key = { "o_${it.id}" }) { task ->
+                                TaskItem(
+                                    task = task,
+                                    filter = state.filter,
+                                    isLocked = true,
+                                    onToggle = { scope.launch { snackbarHostState.showSnackbar(lockedMsg) } },
+                                    onEdit = { scope.launch { snackbarHostState.showSnackbar(lockedMsg) } },
+                                    onContinue = if (alreadyContinued) null else ({ viewModel.continueDateTasks(date) } as () -> Unit)
+                                )
+                            }
+                        }
+                        items(completedTasks, key = { "c_${it.id}" }) { task ->
+                            TaskItem(
+                                task = task,
+                                filter = state.filter,
+                                isLocked = false,
+                                onToggle = { viewModel.toggleTask(task.id, !task.completed) },
+                                onEdit = {
+                                    viewModel.startEdit(task)
+                                    showAddTaskModal = true
+                                },
+                                onContinue = null
                             )
                         }
                     }
@@ -332,6 +424,7 @@ fun TaskManagementScreen(
                 onConfirm = {
                     viewModel.saveTask()
                 },
+                saveLoading = state.saveLoading,
                 onDelete = state.isEditing.takeIf { it }?.let {
                     {
                         state.editingTaskId?.let { viewModel.deleteTask(it) }
@@ -412,7 +505,7 @@ private fun RecurrenceDropdown(
                         Checkbox(
                             checked = isKhongLap,
                             onCheckedChange = {
-                                onRecurrenceChange(null)
+                                onRecurrenceChange(if (isKhongLap) "WEEKLY" else null)
                                 expanded = false
                             },
                             colors = CheckboxDefaults.colors(checkedColor = CosmicTheme.colors.plasma)
@@ -422,7 +515,7 @@ private fun RecurrenceDropdown(
                     }
                 },
                 onClick = {
-                    onRecurrenceChange(null)
+                    onRecurrenceChange(if (isKhongLap) "WEEKLY" else null)
                     expanded = false
                 }
             )
@@ -432,7 +525,7 @@ private fun RecurrenceDropdown(
                         Checkbox(
                             checked = isMoiNgay,
                             onCheckedChange = {
-                                onRecurrenceChange("DAILY")
+                                onRecurrenceChange(if (isMoiNgay) "WEEKLY" else "DAILY")
                                 expanded = false
                             },
                             colors = CheckboxDefaults.colors(checkedColor = CosmicTheme.colors.plasma)
@@ -442,7 +535,7 @@ private fun RecurrenceDropdown(
                     }
                 },
                 onClick = {
-                    onRecurrenceChange("DAILY")
+                    onRecurrenceChange(if (isMoiNgay) "WEEKLY" else "DAILY")
                     expanded = false
                 }
             )
@@ -506,20 +599,30 @@ private fun AddTaskModal(
     recurrenceDays: Int?,
     onRecurrenceDayToggle: (DayOfWeek) -> Unit,
     onConfirm: () -> Unit,
+    saveLoading: Boolean = false,
     onDelete: (() -> Unit)? = null,
     deleteLoading: Boolean = false,
     onDismiss: () -> Unit
 ) {
+    val todayStartOfDay = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    val futureSelectable = object : SelectableDates {
+        override fun isSelectableDate(utcTimeMillis: Long): Boolean = utcTimeMillis >= todayStartOfDay
+        override fun isSelectableYear(year: Int): Boolean = true
+    }
+
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = deadline ?: System.currentTimeMillis()
+        initialSelectedDateMillis = deadline ?: System.currentTimeMillis(),
+        selectableDates = futureSelectable
     )
 
     val startDatePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = recurrenceStartDate ?: System.currentTimeMillis()
+        initialSelectedDateMillis = recurrenceStartDate ?: System.currentTimeMillis(),
+        selectableDates = futureSelectable
     )
 
     val endDatePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = recurrenceEndDate ?: System.currentTimeMillis()
+        initialSelectedDateMillis = recurrenceEndDate ?: System.currentTimeMillis(),
+        selectableDates = futureSelectable
     )
 
     val initialLocalTime = if (deadline != null) {
@@ -527,22 +630,21 @@ private fun AddTaskModal(
     } else {
         java.time.LocalTime.of(0, 0)
     }
-    val timePickerState = rememberTimePickerState(
-        initialHour = initialLocalTime.hour,
-        initialMinute = initialLocalTime.minute,
-        is24Hour = true
-    )
+    var selectedHour by remember { mutableIntStateOf(initialLocalTime.hour) }
+    var selectedMinute by remember { mutableIntStateOf(initialLocalTime.minute) }
 
     var showDeleteConfirm by remember { mutableStateOf(false) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = CosmicTheme.colors.nebula,
-        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .wrapContentHeight()
                 .padding(horizontal = 20.dp)
                 .padding(bottom = 32.dp)
         ) {
@@ -726,18 +828,25 @@ private fun AddTaskModal(
             Spacer(modifier = Modifier.height(20.dp))
 
             if (isEditing && onDelete != null) {
-                TextButton(
+                Button(
                     onClick = { showDeleteConfirm = true },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = CosmicTheme.colors.supernova.copy(alpha = 0.15f),
+                        contentColor = CosmicTheme.colors.supernova
+                    )
                 ) {
-                    Text("Xoá nhiệm vụ", color = CosmicTheme.colors.supernova, fontWeight = FontWeight.SemiBold)
+                    Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("Xoá nhiệm vụ", fontWeight = FontWeight.SemiBold)
                 }
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
             Button(
                 onClick = onConfirm,
-                enabled = title.isNotBlank(),
+                enabled = title.isNotBlank() && !saveLoading,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -753,27 +862,37 @@ private fun AddTaskModal(
     if (showDeleteConfirm) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
+            shape = RoundedCornerShape(20.dp),
             title = { Text("Xoá nhiệm vụ", color = CosmicTheme.colors.textPrimary) },
             text = { Text("Bạn có chắc muốn xoá nhiệm vụ này?", color = CosmicTheme.colors.textSecondary) },
             confirmButton = {
-                TextButton(
+                Button(
                     onClick = {
                         if (!deleteLoading) {
                             showDeleteConfirm = false
                             onDelete?.invoke()
                         }
                     },
-                    enabled = !deleteLoading
+                    enabled = !deleteLoading,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = CosmicTheme.colors.supernova.copy(alpha = 0.15f),
+                        contentColor = CosmicTheme.colors.supernova
+                    ),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     if (deleteLoading) {
                         CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(16.dp), color = CosmicTheme.colors.supernova)
                     } else {
-                        Text("Xoá", color = CosmicTheme.colors.supernova)
+                        Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text("Xoá")
                     }
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirm = false }) {
+                    Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(4.dp))
                     Text("Huỷ", color = CosmicTheme.colors.textSecondary)
                 }
             },
@@ -784,19 +903,36 @@ private fun AddTaskModal(
     if (showDatePicker) {
         DatePickerDialog(
             onDismissRequest = onDismissDatePicker,
+            shape = RoundedCornerShape(20.dp),
             confirmButton = {
-                TextButton(onClick = {
-                    onDateSelected(datePickerState.selectedDateMillis)
-                    onDismissDatePicker()
-                }) {
+                Button(
+                    onClick = {
+                        onDateSelected(datePickerState.selectedDateMillis)
+                        onDismissDatePicker()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = CosmicTheme.colors.plasma.copy(alpha = 0.15f)
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp), tint = CosmicTheme.colors.plasma)
+                    Spacer(Modifier.width(4.dp))
                     Text("Chọn", color = CosmicTheme.colors.plasma)
                 }
             },
             dismissButton = {
-                TextButton(onClick = {
-                    onDateSelected(null)
-                    onDismissDatePicker()
-                }) {
+                Button(
+                    onClick = {
+                        onDateSelected(null)
+                        onDismissDatePicker()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = CosmicTheme.colors.textSecondary.copy(alpha = 0.1f)
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(16.dp), tint = CosmicTheme.colors.textSecondary)
+                    Spacer(Modifier.width(4.dp))
                     Text("Bỏ", color = CosmicTheme.colors.textSecondary)
                 }
             },
@@ -823,31 +959,44 @@ private fun AddTaskModal(
     if (showTimePicker) {
         AlertDialog(
             onDismissRequest = onDismissTimePicker,
+            shape = RoundedCornerShape(20.dp),
             title = { Text("Chọn giờ", color = CosmicTheme.colors.textPrimary) },
             text = {
-                TimePicker(
-                    state = timePickerState,
-                    colors = TimePickerDefaults.colors(
-                        clockDialColor = CosmicTheme.colors.plasma.copy(alpha = 0.2f),
-                        clockDialSelectedContentColor = CosmicTheme.colors.textPrimary,
-                        clockDialUnselectedContentColor = CosmicTheme.colors.textSecondary,
-                        selectorColor = CosmicTheme.colors.plasma,
-                        timeSelectorSelectedContainerColor = CosmicTheme.colors.plasma.copy(alpha = 0.2f),
-                        timeSelectorSelectedContentColor = CosmicTheme.colors.plasma,
-                        timeSelectorUnselectedContainerColor = Color.White.copy(alpha = 0.05f),
-                        timeSelectorUnselectedContentColor = CosmicTheme.colors.textSecondary
-                    )
+                WheelTimePicker(
+                    initialHour = selectedHour,
+                    initialMinute = selectedMinute,
+                    is24Hour = true,
+                    onHourChanged = { selectedHour = it },
+                    onMinuteChanged = { selectedMinute = it },
+                    modifier = Modifier.padding(vertical = 16.dp)
                 )
             },
             confirmButton = {
-                TextButton(onClick = {
-                    onTimeSelected(timePickerState.hour, timePickerState.minute)
-                }) {
+                Button(
+                    onClick = {
+                        onTimeSelected(selectedHour, selectedMinute)
+                        onDismissTimePicker()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = CosmicTheme.colors.plasma.copy(alpha = 0.15f)
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp), tint = CosmicTheme.colors.plasma)
+                    Spacer(Modifier.width(4.dp))
                     Text("Chọn", color = CosmicTheme.colors.plasma)
                 }
             },
             dismissButton = {
-                TextButton(onClick = onDismissTimePicker) {
+                Button(
+                    onClick = onDismissTimePicker,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = CosmicTheme.colors.textSecondary.copy(alpha = 0.1f)
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(16.dp), tint = CosmicTheme.colors.textSecondary)
+                    Spacer(Modifier.width(4.dp))
                     Text("Huỷ", color = CosmicTheme.colors.textSecondary)
                 }
             },
@@ -858,19 +1007,36 @@ private fun AddTaskModal(
     if (showRecurrenceStartPicker) {
         DatePickerDialog(
             onDismissRequest = onDismissRecurrenceStartPicker,
+            shape = RoundedCornerShape(20.dp),
             confirmButton = {
-                TextButton(onClick = {
-                    onRecurrenceStartDateSelected(startDatePickerState.selectedDateMillis)
-                    onDismissRecurrenceStartPicker()
-                }) {
+                Button(
+                    onClick = {
+                        onRecurrenceStartDateSelected(startDatePickerState.selectedDateMillis)
+                        onDismissRecurrenceStartPicker()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = CosmicTheme.colors.plasma.copy(alpha = 0.15f)
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp), tint = CosmicTheme.colors.plasma)
+                    Spacer(Modifier.width(4.dp))
                     Text("Chọn", color = CosmicTheme.colors.plasma)
                 }
             },
             dismissButton = {
-                TextButton(onClick = {
-                    onRecurrenceStartDateSelected(null)
-                    onDismissRecurrenceStartPicker()
-                }) {
+                Button(
+                    onClick = {
+                        onRecurrenceStartDateSelected(null)
+                        onDismissRecurrenceStartPicker()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = CosmicTheme.colors.textSecondary.copy(alpha = 0.1f)
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(16.dp), tint = CosmicTheme.colors.textSecondary)
+                    Spacer(Modifier.width(4.dp))
                     Text("Bỏ", color = CosmicTheme.colors.textSecondary)
                 }
             },
@@ -897,19 +1063,36 @@ private fun AddTaskModal(
     if (showRecurrenceEndPicker) {
         DatePickerDialog(
             onDismissRequest = onDismissRecurrenceEndPicker,
+            shape = RoundedCornerShape(20.dp),
             confirmButton = {
-                TextButton(onClick = {
-                    onRecurrenceEndDateSelected(endDatePickerState.selectedDateMillis)
-                    onDismissRecurrenceEndPicker()
-                }) {
+                Button(
+                    onClick = {
+                        onRecurrenceEndDateSelected(endDatePickerState.selectedDateMillis)
+                        onDismissRecurrenceEndPicker()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = CosmicTheme.colors.plasma.copy(alpha = 0.15f)
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp), tint = CosmicTheme.colors.plasma)
+                    Spacer(Modifier.width(4.dp))
                     Text("Chọn", color = CosmicTheme.colors.plasma)
                 }
             },
             dismissButton = {
-                TextButton(onClick = {
-                    onRecurrenceEndDateSelected(null)
-                    onDismissRecurrenceEndPicker()
-                }) {
+                Button(
+                    onClick = {
+                        onRecurrenceEndDateSelected(null)
+                        onDismissRecurrenceEndPicker()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = CosmicTheme.colors.textSecondary.copy(alpha = 0.1f)
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(16.dp), tint = CosmicTheme.colors.textSecondary)
+                    Spacer(Modifier.width(4.dp))
                     Text("Bỏ", color = CosmicTheme.colors.textSecondary)
                 }
             },
@@ -992,18 +1175,72 @@ private fun FilterTabs(
 }
 
 @Composable
+private fun OverdueDateHeader(
+    date: LocalDate,
+    alreadyContinued: Boolean = false,
+    onContinue: () -> Unit
+) {
+    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale("vi", "VN"))
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = Color(0xFFFF6B6B).copy(alpha = 0.06f)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = date.format(formatter),
+                    color = Color(0xFFFF6B6B),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "(quá hạn)",
+                    color = Color(0xFFFF6B6B).copy(alpha = 0.7f),
+                    fontSize = 11.sp
+                )
+            }
+            TextButton(
+                onClick = { if (!alreadyContinued) onContinue() },
+                enabled = !alreadyContinued,
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+            ) {
+                Text(
+                    if (alreadyContinued) "Đã chuyển" else "Tiếp tục nhiệm vụ còn dang dở",
+                    color = if (alreadyContinued) CosmicTheme.colors.textTertiary else CosmicTheme.colors.plasma,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun TaskItem(
     task: TaskItem,
+    filter: TaskFilter,
+    isLocked: Boolean = false,
     onToggle: () -> Unit,
-    onEdit: () -> Unit
+    onEdit: () -> Unit,
+    onContinue: (() -> Unit)?
 ) {
     val bgColor = if (task.completed)
         Color(0xFF2E7D32).copy(alpha = 0.08f)
+    else if (isLocked)
+        Color(0xFFF9A825).copy(alpha = 0.04f)
     else
         Color(0xFFF9A825).copy(alpha = 0.08f)
 
     val borderColor = if (task.completed)
         Color(0xFF2E7D32).copy(alpha = 0.2f)
+    else if (isLocked)
+        Color(0xFFF9A825).copy(alpha = 0.12f)
     else
         Color(0xFFF9A825).copy(alpha = 0.25f)
 
@@ -1028,7 +1265,7 @@ private fun TaskItem(
                     )
                     .border(
                         1.5.dp,
-                        if (task.completed) Color(0xFF2E7D32) else CosmicTheme.colors.textTertiary,
+                        if (task.completed) Color(0xFF2E7D32) else if (isLocked) CosmicTheme.colors.textTertiary.copy(alpha = 0.3f) else CosmicTheme.colors.textTertiary,
                         CircleShape
                     ),
                 contentAlignment = Alignment.Center
@@ -1044,14 +1281,16 @@ private fun TaskItem(
             }
             Spacer(modifier = Modifier.width(12.dp))
             Column(
-                modifier = Modifier.weight(1f).clickable(onClick = onEdit)
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable(onClick = onEdit)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = task.title,
                         style = CosmicTheme.typography.body,
                         modifier = Modifier.weight(1f),
-                        color = if (task.completed) CosmicTheme.colors.textTertiary else CosmicTheme.colors.textPrimary,
+                        color = if (task.completed) CosmicTheme.colors.textTertiary else if (isLocked) CosmicTheme.colors.textTertiary else CosmicTheme.colors.textPrimary,
                         textDecoration = if (task.completed) TextDecoration.LineThrough else TextDecoration.None
                     )
                     if (task.recurrence != null) {
@@ -1059,16 +1298,32 @@ private fun TaskItem(
                             Icons.Default.Repeat,
                             contentDescription = "Lặp lại",
                             modifier = Modifier.size(16.dp),
-                            tint = CosmicTheme.colors.plasma
+                            tint = if (isLocked) CosmicTheme.colors.plasma.copy(alpha = 0.4f) else CosmicTheme.colors.plasma
                         )
                     }
                 }
+                if (task.description.isNotBlank()) {
+                    Text(
+                        text = task.description,
+                        style = CosmicTheme.typography.label,
+                        color = if (isLocked) CosmicTheme.colors.textTertiary else CosmicTheme.colors.textSecondary,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
                 if (task.deadline != null) {
                     Text(
-                        text = "Hạn: ${formatDeadline(task.deadline)}",
+                        text = "Hạn: ${formatDeadlineByFilter(task.deadline, filter)}",
                         style = CosmicTheme.typography.label,
                         color = CosmicTheme.colors.textTertiary
                     )
+                }
+            }
+            if (isLocked && onContinue != null) {
+                Spacer(modifier = Modifier.width(4.dp))
+                TextButton(onClick = onContinue, contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)) {
+                    Text("Tiếp tục", color = CosmicTheme.colors.plasma, fontSize = 12.sp, fontWeight = FontWeight.Medium)
                 }
             }
         }
@@ -1078,6 +1333,15 @@ private fun TaskItem(
 private fun formatDeadline(millis: Long): String {
     val ldt = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDateTime()
     return ldt.format(DateTimeFormatter.ofPattern("dd/MM HH:mm", Locale("vi", "VN")))
+}
+
+private fun formatDeadlineByFilter(millis: Long, filter: TaskFilter): String {
+    val zdt = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault())
+    return when (filter) {
+        TaskFilter.TODAY -> zdt.format(DateTimeFormatter.ofPattern("HH:mm", Locale("vi", "VN")))
+        TaskFilter.WEEK -> zdt.format(DateTimeFormatter.ofPattern("EEEE, dd/MM", Locale("vi", "VN")))
+        TaskFilter.ALL -> zdt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale("vi", "VN")))
+    }
 }
 
 private fun formatTime(millis: Long): String {

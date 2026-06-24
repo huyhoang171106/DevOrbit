@@ -2,6 +2,9 @@ package vn.edu.uit.devorbit.mobile.ui.screen.plan
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -11,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
@@ -44,21 +48,43 @@ fun AddTaskSheet(
     val canSubmit = title.isNotBlank() && assignedTo.isNotBlank() && deadlineMillis != null
 
     if (showDatePicker) {
+        val todayStartOfDay = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
         val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = deadlineMillis ?: System.currentTimeMillis()
+            initialSelectedDateMillis = deadlineMillis ?: System.currentTimeMillis(),
+            selectableDates = object : SelectableDates {
+                override fun isSelectableDate(utcTimeMillis: Long): Boolean = utcTimeMillis >= todayStartOfDay
+                override fun isSelectableYear(year: Int): Boolean = true
+            }
         )
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
+            shape = RoundedCornerShape(20.dp),
             confirmButton = {
-                TextButton(onClick = {
-                    deadlineMillis = datePickerState.selectedDateMillis
-                    showDatePicker = false
-                }) {
+                Button(
+                    onClick = {
+                        deadlineMillis = datePickerState.selectedDateMillis
+                        showDatePicker = false
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = CosmicTheme.colors.plasma.copy(alpha = 0.15f)
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(Icons.Default.Check, contentDescription = null, tint = CosmicTheme.colors.plasma)
+                    Spacer(Modifier.width(4.dp))
                     Text("OK", color = CosmicTheme.colors.plasma)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
+                Button(
+                    onClick = { showDatePicker = false },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = CosmicTheme.colors.textSecondary.copy(alpha = 0.1f)
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(Icons.Default.Close, contentDescription = null, tint = CosmicTheme.colors.textSecondary)
+                    Spacer(Modifier.width(4.dp))
                     Text("Huỷ", color = CosmicTheme.colors.textSecondary)
                 }
             },
@@ -77,12 +103,14 @@ fun AddTaskSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = CosmicTheme.colors.nebula,
-        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .wrapContentHeight()
                 .padding(horizontal = 20.dp)
                 .padding(bottom = 32.dp)
         ) {

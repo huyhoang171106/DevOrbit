@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
+import kotlinx.coroutines.launch
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -43,6 +44,7 @@ fun NotificationScreen(
     val error by viewModel.error.collectAsStateWithLifecycle()
     val actionLoadingId by viewModel.actionLoadingId.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(error) {
         error?.let {
@@ -134,6 +136,15 @@ fun NotificationScreen(
                             actionLoading = isActionLoading,
                             onClick = {
                                 viewModel.markAsRead(notification.id)
+                                val isGroupPlanType = actionType in listOf(
+                                    NotificationActionType.GROUP_TASK_ADDED,
+                                    NotificationActionType.GROUP_PLAN_INVITE,
+                                    NotificationActionType.GROUP_PLAN_RESPONSE,
+                                    NotificationActionType.GROUP_TASK_DELETE_REQUEST,
+                                    NotificationActionType.GROUP_TASK_DELETE_APPROVED,
+                                    NotificationActionType.GROUP_PLAN_DELETE_REQUEST,
+                                    NotificationActionType.GROUP_PLAN_DELETE_APPROVED
+                                )
                                 if (notification.groupPlanId != null && actionType in listOf(
                                         NotificationActionType.GROUP_TASK_ADDED,
                                         NotificationActionType.GROUP_PLAN_RESPONSE,
@@ -143,6 +154,12 @@ fun NotificationScreen(
                                     )
                                 ) {
                                     onNavigateToGroupPlan(notification.groupPlanId)
+                                } else if (isGroupPlanType && notification.groupPlanId == null) {
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar(
+                                            "Kế hoạch nhóm không tồn tại. Có lẽ người tạo đã xóa kế hoạch nhóm hoặc bạn đã bị xóa khỏi nhóm."
+                                        )
+                                    }
                                 }
                             },
                             onAccept = {

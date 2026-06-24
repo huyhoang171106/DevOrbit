@@ -15,6 +15,7 @@ import vn.edu.uit.devorbit.mobile.network.ApiService
 import java.io.IOException
 import javax.inject.Inject
 import retrofit2.HttpException
+import vn.edu.uit.devorbit.mobile.ui.viewmodel.TaskFilter
 
 data class GroupPlanDetailState(
     val plan: GroupPlanResponse? = null,
@@ -29,7 +30,11 @@ data class GroupPlanDetailState(
     val inviteError: String? = null,
     val inviteSuccessCode: String? = null,
     val actionLoading: Boolean = false,
-    val actionError: String? = null
+    val actionError: String? = null,
+    val timeFilter: TaskFilter = TaskFilter.ALL,
+    val memberFilter: String? = null,
+    val showTransferDialog: Boolean = false,
+    val transferLoading: Boolean = false
 )
 
 @HiltViewModel
@@ -83,13 +88,13 @@ class GroupPlanViewModel @Inject constructor(
         }
     }
 
-    fun addTask(planId: Long, title: String, description: String?, assignedTo: String?, deadline: String?) {
+    fun addTask(planId: Long, title: String, description: String?, assignedTo: String?, deadline: String?, onSuccess: () -> Unit = {}) {
         viewModelScope.launch {
             _detail.update { it.copy(actionLoading = true, actionError = null) }
             try {
-                apiService.addGroupTask(planId, AddGroupTaskRequest(title, description, assignedTo, deadline))
-                val tasks = apiService.getGroupTasks(planId)
-                _detail.update { it.copy(tasks = tasks, actionLoading = false) }
+                val created = apiService.addGroupTask(planId, AddGroupTaskRequest(title, description, assignedTo, deadline))
+                _detail.update { it.copy(tasks = listOf(created) + it.tasks.filter { it.id != created.id }, actionLoading = false) }
+                onSuccess()
             } catch (e: Exception) {
                 _detail.update { it.copy(actionLoading = false, actionError = "Không thể thêm nhiệm vụ") }
             }
@@ -163,6 +168,14 @@ class GroupPlanViewModel @Inject constructor(
         _detail.update { it.copy(actionError = null) }
     }
 
+    fun setTimeFilter(filter: TaskFilter) {
+        _detail.update { it.copy(timeFilter = filter) }
+    }
+
+    fun setMemberFilter(memberCode: String?) {
+        _detail.update { it.copy(memberFilter = memberCode) }
+    }
+
     fun requestDeleteTask(taskId: Long) {
         viewModelScope.launch {
             _detail.update { it.copy(actionLoading = true, actionError = null) }
@@ -190,6 +203,25 @@ class GroupPlanViewModel @Inject constructor(
         }
     }
 
+    fun removeMember(planId: Long, memberId: Long) {
+        viewModelScope.launch {
+            _detail.update { it.copy(actionLoading = true, actionError = null) }
+            try {
+                apiService.removeMember(planId, memberId)
+                val members = apiService.getGroupPlanMembers(planId)
+                _detail.update { it.copy(members = members, actionLoading = false) }
+            } catch (e: HttpException) {
+                val errorBody = e.response()?.errorBody()?.string()
+                val msg = parseInviteError(errorBody) ?: "Không thể xoá thành viên (lỗi ${e.code()})"
+                _detail.update { it.copy(actionLoading = false, actionError = msg) }
+            } catch (e: IOException) {
+                _detail.update { it.copy(actionLoading = false, actionError = "Mất kết nối mạng, vui lòng thử lại") }
+            } catch (e: Exception) {
+                _detail.update { it.copy(actionLoading = false, actionError = "Không thể xoá thành viên") }
+            }
+        }
+    }
+
     fun leavePlan(planId: Long, onSuccess: () -> Unit) {
         viewModelScope.launch {
             _detail.update { it.copy(actionLoading = true, actionError = null) }
@@ -213,6 +245,28 @@ class GroupPlanViewModel @Inject constructor(
                 _detail.update { it.copy(actionError = "Không thể xoá kế hoạch") }
             } finally {
                 _detail.update { it.copy(actionLoading = false) }
+            }
+        }
+    }
+
+    fun showTransferDialog() {
+        _detail.update { it.copy(showTransferDialog = true) }
+    }
+
+    fun hideTransferDialog() {
+        _detail.update { it.copy(showTransferDialog = false, actionError = null) }
+    }
+
+    fun transferOwnership(planId: Long, newOwnerCode: String, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            _detail.update { it.copy(transferLoading = true, actionError = null) }
+            try {
+                apiService.transferOwnership(planId, TransferOwnershipRequest(newOwnerCode))
+                onSuccess()
+            } catch (e: Exception) {
+                _detail.update { it.copy(actionError = "Không thể chuyển quyền trưởng nhóm") }
+            } finally {
+                _detail.update { it.copy(transferLoading = false, showTransferDialog = false) }
             }
         }
     }

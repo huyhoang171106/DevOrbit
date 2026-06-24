@@ -66,6 +66,14 @@ public class StudentGroupPlanController {
         groupPlanService.approveDeletePlan(studentCode, id, request);
     }
 
+    @PostMapping("/{id}/transfer")
+    public GroupPlanResponse transferOwnership(
+            @AuthenticationPrincipal String studentCode,
+            @PathVariable Long id,
+            @RequestBody @Valid TransferOwnershipRequest request) {
+        return groupPlanService.transferOwnership(studentCode, id, request);
+    }
+
 
     // ─── Members ───
 
@@ -98,6 +106,13 @@ public class StudentGroupPlanController {
         groupPlanService.leavePlan(studentCode, id);
     }
 
+    @DeleteMapping("/{id}/members/{memberId}")
+    public void removeMember(
+            @AuthenticationPrincipal String studentCode,
+            @PathVariable Long id,
+            @PathVariable Long memberId) {
+        groupPlanService.removeMember(studentCode, id, memberId);
+    }
 
     // ─── Tasks ───
 

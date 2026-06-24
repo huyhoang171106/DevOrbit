@@ -45,6 +45,9 @@ data class DashboardUiState(
     val maxWeekOffset: Int = 0,
     val techStacks: List<TechStackEntity> = emptyList(),
     val allTechStacks: List<String> = emptyList(),
+    val selectedDate: String? = null,
+    val currentYear: Int = 2026,
+    val currentMonth: Int = 6,
     val isLoading: Boolean = false,
     val error: String? = null
 )
@@ -75,7 +78,10 @@ class DashboardViewModel @Inject constructor(
     private val _taskFilter = MutableStateFlow(TaskFilter.TODAY)
     val taskFilter: StateFlow<TaskFilter> = _taskFilter.asStateFlow()
 
-    fun setTaskFilter(filter: TaskFilter) { _taskFilter.value = filter }
+    fun setTaskFilter(filter: TaskFilter) {
+        _taskFilter.value = filter
+        _state.update { it.copy(selectedDate = null) }
+    }
 
     private val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     private val displayDateFormat = DateTimeFormatter.ofPattern("EEEE, dd/MM", Locale("vi", "VN"))
@@ -195,7 +201,16 @@ class DashboardViewModel @Inject constructor(
             TaskFilter.WEEK -> allGroupTasks.filter { isTaskItemInWeek(it) }
             TaskFilter.ALL -> allGroupTasks
         }
-        val allTasks = (personalTasks + groupTasks).sortedBy { it.completed }
+        val now = System.currentTimeMillis()
+        val allTasks = (personalTasks + groupTasks).sortedWith(compareBy<TaskItem> {
+            when {
+                it.completed -> 2
+                it.deadline != null && it.deadline < now -> 1
+                else -> 0
+            }
+        }.thenBy {
+            it.deadline ?: Long.MAX_VALUE
+        })
         _state.update { it.copy(
             sortedTasks = allTasks,
             totalTaskCount = allTasks.size,
@@ -280,8 +295,22 @@ class DashboardViewModel @Inject constructor(
         val current = _state.value.currentWeekOffset
         val maxOffset = computeMaxWeekOffset()
         val proposed = (current + delta).coerceIn(0, maxOffset)
-        _state.update { it.copy(currentWeekOffset = proposed) }
+        _state.update { it.copy(currentWeekOffset = proposed, selectedDate = null) }
         loadWeekDays()
+    }
+
+    fun selectDate(date: String?) {
+        _state.update { it.copy(selectedDate = date) }
+    }
+
+    fun navigateMonth(delta: Int) {
+        val s = _state.value
+        var newMonth = s.currentMonth + delta
+        var newYear = s.currentYear
+        if (newMonth < 1) { newMonth = 12; newYear-- }
+        else if (newMonth > 12) { newMonth = 1; newYear++ }
+        if (newYear < 2026 || (newYear == 2026 && newMonth < 6)) return
+        _state.update { it.copy(currentYear = newYear, currentMonth = newMonth, selectedDate = null) }
     }
 
     fun addReposViewed(count: Int = 1) {

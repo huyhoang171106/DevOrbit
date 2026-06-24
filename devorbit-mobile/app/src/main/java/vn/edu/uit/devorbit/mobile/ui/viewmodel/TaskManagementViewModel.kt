@@ -51,7 +51,8 @@ data class TaskManagementUiState(
     val error: String? = null,
     val taskLoading: Boolean = false,
     val saveLoading: Boolean = false,
-    val deleteLoading: Boolean = false
+    val deleteLoading: Boolean = false,
+    val continuedDates: Set<LocalDate> = emptySet()
 )
 
 @HiltViewModel
@@ -85,7 +86,17 @@ class TaskManagementViewModel @Inject constructor(
                 if (searchQuery.isNotBlank()) {
                     tasks = tasks.filter { it.title.contains(searchQuery, ignoreCase = true) }
                 }
-                _state.update { it.copy(tasks = tasks.sortedBy { it.completed }) }
+                val now = System.currentTimeMillis()
+                val sorted = tasks.sortedWith(compareBy<TaskItem> {
+                    when {
+                        it.completed -> 2
+                        it.deadline != null && it.deadline < now -> 1
+                        else -> 0
+                    }
+                }.thenBy {
+                    it.deadline ?: Long.MAX_VALUE
+                })
+                _state.update { it.copy(tasks = sorted) }
             } catch (_: Exception) {
                 _state.update { it.copy(error = "Không thể tải nhiệm vụ") }
             }
@@ -215,6 +226,7 @@ class TaskManagementViewModel @Inject constructor(
     }
 
     fun saveTask() {
+        if (_state.value.saveLoading) return
         val s = _state.value
         val title = s.inputTitle.trim()
         if (title.isBlank()) return
@@ -236,37 +248,86 @@ class TaskManagementViewModel @Inject constructor(
                 } else {
                     s.inputDeadline
                 }
-                if (s.isEditing && s.editingTaskId != null) {
-                    apiService.updatePersonalTask(s.editingTaskId, UpdatePersonalTaskRequest(
-                        title = title,
-                        description = s.inputDescription.ifBlank { null },
-                        deadline = millisToIso(deadline),
-                        recurrence = s.inputRecurrence,
-                        recurrenceDaysOfWeek = s.inputRecurrenceDays,
-                        recurrenceStartDate = s.inputRecurrenceStartDate?.let {
-                            java.time.Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().toString()
-                        },
-                        recurrenceEndDate = s.inputRecurrenceEndDate?.let {
-                            java.time.Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().toString()
-                        }
-                    ))
-                } else {
-                    apiService.createPersonalTask(CreatePersonalTaskRequest(
-                        title = title,
-                        description = s.inputDescription.ifBlank { null },
-                        deadline = millisToIso(deadline),
-                        recurrence = s.inputRecurrence,
-                        recurrenceDaysOfWeek = s.inputRecurrenceDays,
-                        recurrenceStartDate = s.inputRecurrenceStartDate?.let {
-                            java.time.Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().toString()
-                        },
-                        recurrenceEndDate = s.inputRecurrenceEndDate?.let {
-                            java.time.Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().toString()
-                        }
-                    ))
+                if (deadline != null) {
+                    val deadlineZdt = Instant.ofEpochMilli(deadline).atZone(ZoneId.systemDefault())
+                    if (deadlineZdt.toLocalDate() == LocalDate.now(ZoneId.systemDefault()) && deadline <= System.currentTimeMillis()) {
+                        _state.update { it.copy(saveLoading = false, error = "Giờ mà bạn chọn đã qua, xin vui lòng chọn giờ khác") }
+                        return@launch
+                    }
                 }
-                _state.update { it.copy(inputTitle = "", inputDescription = "", inputDeadline = null, inputRecurrence = null, inputRecurrenceDays = null, inputRecurrenceStartDate = null, inputRecurrenceEndDate = null, showRecurrenceStartPicker = false, showRecurrenceEndPicker = false, isEditing = false, editingTaskId = null, saveLoading = false) }
-                refreshTasks()
+                if (s.inputRecurrence != null) {
+                    val today = LocalDate.now(ZoneId.systemDefault())
+                    val minEndDate = today.plusWeeks(1)
+                    val startDate = s.inputRecurrenceStartDate?.let {
+                        Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate()
+                    } ?: today
+                    if (startDate.isBefore(today)) {
+                        _state.update { it.copy(saveLoading = false, error = "Ngày bắt đầu không thể trước hôm nay") }
+                        return@launch
+                    }
+                    if (s.inputRecurrenceEndDate == null) {
+                        _state.update { it.copy(saveLoading = false, error = "Vui lòng chọn ngày kết thúc") }
+                        return@launch
+                    }
+                    val endDate = Instant.ofEpochMilli(s.inputRecurrenceEndDate).atZone(ZoneId.systemDefault()).toLocalDate()
+                    if (endDate.isBefore(minEndDate)) {
+                        _state.update { it.copy(saveLoading = false, error = "Ngày kết thúc phải cách hôm nay ít nhất 1 tuần") }
+                        return@launch
+                    }
+                }
+                if (s.isEditing && s.editingTaskId != null) {
+                    val updated = apiService.updatePersonalTask(s.editingTaskId, UpdatePersonalTaskRequest(
+                        title = title,
+                        description = s.inputDescription.ifBlank { null },
+                        deadline = millisToIso(deadline),
+                        recurrence = s.inputRecurrence,
+                        recurrenceDaysOfWeek = s.inputRecurrenceDays,
+                        recurrenceStartDate = s.inputRecurrenceStartDate?.let {
+                            java.time.Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().toString()
+                        },
+                        recurrenceEndDate = s.inputRecurrenceEndDate?.let {
+                            java.time.Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().toString()
+                        }
+                    ))
+                    val updatedTaskItem = updated.toTaskItem()
+                    _state.update { state ->
+                        state.copy(
+                            tasks = state.tasks.map { if (it.id == updated.id) updatedTaskItem else it },
+                            inputTitle = "", inputDescription = "", inputDeadline = null,
+                            inputRecurrence = null, inputRecurrenceDays = null,
+                            inputRecurrenceStartDate = null, inputRecurrenceEndDate = null,
+                            showRecurrenceStartPicker = false, showRecurrenceEndPicker = false,
+                            isEditing = false, editingTaskId = null,
+                            saveLoading = false
+                        )
+                    }
+                } else {
+                    val created = apiService.createPersonalTask(CreatePersonalTaskRequest(
+                        title = title,
+                        description = s.inputDescription.ifBlank { null },
+                        deadline = millisToIso(deadline),
+                        recurrence = s.inputRecurrence,
+                        recurrenceDaysOfWeek = s.inputRecurrenceDays,
+                        recurrenceStartDate = s.inputRecurrenceStartDate?.let {
+                            java.time.Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().toString()
+                        },
+                        recurrenceEndDate = s.inputRecurrenceEndDate?.let {
+                            java.time.Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().toString()
+                        }
+                    ))
+                    val newTaskItem = created.toTaskItem()
+                    _state.update { state ->
+                        state.copy(
+                            tasks = listOf(newTaskItem) + state.tasks.filter { it.id != newTaskItem.id },
+                            inputTitle = "", inputDescription = "", inputDeadline = null,
+                            inputRecurrence = null, inputRecurrenceDays = null,
+                            inputRecurrenceStartDate = null, inputRecurrenceEndDate = null,
+                            showRecurrenceStartPicker = false, showRecurrenceEndPicker = false,
+                            isEditing = false, editingTaskId = null,
+                            saveLoading = false
+                        )
+                    }
+                }
             } catch (_: Exception) {
                 _state.update { it.copy(error = "Không thể lưu nhiệm vụ", saveLoading = false) }
             }
@@ -323,6 +384,44 @@ class TaskManagementViewModel @Inject constructor(
     }
     fun clearError() { _state.update { it.copy(error = null) } }
 
+
+    fun continueDateTasks(date: LocalDate) {
+        viewModelScope.launch {
+            _state.update { it.copy(taskLoading = true) }
+            val tasksToContinue = _state.value.tasks.filter { task ->
+                if (task.completed || task.recurrence != null || task.deadline == null) return@filter false
+                val deadline = Instant.ofEpochMilli(task.deadline!!).atZone(ZoneId.systemDefault()).toLocalDate()
+                deadline == date
+            }
+            var hasError = false
+            var anySucceeded = false
+            for (task in tasksToContinue) {
+                try {
+                    val zdt = Instant.ofEpochMilli(task.deadline!!).atZone(ZoneId.systemDefault())
+                    val today = LocalDate.now(ZoneId.systemDefault())
+                    val newDeadline = today.atTime(zdt.toLocalTime()).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                    apiService.createPersonalTask(CreatePersonalTaskRequest(
+                        title = task.title,
+                        description = task.description.ifBlank { null },
+                        deadline = millisToIso(newDeadline),
+                        recurrence = null,
+                        recurrenceDaysOfWeek = null
+                    ))
+                    anySucceeded = true
+                } catch (_: Exception) {
+                    hasError = true
+                }
+            }
+            if (anySucceeded) {
+                _state.update { it.copy(continuedDates = it.continuedDates + date) }
+            }
+            _state.update { it.copy(taskLoading = false) }
+            if (hasError) {
+                _state.update { it.copy(error = "Không thể tiếp tục một số nhiệm vụ") }
+            }
+            refreshTasks()
+        }
+    }
 
     fun loadGroupPlans() {
         viewModelScope.launch {

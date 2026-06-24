@@ -314,4 +314,50 @@ class GroupPlanServiceTest {
         assertThatThrownBy(() -> service.leavePlan("creator1", 10L))
             .isInstanceOf(BadRequestException.class);
     }
+
+    @Test
+    void transferOwnership_success() {
+        GroupPlanMember member = GroupPlanMember.builder()
+            .id(1L).groupPlan(plan).studentCode("member1").status(MemberStatus.ACCEPTED).build();
+        when(groupPlanRepository.findById(10L)).thenReturn(Optional.of(plan));
+        when(memberRepository.existsByGroupPlanIdAndStudentCodeAndStatus(10L, "member1", MemberStatus.ACCEPTED))
+            .thenReturn(true);
+        when(memberRepository.findByGroupPlanIdAndStudentCode(10L, "creator1")).thenReturn(Optional.of(member));
+        when(groupPlanRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        GroupPlanResponse res = service.transferOwnership("creator1", 10L,
+            new TransferOwnershipRequest("member1"));
+
+        assertThat(res.creatorStudentCode()).isEqualTo("member1");
+        verify(memberRepository).delete(member);
+    }
+
+    @Test
+    void transferOwnership_notCreator_throws() {
+        when(groupPlanRepository.findById(10L)).thenReturn(Optional.of(plan));
+
+        assertThatThrownBy(() -> service.transferOwnership("member1", 10L,
+            new TransferOwnershipRequest("creator1")))
+            .isInstanceOf(BadRequestException.class);
+    }
+
+    @Test
+    void transferOwnership_toSelf_throws() {
+        when(groupPlanRepository.findById(10L)).thenReturn(Optional.of(plan));
+
+        assertThatThrownBy(() -> service.transferOwnership("creator1", 10L,
+            new TransferOwnershipRequest("creator1")))
+            .isInstanceOf(BadRequestException.class);
+    }
+
+    @Test
+    void transferOwnership_nonMember_throws() {
+        when(groupPlanRepository.findById(10L)).thenReturn(Optional.of(plan));
+        when(memberRepository.existsByGroupPlanIdAndStudentCodeAndStatus(10L, "stranger", MemberStatus.ACCEPTED))
+            .thenReturn(false);
+
+        assertThatThrownBy(() -> service.transferOwnership("creator1", 10L,
+            new TransferOwnershipRequest("stranger")))
+            .isInstanceOf(BadRequestException.class);
+    }
 }

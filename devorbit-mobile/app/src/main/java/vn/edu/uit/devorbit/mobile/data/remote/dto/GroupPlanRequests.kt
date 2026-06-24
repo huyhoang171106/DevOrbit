@@ -32,3 +32,7 @@ data class UpdateGroupTaskRequest(
 data class ApproveDeleteRequest(
     val action: String
 )
+
+data class TransferOwnershipRequest(
+    val newOwnerStudentCode: String
+)

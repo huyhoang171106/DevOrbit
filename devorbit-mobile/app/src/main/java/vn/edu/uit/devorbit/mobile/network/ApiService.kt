@@ -156,6 +156,12 @@ interface ApiService {
     @POST("/api/student/group-plans/{id}/leave")
     suspend fun leavePlan(@Path("id") planId: Long)
 
+    @POST("/api/student/group-plans/{id}/transfer")
+    suspend fun transferOwnership(@Path("id") planId: Long, @Body request: TransferOwnershipRequest): GroupPlanResponse
+
+    @DELETE("/api/student/group-plans/{planId}/members/{memberId}")
+    suspend fun removeMember(@Path("planId") planId: Long, @Path("memberId") memberId: Long)
+
     @GET("/api/student/group-plans/{id}/tasks")
     suspend fun getGroupTasks(@Path("id") planId: Long): List<GroupTaskResponse>
 

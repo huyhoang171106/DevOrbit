@@ -9,6 +9,7 @@ import vn.edu.uit.devorbit_api.dto.student.CreateTaskRequest;
 import vn.edu.uit.devorbit_api.dto.student.TaskResponse;
 import vn.edu.uit.devorbit_api.dto.student.UpdateTaskRequest;
 import vn.edu.uit.devorbit_api.entity.PersonalTask;
+import vn.edu.uit.devorbit_api.exception.BadRequestException;
 import vn.edu.uit.devorbit_api.exception.NotFoundException;
 import vn.edu.uit.devorbit_api.repository.PersonalTaskRepository;
 
@@ -64,6 +65,7 @@ public class PersonalTaskService {
     @Transactional
     public TaskResponse updateTask(String studentCode, Long taskId, UpdateTaskRequest request) {
         PersonalTask task = findOwnedTask(taskId, studentCode);
+        validateNotPastDeadline(task);
         if (request.title() != null) task.setTitle(request.title());
         if (request.description() != null) task.setDescription(request.description());
         if (request.deadline() != null) task.setDeadline(request.deadline());
@@ -80,6 +82,7 @@ public class PersonalTaskService {
     @Transactional
     public void deleteTask(String studentCode, Long taskId) {
         PersonalTask task = findOwnedTask(taskId, studentCode);
+        validateNotPastDeadline(task);
         personalTaskRepository.delete(task);
         log.info("Personal task deleted: id={}, studentCode={}", taskId, studentCode);
     }
@@ -87,10 +90,20 @@ public class PersonalTaskService {
     @Transactional
     public TaskResponse toggleTask(String studentCode, Long taskId, boolean completed) {
         PersonalTask task = findOwnedTask(taskId, studentCode);
+        validateNotPastDeadline(task);
         task.setCompleted(completed);
         task.setUpdatedAt(LocalDateTime.now());
         task = personalTaskRepository.save(task);
         return TaskResponse.from(task);
+    }
+
+    private void validateNotPastDeadline(PersonalTask task) {
+        if (task.getDeadline() != null
+            && task.getDeadline().toLocalDate().isBefore(LocalDate.now())
+            && !task.isCompleted()
+            && task.getRecurrence() == null) {
+            throw new BadRequestException("Cannot modify a past-deadline uncompleted task");
+        }
     }
 
     private PersonalTask findOwnedTask(Long taskId, String studentCode) {

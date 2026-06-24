@@ -43,6 +43,14 @@ public class GroupPlanService {
             .build();
 
         plan = groupPlanRepository.save(plan);
+
+        GroupPlanMember creatorMember = GroupPlanMember.builder()
+            .groupPlan(plan)
+            .studentCode(creator.getStudentCode())
+            .status(MemberStatus.ACCEPTED)
+            .build();
+        memberRepository.save(creatorMember);
+
         log.info("Group plan created: id={}, title={}, creator={}", plan.getId(), plan.getTitle(), creatorStudentCode);
         return GroupPlanResponse.from(plan);
     }
@@ -224,6 +232,52 @@ public class GroupPlanService {
         log.info("Student {} left group plan id={}", studentCode, planId);
     }
 
+    @Transactional
+    public void removeMember(String requesterStudentCode, Long planId, Long memberId) {
+        GroupPlan plan = groupPlanRepository.findById(planId)
+            .orElseThrow(() -> new NotFoundException("Group plan not found: " + planId));
+        if (!plan.getCreatorStudentCode().equals(requesterStudentCode)) {
+            throw new BadRequestException("Only the creator can remove members");
+        }
+
+        GroupPlanMember member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new NotFoundException("Member not found: " + memberId));
+        if (!member.getGroupPlan().getId().equals(planId)) {
+            throw new BadRequestException("Member does not belong to this plan");
+        }
+        if (member.getStudentCode().equals(requesterStudentCode)) {
+            throw new BadRequestException("Creator cannot remove themselves");
+        }
+
+        memberRepository.delete(member);
+        log.info("Member {} removed from group plan id={} by creator {}", member.getStudentCode(), planId, requesterStudentCode);
+    }
+
+    @Transactional
+    public GroupPlanResponse transferOwnership(String currentCreatorCode, Long planId, TransferOwnershipRequest request) {
+        GroupPlan plan = groupPlanRepository.findById(planId)
+            .orElseThrow(() -> new NotFoundException("Group plan not found: " + planId));
+        if (!plan.getCreatorStudentCode().equals(currentCreatorCode)) {
+            throw new BadRequestException("Only the creator can transfer ownership");
+        }
+        if (currentCreatorCode.equals(request.newOwnerStudentCode())) {
+            throw new BadRequestException("Cannot transfer ownership to yourself");
+        }
+        boolean isAccepted = memberRepository.existsByGroupPlanIdAndStudentCodeAndStatus(
+            planId, request.newOwnerStudentCode(), MemberStatus.ACCEPTED);
+        if (!isAccepted) {
+            throw new BadRequestException("New owner must be an accepted member");
+        }
+
+        plan.setCreatorStudentCode(request.newOwnerStudentCode());
+        plan = groupPlanRepository.save(plan);
+
+        memberRepository.findByGroupPlanIdAndStudentCode(planId, currentCreatorCode)
+            .ifPresent(memberRepository::delete);
+
+        log.info("Ownership transferred: plan id={}, from={}, to={}", planId, currentCreatorCode, request.newOwnerStudentCode());
+        return GroupPlanResponse.from(plan);
+    }
 
     private void validateMember(String studentCode, GroupPlan plan) {
         if (!plan.getCreatorStudentCode().equals(studentCode) &&

@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,6 +27,7 @@ fun CourseListScreen(
 ) {
     val courses by viewModel.courses.collectAsStateWithLifecycle()
     val filterState by viewModel.courseSearchFilterState.collectAsStateWithLifecycle()
+    val bookmarkedIds by viewModel.bookmarkedCourseIds.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxSize()) {
         OutlinedTextField(
@@ -152,7 +154,11 @@ fun CourseListScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(courses, key = { it.id }) { course ->
-                CourseListItem(course = course, onClick = { onCourseClick(course) })
+                CourseListItem(
+                    course = course,
+                    isBookmarked = course.id in bookmarkedIds,
+                    onClick = { onCourseClick(course) }
+                )
             }
         }
     }
@@ -167,7 +173,7 @@ private fun formatSubjectType(raw: String?): String? = when (raw) {
 }
 
 @Composable
-fun CourseListItem(course: CourseEntity, onClick: () -> Unit) {
+fun CourseListItem(course: CourseEntity, isBookmarked: Boolean = false, onClick: () -> Unit) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -197,11 +203,22 @@ fun CourseListItem(course: CourseEntity, onClick: () -> Unit) {
                         color = CosmicTheme.colors.textPrimary
                     )
                 }
-                Text(
-                    text = "${course.credits} TC",
-                    style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.SemiBold),
-                    color = CosmicTheme.colors.textTertiary
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (isBookmarked) {
+                        Icon(
+                            imageVector = Icons.Rounded.Star,
+                            contentDescription = "Da luu",
+                            tint = CosmicTheme.colors.plasma,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                    }
+                    Text(
+                        text = "${course.credits} TC",
+                        style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.SemiBold),
+                        color = CosmicTheme.colors.textTertiary
+                    )
+                }
             }
 
             val subjectLabel = formatSubjectType(course.loaiMonHoc)

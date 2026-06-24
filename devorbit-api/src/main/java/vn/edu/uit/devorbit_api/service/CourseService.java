@@ -185,6 +185,7 @@ public class CourseService {
                 .learningObjectives(request.learningObjectives())
                 .gradingCriteria(request.gradingCriteria())
                 .topics(request.topics())
+                .semester(request.semester())
                 .build();
         Course saved = courseRepository.save(course);
         communityChatService.createChannel(ChatChannelType.COURSE, String.valueOf(saved.getId()), saved.getTenMH());
@@ -360,6 +361,7 @@ public class CourseService {
         course.setLearningObjectives(r.learningObjectives());
         course.setGradingCriteria(r.gradingCriteria());
         course.setTopics(r.topics());
+        course.setSemester(r.semester());
     }
 
     /**

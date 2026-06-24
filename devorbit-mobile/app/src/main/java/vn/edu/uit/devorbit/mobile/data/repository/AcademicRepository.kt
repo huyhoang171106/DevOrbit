@@ -51,8 +51,10 @@ class AcademicRepository @Inject constructor(
                     id = it.id,
                     maMH = it.code,
                     tenMH = it.name,
-                    credits = 0,
-                    description = ""
+                    credits = it.credits,
+                    description = "",
+                    semester = it.semester,
+                    loaiMonHoc = it.loaiMonHoc
                 )
             }
             courseDao.deleteAll()

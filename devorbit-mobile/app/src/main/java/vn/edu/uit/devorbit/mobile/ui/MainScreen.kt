@@ -154,7 +154,12 @@ fun MainScreen(
                                     showPopup = false
                                 }
                             )
-                            Screen.Courses -> CourseHubScreen()
+                            Screen.Courses -> CourseHubScreen(
+                                onCreatePlan = {
+                                    currentScreen = Screen.Plan
+                                    showPopup = false
+                                }
+                            )
                             Screen.Knowledge -> KnowledgeTabView()
                             Screen.Explore -> ExploreScreen()
                             Screen.Notifications -> NotificationScreen(viewModel = notificationVm)

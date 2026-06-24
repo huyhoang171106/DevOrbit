@@ -29,7 +29,8 @@ import vn.edu.uit.devorbit.mobile.ui.viewmodel.CourseViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CourseHubScreen(
-    viewModel: CourseViewModel = hiltViewModel()
+    viewModel: CourseViewModel = hiltViewModel(),
+    onCreatePlan: () -> Unit = {}
 ) {
     var viewMode by remember { mutableStateOf(ViewMode.LIST) }
     val selectedCourse by viewModel.selectedCourse.collectAsStateWithLifecycle()
@@ -86,7 +87,8 @@ fun CourseHubScreen(
                         bookmarked = selectedCourse!!.id in bookmarkedCourseIds,
                         onBack = { viewModel.closeCourseDetail() },
                         onBookmarkClick = { viewModel.toggleCourseBookmark(selectedCourse!!) },
-                        onRepoClick = { viewModel.openRepo(it) }
+                        onRepoClick = { viewModel.openRepo(it) },
+                        onCreatePlan = onCreatePlan
                     )
                 }
             }

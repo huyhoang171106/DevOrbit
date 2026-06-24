@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.DateRange
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -32,7 +33,8 @@ fun CourseDetailScreen(
     bookmarked: Boolean,
     onBack: () -> Unit,
     onBookmarkClick: () -> Unit,
-    onRepoClick: (RepoSummary) -> Unit
+    onRepoClick: (RepoSummary) -> Unit,
+    onCreatePlan: () -> Unit = {}
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabs = listOf("Repos (${repos.size})", "Tutorials", "Videos", "Articles")
@@ -68,6 +70,27 @@ fun CourseDetailScreen(
             color = CosmicTheme.colors.textPrimary,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
+
+        Spacer(Modifier.height(8.dp))
+
+        Button(
+            onClick = onCreatePlan,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = CosmicTheme.colors.aurora
+            )
+        ) {
+            Icon(
+                Icons.Rounded.DateRange,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(Modifier.width(8.dp))
+            Text("Tao ke hoach hoc mon nay")
+        }
 
         Spacer(Modifier.height(12.dp))
 

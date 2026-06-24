@@ -97,10 +97,10 @@ interface ApiService {
 
     // AI
     @GET("/api/ai/repo/{repoId}/summary")
-    suspend fun getRepoSummary(@Path("repoId") repoId: Long): Map<String, Any>
+    suspend fun getRepoSummary(@Path("repoId") repoId: Long): AiResponse
 
     @GET("/api/ai/repo/{repoId}/advice")
-    suspend fun getRepoAdvice(@Path("repoId") repoId: Long): Map<String, Any>
+    suspend fun getRepoAdvice(@Path("repoId") repoId: Long): AiResponse
 
     @POST("/api/ai/knowledge-graph/query")
     suspend fun queryKnowledgeGraph(@Body body: Map<String, String>): Map<String, Any>

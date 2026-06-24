@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import vn.edu.uit.devorbit.mobile.data.local.entity.CourseEntity
 import vn.edu.uit.devorbit.mobile.data.repository.AcademicRepository
+import vn.edu.uit.devorbit.mobile.data.remote.dto.AiResponse
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseArticle
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseTutorial
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseYoutubePlaylist
@@ -74,6 +75,15 @@ class CourseViewModel @Inject constructor(
 
     private val _detailError = MutableStateFlow<String?>(null)
     val detailError: StateFlow<String?> = _detailError.asStateFlow()
+
+    private val _repoSummary = MutableStateFlow<AiResponse?>(null)
+    val repoSummary: StateFlow<AiResponse?> = _repoSummary.asStateFlow()
+
+    private val _repoAdvice = MutableStateFlow<AiResponse?>(null)
+    val repoAdvice: StateFlow<AiResponse?> = _repoAdvice.asStateFlow()
+
+    private val _aiLoading = MutableStateFlow(false)
+    val aiLoading: StateFlow<Boolean> = _aiLoading.asStateFlow()
 
     private val _bookmarkedCourseIds = MutableStateFlow<Set<Long>>(emptySet())
     val bookmarkedCourseIds: StateFlow<Set<Long>> = _bookmarkedCourseIds.asStateFlow()
@@ -143,10 +153,13 @@ class CourseViewModel @Inject constructor(
     fun openRepo(repo: RepoSummary) {
         _selectedRepo.value = repo
         _courseHubNavigationState.value = _courseHubNavigationState.value.openRepo(repo.id)
+        loadRepoAiData(repo.id)
     }
 
     fun backFromRepo() {
         _selectedRepo.value = null
+        _repoSummary.value = null
+        _repoAdvice.value = null
         _courseHubNavigationState.value = _courseHubNavigationState.value.back()
     }
 
@@ -185,11 +198,30 @@ class CourseViewModel @Inject constructor(
 
     private fun loadCourseBookmarkState(courseId: Long) {
         viewModelScope.launch {
-            if (bookmarkRepository.isBookmarked("COURSE", courseId)) {
-                _bookmarkedCourseIds.value = _bookmarkedCourseIds.value + courseId
-            } else {
-                _bookmarkedCourseIds.value = _bookmarkedCourseIds.value - courseId
-            }
+            try {
+                if (bookmarkRepository.isBookmarked("COURSE", courseId)) {
+                    _bookmarkedCourseIds.value = _bookmarkedCourseIds.value + courseId
+                } else {
+                    _bookmarkedCourseIds.value = _bookmarkedCourseIds.value - courseId
+                }
+            } catch (_: Exception) {}
+        }
+    }
+
+    private fun loadRepoAiData(repoId: Long) {
+        viewModelScope.launch {
+            _aiLoading.value = true
+            _repoSummary.value = null
+            _repoAdvice.value = null
+            try {
+                val summary = repository.getRepoSummary(repoId)
+                _repoSummary.value = summary
+            } catch (_: Exception) {}
+            try {
+                val advice = repository.getRepoAdvice(repoId)
+                _repoAdvice.value = advice
+            } catch (_: Exception) {}
+            _aiLoading.value = false
         }
     }
 

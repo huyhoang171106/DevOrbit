@@ -3,134 +3,267 @@ package vn.edu.uit.devorbit.mobile.ui
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.OpenInNew
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import vn.edu.uit.devorbit.mobile.data.remote.dto.AiResponse
 import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSummary
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun RepoDetailScreen(
     repo: RepoSummary,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    aiSummary: AiResponse? = null,
+    aiAdvice: AiResponse? = null,
+    aiLoading: Boolean = false
 ) {
     val context = LocalContext.current
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp)
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 24.dp)
     ) {
-        Spacer(Modifier.height(16.dp))
-
-        TextButton(onClick = onBack, modifier = Modifier.padding(start = 0.dp)) {
-            Text("← Quay lại", color = CosmicTheme.colors.textSecondary)
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 8.dp, top = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        Icons.Rounded.ArrowBack,
+                        contentDescription = "Quay lai",
+                        tint = CosmicTheme.colors.textSecondary
+                    )
+                }
+                Text(
+                    text = "Repository",
+                    style = CosmicTheme.typography.body,
+                    color = CosmicTheme.colors.textSecondary
+                )
+            }
         }
 
-        Spacer(Modifier.height(8.dp))
-
-        Text(
-            text = repo.displayName,
-            style = CosmicTheme.typography.display,
-            color = CosmicTheme.colors.textPrimary
-        )
-
-        Spacer(Modifier.height(12.dp))
-
-        if (repo.description.isNotBlank()) {
-            Text(
-                text = repo.description,
-                style = CosmicTheme.typography.body,
-                color = CosmicTheme.colors.textSecondary
-            )
-            Spacer(Modifier.height(20.dp))
-        }
-
-        // Meta row: language + stars
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (repo.primaryLanguage.isNotBlank()) {
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = CosmicTheme.colors.plasma.copy(alpha = 0.12f)
-                ) {
+        item {
+            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                Text(
+                    text = repo.displayName,
+                    style = CosmicTheme.typography.display,
+                    color = CosmicTheme.colors.textPrimary
+                )
+                if (repo.description.isNotBlank()) {
+                    Spacer(Modifier.height(8.dp))
                     Text(
-                        text = repo.primaryLanguage,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                        style = CosmicTheme.typography.label,
-                        color = CosmicTheme.colors.plasma
+                        text = repo.description,
+                        style = CosmicTheme.typography.body,
+                        color = CosmicTheme.colors.textSecondary
                     )
                 }
             }
-            Text(
-                text = "${repo.stars ?: 0} ★",
-                style = CosmicTheme.typography.label,
-                color = CosmicTheme.colors.textTertiary
-            )
         }
 
-        // Tech stacks
-        if (repo.techStacks.isNotEmpty()) {
-            Spacer(Modifier.height(24.dp))
-            Text(
-                "Tech stacks",
-                style = CosmicTheme.typography.command,
-                color = CosmicTheme.colors.textTertiary,
-                modifier = Modifier.padding(bottom = 10.dp)
-            )
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+        item {
+            Spacer(Modifier.height(16.dp))
+            RepoInfoChips(repo)
+        }
+
+        item {
+            Spacer(Modifier.height(16.dp))
+            Button(
+                onClick = {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(repo.githubUrl)))
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = CosmicTheme.colors.plasma
+                )
             ) {
-                repo.techStacks.forEach { techStack ->
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = CosmicTheme.colors.nebula,
-                        border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
-                    ) {
+                Icon(
+                    Icons.Rounded.OpenInNew,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text("Mo tren GitHub")
+            }
+        }
+
+        if (aiLoading) {
+            item {
+                Spacer(Modifier.height(24.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator(
+                            color = CosmicTheme.colors.plasma,
+                            strokeWidth = 2.dp,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(Modifier.height(8.dp))
                         Text(
-                            text = techStack.name,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            text = "AI dang phan tiet...",
                             style = CosmicTheme.typography.label,
-                            color = CosmicTheme.colors.textSecondary
+                            color = CosmicTheme.colors.textTertiary
                         )
                     }
                 }
             }
         }
 
-        Spacer(Modifier.height(36.dp))
-
-        // GitHub button
-        Button(
-            onClick = {
-                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(repo.githubUrl)))
-            },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = CosmicTheme.colors.plasma,
-                contentColor = CosmicTheme.colors.void
-            ),
-            contentPadding = PaddingValues(vertical = 14.dp)
-        ) {
-            Text("Mở trên GitHub", fontWeight = FontWeight.SemiBold)
+        aiSummary?.let { summary ->
+            item {
+                Spacer(Modifier.height(24.dp))
+                AiSection(
+                    title = "AI Summary",
+                    type = summary.type,
+                    content = summary.content
+                )
+            }
         }
 
-        Spacer(Modifier.height(24.dp))
+        aiAdvice?.let { advice ->
+            item {
+                Spacer(Modifier.height(16.dp))
+                AiSection(
+                    title = "AI Tutor Advice",
+                    type = advice.type,
+                    content = advice.content
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun RepoInfoChips(repo: RepoSummary) {
+    Row(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        if (repo.primaryLanguage.isNotBlank()) {
+            InfoChip(label = repo.primaryLanguage, color = CosmicTheme.colors.aurora)
+        }
+        repo.stars?.let { stars ->
+            if (stars > 0) {
+                InfoChip(label = "$stars stars", color = CosmicTheme.colors.supernova)
+            }
+        }
+        repo.techStacks.forEach { tech ->
+            InfoChip(label = tech.name, color = CosmicTheme.colors.plasma)
+        }
+    }
+}
+
+@Composable
+private fun InfoChip(label: String, color: androidx.compose.ui.graphics.Color) {
+    Surface(
+        shape = RoundedCornerShape(8.dp),
+        color = color.copy(alpha = 0.1f),
+        border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.3f))
+    ) {
+        Text(
+            text = label,
+            style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.Medium),
+            color = color,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+        )
+    }
+}
+
+@Composable
+private fun AiSection(title: String, type: String, content: String) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(14.dp),
+        color = CosmicTheme.colors.nebula,
+        border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = title,
+                    style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold),
+                    color = CosmicTheme.colors.textPrimary
+                )
+                val typeLabel = when (type) {
+                    "LLM_SUMMARY", "LLM_TUTOR_ADVICE" -> "AI"
+                    else -> "Rules"
+                }
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = CosmicTheme.colors.plasma.copy(alpha = 0.15f)
+                ) {
+                    Text(
+                        text = typeLabel,
+                        style = CosmicTheme.typography.label,
+                        color = CosmicTheme.colors.plasma,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                    )
+                }
+            }
+            Spacer(Modifier.height(12.dp))
+            MarkdownContent(content)
+        }
+    }
+}
+
+@Composable
+private fun MarkdownContent(text: String) {
+    val lines = text.lines()
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        lines.forEach { line ->
+            val trimmed = line.trim()
+            when {
+                trimmed.startsWith("**") && trimmed.endsWith("**") -> {
+                    Text(
+                        text = trimmed.removeSurrounding("**"),
+                        style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold),
+                        color = CosmicTheme.colors.textPrimary
+                    )
+                }
+                trimmed.startsWith("- ") -> {
+                    Text(
+                        text = trimmed.removePrefix("- "),
+                        style = CosmicTheme.typography.body,
+                        color = CosmicTheme.colors.textSecondary,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                }
+                trimmed.isBlank() -> {
+                    Spacer(Modifier.height(4.dp))
+                }
+                else -> {
+                    Text(
+                        text = trimmed,
+                        style = CosmicTheme.typography.body,
+                        color = CosmicTheme.colors.textSecondary
+                    )
+                }
+            }
+        }
     }
 }

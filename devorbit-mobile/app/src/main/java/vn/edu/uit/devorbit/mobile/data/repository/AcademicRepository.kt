@@ -9,6 +9,7 @@ import vn.edu.uit.devorbit.mobile.data.remote.dto.GraphLinkDto
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseArticle
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseTutorial
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseYoutubePlaylist
+import vn.edu.uit.devorbit.mobile.data.remote.dto.AiResponse
 import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSummary
 import vn.edu.uit.devorbit.mobile.network.ApiService
 import javax.inject.Inject
@@ -159,6 +160,10 @@ class AcademicRepository @Inject constructor(
         }
         return vn.edu.uit.devorbit.mobile.domain.model.KnowledgeGraph(nodes, links)
     }
+
+    suspend fun getRepoSummary(repoId: Long): AiResponse = apiService.getRepoSummary(repoId)
+
+    suspend fun getRepoAdvice(repoId: Long): AiResponse = apiService.getRepoAdvice(repoId)
 
     suspend fun saveTask(task: TaskEntity) = taskDao.upsertTask(task)
     suspend fun completeTask(id: Long) = taskDao.setCompleted(id, true)

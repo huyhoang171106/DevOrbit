@@ -41,10 +41,16 @@ fun CourseHubScreen(
     val detailLoading by viewModel.detailLoading.collectAsStateWithLifecycle()
     val detailError by viewModel.detailError.collectAsStateWithLifecycle()
     val bookmarkedCourseIds by viewModel.bookmarkedCourseIds.collectAsStateWithLifecycle()
+    val repoSummary by viewModel.repoSummary.collectAsStateWithLifecycle()
+    val repoAdvice by viewModel.repoAdvice.collectAsStateWithLifecycle()
+    val aiLoading by viewModel.aiLoading.collectAsStateWithLifecycle()
 
     when {
         selectedRepo != null -> RepoDetailScreen(
             repo = selectedRepo!!,
+            aiSummary = repoSummary,
+            aiAdvice = repoAdvice,
+            aiLoading = aiLoading,
             onBack = { viewModel.backFromRepo() }
         )
 

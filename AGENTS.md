@@ -13,7 +13,31 @@ DevOrbit is a multi-module app. `devorbit-api/` contains the Java 21 Spring Boot
 - `cd devorbit-web; rtk npm run dev`: start Vite locally.
 - `cd devorbit-web; rtk npm test -- --run`: run Vitest once.
 - `cd devorbit-web; rtk npm run build`: type-check and build the frontend.
-- `cd devorbit-mobile; rtk .\gradlew.bat test`: run Android/JVM tests when touching mobile code.
+-
+- ## devorbit-admin Module (Android)
+-
+- ### Environment Requirements
+- **JAVA_HOME** must point to **JDK 21** (e.g. `C:\Program Files\Android\Android Studio\jbr`).
+- Kotlin 2.0.21 does NOT support JDK 25 — the build fails with `java.lang.IllegalArgumentException: 25.0.2`.
+- **ANDROID_HOME**: `C:\Users\Hoang\AppData\Local\Android\Sdk` (SDK 35, build-tools 35+).
+-
+- ### Build Commands (from Git Bash)
+- All builds use the wrapper script `build_temp.bat` which sets `JAVA_HOME` + `ANDROID_HOME`:
+-
+- ```bash
+- cmd.exe /c "D:\temp\devorbit\devorbit-admin\build_temp.bat compileDebugKotlin --no-daemon"  # ~13s
+- cmd.exe /c "D:\temp\devorbit\devorbit-admin\build_temp.bat testDebugUnitTest --no-daemon"   # ~22s
+- cmd.exe /c "D:\temp\devorbit\devorbit-admin\build_temp.bat assembleDebug --no-daemon"       # ~5min
+- cmd.exe /c "D:\temp\devorbit\devorbit-admin\build_temp.bat lintDebug --no-daemon"           # ~4min
+- cmd.exe /c "D:\temp\devorbit\devorbit-admin\build_temp.bat assembleRelease --no-daemon"     # release build
+- ```
+-
+- ### Gradle Wrapper Location
+- The `gradlew.bat` is at `devorbit-admin/gradlew.bat` (NOT at repo root). The repo root has no gradle wrapper.
+-
+- ### Known Quirks
+- `kapt` warns `language version 2.0+` falling back to 1.9 — harmless.
+- `--no-daemon` required in Git Bash to avoid stale daemon interference.
 
 ## Coding Style & Naming Conventions
 

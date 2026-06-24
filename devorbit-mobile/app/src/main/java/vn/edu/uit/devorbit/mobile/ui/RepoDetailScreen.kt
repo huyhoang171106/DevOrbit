@@ -4,10 +4,13 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.OpenInNew
+import androidx.compose.material.icons.rounded.ThumbDown
+import androidx.compose.material.icons.rounded.ThumbUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,7 +19,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import vn.edu.uit.devorbit.mobile.data.remote.dto.AiResponse
+import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSocialInfoResponse
 import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSummary
+import vn.edu.uit.devorbit.mobile.data.remote.dto.ReviewResponse
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 
 @Composable
@@ -25,7 +30,13 @@ fun RepoDetailScreen(
     onBack: () -> Unit,
     aiSummary: AiResponse? = null,
     aiAdvice: AiResponse? = null,
-    aiLoading: Boolean = false
+    aiLoading: Boolean = false,
+    socialInfo: RepoSocialInfoResponse? = null,
+    userVote: Int = 0,
+    socialLoading: Boolean = false,
+    onVote: (Int) -> Unit = {},
+    onSubmitReview: (Int, String?) -> Unit = { _, _ -> },
+    onDeleteReview: () -> Unit = {}
 ) {
     val context = LocalContext.current
 
@@ -76,6 +87,18 @@ fun RepoDetailScreen(
         item {
             Spacer(Modifier.height(16.dp))
             RepoInfoChips(repo)
+        }
+
+        item {
+            Spacer(Modifier.height(16.dp))
+            SocialBar(
+                voteScore = socialInfo?.voteScore ?: 0,
+                averageRating = socialInfo?.averageRating ?: 0.0,
+                reviewCount = socialInfo?.reviews?.size ?: 0,
+                userVote = userVote,
+                onVote = onVote,
+                repoId = repo.id
+            )
         }
 
         item {
@@ -147,6 +170,23 @@ fun RepoDetailScreen(
                     type = advice.type,
                     content = advice.content
                 )
+            }
+        }
+
+        socialInfo?.let { info ->
+            if (info.reviews.isNotEmpty()) {
+                item {
+                    Spacer(Modifier.height(24.dp))
+                    Text(
+                        text = "Reviews (${info.reviews.size})",
+                        style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold),
+                        color = CosmicTheme.colors.textPrimary,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                }
+                items(info.reviews) { review ->
+                    ReviewItem(review)
+                }
             }
         }
     }
@@ -263,6 +303,105 @@ private fun MarkdownContent(text: String) {
                         color = CosmicTheme.colors.textSecondary
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SocialBar(
+    voteScore: Int,
+    averageRating: Double,
+    reviewCount: Int,
+    userVote: Int,
+    onVote: (Int) -> Unit,
+    repoId: Long
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(
+                onClick = { onVote(if (userVote == 1) 0 else 1) },
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    Icons.Rounded.ThumbUp,
+                    contentDescription = "Upvote",
+                    tint = if (userVote == 1) CosmicTheme.colors.aurora else CosmicTheme.colors.textTertiary,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+            Text(
+                text = "$voteScore",
+                style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold),
+                color = CosmicTheme.colors.textPrimary
+            )
+            IconButton(
+                onClick = { onVote(if (userVote == -1) 0 else -1) },
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    Icons.Rounded.ThumbDown,
+                    contentDescription = "Downvote",
+                    tint = if (userVote == -1) CosmicTheme.colors.supernova else CosmicTheme.colors.textTertiary,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        }
+
+        if (averageRating > 0) {
+            InfoChip(
+                label = "%.1f".format(averageRating),
+                color = CosmicTheme.colors.supernova
+            )
+        }
+        if (reviewCount > 0) {
+            InfoChip(
+                label = "$reviewCount reviews",
+                color = CosmicTheme.colors.plasma
+            )
+        }
+    }
+}
+
+@Composable
+private fun ReviewItem(review: ReviewResponse) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        shape = RoundedCornerShape(10.dp),
+        color = CosmicTheme.colors.nebula,
+        border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = review.studentName,
+                    style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.SemiBold),
+                    color = CosmicTheme.colors.textPrimary
+                )
+                InfoChip(
+                    label = "${review.rating}",
+                    color = CosmicTheme.colors.supernova
+                )
+            }
+            if (!review.comment.isNullOrBlank()) {
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    text = review.comment,
+                    style = CosmicTheme.typography.body,
+                    color = CosmicTheme.colors.textSecondary
+                )
             }
         }
     }

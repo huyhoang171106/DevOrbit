@@ -44,6 +44,9 @@ fun CourseHubScreen(
     val repoSummary by viewModel.repoSummary.collectAsStateWithLifecycle()
     val repoAdvice by viewModel.repoAdvice.collectAsStateWithLifecycle()
     val aiLoading by viewModel.aiLoading.collectAsStateWithLifecycle()
+    val repoSocialInfo by viewModel.repoSocialInfo.collectAsStateWithLifecycle()
+    val userVote by viewModel.userVote.collectAsStateWithLifecycle()
+    val socialLoading by viewModel.socialLoading.collectAsStateWithLifecycle()
 
     when {
         selectedRepo != null -> RepoDetailScreen(
@@ -51,6 +54,10 @@ fun CourseHubScreen(
             aiSummary = repoSummary,
             aiAdvice = repoAdvice,
             aiLoading = aiLoading,
+            socialInfo = repoSocialInfo,
+            userVote = userVote,
+            socialLoading = socialLoading,
+            onVote = { viewModel.voteRepo(selectedRepo!!.id, it) },
             onBack = { viewModel.backFromRepo() }
         )
 

@@ -111,6 +111,22 @@ interface ApiService {
     @POST("/api/ai/generate-roadmap")
     suspend fun generateRoadmap(@Body body: RoadmapGenerationRequest): RoadmapRecommendationResponse
 
+    // Social
+    @GET("/api/repos/{repoId}/social-info")
+    suspend fun getRepoSocialInfo(@Path("repoId") repoId: Long): RepoSocialInfoResponse
+
+    @GET("/api/courses/{courseId}/reviews")
+    suspend fun getCourseReviews(@Path("courseId") courseId: Long): ReviewSummaryResponse
+
+    @POST("/api/student/repos/{repoId}/review")
+    suspend fun submitRepoReview(@Path("repoId") repoId: Long, @Body body: ReviewRequest): ReviewResponse
+
+    @DELETE("/api/student/repos/{repoId}/review")
+    suspend fun deleteRepoReview(@Path("repoId") repoId: Long)
+
+    @POST("/api/student/repos/{repoId}/vote")
+    suspend fun voteRepo(@Path("repoId") repoId: Long, @Body body: RepoVoteRequest): RepoVoteResponse
+
     // Student Notifications
     @GET("/api/student/notifications")
     suspend fun getNotifications(): List<StudentNotificationResponse>

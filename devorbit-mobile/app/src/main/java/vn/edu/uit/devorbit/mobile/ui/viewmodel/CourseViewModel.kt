@@ -16,7 +16,9 @@ import vn.edu.uit.devorbit.mobile.data.remote.dto.AiResponse
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseArticle
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseTutorial
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseYoutubePlaylist
+import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSocialInfoResponse
 import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSummary
+import vn.edu.uit.devorbit.mobile.data.remote.dto.ReviewResponse
 import vn.edu.uit.devorbit.mobile.domain.model.GraphNode
 import vn.edu.uit.devorbit.mobile.domain.model.GraphLink
 import vn.edu.uit.devorbit.mobile.domain.repository.Bookmark
@@ -84,6 +86,18 @@ class CourseViewModel @Inject constructor(
 
     private val _aiLoading = MutableStateFlow(false)
     val aiLoading: StateFlow<Boolean> = _aiLoading.asStateFlow()
+
+    private val _repoSocialInfo = MutableStateFlow<RepoSocialInfoResponse?>(null)
+    val repoSocialInfo: StateFlow<RepoSocialInfoResponse?> = _repoSocialInfo.asStateFlow()
+
+    private val _userReview = MutableStateFlow<ReviewResponse?>(null)
+    val userReview: StateFlow<ReviewResponse?> = _userReview.asStateFlow()
+
+    private val _userVote = MutableStateFlow(0)
+    val userVote: StateFlow<Int> = _userVote.asStateFlow()
+
+    private val _socialLoading = MutableStateFlow(false)
+    val socialLoading: StateFlow<Boolean> = _socialLoading.asStateFlow()
 
     private val _bookmarkedCourseIds = MutableStateFlow<Set<Long>>(emptySet())
     val bookmarkedCourseIds: StateFlow<Set<Long>> = _bookmarkedCourseIds.asStateFlow()
@@ -154,12 +168,16 @@ class CourseViewModel @Inject constructor(
         _selectedRepo.value = repo
         _courseHubNavigationState.value = _courseHubNavigationState.value.openRepo(repo.id)
         loadRepoAiData(repo.id)
+        loadRepoSocialInfo(repo.id)
     }
 
     fun backFromRepo() {
         _selectedRepo.value = null
         _repoSummary.value = null
         _repoAdvice.value = null
+        _repoSocialInfo.value = null
+        _userReview.value = null
+        _userVote.value = 0
         _courseHubNavigationState.value = _courseHubNavigationState.value.back()
     }
 
@@ -222,6 +240,50 @@ class CourseViewModel @Inject constructor(
                 _repoAdvice.value = advice
             } catch (_: Exception) {}
             _aiLoading.value = false
+        }
+    }
+
+    private fun loadRepoSocialInfo(repoId: Long) {
+        viewModelScope.launch {
+            _socialLoading.value = true
+            _repoSocialInfo.value = null
+            _userReview.value = null
+            _userVote.value = 0
+            try {
+                val info = repository.getRepoSocialInfo(repoId)
+                _repoSocialInfo.value = info
+            } catch (_: Exception) {}
+            _socialLoading.value = false
+        }
+    }
+
+    fun submitReview(repoId: Long, rating: Int, comment: String?) {
+        viewModelScope.launch {
+            try {
+                val review = repository.submitRepoReview(repoId, rating, comment)
+                _userReview.value = review
+                loadRepoSocialInfo(repoId)
+            } catch (_: Exception) {}
+        }
+    }
+
+    fun deleteReview(repoId: Long) {
+        viewModelScope.launch {
+            try {
+                repository.deleteRepoReview(repoId)
+                _userReview.value = null
+                loadRepoSocialInfo(repoId)
+            } catch (_: Exception) {}
+        }
+    }
+
+    fun voteRepo(repoId: Long, voteValue: Int) {
+        viewModelScope.launch {
+            try {
+                val result = repository.voteRepo(repoId, voteValue)
+                _userVote.value = result.voteValue
+                loadRepoSocialInfo(repoId)
+            } catch (_: Exception) {}
         }
     }
 

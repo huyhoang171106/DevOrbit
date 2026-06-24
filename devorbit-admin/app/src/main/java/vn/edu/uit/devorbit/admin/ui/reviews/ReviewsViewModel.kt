@@ -32,7 +32,7 @@ class ReviewsViewModel @Inject constructor(
 
     init { loadReviews() }
 
-    private fun loadReviews() {
+    fun loadReviews() {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true, error = null)
             try {
@@ -53,13 +53,21 @@ class ReviewsViewModel @Inject constructor(
         }
     }
 
-    fun selectTab(index: Int) { _state.value = _state.value.copy(selectedTab = index) }
+    fun selectTab(index: Int) {
+        _state.value = _state.value.copy(selectedTab = index)
+    }
 
     fun deleteCourseReview(id: Long) {
         viewModelScope.launch {
             adminRepository.deleteCourseReview(id).fold(
-                onSuccess = { _state.value = _state.value.copy(courseReviews = _state.value.courseReviews.filter { it.id != id }) },
-                onFailure = { _state.value = _state.value.copy(error = it.message) }
+                onSuccess = {
+                    _state.value = _state.value.copy(
+                        courseReviews = _state.value.courseReviews.filter { it.id != id }
+                    )
+                },
+                onFailure = {
+                    _state.value = _state.value.copy(error = it.message)
+                }
             )
         }
     }
@@ -67,8 +75,14 @@ class ReviewsViewModel @Inject constructor(
     fun deleteRepoReview(id: Long) {
         viewModelScope.launch {
             adminRepository.deleteRepoReview(id).fold(
-                onSuccess = { _state.value = _state.value.copy(repoReviews = _state.value.repoReviews.filter { it.id != id }) },
-                onFailure = { _state.value = _state.value.copy(error = it.message) }
+                onSuccess = {
+                    _state.value = _state.value.copy(
+                        repoReviews = _state.value.repoReviews.filter { it.id != id }
+                    )
+                },
+                onFailure = {
+                    _state.value = _state.value.copy(error = it.message)
+                }
             )
         }
     }

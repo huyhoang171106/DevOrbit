@@ -3,89 +3,98 @@ package vn.edu.uit.devorbit.admin.ui.reports
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import vn.edu.uit.devorbit.admin.core.designsystem.*
 import vn.edu.uit.devorbit.admin.data.remote.dto.RepoStatsEntry
-import vn.edu.uit.devorbit.admin.ui.components.*
-import vn.edu.uit.devorbit.admin.ui.theme.ObsidianPalette
-import vn.edu.uit.devorbit.admin.ui.theme.ObsidianShape
-import vn.edu.uit.devorbit.admin.ui.theme.ObsidianType
+import vn.edu.uit.devorbit.admin.ui.theme.*
 
 @Composable
 fun ReportsScreen(
-    viewModel: ReportsViewModel = hiltViewModel()
+    viewModel: ReportsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    var selectedTab by remember { mutableStateOf(0) }
+    val tabs = listOf("Yêu thích nhất", "Xem nhiều nhất")
 
     Column(Modifier.fillMaxSize()) {
-        ObsidianPageHeader(
-            title = "Báo cáo",
-            subtitle = "Top kho theo lượt yêu thích và lượt xem",
-            actions = {
-                IconButton(onClick = { viewModel.loadStats() }) {
-                    Icon(
-                        Icons.Rounded.Refresh,
-                        contentDescription = "Làm mới",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
+        // Header
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column {
+                Text(
+                    "Báo cáo",
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary,
+                )
+                Text(
+                    "Kho lưu trữ nổi bật",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary,
+                )
             }
+            IconButton(onClick = { viewModel.loadStats() }) {
+                Icon(
+                    Icons.Rounded.Refresh,
+                    contentDescription = "Làm mới",
+                    tint = TextSecondary,
+                )
+            }
+        }
+
+        // Segmented tab
+        SegmentedFilter(
+            options = tabs.mapIndexed { i, label -> FilterOption(i.toString(), label) },
+            selectedId = selectedTab.toString(),
+            onSelected = { selectedTab = it.toInt() },
         )
+        Spacer(Modifier.height(8.dp))
 
         when {
-            state.isLoading -> ObsidianLoadingBox(modifier = Modifier.weight(1f))
-            state.error != null -> ObsidianEmptyState(
-                message = state.error!!,
-                icon = Icons.Rounded.Warning,
-                modifier = Modifier.weight(1f)
+            state.isLoading -> ListSkeleton(itemCount = 5)
+            state.error != null -> ErrorState(
+                title = "Không thể tải báo cáo",
+                subtitle = state.error,
+                onRetry = { viewModel.loadStats() },
             )
-            state.stats != null -> {
-                val stats = state.stats!!
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    // ── Top Favorited ───────────────────────────────────
-                    item {
-                        Text(
-                            "Top yêu thích",
-                            style = ObsidianType.titleMedium,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                    if (stats.topFavoritedRepos.isEmpty()) {
-                        item { ObsidianEmptyState(message = "Chưa có dữ liệu", icon = Icons.Rounded.FavoriteBorder) }
-                    } else {
-                        items(stats.topFavoritedRepos, key = { "fav-${it.repoId}" }) { repo ->
-                            RepoStatsCard(repo, rank = stats.topFavoritedRepos.indexOf(repo) + 1, metricLabel = "Yêu thích", metricValue = "${repo.bookmarkCount}")
-                        }
-                    }
-
-                    // ── Top Viewed ──────────────────────────────────────
-                    item {
-                        Spacer(Modifier.height(8.dp))
-                        Text(
-                            "Top lượt xem",
-                            style = ObsidianType.titleMedium,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                    if (stats.topViewedRepos.isEmpty()) {
-                        item { ObsidianEmptyState(message = "Chưa có dữ liệu", icon = Icons.Rounded.Visibility) }
-                    } else {
-                        items(stats.topViewedRepos, key = { "view-${it.repoId}" }) { repo ->
-                            RepoStatsCard(repo, rank = stats.topViewedRepos.indexOf(repo) + 1, metricLabel = "Lượt xem", metricValue = "${repo.viewCount}")
+            else -> {
+                val repos = if (selectedTab == 0) state.stats?.topFavoritedRepos.orEmpty() else state.stats?.topViewedRepos.orEmpty()
+                if (repos.isEmpty()) {
+                    EmptyState(
+                        title = "Chưa có dữ liệu",
+                        subtitle = "Chưa có kho lưu trữ nào được đánh giá.",
+                        icon = Icons.Rounded.BarChart,
+                    )
+                } else {
+                    LazyColumn(
+                        contentPadding = PaddingValues(vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        items(repos, key = { it.repoId }) { repo ->
+                            RepoStatsCard(
+                                repo = repo,
+                                rank = repos.indexOf(repo) + 1,
+                                metricLabel = if (selectedTab == 0) "Lượt yêu thích" else "Lượt xem",
+                                metricValue = if (selectedTab == 0) repo.bookmarkCount.toString() else repo.viewCount.toString(),
+                            )
                         }
                     }
                 }
@@ -99,57 +108,75 @@ private fun RepoStatsCard(
     repo: RepoStatsEntry,
     rank: Int,
     metricLabel: String,
-    metricValue: String
+    metricValue: String,
 ) {
-    Card(
-        shape = ObsidianShape.md,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        color = Surface,
+        shape = RoundedCornerShape(12.dp),
     ) {
         Row(
-            modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             // Rank badge
-            Surface(
-                shape = ObsidianShape.sm,
-                color = if (rank <= 3) ObsidianPalette.Amber500.copy(alpha = 0.15f)
-                        else MaterialTheme.colorScheme.surfaceVariant,
-                modifier = Modifier.size(36.dp)
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(if (rank <= 3) UITBlueSoft else SurfaceTertiary),
+                contentAlignment = Alignment.Center,
             ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        "#$rank",
-                        style = ObsidianType.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = if (rank <= 3) ObsidianPalette.Amber500
-                                else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                Text(
+                    text = "#$rank",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = if (rank <= 3) UITBlue else TextSecondary,
+                )
             }
-
             Spacer(Modifier.width(12.dp))
-
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    repo.repoName,
-                    style = ObsidianType.bodyMedium,
-                    fontWeight = FontWeight.SemiBold,
+                    text = repo.repoName,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = TextPrimary,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    repo.courseName?.let {
-                        Text(it, style = ObsidianType.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(2.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (repo.courseName != null) {
+                        Text(
+                            text = repo.courseName,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = TextSecondary,
+                        )
+                        Spacer(Modifier.width(8.dp))
                     }
-                    repo.primaryLanguage?.let {
-                        ObsidianBadge(text = it)
+                    if (repo.primaryLanguage != null) {
+                        StatusBadge(
+                            label = repo.primaryLanguage,
+                            type = StatusType.NEUTRAL,
+                        )
                     }
                 }
             }
-
+            Spacer(Modifier.width(12.dp))
             Column(horizontalAlignment = Alignment.End) {
-                Text(metricValue, style = ObsidianType.titleSmall, fontWeight = FontWeight.Bold, color = ObsidianPalette.Amber500)
-                Text(metricLabel, style = ObsidianType.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    text = metricValue,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = UITBlue,
+                )
+                Text(
+                    text = metricLabel,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = TextMuted,
+                )
             }
         }
     }

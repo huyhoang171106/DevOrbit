@@ -8,24 +8,30 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import vn.edu.uit.devorbit.admin.domain.repository.AdminRepository
+import java.io.IOException
 import javax.inject.Inject
 
 data class LoginUiState(
     val username: String = "",
     val password: String = "",
+    val isPasswordVisible: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
     val isLoggedIn: Boolean = false,
-    val sessionChecked: Boolean = false
+    val sessionChecked: Boolean = false,
 )
 
 @HiltViewModel
-class AdminLoginViewModel @Inject constructor(
-    private val adminRepository: AdminRepository
+class LoginViewModel @Inject constructor(
+    private val adminRepository: AdminRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(LoginUiState())
     val state: StateFlow<LoginUiState> = _state.asStateFlow()
+
+    init {
+        checkSession()
+    }
 
     fun updateUsername(value: String) {
         _state.value = _state.value.copy(username = value, error = null)
@@ -33,6 +39,12 @@ class AdminLoginViewModel @Inject constructor(
 
     fun updatePassword(value: String) {
         _state.value = _state.value.copy(password = value, error = null)
+    }
+
+    fun togglePasswordVisibility() {
+        _state.value = _state.value.copy(
+            isPasswordVisible = !_state.value.isPasswordVisible,
+        )
     }
 
     fun login() {
@@ -45,20 +57,30 @@ class AdminLoginViewModel @Inject constructor(
         viewModelScope.launch {
             _state.value = s.copy(isLoading = true, error = null)
             adminRepository.login(s.username, s.password).fold(
-                onSuccess = { _state.value = _state.value.copy(isLoading = false, isLoggedIn = true) },
-                onFailure = { _state.value = _state.value.copy(isLoading = false, error = it.message ?: "Đăng nhập thất bại") }
+                onSuccess = {
+                    _state.value = _state.value.copy(isLoading = false, isLoggedIn = true)
+                },
+                onFailure = { e ->
+                    val errorMessage = when (e) {
+                        is IOException -> "Không thể kết nối đến máy chủ. Vui lòng thử lại sau."
+                        else -> "Tên đăng nhập hoặc mật khẩu không đúng"
+                    }
+                    _state.value = _state.value.copy(isLoading = false, error = errorMessage)
+                },
             )
         }
     }
+
     fun checkSession() {
         viewModelScope.launch {
             val token = adminRepository.getToken()
             _state.value = _state.value.copy(
                 sessionChecked = true,
-                isLoggedIn = !token.isNullOrBlank()
+                isLoggedIn = !token.isNullOrBlank(),
             )
         }
     }
+
     fun logout() {
         viewModelScope.launch {
             adminRepository.logout()

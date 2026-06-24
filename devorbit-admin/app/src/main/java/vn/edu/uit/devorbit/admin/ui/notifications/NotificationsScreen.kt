@@ -5,42 +5,44 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Notifications
-import androidx.compose.material.icons.rounded.NotificationsActive
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import vn.edu.uit.devorbit.admin.data.remote.dto.NotificationResponse
-import vn.edu.uit.devorbit.admin.ui.components.*
-import vn.edu.uit.devorbit.admin.ui.theme.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import vn.edu.uit.devorbit.admin.core.designsystem.*
+import vn.edu.uit.devorbit.admin.data.remote.dto.NotificationResponse
+import vn.edu.uit.devorbit.admin.ui.theme.*
 
 @Composable
 fun NotificationsScreen(
-    viewModel: NotificationsViewModel = hiltViewModel()
+    viewModel: NotificationsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     Column(Modifier.fillMaxSize()) {
-        // ── Header with unread count + mark-all-read ─────────────────────
+        // Header
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     "Thông báo",
-                    style = ObsidianType.headlineLarge,
-                    color = MaterialTheme.colorScheme.onSurface
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary,
                 )
                 if (state.unreadCount > 0) {
                     Spacer(Modifier.height(2.dp))
@@ -48,54 +50,51 @@ fun NotificationsScreen(
                         Icon(
                             Icons.Rounded.NotificationsActive,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(14.dp)
+                            tint = UITBlue,
+                            modifier = Modifier.size(14.dp),
                         )
                         Spacer(Modifier.width(4.dp))
                         Text(
                             "${state.unreadCount} chưa đọc",
-                            style = ObsidianType.labelMedium,
-                            color = MaterialTheme.colorScheme.primary
+                            style = MaterialTheme.typography.labelMedium,
+                            color = UITBlue,
                         )
                     }
                 }
             }
             if (state.unreadCount > 0) {
-                FilledTonalButton(
+                AdminTextButton(
+                    text = "Đọc tất cả",
                     onClick = { viewModel.markAllRead() },
-                    shape = ObsidianShape.sm,
-                    colors = ButtonDefaults.filledTonalButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Text("Đọc tất cả", style = ObsidianType.labelLarge)
-                }
+                    icon = Icons.Rounded.DoneAll,
+                )
             }
         }
 
-        ObsidianDivider()
+        HorizontalDivider(color = Divider, thickness = 0.5.dp)
 
-        // ── Content ───────────────────────────────────────────────────────
         when {
-            state.isLoading -> ObsidianLoadingBox()
-            state.error != null -> ObsidianEmptyState(
-                message = "Lỗi tải thông báo",
+            state.isLoading -> InitialLoading()
+            state.error != null -> ErrorState(
+                title = "Không thể tải thông báo",
                 subtitle = state.error,
-                icon = Icons.Rounded.Notifications
+                onRetry = { viewModel.retry() },
             )
-            state.notifications.isEmpty() -> ObsidianEmptyState(
-                message = "Không có thông báo nào",
-                subtitle = "Thông báo sẽ xuất hiện khi có hoạt động",
-                icon = Icons.Rounded.Notifications
+            state.notifications.isEmpty() -> EmptyState(
+                title = "Không có thông báo",
+                subtitle = "Bạn sẽ nhận được thông báo khi có hoạt động cần xử lý.",
+                icon = Icons.Rounded.NotificationsNone,
             )
             else -> LazyColumn(
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                contentPadding = PaddingValues(vertical = 4.dp),
             ) {
-                items(state.notifications, key = { it.id }) { notif ->
+                items(
+                    items = state.notifications,
+                    key = { it.id },
+                ) { notification ->
                     NotificationRow(
-                        notification = notif,
-                        onMarkRead = { viewModel.markRead(notif.id) }
+                        notification = notification,
+                        onMarkRead = { viewModel.markRead(notification.id) },
                     )
                 }
             }
@@ -103,101 +102,54 @@ fun NotificationsScreen(
     }
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// NOTIFICATION ROW
-// ══════════════════════════════════════════════════════════════════════════════
-
 @Composable
 private fun NotificationRow(
     notification: NotificationResponse,
-    onMarkRead: () -> Unit
+    onMarkRead: () -> Unit,
 ) {
-    Card(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(enabled = !notification.isRead) { onMarkRead() },
-        shape = ObsidianShape.md,
-        colors = CardDefaults.cardColors(
-            containerColor = if (!notification.isRead)
-                MaterialTheme.colorScheme.primary.copy(alpha = 0.04f)
-            else MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            .clickable(enabled = !notification.isRead) { onMarkRead() }
+            .background(if (notification.isRead) Surface else UITBlueSoft.copy(alpha = 0.3f))
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.Top,
     ) {
-        Row(
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.Top
-        ) {
-            // ── Unread indicator dot ───────────────────────────────────
-            Box(
-                modifier = Modifier
-                    .padding(top = 6.dp)
-                    .size(8.dp)
-                    .clip(ObsidianShape.full)
-                    .background(
-                        if (!notification.isRead)
-                            MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.surfaceVariant
+                .padding(top = 4.dp)
+                .size(8.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .background(if (notification.isRead) Divider else UITBlue),
+        )
+        Spacer(Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (notification.type != null) {
+                    StatusBadge(
+                        label = notification.type,
+                        type = StatusType.INFO,
                     )
+                    Spacer(Modifier.width(8.dp))
+                }
+                if (notification.createdAt != null) {
+                    Text(
+                        text = notification.createdAt,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = TextMuted,
+                    )
+                }
+            }
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = notification.message ?: "(không có nội dung)",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = if (notification.isRead) FontWeight.Normal else FontWeight.Medium,
+                color = TextPrimary,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
             )
-            Spacer(Modifier.width(12.dp))
-
-            // ── Content ───────────────────────────────────────────────
-            Column(modifier = Modifier.weight(1f)) {
-                notification.message?.let { msg ->
-                    Text(
-                        msg,
-                        style = if (!notification.isRead)
-                            ObsidianType.titleMedium
-                        else ObsidianType.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 3,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-
-                Spacer(Modifier.height(6.dp))
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    notification.type?.let { type ->
-                        ObsidianBadge(
-                            text = type,
-                            color = when (type.uppercase()) {
-                                "SYSTEM" -> MaterialTheme.colorScheme.primary
-                                "ASSIGNMENT" -> ObsidianPalette.Amber500
-                                "REVIEW" -> ObsidianPalette.Green500
-                                "DEADLINE" -> ObsidianPalette.Red500
-                                else -> MaterialTheme.colorScheme.onSurfaceVariant
-                            }
-                        )
-                    }
-                    notification.createdAt?.let {
-                        Text(
-                            it,
-                            style = ObsidianType.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-
-            // ── Mark read button ───────────────────────────────────────
-            if (!notification.isRead) {
-                TextButton(
-                    onClick = onMarkRead,
-                    modifier = Modifier.padding(start = 8.dp)
-                ) {
-                    Text(
-                        "Đọc",
-                        style = ObsidianType.labelSmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
         }
     }
+    HorizontalDivider(color = Divider, thickness = 0.5.dp)
 }

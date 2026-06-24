@@ -26,20 +26,33 @@ class RetryInterceptor(
         while (attempt <= maxRetries) {
             try {
                 val response = chain.proceed(request)
-                // Retry on server errors (5xx)
-                if (response.code in 500..599 && attempt < maxRetries) {
+                // Retry on transient server errors (5xx, except non-retryable ones)
+                if (response.code in 500..599 && response.code != 501 && response.code != 505 && attempt < maxRetries) {
                     response.close()
+                    if (chain.call().isCanceled()) {
+                        throw IOException("Canceled")
+                    }
                     val delayMs = baseDelayMs * (1 shl attempt)
-                    Thread.sleep(delayMs)
+                    try {
+                        Thread.sleep(delayMs)
+                    } catch (e: InterruptedException) {
+                        Thread.currentThread().interrupt()
+                        throw IOException("Retry sleep interrupted", e)
+                    }
                     attempt++
                     continue
                 }
                 return response
             } catch (e: IOException) {
                 lastException = e
-                if (attempt >= maxRetries) throw e
+                if (attempt >= maxRetries || chain.call().isCanceled()) throw e
                 val delayMs = baseDelayMs * (1 shl attempt)
-                Thread.sleep(delayMs)
+                try {
+                    Thread.sleep(delayMs)
+                } catch (ie: InterruptedException) {
+                    Thread.currentThread().interrupt()
+                    throw IOException("Retry sleep interrupted", ie)
+                }
                 attempt++
             }
         }

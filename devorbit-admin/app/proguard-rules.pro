@@ -19,8 +19,8 @@
 # Gson
 -keepattributes Signature
 -keepattributes *Annotation*
--keepclassmembers class vn.edu.uit.devorbit.admin.data.remote.dto.** { *; }
--keepclassmembers class vn.edu.uit.devorbit.admin.network.** { *; }
+-keep class vn.edu.uit.devorbit.admin.data.remote.dto.** { *; }
+-keep class vn.edu.uit.devorbit.admin.network.** { *; }
 
 # OkHttp
 -dontwarn okhttp3.**

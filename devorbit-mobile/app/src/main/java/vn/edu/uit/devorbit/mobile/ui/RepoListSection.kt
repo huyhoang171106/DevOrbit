@@ -74,11 +74,11 @@ fun RepoListSection(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = repo.displayName,
+                        text = repo.displayName.orEmpty(),
                         style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
                         color = CosmicTheme.colors.textPrimary
                     )
-                    if (repo.description.isNotBlank()) {
+                    if (!repo.description.isNullOrBlank()) {
                         Spacer(Modifier.height(4.dp))
                         Text(
                             text = repo.description,
@@ -91,7 +91,7 @@ fun RepoListSection(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.padding(top = 10.dp)
                     ) {
-                        if (repo.primaryLanguage.isNotBlank()) {
+                        if (!repo.primaryLanguage.isNullOrBlank()) {
                             Surface(
                                 shape = RoundedCornerShape(6.dp),
                                 color = CosmicTheme.colors.plasma.copy(alpha = 0.12f)
@@ -105,17 +105,19 @@ fun RepoListSection(
                             }
                         }
                         repo.techStacks.take(2).forEach { stack ->
-                            Surface(
-                                shape = RoundedCornerShape(6.dp),
-                                color = CosmicTheme.colors.nebula,
-                                border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
-                            ) {
-                                Text(
-                                    text = stack.name,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-                                    style = CosmicTheme.typography.label,
-                                    color = CosmicTheme.colors.textSecondary
-                                )
+                            if (!stack.name.isNullOrBlank()) {
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = CosmicTheme.colors.nebula,
+                                    border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+                                ) {
+                                    Text(
+                                        text = stack.name,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                        style = CosmicTheme.typography.label,
+                                        color = CosmicTheme.colors.textSecondary
+                                    )
+                                }
                             }
                         }
                     }

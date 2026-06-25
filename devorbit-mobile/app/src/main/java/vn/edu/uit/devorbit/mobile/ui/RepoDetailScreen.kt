@@ -69,11 +69,11 @@ fun RepoDetailScreen(
         item {
             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                 Text(
-                    text = repo.displayName,
+                    text = repo.displayName.orEmpty(),
                     style = CosmicTheme.typography.display,
                     color = CosmicTheme.colors.textPrimary
                 )
-                if (repo.description.isNotBlank()) {
+                if (!repo.description.isNullOrBlank()) {
                     Spacer(Modifier.height(8.dp))
                     Text(
                         text = repo.description,
@@ -105,7 +105,9 @@ fun RepoDetailScreen(
             Spacer(Modifier.height(16.dp))
             Button(
                 onClick = {
-                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(repo.githubUrl)))
+                    repo.githubUrl?.let {
+                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it)))
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -198,7 +200,7 @@ private fun RepoInfoChips(repo: RepoSummary) {
         modifier = Modifier.padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        if (repo.primaryLanguage.isNotBlank()) {
+        if (!repo.primaryLanguage.isNullOrBlank()) {
             InfoChip(label = repo.primaryLanguage, color = CosmicTheme.colors.aurora)
         }
         repo.stars?.let { stars ->
@@ -207,7 +209,9 @@ private fun RepoInfoChips(repo: RepoSummary) {
             }
         }
         repo.techStacks.forEach { tech ->
-            InfoChip(label = tech.name, color = CosmicTheme.colors.plasma)
+            if (!tech.name.isNullOrBlank()) {
+                InfoChip(label = tech.name, color = CosmicTheme.colors.plasma)
+            }
         }
     }
 }

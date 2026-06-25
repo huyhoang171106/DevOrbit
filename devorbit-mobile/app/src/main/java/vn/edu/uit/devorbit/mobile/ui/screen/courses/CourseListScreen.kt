@@ -129,9 +129,9 @@ fun CourseListScreen(
                             semesterExpanded = false
                         }
                     )
-                }
-            }
         }
+    }
+}
 
         if (courses.isEmpty()) {
             Box(
@@ -164,6 +164,19 @@ fun CourseListScreen(
     }
 }
 
+private fun deriveDifficulty(credits: Int, semester: Int?, loaiMonHoc: String?): String {
+    var score = credits
+    if (semester != null && semester >= 3) score += 1
+    when (loaiMonHoc) {
+        "CHUYEN_NGANH" -> score += 2
+        "CO_SO" -> score += 1
+    }
+    return when {
+        score >= 4 -> "Khó"
+        score >= 2 -> "Trung bình"
+        else -> "Dễ"
+    }
+}
 private fun formatSubjectType(raw: String?): String? = when (raw) {
     "DAI_CUONG" -> "Đại cương"
     "CO_SO" -> "Cơ sở ngành"
@@ -222,49 +235,71 @@ fun CourseListItem(course: CourseEntity, isBookmarked: Boolean = false, onClick:
             }
 
             val subjectLabel = formatSubjectType(course.loaiMonHoc)
-            if (course.semester != null || subjectLabel != null) {
-                Spacer(Modifier.height(8.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    if (course.semester != null) {
-                        SuggestionChip(
-                            onClick = {},
-                            label = {
-                                Text(
-                                    "HK ${course.semester}",
-                                    style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.Medium),
-                                    color = CosmicTheme.colors.plasma
-                                )
-                            },
-                            shape = RoundedCornerShape(8.dp),
-                            border = SuggestionChipDefaults.suggestionChipBorder(
-                                borderColor = CosmicTheme.colors.plasma.copy(alpha = 0.3f),
-                                enabled = true
-                            ),
-                            colors = SuggestionChipDefaults.suggestionChipColors(
-                                containerColor = CosmicTheme.colors.plasma.copy(alpha = 0.08f)
-                            )
+            val difficulty = deriveDifficulty(course.credits, course.semester, course.loaiMonHoc)
+            val difficultyColor = when (difficulty) {
+                "Kho" -> CosmicTheme.colors.supernova
+                "Trung binh" -> CosmicTheme.colors.plasma
+                else -> CosmicTheme.colors.aurora
+            }
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                SuggestionChip(
+                    onClick = {},
+                    label = {
+                        Text(
+                            difficulty,
+                            style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.Medium),
+                            color = difficultyColor
                         )
-                    }
-                    if (subjectLabel != null) {
-                        SuggestionChip(
-                            onClick = {},
-                            label = {
-                                Text(
-                                    subjectLabel,
-                                    style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.Medium),
-                                    color = CosmicTheme.colors.aurora
-                                )
-                            },
-                            shape = RoundedCornerShape(8.dp),
-                            border = SuggestionChipDefaults.suggestionChipBorder(
-                                borderColor = CosmicTheme.colors.aurora.copy(alpha = 0.3f),
-                                enabled = true
-                            ),
-                            colors = SuggestionChipDefaults.suggestionChipColors(
-                                containerColor = CosmicTheme.colors.aurora.copy(alpha = 0.08f)
+                    },
+                    shape = RoundedCornerShape(8.dp),
+                    border = SuggestionChipDefaults.suggestionChipBorder(
+                        borderColor = difficultyColor.copy(alpha = 0.3f),
+                        enabled = true
+                    ),
+                    colors = SuggestionChipDefaults.suggestionChipColors(
+                        containerColor = difficultyColor.copy(alpha = 0.08f)
+                    )
+                )
+                if (course.semester != null) {
+                    SuggestionChip(
+                        onClick = {},
+                        label = {
+                            Text(
+                                "HK ${course.semester}",
+                                style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.Medium),
+                                color = CosmicTheme.colors.plasma
                             )
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        border = SuggestionChipDefaults.suggestionChipBorder(
+                            borderColor = CosmicTheme.colors.plasma.copy(alpha = 0.3f),
+                            enabled = true
+                        ),
+                        colors = SuggestionChipDefaults.suggestionChipColors(
+                            containerColor = CosmicTheme.colors.plasma.copy(alpha = 0.08f)
                         )
-                    }
+                    )
+                }
+                if (subjectLabel != null) {
+                    SuggestionChip(
+                        onClick = {},
+                        label = {
+                            Text(
+                                subjectLabel,
+                                style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.Medium),
+                                color = CosmicTheme.colors.aurora
+                            )
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        border = SuggestionChipDefaults.suggestionChipBorder(
+                            borderColor = CosmicTheme.colors.aurora.copy(alpha = 0.3f),
+                            enabled = true
+                        ),
+                        colors = SuggestionChipDefaults.suggestionChipColors(
+                            containerColor = CosmicTheme.colors.aurora.copy(alpha = 0.08f)
+                        )
+                    )
                 }
             }
         }

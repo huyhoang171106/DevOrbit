@@ -19,7 +19,7 @@ import vn.edu.uit.devorbit.mobile.data.local.entity.CourseEntity
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.CourseViewModel
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CourseListScreen(
     viewModel: CourseViewModel,
@@ -49,89 +49,111 @@ fun CourseListScreen(
             singleLine = true
         )
 
-        // Subject type filters
-        FlowRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            CourseSearchFilterState.subjectFilters.forEach { option ->
-                FilterChip(
-                    selected = filterState.subjectType == option.value || (option.value == null && filterState.subjectType == null),
-                    onClick = { viewModel.selectCourseSubjectType(option.value) },
-                    label = { Text(option.label) },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = CosmicTheme.colors.plasma.copy(alpha = 0.14f),
-                        selectedLabelColor = CosmicTheme.colors.plasma,
-                        labelColor = CosmicTheme.colors.textSecondary,
-                        containerColor = CosmicTheme.colors.nebula
-                    ),
-                    border = FilterChipDefaults.filterChipBorder(
-                        enabled = true,
-                        selected = filterState.subjectType == option.value || (option.value == null && filterState.subjectType == null),
-                        borderColor = CosmicTheme.colors.glassBorder,
-                        selectedBorderColor = CosmicTheme.colors.plasma
-                    )
-                )
-            }
-        }
+        // Subject type & semester dropdown filters
+        var subjectExpanded by remember { mutableStateOf(false) }
+        val selectedSubjectLabel = CourseSearchFilterState.subjectFilters
+            .firstOrNull { it.value == filterState.subjectType }?.label ?: "Tất cả"
 
-        // Semester dropdown filter
         var semesterExpanded by remember { mutableStateOf(false) }
         val selectedSemesterLabel = CourseSearchFilterState.semesterFilters
             .firstOrNull { it.value == filterState.semester }?.label ?: "Tất cả HK"
 
-        ExposedDropdownMenuBox(
-            expanded = semesterExpanded,
-            onExpandedChange = { semesterExpanded = it },
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 4.dp)
+                .padding(horizontal = 16.dp, vertical = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            OutlinedTextField(
-                value = selectedSemesterLabel,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Học kỳ") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = semesterExpanded) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = CosmicTheme.colors.aurora,
-                    unfocusedBorderColor = CosmicTheme.colors.glassBorder,
-                    focusedLabelColor = CosmicTheme.colors.aurora,
-                    unfocusedLabelColor = CosmicTheme.colors.textTertiary,
-                    cursorColor = CosmicTheme.colors.aurora,
-                    focusedTextColor = CosmicTheme.colors.textPrimary,
-                    unfocusedTextColor = CosmicTheme.colors.textPrimary
-                ),
-                shape = RoundedCornerShape(12.dp)
-            )
-            ExposedDropdownMenu(
-                expanded = semesterExpanded,
-                onDismissRequest = { semesterExpanded = false }
+            ExposedDropdownMenuBox(
+                expanded = subjectExpanded,
+                onExpandedChange = { subjectExpanded = it }
             ) {
-                CourseSearchFilterState.semesterFilters.forEach { option ->
-                    val isSelected = option.value == filterState.semester ||
-                        (option.value == null && filterState.semester == null)
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                option.label,
-                                color = if (isSelected) CosmicTheme.colors.aurora else CosmicTheme.colors.textPrimary
-                            )
-                        },
-                        onClick = {
-                            viewModel.selectSemester(option.value)
-                            semesterExpanded = false
-                        }
-                    )
+                OutlinedTextField(
+                    value = selectedSubjectLabel,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Loại môn") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = subjectExpanded) },
+                    modifier = Modifier.fillMaxWidth().menuAnchor(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = CosmicTheme.colors.plasma,
+                        unfocusedBorderColor = CosmicTheme.colors.glassBorder,
+                        focusedLabelColor = CosmicTheme.colors.plasma,
+                        unfocusedLabelColor = CosmicTheme.colors.textTertiary,
+                        cursorColor = CosmicTheme.colors.plasma,
+                        focusedTextColor = CosmicTheme.colors.textPrimary,
+                        unfocusedTextColor = CosmicTheme.colors.textPrimary
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                )
+                ExposedDropdownMenu(
+                    expanded = subjectExpanded,
+                    onDismissRequest = { subjectExpanded = false }
+                ) {
+                    CourseSearchFilterState.subjectFilters.forEach { option ->
+                        val isSelected = option.value == filterState.subjectType ||
+                            (option.value == null && filterState.subjectType == null)
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    option.label,
+                                    color = if (isSelected) CosmicTheme.colors.plasma else CosmicTheme.colors.textPrimary
+                                )
+                            },
+                            onClick = {
+                                viewModel.selectCourseSubjectType(option.value)
+                                subjectExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            ExposedDropdownMenuBox(
+                expanded = semesterExpanded,
+                onExpandedChange = { semesterExpanded = it }
+            ) {
+                OutlinedTextField(
+                    value = selectedSemesterLabel,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Học kỳ") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = semesterExpanded) },
+                    modifier = Modifier.fillMaxWidth().menuAnchor(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = CosmicTheme.colors.aurora,
+                        unfocusedBorderColor = CosmicTheme.colors.glassBorder,
+                        focusedLabelColor = CosmicTheme.colors.aurora,
+                        unfocusedLabelColor = CosmicTheme.colors.textTertiary,
+                        cursorColor = CosmicTheme.colors.aurora,
+                        focusedTextColor = CosmicTheme.colors.textPrimary,
+                        unfocusedTextColor = CosmicTheme.colors.textPrimary
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                )
+                ExposedDropdownMenu(
+                    expanded = semesterExpanded,
+                    onDismissRequest = { semesterExpanded = false }
+                ) {
+                    CourseSearchFilterState.semesterFilters.forEach { option ->
+                        val isSelected = option.value == filterState.semester ||
+                            (option.value == null && filterState.semester == null)
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    option.label,
+                                    color = if (isSelected) CosmicTheme.colors.aurora else CosmicTheme.colors.textPrimary
+                                )
+                            },
+                            onClick = {
+                                viewModel.selectSemester(option.value)
+                                semesterExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
         }
-    }
-}
 
         if (courses.isEmpty()) {
             Box(
@@ -237,8 +259,8 @@ fun CourseListItem(course: CourseEntity, isBookmarked: Boolean = false, onClick:
             val subjectLabel = formatSubjectType(course.loaiMonHoc)
             val difficulty = deriveDifficulty(course.credits, course.semester, course.loaiMonHoc)
             val difficultyColor = when (difficulty) {
-                "Kho" -> CosmicTheme.colors.supernova
-                "Trung binh" -> CosmicTheme.colors.plasma
+                "Khó" -> CosmicTheme.colors.supernova
+                "Trung bình" -> CosmicTheme.colors.plasma
                 else -> CosmicTheme.colors.aurora
             }
             Spacer(Modifier.height(8.dp))

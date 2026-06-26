@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.MoveDown
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -42,6 +43,8 @@ fun SemesterPlannerScreen(
     var showAddDialog by remember { mutableStateOf(false) }
     var addTargetSemester by remember { mutableIntStateOf(1) }
     var searchQuery by remember { mutableStateOf("") }
+    var moveCourseId by remember { mutableStateOf<Long?>(null) }
+    var moveFromSemester by remember { mutableIntStateOf(1) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         // Header
@@ -162,6 +165,9 @@ fun SemesterPlannerScreen(
                                                         }
                                                     }
                                                     Text("${course.credits} TC", style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.SemiBold), color = CosmicTheme.colors.textTertiary, modifier = Modifier.padding(horizontal = 8.dp))
+                                                    IconButton(onClick = { moveCourseId = course.id; moveFromSemester = sem }, modifier = Modifier.size(32.dp)) {
+                                                        Icon(Icons.Default.MoveDown, contentDescription = "Chuyển", tint = CosmicTheme.colors.plasma.copy(alpha = 0.7f), modifier = Modifier.size(16.dp))
+                                                    }
                                                     IconButton(onClick = { viewModel.removeCourse(course.id) }, modifier = Modifier.size(32.dp)) {
                                                         Icon(Icons.Default.Close, contentDescription = "Bỏ môn", tint = CosmicTheme.colors.supernova.copy(alpha = 0.7f), modifier = Modifier.size(16.dp))
                                                     }
@@ -247,6 +253,38 @@ fun SemesterPlannerScreen(
                 }
             },
             confirmButton = { TextButton(onClick = { showAddDialog = false }) { Text("Đóng") } }
+        )
+    }
+
+    // Move course dialog
+    moveCourseId?.let { cId ->
+        AlertDialog(
+            onDismissRequest = { moveCourseId = null },
+            title = { Text("Chuyển môn", fontWeight = FontWeight.Bold) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text("Chọn học kỳ mới:", style = CosmicTheme.typography.label, color = CosmicTheme.colors.textTertiary)
+                    (1..8).filter { it != moveFromSemester }.forEach { sem ->
+                        val count = viewModel.getCourseCount(sem)
+                        val credits = viewModel.getTotalCredits(sem)
+                        Surface(
+                            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).clickable {
+                                viewModel.moveCourse(cId, sem)
+                                moveCourseId = null
+                            },
+                            shape = RoundedCornerShape(10.dp),
+                            color = CosmicTheme.colors.nebula,
+                            border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+                        ) {
+                            Row(modifier = Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Text("Học kỳ $sem", style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Medium), color = CosmicTheme.colors.textPrimary, modifier = Modifier.weight(1f))
+                                Text("$count môn · $credits TC", style = CosmicTheme.typography.label, color = CosmicTheme.colors.textTertiary)
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { moveCourseId = null }) { Text("Hủy") } }
         )
     }
 }

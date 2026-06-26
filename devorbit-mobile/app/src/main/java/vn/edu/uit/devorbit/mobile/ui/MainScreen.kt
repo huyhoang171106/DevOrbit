@@ -34,6 +34,7 @@ import vn.edu.uit.devorbit.mobile.ui.screen.knowledge.KnowledgeGraphScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.notification.NotificationScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.community.CommunityScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.plan.StudyPlannerScreen
+import vn.edu.uit.devorbit.mobile.domain.repository.Bookmark
 import vn.edu.uit.devorbit.mobile.ui.screen.profile.ProfileScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.profile.ProfileDetailScreen
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
@@ -51,6 +52,8 @@ fun MainScreen(
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Dashboard) }
     var showPopup by remember { mutableStateOf(false) }
     var showProfileDetail by remember { mutableStateOf(false) }
+    var pendingCourseId by remember { mutableStateOf<Long?>(null) }
+    var pendingRepoId by remember { mutableStateOf<Long?>(null) }
     val unreadCount by notificationVm.unreadCount.collectAsStateWithLifecycle()
 
     val navItemColors = NavigationBarItemDefaults.colors(
@@ -154,13 +157,33 @@ fun MainScreen(
                                     showPopup = false
                                 }
                             )
-                            Screen.Courses -> CourseHubScreen()
+                            Screen.Courses -> CourseHubScreen(
+                                onCreatePlan = {
+                                    currentScreen = Screen.Plan
+                                    showPopup = false
+                                },
+                                pendingCourseId = pendingCourseId,
+                                pendingRepoId = pendingRepoId,
+                                onPendingCleared = {
+                                    pendingCourseId = null
+                                    pendingRepoId = null
+                                }
+                            )
                             Screen.Knowledge -> KnowledgeTabView()
                             Screen.Explore -> ExploreScreen()
                             Screen.Notifications -> NotificationScreen(viewModel = notificationVm)
                             Screen.Plan -> PlanTabView()
                             Screen.Profile -> ProfileScreen(
-                                onNavigateToDetail = { showProfileDetail = true }
+                                onNavigateToDetail = { showProfileDetail = true },
+                                onBookmarkClick = { bookmark ->
+                                    currentScreen = Screen.Courses
+                                    showPopup = false
+                                    if (bookmark.targetType == "COURSE") {
+                                        pendingCourseId = bookmark.targetId
+                                    } else if (bookmark.targetType == "REPO") {
+                                        pendingRepoId = bookmark.targetId
+                                    }
+                                }
                             )
                             Screen.Community -> CommunityScreen()
                         }

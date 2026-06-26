@@ -110,10 +110,12 @@ interface ApiService {
 
     // AI
     @GET("/api/ai/repo/{repoId}/summary")
-    suspend fun getRepoSummary(@Path("repoId") repoId: Long): Map<String, Any>
+    suspend fun getRepoSummary(@Path("repoId") repoId: Long): AiResponse
 
     @GET("/api/ai/repo/{repoId}/advice")
-    suspend fun getRepoAdvice(@Path("repoId") repoId: Long): Map<String, Any>
+    suspend fun getRepoAdvice(@Path("repoId") repoId: Long): AiResponse
+
+
 
     @POST("/api/ai/knowledge-graph/query")
     suspend fun queryKnowledgeGraph(@Body body: Map<String, String>): Map<String, Any>
@@ -123,6 +125,22 @@ interface ApiService {
 
     @POST("/api/ai/generate-roadmap")
     suspend fun generateRoadmap(@Body body: RoadmapGenerationRequest): RoadmapRecommendationResponse
+
+    // Social
+    @GET("/api/repos/{repoId}/social-info")
+    suspend fun getRepoSocialInfo(@Path("repoId") repoId: Long): RepoSocialInfoResponse
+
+    @GET("/api/courses/{courseId}/reviews")
+    suspend fun getCourseReviews(@Path("courseId") courseId: Long): ReviewSummaryResponse
+
+    @POST("/api/student/repos/{repoId}/review")
+    suspend fun submitRepoReview(@Path("repoId") repoId: Long, @Body body: ReviewRequest): ReviewResponse
+
+    @DELETE("/api/student/repos/{repoId}/review")
+    suspend fun deleteRepoReview(@Path("repoId") repoId: Long)
+
+    @POST("/api/student/repos/{repoId}/vote")
+    suspend fun voteRepo(@Path("repoId") repoId: Long, @Body body: RepoVoteRequest): RepoVoteResponse
 
     // Student Notifications
     @GET("/api/student/notifications")

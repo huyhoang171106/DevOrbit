@@ -4,6 +4,7 @@ data class CourseTutorial(
     val id: Long,
     val title: String,
     val url: String,
+    val type: String? = null,
     val description: String?
 )
 

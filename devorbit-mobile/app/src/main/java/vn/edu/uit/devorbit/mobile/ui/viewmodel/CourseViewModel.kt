@@ -12,17 +12,24 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import vn.edu.uit.devorbit.mobile.data.local.entity.CourseEntity
 import vn.edu.uit.devorbit.mobile.data.repository.AcademicRepository
+import vn.edu.uit.devorbit.mobile.data.remote.dto.AiResponse
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseArticle
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseTutorial
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseYoutubePlaylist
+import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSocialInfoResponse
 import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSummary
+import vn.edu.uit.devorbit.mobile.data.remote.dto.ReviewResponse
 import vn.edu.uit.devorbit.mobile.domain.model.GraphNode
 import vn.edu.uit.devorbit.mobile.domain.model.GraphLink
 import vn.edu.uit.devorbit.mobile.domain.repository.Bookmark
 import vn.edu.uit.devorbit.mobile.domain.repository.BookmarkRepository
 import vn.edu.uit.devorbit.mobile.ui.screen.courses.CourseHubNavigationState
 import vn.edu.uit.devorbit.mobile.ui.screen.courses.CourseSearchFilterState
+import java.net.HttpURLConnection
+import java.net.URL
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @HiltViewModel
 class CourseViewModel @Inject constructor(
@@ -75,12 +82,37 @@ class CourseViewModel @Inject constructor(
     private val _detailError = MutableStateFlow<String?>(null)
     val detailError: StateFlow<String?> = _detailError.asStateFlow()
 
+    private val _repoSummary = MutableStateFlow<AiResponse?>(null)
+    val repoSummary: StateFlow<AiResponse?> = _repoSummary.asStateFlow()
+
+    private val _repoAdvice = MutableStateFlow<AiResponse?>(null)
+    val repoAdvice: StateFlow<AiResponse?> = _repoAdvice.asStateFlow()
+
+    private val _aiLoading = MutableStateFlow(false)
+    val aiLoading: StateFlow<Boolean> = _aiLoading.asStateFlow()
+
+    private val _repoSocialInfo = MutableStateFlow<RepoSocialInfoResponse?>(null)
+    val repoSocialInfo: StateFlow<RepoSocialInfoResponse?> = _repoSocialInfo.asStateFlow()
+
+    private val _userReview = MutableStateFlow<ReviewResponse?>(null)
+    val userReview: StateFlow<ReviewResponse?> = _userReview.asStateFlow()
+
+    private val _userVote = MutableStateFlow(0)
+    val userVote: StateFlow<Int> = _userVote.asStateFlow()
+
+    private val _socialLoading = MutableStateFlow(false)
+    val socialLoading: StateFlow<Boolean> = _socialLoading.asStateFlow()
+
     private val _bookmarkedCourseIds = MutableStateFlow<Set<Long>>(emptySet())
     val bookmarkedCourseIds: StateFlow<Set<Long>> = _bookmarkedCourseIds.asStateFlow()
+
+    private val _bookmarkedRepoIds = MutableStateFlow<Set<Long>>(emptySet())
+    val bookmarkedRepoIds: StateFlow<Set<Long>> = _bookmarkedRepoIds.asStateFlow()
 
     init {
         refreshCourses()
         loadGraph()
+        loadAllBookmarkState()
     }
 
     fun refreshCourses() {
@@ -88,7 +120,8 @@ class CourseViewModel @Inject constructor(
             val filter = _courseSearchFilterState.value
             repository.refreshCourses(
                 query = filter.normalizedQuery,
-                subjectType = filter.subjectType
+                subjectType = filter.subjectType,
+                semester = filter.semester
             )
         }
     }
@@ -100,6 +133,11 @@ class CourseViewModel @Inject constructor(
 
     fun selectCourseSubjectType(subjectType: String?) {
         _courseSearchFilterState.value = _courseSearchFilterState.value.selectSubjectType(subjectType)
+        refreshCourses()
+    }
+
+    fun selectSemester(semester: Int?) {
+        _courseSearchFilterState.value = _courseSearchFilterState.value.selectSemester(semester)
         refreshCourses()
     }
 
@@ -137,10 +175,74 @@ class CourseViewModel @Inject constructor(
     fun openRepo(repo: RepoSummary) {
         _selectedRepo.value = repo
         _courseHubNavigationState.value = _courseHubNavigationState.value.openRepo(repo.id)
+        loadRepoAiData(repo.id)
+        loadRepoSocialInfo(repo.id)
+        if (repo.lastPushedAt == null) {
+            fetchGithubPushedAt(repo)
+        }
+    }
+
+    fun navigateToRepoFromBookmark(repoId: Long) {
+        viewModelScope.launch {
+            try {
+                val repo = repository.getRepo(repoId)
+                val courseId = repo.courseId ?: return@launch
+                // Open the parent course first
+                val course = courses.value.find { it.id == courseId }
+                if (course != null) {
+                    openCourse(course)
+                    // Wait briefly for course detail to load, then open repo
+                    kotlinx.coroutines.delay(1500)
+                    // Check if repo is now in the loaded repos
+                    val loadedRepo = _detailRepos.value.find { it.id == repoId } ?: repo
+                    openRepo(loadedRepo)
+                }
+            } catch (_: Exception) {}
+        }
+    }
+
+    private fun fetchGithubPushedAt(repo: RepoSummary) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val (owner, name) = parseGithubSlug(repo.githubUrl) ?: return@launch
+                val url = URL("https://api.github.com/repos/$owner/$name")
+                val conn = url.openConnection() as HttpURLConnection
+                conn.requestMethod = "GET"
+                conn.setRequestProperty("Accept", "application/vnd.github+json")
+                conn.connectTimeout = 5000
+                conn.readTimeout = 5000
+                val code = conn.responseCode
+                if (code == 200) {
+                    val json = conn.inputStream.bufferedReader().readText()
+                    val obj = org.json.JSONObject(json)
+                    val pushedAt = obj.optString("pushed_at", null) ?: obj.optString("updated_at", null)
+                    if (pushedAt != null) {
+                        withContext(Dispatchers.Main) {
+                            _selectedRepo.value = repo.copy(lastPushedAt = pushedAt)
+                        }
+                    }
+                }
+                conn.disconnect()
+            } catch (_: Exception) { }
+        }
+    }
+
+    private fun parseGithubSlug(url: String?): Pair<String, String>? {
+        if (url == null) return null
+        val regex = Regex("github\\.com/([^/]+)/([^/?#]+)")
+        val match = regex.find(url) ?: return null
+        val owner = match.groupValues[1]
+        val name = match.groupValues[2].replace(Regex("\\.git$"), "")
+        return Pair(owner, name)
     }
 
     fun backFromRepo() {
         _selectedRepo.value = null
+        _repoSummary.value = null
+        _repoAdvice.value = null
+        _repoSocialInfo.value = null
+        _userReview.value = null
+        _userVote.value = 0
         _courseHubNavigationState.value = _courseHubNavigationState.value.back()
     }
 
@@ -179,11 +281,128 @@ class CourseViewModel @Inject constructor(
 
     private fun loadCourseBookmarkState(courseId: Long) {
         viewModelScope.launch {
-            if (bookmarkRepository.isBookmarked("COURSE", courseId)) {
-                _bookmarkedCourseIds.value = _bookmarkedCourseIds.value + courseId
-            } else {
-                _bookmarkedCourseIds.value = _bookmarkedCourseIds.value - courseId
+            try {
+                if (bookmarkRepository.isBookmarked("COURSE", courseId)) {
+                    _bookmarkedCourseIds.value = _bookmarkedCourseIds.value + courseId
+                } else {
+                    _bookmarkedCourseIds.value = _bookmarkedCourseIds.value - courseId
+                }
+            } catch (_: Exception) {}
+        }
+    }
+
+    private fun loadAllBookmarkState() {
+        viewModelScope.launch {
+            try {
+                val all = bookmarkRepository.getAllBookmarks().first()
+                val courseIds = mutableSetOf<Long>()
+                val repoIds = mutableSetOf<Long>()
+                for (bm in all) {
+                    when (bm.targetType) {
+                        "COURSE" -> courseIds.add(bm.targetId)
+                        "REPO" -> repoIds.add(bm.targetId)
+                    }
+                }
+                _bookmarkedCourseIds.value = courseIds
+                _bookmarkedRepoIds.value = repoIds
+            } catch (e: Exception) {
+                android.util.Log.e("CourseViewModel", "Failed to load bookmarks", e)
             }
+        }
+    }
+
+    private fun loadRepoAiData(repoId: Long) {
+        viewModelScope.launch {
+            _aiLoading.value = true
+            _repoSummary.value = null
+            _repoAdvice.value = null
+            try {
+                val summary = repository.getRepoSummary(repoId)
+                _repoSummary.value = summary
+            } catch (_: Exception) {}
+            try {
+                val advice = repository.getRepoAdvice(repoId)
+                _repoAdvice.value = advice
+            } catch (_: Exception) {}
+            _aiLoading.value = false
+        }
+    }
+
+    private fun loadRepoSocialInfo(repoId: Long) {
+        viewModelScope.launch {
+            _socialLoading.value = true
+            try {
+                val info = repository.getRepoSocialInfo(repoId)
+                _repoSocialInfo.value = info
+            } catch (_: Exception) {}
+            _socialLoading.value = false
+        }
+    }
+
+    fun submitReview(repoId: Long, rating: Int, comment: String?) {
+        val optimisticReview = ReviewResponse(
+            id = -(System.currentTimeMillis()),
+            targetId = repoId,
+            studentId = 0,
+            studentName = "Bạn",
+            rating = rating,
+            comment = comment,
+            createdAt = null,
+            updatedAt = null
+        )
+        val previousInfo = _repoSocialInfo.value
+        // Build new social info with optimistically added review
+        _repoSocialInfo.value = if (previousInfo != null) {
+            previousInfo.copy(
+                reviews = previousInfo.reviews + optimisticReview,
+                averageRating = (previousInfo.averageRating * previousInfo.reviews.size + rating) / (previousInfo.reviews.size + 1)
+            )
+        } else {
+            RepoSocialInfoResponse(
+                repoId = repoId,
+                voteScore = 0,
+                averageRating = rating.toDouble(),
+                reviews = listOf(optimisticReview)
+            )
+        }
+        _userReview.value = optimisticReview
+
+        viewModelScope.launch {
+            try {
+                val review = repository.submitRepoReview(repoId, rating, comment)
+                // Replace optimistic review with real one from server
+                val current = _repoSocialInfo.value
+                if (current != null) {
+                    val updated = current.reviews.map { if (it.id == optimisticReview.id) review else it }
+                    _repoSocialInfo.value = current.copy(reviews = updated)
+                }
+                _userReview.value = review
+                loadRepoSocialInfo(repoId)
+            } catch (_: Exception) {
+                // Revert optimistic update on failure
+                _repoSocialInfo.value = previousInfo
+                _userReview.value = null
+            }
+        }
+    }
+
+    fun deleteReview(repoId: Long) {
+        viewModelScope.launch {
+            try {
+                repository.deleteRepoReview(repoId)
+                _userReview.value = null
+                loadRepoSocialInfo(repoId)
+            } catch (_: Exception) {}
+        }
+    }
+
+    fun voteRepo(repoId: Long, voteValue: Int) {
+        viewModelScope.launch {
+            try {
+                val result = repository.voteRepo(repoId, voteValue)
+                _userVote.value = result.voteValue
+                loadRepoSocialInfo(repoId)
+            } catch (_: Exception) {}
         }
     }
 
@@ -205,6 +424,39 @@ class CourseViewModel @Inject constructor(
                     )
                 )
                 _bookmarkedCourseIds.value = _bookmarkedCourseIds.value + course.id
+            }
+        }
+    }
+
+    fun toggleRepoBookmark(repo: RepoSummary) {
+        val repoId = repo.id
+        val currentlyBookmarked = repoId in _bookmarkedRepoIds.value
+
+        if (currentlyBookmarked) {
+            _bookmarkedRepoIds.value = _bookmarkedRepoIds.value - repoId
+        } else {
+            _bookmarkedRepoIds.value = _bookmarkedRepoIds.value + repoId
+        }
+
+        viewModelScope.launch {
+            try {
+                if (currentlyBookmarked) {
+                    val all = bookmarkRepository.getAllBookmarks().first()
+                    all.firstOrNull { it.targetType == "REPO" && it.targetId == repoId }?.let {
+                        bookmarkRepository.removeBookmark(it.id)
+                    }
+                } else {
+                    bookmarkRepository.addBookmark(
+                        Bookmark(id = 0, targetType = "REPO", targetId = repoId, title = repo.displayName.orEmpty())
+                    )
+                }
+            } catch (e: Exception) {
+                if (currentlyBookmarked) {
+                    _bookmarkedRepoIds.value = _bookmarkedRepoIds.value + repoId
+                } else {
+                    _bookmarkedRepoIds.value = _bookmarkedRepoIds.value - repoId
+                }
+                android.util.Log.e("CourseViewModel", "Failed to toggle repo bookmark", e)
             }
         }
     }

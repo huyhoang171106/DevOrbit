@@ -9,7 +9,14 @@ import vn.edu.uit.devorbit.mobile.data.remote.dto.GraphLinkDto
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseArticle
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseTutorial
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseYoutubePlaylist
+import vn.edu.uit.devorbit.mobile.data.remote.dto.AiResponse
+import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSocialInfoResponse
 import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSummary
+import vn.edu.uit.devorbit.mobile.data.remote.dto.ReviewRequest
+import vn.edu.uit.devorbit.mobile.data.remote.dto.ReviewResponse
+import vn.edu.uit.devorbit.mobile.data.remote.dto.ReviewSummaryResponse
+import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoVoteRequest
+import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoVoteResponse
 import vn.edu.uit.devorbit.mobile.network.ApiService
 import javax.inject.Inject
 
@@ -51,8 +58,10 @@ class AcademicRepository @Inject constructor(
                     id = it.id,
                     maMH = it.code,
                     tenMH = it.name,
-                    credits = 0,
-                    description = ""
+                    credits = it.credits,
+                    description = it.description.orEmpty(),
+                    semester = it.semester,
+                    loaiMonHoc = it.loaiMonHoc
                 )
             }
             courseDao.deleteAll()
@@ -157,6 +166,24 @@ class AcademicRepository @Inject constructor(
         }
         return vn.edu.uit.devorbit.mobile.domain.model.KnowledgeGraph(nodes, links)
     }
+
+    suspend fun getRepo(repoId: Long): RepoSummary = apiService.getRepo(repoId)
+
+    suspend fun getRepoSummary(repoId: Long): AiResponse = apiService.getRepoSummary(repoId)
+
+    suspend fun getRepoAdvice(repoId: Long): AiResponse = apiService.getRepoAdvice(repoId)
+
+    suspend fun getRepoSocialInfo(repoId: Long): RepoSocialInfoResponse = apiService.getRepoSocialInfo(repoId)
+
+    suspend fun getCourseReviews(courseId: Long): ReviewSummaryResponse = apiService.getCourseReviews(courseId)
+
+    suspend fun submitRepoReview(repoId: Long, rating: Int, comment: String?): ReviewResponse =
+        apiService.submitRepoReview(repoId, ReviewRequest(rating, comment))
+
+    suspend fun deleteRepoReview(repoId: Long) = apiService.deleteRepoReview(repoId)
+
+    suspend fun voteRepo(repoId: Long, voteValue: Int): RepoVoteResponse =
+        apiService.voteRepo(repoId, RepoVoteRequest(voteValue))
 
     suspend fun saveTask(task: TaskEntity) = taskDao.upsertTask(task)
     suspend fun completeTask(id: Long) = taskDao.setCompleted(id, true)

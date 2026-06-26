@@ -32,6 +32,7 @@ public record AdminCourseUpsertRequest(
     String equivalentMH,                 // Equivalent course for credit transfer
     String prerequisiteMH,               // Prerequisite course (must take first)
     String previousMH,                   // Recommended prior course
+    Integer semester,                    // Recommended semester (1-9)
     String description,                  // Course description (optional)
     String learningObjectives,
     String gradingCriteria,

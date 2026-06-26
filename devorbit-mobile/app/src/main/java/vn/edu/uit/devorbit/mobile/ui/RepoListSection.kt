@@ -6,8 +6,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -21,6 +24,7 @@ fun RepoListSection(
     totalCount: Int = repos.size,
     availableTechStacks: List<String> = emptyList(),
     selectedTechStack: String? = null,
+    bookmarkedIds: Set<Long> = emptySet(),
     onTechStackSelected: (String?) -> Unit = {},
     onRepoClick: (RepoSummary) -> Unit
 ) {
@@ -73,11 +77,22 @@ fun RepoListSection(
                 border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = repo.displayName.orEmpty(),
-                        style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
-                        color = CosmicTheme.colors.textPrimary
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = repo.displayName.orEmpty(),
+                            style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
+                            color = CosmicTheme.colors.textPrimary,
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (repo.id in bookmarkedIds) {
+                            Icon(
+                                imageVector = Icons.Filled.Star,
+                                contentDescription = "Đã lưu",
+                                tint = CosmicTheme.colors.plasma,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
                     if (!repo.description.isNullOrBlank()) {
                         Spacer(Modifier.height(4.dp))
                         Text(

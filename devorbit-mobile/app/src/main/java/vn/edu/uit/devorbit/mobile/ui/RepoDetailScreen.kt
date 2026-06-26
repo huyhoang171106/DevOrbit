@@ -5,6 +5,9 @@ import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,6 +39,7 @@ import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import java.text.SimpleDateFormat
 import java.util.Locale
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun RepoDetailScreen(
     repo: RepoSummary,
@@ -75,6 +79,94 @@ fun RepoDetailScreen(
             } catch (_: Exception) { null }
         }
     }
+
+    // ─── Analysis computations (computed from repo data, no API needed) ───
+    val repoTypeLabel = repo.repoType?.let { rt ->
+        when (rt) {
+            "programming_exercise" -> "Bài tập lập trình"
+            "project_practice" -> "Dự án thực hành"
+            "study_material" -> "Tài liệu học tập"
+            "exam_review" -> "Ôn tập thi"
+            "mixed_resource" -> "Tài liệu tổng hợp"
+            "fullstack" -> "Fullstack"
+            "backend" -> "Backend"
+            "frontend" -> "Frontend"
+            "mobile" -> "Mobile"
+            "data_science" -> "Khoa học dữ liệu"
+            "devops" -> "DevOps"
+            "unknown", "other" -> "Chưa phân loại"
+            else -> "Chưa phân loại"
+        }
+    }
+    val usefulnessLabel = repo.usefulnessRating?.let { ur ->
+        when (ur) {
+            "excellent", "highly_recommended" -> "Rất nên xem"
+            "good", "recommended" -> "Nên xem"
+            "average", "selective" -> "Có chọn lọc"
+            "limited", "quick_reference" -> "Tham khảo"
+            "low_priority" -> "Không ưu tiên"
+            "insufficient_data" -> "Chưa đủ dữ liệu"
+            else -> "Chưa phân loại"
+        }
+    }
+    val readyLabel = repo.readyToUseLevel?.let { rl ->
+        when (rl) {
+            "very_ready" -> "Sẵn sàng"
+            "ready" -> "Có thể dùng"
+            "needs_check" -> "Cần kiểm tra"
+            "quick_reference" -> "Tham khảo nhanh"
+            "insufficient_data" -> "Chưa đủ dữ liệu"
+            else -> "Chưa xác định"
+        }
+    }
+    val hasReadme = repo.hasReadme ?: false
+    val hasDesc = !repo.description.isNullOrBlank()
+    val hasFileTree = !repo.fileTree.isNullOrBlank()
+    val starCount = repo.stars ?: 0
+    val lang = repo.primaryLanguage.orEmpty()
+
+    val techTools = remember(repo) {
+        buildList {
+            if (lang.isNotBlank()) add(lang)
+            repo.techStacks.filter { it.name != lang }.forEach { add(it.name) }
+        }
+    }
+    val quickSummary = remember(repo) {
+        buildString {
+            append("Repository **${repo.displayName}**")
+            if (repo.courseName != null) append(" thuộc môn **${repo.courseName}**")
+            append(". Ngôn ngữ chính **$lang**.")
+            if (starCount > 0) append(" Có **$starCount sao** GitHub.")
+            if (hasDesc) append(" Mô tả đầy đủ.")
+            if (!hasDesc) append(" Chưa có mô tả chi tiết.")
+        }
+    }
+    val strengths = remember(repo) {
+        buildList {
+            if (hasReadme) add("Có README hướng dẫn")
+            if (hasDesc) add("Mô tả chi tiết nội dung")
+            if (hasFileTree) add("Cấu trúc thư mục rõ ràng")
+            if (starCount > 10) add("Cộng đồng đánh giá cao ($starCount sao)")
+            if (techTools.size > 1) add("Nhiều công nghệ (${techTools.take(3).joinToString(", ")})")
+            if (repo.courseName != null) add("Liên kết với môn ${repo.courseCode.orEmpty()}")
+            if (isEmpty()) add("Repository mã nguồn tham khảo")
+        }
+    }
+    val weaknesses = remember(repo) {
+        buildList {
+            if (!hasReadme) add("Thiếu README hướng dẫn")
+            if (!hasDesc) add("Thiếu mô tả chi tiết")
+            if (!hasFileTree) add("Không có cấu trúc thư mục")
+            if (starCount == 0) add("Chưa có sao từ cộng đồng")
+        }
+    }
+    val coreTopics = remember(repo) {
+        buildList {
+            repo.courseName?.let { add(it) }
+            repoTypeLabel?.let { if (it != repo.courseName) add(it) }
+        }
+    }
+    val nextActions = remember(repo) { listOf("Clone repo", "Cài đặt dependencies", "Chạy thử", "Phân tích mã nguồn") }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -127,9 +219,9 @@ fun RepoDetailScreen(
             }
         }
 
-        // ─── Info chips (language, stars, tech stacks, last pushed, rating) ───
+        // ─── Info chips (language, stars, tech stacks, last pushed) ───
         item {
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(8.dp))
             Row(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -148,18 +240,10 @@ fun RepoDetailScreen(
                 lastPushedFormatted?.let {
                     InfoChip("Cập nhật $it", CosmicTheme.colors.textTertiary)
                 }
-                val avgRating = socialInfo?.averageRating ?: 0.0
-                if (avgRating > 0) {
-                    InfoChip("\u2605 ${"%.1f".format(avgRating)}", CosmicTheme.colors.supernova)
-                }
-                val rCount = socialInfo?.reviews?.size ?: 0
-                if (rCount > 0) {
-                    InfoChip("$rCount reviews", CosmicTheme.colors.plasma)
-                }
             }
         }
 
-        // ─── GitHub button ───
+        // ─── GitHub button (under title) ───
         item {
             Spacer(Modifier.height(12.dp))
             Button(
@@ -176,65 +260,106 @@ fun RepoDetailScreen(
             }
         }
 
-        // ─── README excerpt ───
-        item {
-            Spacer(Modifier.height(16.dp))
-            SectionCard(title = "README") {
-                if (!repo.readmeExcerpt.isNullOrBlank()) {
-                    Text(text = repo.readmeExcerpt, style = CosmicTheme.typography.body, color = CosmicTheme.colors.textSecondary)
-                } else {
-                    Text(text = "Chưa có README", style = CosmicTheme.typography.label, color = CosmicTheme.colors.textTertiary)
+        // ─── Quick summary ───
+        item { Spacer(Modifier.height(12.dp))
+        SectionCard(title = "Tổng quan") { MarkdownContent(quickSummary) } }
+
+        // ─── Usefulness + type + ready badges ───
+        if (repoTypeLabel != null || usefulnessLabel != null || readyLabel != null) {
+            item { Spacer(Modifier.height(8.dp))
+            Row(modifier = Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                repoTypeLabel?.let { InfoChip(it, CosmicTheme.colors.textTertiary) }
+                usefulnessLabel?.let {
+                    val c = when (repo.usefulnessRating) {
+                        "excellent", "good", "highly_recommended", "recommended" -> CosmicTheme.colors.aurora
+                        "average", "selective" -> CosmicTheme.colors.plasma
+                        else -> CosmicTheme.colors.supernova
+                    }
+                    InfoChip(it, c)
                 }
-            }
+                readyLabel?.let {
+                    val c = when (repo.readyToUseLevel) {
+                        "very_ready", "ready" -> CosmicTheme.colors.aurora
+                        "needs_check" -> CosmicTheme.colors.plasma
+                        else -> CosmicTheme.colors.supernova
+                    }
+                    InfoChip(it, c)
+                }
+            } }
         }
 
-        // ─── File tree / directory structure ───
-        item {
-            Spacer(Modifier.height(12.dp))
-            SectionCard(title = "Cấu trúc thư mục") {
-                if (!repo.fileTree.isNullOrBlank()) {
-                    val lines = repo.fileTree.lines()
-                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        lines.forEach { line ->
-                            Text(
-                                text = line,
-                                style = CosmicTheme.typography.label.copy(fontSize = 12.sp),
-                                color = CosmicTheme.colors.textSecondary,
-                                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
-                            )
+        // ─── Công nghệ / công cụ ───
+        if (techTools.isNotEmpty()) {
+            item { Spacer(Modifier.height(8.dp))
+            SectionCard(title = "Công nghệ / công cụ") {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    techTools.forEach { InfoChip(it, CosmicTheme.colors.plasma) }
+                }
+            } }
+        }
+
+        // ─── Chủ đề chính ───
+        if (coreTopics.isNotEmpty()) {
+            item { Spacer(Modifier.height(8.dp))
+            SectionCard(title = "Chủ đề chính") {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    coreTopics.forEach { InfoChip(it, CosmicTheme.colors.aurora) }
+                }
+            } }
+        }
+
+        // ─── Điểm mạnh / Điểm yếu ───
+        if (strengths.isNotEmpty() || weaknesses.isNotEmpty()) {
+            item { Spacer(Modifier.height(8.dp))
+            Surface(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                shape = RoundedCornerShape(14.dp),
+                color = CosmicTheme.colors.nebula,
+                border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    if (strengths.isNotEmpty()) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(modifier = Modifier.size(8.dp).background(CosmicTheme.colors.aurora, RoundedCornerShape(4.dp)))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Điểm mạnh", style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold), color = CosmicTheme.colors.aurora)
                         }
+                        Spacer(Modifier.height(6.dp))
+                        strengths.forEach { Text("• $it", style = CosmicTheme.typography.body, color = CosmicTheme.colors.textSecondary) }
                     }
-                } else {
-                    Text(text = "Chưa có thông tin cấu trúc", style = CosmicTheme.typography.label, color = CosmicTheme.colors.textTertiary)
-                }
-            }
-        }
-
-        // ─── AI loading ───
-        if (aiLoading) {
-            item {
-                Spacer(Modifier.height(16.dp))
-                Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        CircularProgressIndicator(color = CosmicTheme.colors.plasma, strokeWidth = 2.dp, modifier = Modifier.size(24.dp))
-                        Spacer(Modifier.height(8.dp))
-                        Text("AI đang phân tích...", style = CosmicTheme.typography.label, color = CosmicTheme.colors.textTertiary)
+                    if (weaknesses.isNotEmpty()) {
+                        Spacer(Modifier.height(12.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(modifier = Modifier.size(8.dp).background(CosmicTheme.colors.supernova, RoundedCornerShape(4.dp)))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Điểm yếu", style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold), color = CosmicTheme.colors.supernova)
+                        }
+                        Spacer(Modifier.height(6.dp))
+                        weaknesses.forEach { Text("• $it", style = CosmicTheme.typography.body, color = CosmicTheme.colors.textSecondary) }
                     }
                 }
+            } }
+        }
+
+        // ─── Hành động tiếp theo ───
+        item { Spacer(Modifier.height(8.dp))
+        Surface(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            shape = RoundedCornerShape(14.dp),
+            color = CosmicTheme.colors.nebula,
+            border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text("Hành động tiếp theo", style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold), color = CosmicTheme.colors.textPrimary)
+                Spacer(Modifier.height(8.dp))
+                nextActions.forEachIndexed { i, action ->
+                    Row(verticalAlignment = Alignment.Top) {
+                        Text("${i + 1}.", style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold), color = CosmicTheme.colors.plasma, modifier = Modifier.width(20.dp))
+                        Text(action, style = CosmicTheme.typography.body, color = CosmicTheme.colors.textSecondary)
+                    }
+                }
             }
-        }
-
-        // ─── AI Summary ───
-        item {
-            Spacer(Modifier.height(12.dp))
-            AiSection(title = "Tóm tắt", content = aiSummary?.content, type = aiSummary?.type)
-        }
-
-        // ─── AI Advice ───
-        item {
-            Spacer(Modifier.height(12.dp))
-            AiSection(title = "Lời khuyên", content = aiAdvice?.content, type = aiAdvice?.type)
-        }
+        } }
 
         // ─── Vote buttons + Reviews header ───
         item {
@@ -410,7 +535,7 @@ private fun AiSection(title: String, content: String?, type: String?) {
             MarkdownContent(content)
         } else {
             Text(
-                text = "Đang tải phân tích AI...",
+                text = "Chưa có dữ liệu",
                 style = CosmicTheme.typography.label,
                 color = CosmicTheme.colors.textTertiary
             )
@@ -482,6 +607,31 @@ private fun ReviewItem(review: ReviewResponse) {
                     color = CosmicTheme.colors.textSecondary
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun ScoreBadge(label: String, score: Int, color: Color) {
+    Surface(
+        shape = RoundedCornerShape(10.dp),
+        color = color.copy(alpha = 0.1f),
+        border = BorderStroke(1.dp, color.copy(alpha = 0.3f))
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "$score",
+                style = CosmicTheme.typography.metric.copy(fontSize = 22.sp, fontWeight = FontWeight.Black),
+                color = color
+            )
+            Text(
+                text = label,
+                style = CosmicTheme.typography.label.copy(fontSize = 10.sp),
+                color = CosmicTheme.colors.textTertiary
+            )
         }
     }
 }

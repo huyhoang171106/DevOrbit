@@ -31,6 +31,7 @@ fun CourseDetailScreen(
     videos: List<CourseYoutubePlaylist>,
     articles: List<CourseArticle>,
     bookmarked: Boolean,
+    bookmarkedRepoIds: Set<Long> = emptySet(),
     onBack: () -> Unit,
     onBookmarkClick: () -> Unit,
     onRepoClick: (RepoSummary) -> Unit,
@@ -126,6 +127,7 @@ fun CourseDetailScreen(
                     totalCount = repos.size,
                     availableTechStacks = repoFilterState.availableTechStacks,
                     selectedTechStack = repoFilterState.selectedTechStack,
+                    bookmarkedIds = bookmarkedRepoIds,
                     onTechStackSelected = { stack ->
                         selectedTechStack = repoFilterState.selectTechStack(stack).selectedTechStack
                     },

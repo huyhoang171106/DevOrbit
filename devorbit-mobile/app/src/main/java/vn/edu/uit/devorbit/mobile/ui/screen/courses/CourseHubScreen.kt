@@ -89,6 +89,7 @@ fun CourseHubScreen(
                         videos = videos,
                         articles = articles,
                         bookmarked = selectedCourse!!.id in bookmarkedCourseIds,
+                        bookmarkedRepoIds = bookmarkedRepoIds,
                         onBack = { viewModel.closeCourseDetail() },
                         onBookmarkClick = { viewModel.toggleCourseBookmark(selectedCourse!!) },
                         onRepoClick = { viewModel.openRepo(it) },

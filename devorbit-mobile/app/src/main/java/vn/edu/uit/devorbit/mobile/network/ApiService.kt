@@ -115,6 +115,8 @@ interface ApiService {
     @GET("/api/ai/repo/{repoId}/advice")
     suspend fun getRepoAdvice(@Path("repoId") repoId: Long): AiResponse
 
+
+
     @POST("/api/ai/knowledge-graph/query")
     suspend fun queryKnowledgeGraph(@Body body: Map<String, String>): Map<String, Any>
 

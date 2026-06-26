@@ -115,7 +115,7 @@ public class CourseService {
                 c.name().toLowerCase().contains(q.toLowerCase()) ||
                 c.code().toLowerCase().contains(q.toLowerCase()))
             .filter(c -> subjectType == null || subjectType.isBlank() ||
-                subjectType.equalsIgnoreCase(c.loaiMonHoc()))
+                subjectType.equalsIgnoreCase(normalizeSubjectType(c.loaiMonHoc())))
             .filter(c -> semester == null || semester.equals(c.semester()))
             .filter(c -> managementUnit == null || managementUnit.isBlank() ||
                 managementUnit.equalsIgnoreCase(c.managementUnit()))
@@ -329,6 +329,22 @@ public class CourseService {
         return courseRepository.findById(id)
                 .map(this::mapToDetail)
                 .orElseThrow(() -> new NotFoundException("Course not found with id: " + id));
+    }
+
+    /**
+     * Normalize subject type short codes to canonical long codes.
+     * The database stores legacy short codes, but the filter API uses
+     * long codes like DAI_CUONG, CO_SO, CHUYEN_NGANH.
+     */
+    private String normalizeSubjectType(String value) {
+        if (value == null) return null;
+        return switch (value) {
+            case "ĐC" -> "DAI_CUONG";
+            case "CSNN", "CSN" -> "CO_SO";
+            case "CN" -> "CHUYEN_NGANH";
+            case "BT" -> "BAT_BUOC";
+            default -> value;
+        };
     }
 
     /**

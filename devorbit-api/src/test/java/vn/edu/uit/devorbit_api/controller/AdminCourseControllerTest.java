@@ -44,7 +44,7 @@ class AdminCourseControllerTest {
     @Test
     void shouldCreateCourse() throws Exception {
         AdminCourseUpsertRequest request = new AdminCourseUpsertRequest(
-            "SE104", "Nhap mon Test", null, 3, null, null, "CHUYEN_NGANH", true, null, null, null, null, null, null, null, null, null
+            "SE104", "Nhap mon Test", null, 3, null, null, "CHUYEN_NGANH", true, null, null, null, null, null, null, null, null, null, null
         );
         CourseDetailResponse response = new CourseDetailResponse(
             1L, "SE104", "Nhap mon Test", null, null, null, null, 3, "CHUYEN_NGANH", true, null, null, null, null, null, null, null, null, List.of()
@@ -65,7 +65,7 @@ class AdminCourseControllerTest {
     @Test
     void shouldUpdateCourse() throws Exception {
         AdminCourseUpsertRequest request = new AdminCourseUpsertRequest(
-            "SE104", "Nhap mon Test Updated", null, 3, null, null, "CHUYEN_NGANH", true, null, null, null, null, null, null, null, null, null
+            "SE104", "Nhap mon Test Updated", null, 3, null, null, "CHUYEN_NGANH", true, null, null, null, null, null, null, null, null, null, null
         );
         CourseDetailResponse response = new CourseDetailResponse(
             1L, "SE104", "Nhap mon Test Updated", null, null, null, null, 3, "CHUYEN_NGANH", true, null, null, null, null, null, null, null, null, List.of()

@@ -59,6 +59,7 @@ fun CourseHubScreen(
             userVote = userVote,
             socialLoading = socialLoading,
             onVote = { viewModel.voteRepo(selectedRepo!!.id, it) },
+            onSubmitReview = { rating, comment -> viewModel.submitReview(selectedRepo!!.id, rating, comment) },
             onBack = { viewModel.backFromRepo() }
         )
 

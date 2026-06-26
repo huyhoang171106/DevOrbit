@@ -5,9 +5,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -179,7 +180,8 @@ fun CourseListScreen(
                 CourseListItem(
                     course = course,
                     isBookmarked = course.id in bookmarkedIds,
-                    onClick = { onCourseClick(course) }
+                    onClick = { onCourseClick(course) },
+                    onBookmarkClick = { viewModel.toggleCourseBookmark(course) }
                 )
             }
         }
@@ -208,7 +210,7 @@ private fun formatSubjectType(raw: String?): String? = when (raw) {
 }
 
 @Composable
-fun CourseListItem(course: CourseEntity, isBookmarked: Boolean = false, onClick: () -> Unit) {
+fun CourseListItem(course: CourseEntity, isBookmarked: Boolean = false, onClick: () -> Unit, onBookmarkClick: () -> Unit = {}) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -239,14 +241,16 @@ fun CourseListItem(course: CourseEntity, isBookmarked: Boolean = false, onClick:
                     )
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (isBookmarked) {
+                    IconButton(
+                        onClick = onBookmarkClick,
+                        modifier = Modifier.size(32.dp)
+                    ) {
                         Icon(
-                            imageVector = Icons.Rounded.Star,
-                            contentDescription = "Da luu",
-                            tint = CosmicTheme.colors.plasma,
-                            modifier = Modifier.size(16.dp)
+                            imageVector = Icons.Filled.Star,
+                            contentDescription = if (isBookmarked) "Bỏ lưu" else "Lưu",
+                            tint = if (isBookmarked) CosmicTheme.colors.plasma else CosmicTheme.colors.textTertiary.copy(alpha = 0.4f),
+                            modifier = Modifier.size(18.dp)
                         )
-                        Spacer(Modifier.width(4.dp))
                     }
                     Text(
                         text = "${course.credits} TC",

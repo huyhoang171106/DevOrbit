@@ -104,7 +104,7 @@ fun RepoListSection(
                                 )
                             }
                         }
-                        repo.techStacks.take(2).forEach { stack ->
+                        repo.techStacks.filter { it.name != repo.primaryLanguage }.take(2).forEach { stack ->
                             if (!stack.name.isNullOrBlank()) {
                                 Surface(
                                     shape = RoundedCornerShape(6.dp),

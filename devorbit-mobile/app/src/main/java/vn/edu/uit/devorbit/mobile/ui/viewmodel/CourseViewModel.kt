@@ -246,9 +246,6 @@ class CourseViewModel @Inject constructor(
     private fun loadRepoSocialInfo(repoId: Long) {
         viewModelScope.launch {
             _socialLoading.value = true
-            _repoSocialInfo.value = null
-            _userReview.value = null
-            _userVote.value = 0
             try {
                 val info = repository.getRepoSocialInfo(repoId)
                 _repoSocialInfo.value = info
@@ -258,12 +255,49 @@ class CourseViewModel @Inject constructor(
     }
 
     fun submitReview(repoId: Long, rating: Int, comment: String?) {
+        val optimisticReview = ReviewResponse(
+            id = -(System.currentTimeMillis()),
+            targetId = repoId,
+            studentId = 0,
+            studentName = "Bạn",
+            rating = rating,
+            comment = comment,
+            createdAt = null,
+            updatedAt = null
+        )
+        val previousInfo = _repoSocialInfo.value
+        // Build new social info with optimistically added review
+        _repoSocialInfo.value = if (previousInfo != null) {
+            previousInfo.copy(
+                reviews = previousInfo.reviews + optimisticReview,
+                averageRating = (previousInfo.averageRating * previousInfo.reviews.size + rating) / (previousInfo.reviews.size + 1)
+            )
+        } else {
+            RepoSocialInfoResponse(
+                repoId = repoId,
+                voteScore = 0,
+                averageRating = rating.toDouble(),
+                reviews = listOf(optimisticReview)
+            )
+        }
+        _userReview.value = optimisticReview
+
         viewModelScope.launch {
             try {
                 val review = repository.submitRepoReview(repoId, rating, comment)
+                // Replace optimistic review with real one from server
+                val current = _repoSocialInfo.value
+                if (current != null) {
+                    val updated = current.reviews.map { if (it.id == optimisticReview.id) review else it }
+                    _repoSocialInfo.value = current.copy(reviews = updated)
+                }
                 _userReview.value = review
                 loadRepoSocialInfo(repoId)
-            } catch (_: Exception) {}
+            } catch (_: Exception) {
+                // Revert optimistic update on failure
+                _repoSocialInfo.value = previousInfo
+                _userReview.value = null
+            }
         }
     }
 

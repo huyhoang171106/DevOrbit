@@ -2,12 +2,14 @@ package vn.edu.uit.devorbit.mobile.ui
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.rounded.DateRange
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.*
@@ -17,6 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import vn.edu.uit.devorbit.mobile.data.local.entity.CourseEntity
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseArticle
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseTutorial
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseYoutubePlaylist
@@ -25,7 +29,7 @@ import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 
 @Composable
 fun CourseDetailScreen(
-    courseName: String,
+    course: CourseEntity,
     repos: List<RepoSummary>,
     tutorials: List<CourseTutorial>,
     videos: List<CourseYoutubePlaylist>,
@@ -66,31 +70,35 @@ fun CourseDetailScreen(
         }
 
         Text(
-            text = courseName,
+            text = course.tenMH,
             style = CosmicTheme.typography.display,
             color = CosmicTheme.colors.textPrimary,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
 
-        Spacer(Modifier.height(8.dp))
-
-        Button(
-            onClick = onCreatePlan,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = CosmicTheme.colors.aurora
-            )
-        ) {
-            Icon(
-                Icons.Rounded.DateRange,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp)
-            )
-            Spacer(Modifier.width(8.dp))
-            Text("Tao ke hoach hoc mon nay")
+        // Course description (tổng quan)
+        if (!course.description.isNullOrBlank()) {
+            Spacer(Modifier.height(10.dp))
+            Surface(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                shape = RoundedCornerShape(14.dp),
+                color = CosmicTheme.colors.nebula,
+                border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Filled.AutoAwesome, contentDescription = null, tint = CosmicTheme.colors.plasma, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("Tổng quan", style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold), color = CosmicTheme.colors.textPrimary)
+                    }
+                    Spacer(Modifier.height(10.dp))
+                    Text(
+                        text = course.description.cleanFormatting(),
+                        style = CosmicTheme.typography.body,
+                        color = CosmicTheme.colors.textSecondary
+                    )
+                }
+            }
         }
 
         Spacer(Modifier.height(12.dp))
@@ -194,4 +202,15 @@ fun <T> KnowledgeList(items: List<T>, onClick: (T) -> Unit) {
             }
         }
     }
+}
+
+fun String.cleanFormatting(): String {
+    return replace("\r\n", "\n")
+        .replace(Regex("\n{3,}"), "\n\n")
+        .split("\n\n")
+        .joinToString("\n\n") { para ->
+            para.replace("\n", " ")
+                .replace(Regex("\\s+"), " ")
+                .trim()
+        }
 }

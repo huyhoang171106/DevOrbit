@@ -83,7 +83,7 @@ fun CourseHubScreen(
                         )
                     }
                     CourseDetailScreen(
-                        courseName = selectedCourse!!.tenMH,
+                        course = selectedCourse!!,
                         repos = repos,
                         tutorials = tutorials,
                         videos = videos,

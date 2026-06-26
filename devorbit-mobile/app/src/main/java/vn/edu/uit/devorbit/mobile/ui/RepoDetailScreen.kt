@@ -290,10 +290,6 @@ fun RepoDetailScreen(
             }
         }
 
-        // ─── Quick summary ───
-        item { Spacer(Modifier.height(12.dp))
-        SectionCard(title = "Tổng quan") { MarkdownContent(quickSummary) } }
-
         // ─── Thông tin repo ───
         item { Spacer(Modifier.height(8.dp))
         Surface(

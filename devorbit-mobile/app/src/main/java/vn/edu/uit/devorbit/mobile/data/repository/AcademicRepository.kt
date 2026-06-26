@@ -59,7 +59,7 @@ class AcademicRepository @Inject constructor(
                     maMH = it.code,
                     tenMH = it.name,
                     credits = it.credits,
-                    description = "",
+                    description = it.description.orEmpty(),
                     semester = it.semester,
                     loaiMonHoc = it.loaiMonHoc
                 )

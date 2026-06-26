@@ -11,6 +11,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.Code
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,6 +26,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import vn.edu.uit.devorbit.mobile.domain.repository.Bookmark
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.ProfileViewModel
 
@@ -119,15 +122,18 @@ fun ProfileScreen(
             }
         }
 
-        // Bookmarks section
+        // Bookmarks — Courses
+        val courseBookmarks = state.bookmarks.filter { it.targetType == "COURSE" }
+        val repoBookmarks = state.bookmarks.filter { it.targetType == "REPO" }
+
         item {
-            Text(
-                "Môn đã lưu",
-                style = CosmicTheme.typography.command,
-                color = CosmicTheme.colors.textTertiary
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Rounded.Star, contentDescription = null, tint = CosmicTheme.colors.plasma, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Môn đã lưu (${courseBookmarks.size})", style = CosmicTheme.typography.command, color = CosmicTheme.colors.textTertiary)
+            }
         }
-        if (state.bookmarks.isEmpty()) {
+        if (courseBookmarks.isEmpty()) {
             item {
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
@@ -135,61 +141,40 @@ fun ProfileScreen(
                     color = CosmicTheme.colors.nebula,
                     border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
                 ) {
-                    Column(
-                        modifier = Modifier.padding(20.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            "Chưa có bookmark nào",
-                            style = CosmicTheme.typography.body,
-                            color = CosmicTheme.colors.textSecondary
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            "Lưu môn học từ tab Môn học để xem lại sau",
-                            style = CosmicTheme.typography.label,
-                            color = CosmicTheme.colors.textTertiary
-                        )
+                    Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Chưa có môn nào", style = CosmicTheme.typography.label, color = CosmicTheme.colors.textTertiary)
                     }
                 }
             }
         }
-        items(state.bookmarks) { bookmark ->
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                color = CosmicTheme.colors.nebula,
-                border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+        items(courseBookmarks, key = { it.id }) { bookmark ->
+            BookmarkRow(bookmark = bookmark, onRemove = { viewModel.removeBookmark(bookmark.id) })
+        }
+
+        item { Spacer(Modifier.height(8.dp)) }
+        item {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Rounded.Code, contentDescription = null, tint = CosmicTheme.colors.plasma, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Repo đã lưu (${repoBookmarks.size})", style = CosmicTheme.typography.command, color = CosmicTheme.colors.textTertiary)
+            }
+        }
+        if (repoBookmarks.isEmpty()) {
+            item {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    color = CosmicTheme.colors.nebula,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            bookmark.title,
-                            style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Medium),
-                            color = CosmicTheme.colors.textPrimary
-                        )
-                        Text(
-                            bookmark.targetType,
-                            style = CosmicTheme.typography.label,
-                            color = CosmicTheme.colors.textTertiary
-                        )
-                    }
-                    IconButton(onClick = { viewModel.removeBookmark(bookmark.id) }) {
-                        Icon(
-                            Icons.Filled.Favorite,
-                            contentDescription = "Bỏ lưu",
-                            tint = CosmicTheme.colors.plasma,
-                            modifier = Modifier.size(20.dp)
-                        )
+                    Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Chưa có repo nào", style = CosmicTheme.typography.label, color = CosmicTheme.colors.textTertiary)
                     }
                 }
             }
+        }
+        items(repoBookmarks, key = { it.id }) { bookmark ->
+            BookmarkRow(bookmark = bookmark, onRemove = { viewModel.removeBookmark(bookmark.id) })
         }
 
         // Settings section
@@ -255,6 +240,29 @@ fun ProfileScreen(
                         fontWeight = FontWeight.SemiBold
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun BookmarkRow(bookmark: Bookmark, onRemove: () -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = CosmicTheme.colors.nebula,
+        border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(bookmark.title, style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Medium), color = CosmicTheme.colors.textPrimary)
+            }
+            IconButton(onClick = onRemove) {
+                Icon(Icons.Filled.Favorite, contentDescription = "Bỏ lưu", tint = CosmicTheme.colors.plasma, modifier = Modifier.size(20.dp))
             }
         }
     }

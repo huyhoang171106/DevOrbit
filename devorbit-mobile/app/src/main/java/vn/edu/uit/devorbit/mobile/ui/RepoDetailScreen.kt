@@ -14,7 +14,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BookmarkAdd
 import androidx.compose.material.icons.filled.BookmarkRemove
+import androidx.compose.material.icons.filled.CallSplit
+import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.OpenInNew
 import androidx.compose.material.icons.rounded.ThumbDown
@@ -26,6 +31,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -69,15 +75,34 @@ fun RepoDetailScreen(
         repo.techStacks.filter { it.name != repo.primaryLanguage }
     }
 
-    val lastPushedFormatted = remember(repo.lastPushedAt) {
-        repo.lastPushedAt?.let { raw ->
-            try {
-                val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
-                val date = parser.parse(raw.take(19))
-                val fmt = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                fmt.format(date!!)
-            } catch (_: Exception) { null }
-        }
+    fun formatRelativeTime(isoDate: String?): String {
+        if (isoDate == null) return "Vừa xong"
+        return try {
+            val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+            val date = parser.parse(isoDate.take(19))
+            val now = System.currentTimeMillis()
+            val diff = now - date!!.time
+            val seconds = diff / 1000
+            val minutes = seconds / 60
+            val hours = minutes / 60
+            val days = hours / 24
+            val weeks = days / 7
+            val months = days / 30
+            val years = days / 365
+            when {
+                years > 0 -> "${years} năm trước"
+                months > 0 -> "${months} tháng trước"
+                weeks > 0 -> "${weeks} tuần trước"
+                days > 0 -> "${days} ngày trước"
+                hours > 0 -> "${hours} giờ trước"
+                minutes > 0 -> "${minutes} phút trước"
+                else -> "Vừa xong"
+            }
+        } catch (_: Exception) { "Vừa xong" }
+    }
+
+    val relativeTime = remember(repo.lastPushedAt, repo.approvedAt) {
+        formatRelativeTime(repo.lastPushedAt ?: repo.approvedAt)
     }
 
     // ─── Analysis computations (computed from repo data, no API needed) ───
@@ -124,6 +149,14 @@ fun RepoDetailScreen(
     val hasFileTree = !repo.fileTree.isNullOrBlank()
     val starCount = repo.stars ?: 0
     val lang = repo.primaryLanguage.orEmpty()
+
+    // Parse owner from githubUrl: https://github.com/owner/repo-name
+    val repoOwner = remember(repo.githubUrl) {
+        try {
+            val parts = repo.githubUrl?.trimEnd('/')?.split("/")
+            if (parts != null && parts.size >= 4) parts[3] else null
+        } catch (_: Exception) { null }
+    }
 
     val techTools = remember(repo) {
         buildList {
@@ -237,9 +270,6 @@ fun RepoDetailScreen(
                         InfoChip(tech.name, CosmicTheme.colors.plasma)
                     }
                 }
-                lastPushedFormatted?.let {
-                    InfoChip("Cập nhật $it", CosmicTheme.colors.textTertiary)
-                }
             }
         }
 
@@ -264,29 +294,43 @@ fun RepoDetailScreen(
         item { Spacer(Modifier.height(12.dp))
         SectionCard(title = "Tổng quan") { MarkdownContent(quickSummary) } }
 
-        // ─── Usefulness + type + ready badges ───
-        if (repoTypeLabel != null || usefulnessLabel != null || readyLabel != null) {
-            item { Spacer(Modifier.height(8.dp))
-            Row(modifier = Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                repoTypeLabel?.let { InfoChip(it, CosmicTheme.colors.textTertiary) }
-                usefulnessLabel?.let {
-                    val c = when (repo.usefulnessRating) {
-                        "excellent", "good", "highly_recommended", "recommended" -> CosmicTheme.colors.aurora
-                        "average", "selective" -> CosmicTheme.colors.plasma
-                        else -> CosmicTheme.colors.supernova
+        // ─── Thông tin repo ───
+        item { Spacer(Modifier.height(8.dp))
+        Surface(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            shape = RoundedCornerShape(14.dp),
+            color = CosmicTheme.colors.nebula,
+            border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text("Thông tin repo", style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold), color = CosmicTheme.colors.textPrimary)
+                Spacer(Modifier.height(12.dp))
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        MetaRow(Icons.Filled.Person, repoOwner ?: "—")
+                        Spacer(Modifier.height(10.dp))
+                        MetaRow(Icons.Filled.Code, lang.ifBlank { "—" })
                     }
-                    InfoChip(it, c)
-                }
-                readyLabel?.let {
-                    val c = when (repo.readyToUseLevel) {
-                        "very_ready", "ready" -> CosmicTheme.colors.aurora
-                        "needs_check" -> CosmicTheme.colors.plasma
-                        else -> CosmicTheme.colors.supernova
+                    Spacer(Modifier.width(16.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        MetaRow(Icons.Filled.Star, "$starCount")
+                        Spacer(Modifier.height(10.dp))
+                        MetaRow(Icons.Filled.CallSplit, repo.forkCount?.toString() ?: "—")
+                        Spacer(Modifier.height(10.dp))
+                        MetaRow(Icons.Filled.Description, repo.license ?: "—")
                     }
-                    InfoChip(it, c)
                 }
-            } }
-        }
+                Spacer(Modifier.height(12.dp))
+                HorizontalDivider(color = CosmicTheme.colors.glassBorder.copy(alpha = 0.3f))
+                Spacer(Modifier.height(10.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Filled.Update, contentDescription = null, tint = CosmicTheme.colors.textTertiary, modifier = Modifier.size(14.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("Cập nhật lần cuối: ", style = CosmicTheme.typography.label, color = CosmicTheme.colors.textTertiary)
+                    Text(relativeTime, style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Medium), color = CosmicTheme.colors.textPrimary)
+                }
+            }
+        } }
 
         // ─── Công nghệ / công cụ ───
         if (techTools.isNotEmpty()) {
@@ -608,6 +652,23 @@ private fun ReviewItem(review: ReviewResponse) {
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun MetaRow(icon: ImageVector, value: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(icon, contentDescription = null, tint = CosmicTheme.colors.textTertiary, modifier = Modifier.size(16.dp))
+        Spacer(Modifier.width(8.dp))
+        Text(value, style = CosmicTheme.typography.body, color = CosmicTheme.colors.textPrimary)
+    }
+}
+
+@Composable
+private fun InfoRow(label: String, value: String) {
+    Row(modifier = Modifier.padding(bottom = 6.dp)) {
+        Text(text = "$label: ", style = CosmicTheme.typography.label, color = CosmicTheme.colors.textTertiary)
+        Text(text = value, style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Medium), color = CosmicTheme.colors.textPrimary)
     }
 }
 

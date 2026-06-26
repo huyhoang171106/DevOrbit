@@ -25,7 +25,11 @@ import vn.edu.uit.devorbit.mobile.domain.repository.Bookmark
 import vn.edu.uit.devorbit.mobile.domain.repository.BookmarkRepository
 import vn.edu.uit.devorbit.mobile.ui.screen.courses.CourseHubNavigationState
 import vn.edu.uit.devorbit.mobile.ui.screen.courses.CourseSearchFilterState
+import java.net.HttpURLConnection
+import java.net.URL
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @HiltViewModel
 class CourseViewModel @Inject constructor(
@@ -173,6 +177,44 @@ class CourseViewModel @Inject constructor(
         _courseHubNavigationState.value = _courseHubNavigationState.value.openRepo(repo.id)
         loadRepoAiData(repo.id)
         loadRepoSocialInfo(repo.id)
+        if (repo.lastPushedAt == null) {
+            fetchGithubPushedAt(repo)
+        }
+    }
+
+    private fun fetchGithubPushedAt(repo: RepoSummary) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val (owner, name) = parseGithubSlug(repo.githubUrl) ?: return@launch
+                val url = URL("https://api.github.com/repos/$owner/$name")
+                val conn = url.openConnection() as HttpURLConnection
+                conn.requestMethod = "GET"
+                conn.setRequestProperty("Accept", "application/vnd.github+json")
+                conn.connectTimeout = 5000
+                conn.readTimeout = 5000
+                val code = conn.responseCode
+                if (code == 200) {
+                    val json = conn.inputStream.bufferedReader().readText()
+                    val obj = org.json.JSONObject(json)
+                    val pushedAt = obj.optString("pushed_at", null) ?: obj.optString("updated_at", null)
+                    if (pushedAt != null) {
+                        withContext(Dispatchers.Main) {
+                            _selectedRepo.value = repo.copy(lastPushedAt = pushedAt)
+                        }
+                    }
+                }
+                conn.disconnect()
+            } catch (_: Exception) { }
+        }
+    }
+
+    private fun parseGithubSlug(url: String?): Pair<String, String>? {
+        if (url == null) return null
+        val regex = Regex("github\\.com/([^/]+)/([^/?#]+)")
+        val match = regex.find(url) ?: return null
+        val owner = match.groupValues[1]
+        val name = match.groupValues[2].replace(Regex("\\.git$"), "")
+        return Pair(owner, name)
     }
 
     fun backFromRepo() {

@@ -19,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import vn.edu.uit.devorbit.mobile.data.local.entity.CourseEntity
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseArticle
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseTutorial
@@ -49,159 +48,160 @@ fun CourseDetailScreen(
         RepoFilterState(repos = repos, selectedTechStack = selectedTechStack)
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 8.dp, end = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            TextButton(onClick = onBack) {
-                Text("< Mon hoc", color = CosmicTheme.colors.textSecondary)
-            }
-            IconButton(onClick = onBookmarkClick) {
-                Icon(
-                    imageVector = Icons.Rounded.Star,
-                    contentDescription = "Luu mon hoc",
-                    tint = if (bookmarked) CosmicTheme.colors.plasma else CosmicTheme.colors.textTertiary
-                )
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
+        // Header
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(onClick = onBack) { Text("< Mon hoc", color = CosmicTheme.colors.textSecondary) }
+                IconButton(onClick = onBookmarkClick) {
+                    Icon(Icons.Rounded.Star, contentDescription = "Luu mon hoc",
+                        tint = if (bookmarked) CosmicTheme.colors.plasma else CosmicTheme.colors.textTertiary)
+                }
             }
         }
 
-        Text(
-            text = course.tenMH,
-            style = CosmicTheme.typography.display,
-            color = CosmicTheme.colors.textPrimary,
-            modifier = Modifier.padding(horizontal = 16.dp)
-        )
+        // Course name
+        item {
+            Text(text = course.tenMH, style = CosmicTheme.typography.display, color = CosmicTheme.colors.textPrimary,
+                modifier = Modifier.padding(horizontal = 16.dp))
+        }
 
-        // Course description (tổng quan)
+        // Description
         if (!course.description.isNullOrBlank()) {
-            Spacer(Modifier.height(10.dp))
-            Surface(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                shape = RoundedCornerShape(14.dp),
-                color = CosmicTheme.colors.nebula,
-                border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Filled.AutoAwesome, contentDescription = null, tint = CosmicTheme.colors.plasma, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text("Tổng quan", style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold), color = CosmicTheme.colors.textPrimary)
+            item { Spacer(Modifier.height(8.dp)) }
+            item {
+                Surface(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    color = CosmicTheme.colors.nebula,
+                    border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Filled.AutoAwesome, contentDescription = null, tint = CosmicTheme.colors.plasma, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Tổng quan", style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold), color = CosmicTheme.colors.textPrimary)
+                        }
+                        Spacer(Modifier.height(8.dp))
+                        Text(text = course.description.cleanFormatting(), style = CosmicTheme.typography.body, color = CosmicTheme.colors.textSecondary)
                     }
-                    Spacer(Modifier.height(10.dp))
-                    Text(
-                        text = course.description.cleanFormatting(),
-                        style = CosmicTheme.typography.body,
-                        color = CosmicTheme.colors.textSecondary
+                }
+            }
+        }
+
+        // Tabs
+        item { Spacer(Modifier.height(8.dp)) }
+        item {
+            ScrollableTabRow(
+                selectedTabIndex = selectedTabIndex,
+                containerColor = CosmicTheme.colors.void,
+                contentColor = CosmicTheme.colors.plasma,
+                edgePadding = 16.dp,
+                divider = { Divider(color = CosmicTheme.colors.glassBorder, thickness = 1.dp) }
+            ) {
+                tabs.forEachIndexed { index, title ->
+                    Tab(
+                        selected = selectedTabIndex == index,
+                        onClick = { selectedTabIndex = index },
+                        text = { Text(title, style = CosmicTheme.typography.label.copy(
+                            fontWeight = if (selectedTabIndex == index) FontWeight.Bold else FontWeight.Medium),
+                            color = if (selectedTabIndex == index) CosmicTheme.colors.plasma else CosmicTheme.colors.textTertiary) }
                     )
                 }
             }
         }
 
-        Spacer(Modifier.height(12.dp))
-
-        ScrollableTabRow(
-            selectedTabIndex = selectedTabIndex,
-            containerColor = CosmicTheme.colors.void,
-            contentColor = CosmicTheme.colors.plasma,
-            edgePadding = 16.dp,
-            divider = { Divider(color = CosmicTheme.colors.glassBorder, thickness = 1.dp) }
-        ) {
-            tabs.forEachIndexed { index, title ->
-                Tab(
-                    selected = selectedTabIndex == index,
-                    onClick = { selectedTabIndex = index },
-                    text = {
-                        Text(
-                            title,
-                            style = CosmicTheme.typography.label.copy(
-                                fontWeight = if (selectedTabIndex == index) FontWeight.Bold else FontWeight.Medium
-                            ),
-                            color = if (selectedTabIndex == index) CosmicTheme.colors.plasma else CosmicTheme.colors.textTertiary
-                        )
+        // Tab content
+        when (selectedTabIndex) {
+            0 -> {
+                // Repo items directly in LazyColumn
+                items(repoFilterState.filteredRepos, key = { it.id }) { repo ->
+                    Surface(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).clickable { onRepoClick(repo) },
+                        shape = RoundedCornerShape(14.dp),
+                        color = CosmicTheme.colors.nebula,
+                        border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(text = repo.displayName.orEmpty(), style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
+                                    color = CosmicTheme.colors.textPrimary, modifier = Modifier.weight(1f))
+                                if (repo.id in bookmarkedRepoIds) {
+                                    Icon(Icons.Rounded.Star, contentDescription = "Da luu", tint = CosmicTheme.colors.plasma, modifier = Modifier.size(16.dp))
+                                }
+                            }
+                            if (!repo.description.isNullOrBlank()) {
+                                Spacer(Modifier.height(4.dp))
+                                Text(text = repo.description, style = CosmicTheme.typography.label, color = CosmicTheme.colors.textSecondary, maxLines = 2)
+                            }
+                            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.padding(top = 8.dp)) {
+                                if (!repo.primaryLanguage.isNullOrBlank()) {
+                                    Surface(shape = RoundedCornerShape(6.dp), color = CosmicTheme.colors.plasma.copy(alpha = 0.12f)) {
+                                        Text(repo.primaryLanguage, modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp), style = CosmicTheme.typography.label, color = CosmicTheme.colors.plasma)
+                                    }
+                                }
+                                repo.techStacks.filter { it.name != repo.primaryLanguage }.take(2).forEach { stack ->
+                                    if (!stack.name.isNullOrBlank()) {
+                                        Surface(shape = RoundedCornerShape(6.dp), color = CosmicTheme.colors.nebula, border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)) {
+                                            Text(stack.name, modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp), style = CosmicTheme.typography.label, color = CosmicTheme.colors.textSecondary)
+                                        }
+                                    }
+                                }
+                                val avg = repo.averageRating
+                                val rCount = repo.reviewCount
+                                if (avg != null && avg > 0) {
+                                    Surface(shape = RoundedCornerShape(6.dp), color = CosmicTheme.colors.supernova.copy(alpha = 0.12f)) {
+                                        Text("\u2605 ${"%.1f".format(avg)}", modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp), style = CosmicTheme.typography.label, color = CosmicTheme.colors.supernova)
+                                    }
+                                }
+                                if (rCount != null && rCount > 0) {
+                                    Surface(shape = RoundedCornerShape(6.dp), color = CosmicTheme.colors.plasma.copy(alpha = 0.12f)) {
+                                        Text("$rCount reviews", modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp), style = CosmicTheme.typography.label, color = CosmicTheme.colors.plasma)
+                                    }
+                                }
+                            }
+                        }
                     }
-                )
+                    Spacer(Modifier.height(8.dp))
+                }
+            }
+            1 -> items(tutorials) { tut ->
+                KnowledgeItem(title = tut.title, subtitle = tut.description ?: "Bai viet", onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(tut.url))) })
+            }
+            2 -> items(videos) { vid ->
+                KnowledgeItem(title = vid.title, subtitle = "YouTube Playlist", onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(vid.playlistUrl))) })
+            }
+            3 -> items(articles) { art ->
+                KnowledgeItem(title = art.title, subtitle = "boi ${art.author ?: "Khong ro"}", onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(art.url))) })
             }
         }
 
-        Box(modifier = Modifier.weight(1f)) {
-            when (selectedTabIndex) {
-                0 -> RepoListSection(
-                    repos = repoFilterState.filteredRepos,
-                    resultCount = repoFilterState.filteredRepos.size,
-                    totalCount = repos.size,
-                    availableTechStacks = repoFilterState.availableTechStacks,
-                    selectedTechStack = repoFilterState.selectedTechStack,
-                    bookmarkedIds = bookmarkedRepoIds,
-                    onTechStackSelected = { stack ->
-                        selectedTechStack = repoFilterState.selectTechStack(stack).selectedTechStack
-                    },
-                    onRepoClick = onRepoClick
-                )
-                1 -> KnowledgeList(tutorials) {
-                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it.url)))
-                }
-                2 -> KnowledgeList(videos) {
-                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it.playlistUrl)))
-                }
-                3 -> KnowledgeList(articles) {
-                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it.url)))
-                }
-            }
-        }
+        // Bottom spacer
+        item { Spacer(Modifier.height(80.dp)) }
     }
 }
 
 @Composable
-fun <T> KnowledgeList(items: List<T>, onClick: (T) -> Unit) {
-    LazyColumn(
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-        modifier = Modifier.fillMaxSize()
+private fun KnowledgeItem(title: String, subtitle: String, onClick: () -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).clickable(onClick = onClick),
+        shape = RoundedCornerShape(14.dp),
+        color = CosmicTheme.colors.nebula,
+        border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
     ) {
-        items(items) { item ->
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onClick(item) },
-                shape = RoundedCornerShape(14.dp),
-                color = CosmicTheme.colors.nebula,
-                border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    val title = when (item) {
-                        is CourseTutorial -> item.title
-                        is CourseYoutubePlaylist -> item.title
-                        is CourseArticle -> item.title
-                        else -> ""
-                    }
-                    val subtitle = when (item) {
-                        is CourseTutorial -> item.description ?: "Bai viet"
-                        is CourseYoutubePlaylist -> "YouTube Playlist"
-                        is CourseArticle -> "boi ${item.author ?: "Khong ro"}"
-                        else -> ""
-                    }
-
-                    Text(
-                        title,
-                        style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
-                        color = CosmicTheme.colors.textPrimary
-                    )
-                    if (subtitle.isNotBlank()) {
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            subtitle,
-                            style = CosmicTheme.typography.label,
-                            color = CosmicTheme.colors.textTertiary
-                        )
-                    }
-                }
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(title, style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.SemiBold), color = CosmicTheme.colors.textPrimary)
+            if (subtitle.isNotBlank()) {
+                Spacer(Modifier.height(2.dp))
+                Text(subtitle, style = CosmicTheme.typography.label, color = CosmicTheme.colors.textTertiary)
             }
         }
     }
+    Spacer(Modifier.height(8.dp))
 }
 
 fun String.cleanFormatting(): String {

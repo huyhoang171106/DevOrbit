@@ -1,5 +1,6 @@
 package vn.edu.uit.devorbit.mobile.ui.screen.plan
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -30,6 +31,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import vn.edu.uit.devorbit.mobile.data.remote.dto.GroupPlanMemberResponse
 import vn.edu.uit.devorbit.mobile.data.remote.dto.GroupTaskResponse
+import vn.edu.uit.devorbit.mobile.ui.components.MonthTaskGrid
+import vn.edu.uit.devorbit.mobile.ui.components.WeekTaskGrid
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.GroupPlanViewModel
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.TaskFilter
@@ -44,6 +47,7 @@ fun GroupPlanDetailScreen(
 ) {
     val state by viewModel.detail.collectAsStateWithLifecycle()
     var showAddTaskSheet by remember { mutableStateOf(false) }
+    var editingTask by remember { mutableStateOf<GroupTaskResponse?>(null) }
     var showInviteDialog by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
     var showLeaveDialog by remember { mutableStateOf(false) }
@@ -566,77 +570,260 @@ fun GroupPlanDetailScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // ── Task list ──
+        // ── Task content ──
         val nowDate = java.time.LocalDate.now()
-        val startOfWeek = nowDate.with(java.time.DayOfWeek.MONDAY)
-        val endOfWeek = startOfWeek.plusDays(6)
 
-        val filteredTasks = state.tasks
-            .filter { task ->
-                val matchTab = if (selectedTab == 0) !task.completed else task.completed
-                val matchMember = state.memberFilter == null || task.assignedTo == state.memberFilter
-                val matchTime = when (state.timeFilter) {
-                    TaskFilter.TODAY -> {
-                        task.deadline?.let { d ->
+        val tasksByDate = remember(state.tasks) {
+            state.tasks
+                .filter { it.deadline != null }
+                .groupBy { task -> task.deadline!! }
+                .mapValues { it.value.size }
+        }
+
+        val completedByDate = remember(state.tasks) {
+            state.tasks
+                .filter { it.deadline != null }
+                .groupBy { task -> task.deadline!! }
+                .mapValues { it.value.count { t -> t.completed } }
+        }
+
+        val selectedDate = state.selectedDate
+        val dayTasks = remember(state.tasks, selectedDate, selectedTab, state.memberFilter) {
+            if (selectedDate != null) {
+                state.tasks.filter { task ->
+                    task.deadline == selectedDate &&
+                    (if (selectedTab == 0) !task.completed else task.completed) &&
+                    (state.memberFilter == null || task.assignedTo == state.memberFilter)
+                }
+            } else {
+                emptyList()
+            }
+        }
+
+        when (state.timeFilter) {
+            TaskFilter.TODAY -> {
+                val filteredTasks = state.tasks
+                    .filter { task ->
+                        val matchTab = if (selectedTab == 0) !task.completed else task.completed
+                        val matchMember = state.memberFilter == null || task.assignedTo == state.memberFilter
+                        val matchTime = task.deadline?.let { d ->
                             try { java.time.LocalDate.parse(d) == nowDate } catch (_: Exception) { false }
                         } ?: false
+                        matchTab && matchMember && matchTime
                     }
-                    TaskFilter.WEEK -> {
-                        task.deadline?.let { d ->
-                            try {
-                                val date = java.time.LocalDate.parse(d)
-                                !date.isBefore(startOfWeek) && !date.isAfter(endOfWeek)
-                            } catch (_: Exception) { false }
-                        } ?: false
-                    }
-                    TaskFilter.ALL -> true
-                }
-                matchTab && matchMember && matchTime
-            }
-            .sortedWith(compareBy<GroupTaskResponse> {
-                when {
-                    it.completed -> 2
-                    it.deadline?.let { d ->
-                        try { java.time.LocalDate.parse(d).isBefore(nowDate) } catch (_: Exception) { false }
-                    } == true -> 1
-                    else -> 0
-                }
-            }.thenBy {
-                it.deadline?.let { d ->
-                    try { java.time.LocalDate.parse(d).toEpochDay() } catch (_: Exception) { Long.MAX_VALUE }
-                } ?: Long.MAX_VALUE
-            })
+                    .sortedWith(compareBy<GroupTaskResponse> {
+                        when {
+                            it.completed -> 2
+                            it.deadline?.let { d ->
+                                try { java.time.LocalDate.parse(d).isBefore(nowDate) } catch (_: Exception) { false }
+                            } == true -> 1
+                            else -> 0
+                        }
+                    }.thenBy {
+                        it.deadline?.let { d ->
+                            try { java.time.LocalDate.parse(d).toEpochDay() } catch (_: Exception) { Long.MAX_VALUE }
+                        } ?: Long.MAX_VALUE
+                    })
 
-        val completedCount = filteredTasks.count { it.completed }
-        Text(
-            text = "$completedCount/${filteredTasks.size} hoàn thành",
-            color = CosmicTheme.colors.textTertiary,
-            fontSize = 12.sp,
-            modifier = Modifier.padding(bottom = 4.dp)
-        )
-
-        if (filteredTasks.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
+                val completedCount = filteredTasks.count { it.completed }
                 Text(
-                    text = if (selectedTab == 0) "Chưa có nhiệm vụ nào" else "Chưa có nhiệm vụ hoàn thành",
+                    text = "$completedCount/${filteredTasks.size} hoàn thành",
                     color = CosmicTheme.colors.textTertiary,
-                    fontSize = 14.sp
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(bottom = 4.dp)
                 )
+
+                if (filteredTasks.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (selectedTab == 0) "Chưa có nhiệm vụ nào" else "Chưa có nhiệm vụ hoàn thành",
+                            color = CosmicTheme.colors.textTertiary,
+                            fontSize = 14.sp
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(bottom = 100.dp)
+                    ) {
+                        items(filteredTasks, key = { it.id }) { task ->
+                            GroupTaskItem(
+                                task = task,
+                                onToggle = { viewModel.toggleTask(task.id, !task.completed) },
+                                onDeleteRequest = { taskToDelete = task },
+                                onEdit = { editingTask = task; showAddTaskSheet = true }
+                            )
+                        }
+                    }
+                }
             }
-        } else {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(bottom = 100.dp)
-            ) {
-                items(filteredTasks, key = { it.id }) { task ->
-                    GroupTaskItem(
-                        task = task,
-                        onToggle = { viewModel.toggleTask(task.id, !task.completed) },
-                        onDeleteRequest = { taskToDelete = task }
-                    )
+            TaskFilter.WEEK -> {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    if (state.tasks.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Chưa có nhiệm vụ nào",
+                                color = CosmicTheme.colors.textTertiary,
+                                fontSize = 14.sp
+                            )
+                        }
+                    } else {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            contentPadding = PaddingValues(bottom = 100.dp)
+                        ) {
+                            item {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Tuần này",
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = CosmicTheme.colors.textPrimary
+                                    )
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        if (state.currentWeekOffset < state.maxWeekOffset) {
+                                            IconButton(
+                                                onClick = { viewModel.navigateWeek(1) },
+                                                modifier = Modifier.size(28.dp)
+                                            ) {
+                                                Icon(
+                                                    Icons.Default.KeyboardArrowLeft,
+                                                    contentDescription = "Tuần trước",
+                                                    tint = CosmicTheme.colors.textPrimary,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                            }
+                                        }
+                                        if (state.currentWeekOffset > 0) {
+                                            IconButton(
+                                                onClick = { viewModel.navigateWeek(-1) },
+                                                modifier = Modifier.size(28.dp)
+                                            ) {
+                                                Icon(
+                                                    Icons.Default.KeyboardArrowRight,
+                                                    contentDescription = "Tuần sau",
+                                                    tint = CosmicTheme.colors.textPrimary,
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            item {
+                                WeekTaskGrid(
+                                    weekDates = state.weekDates,
+                                    selectedDate = selectedDate,
+                                    tasksByDate = tasksByDate,
+                                    completedByDate = completedByDate,
+                                    onDayClick = { viewModel.selectDate(it) }
+                                )
+                            }
+                            if (selectedDate != null) {
+                                if (dayTasks.isEmpty()) {
+                                    item {
+                                        Text(
+                                            text = "Không có nhiệm vụ trong ngày này",
+                                            color = CosmicTheme.colors.textTertiary,
+                                            fontSize = 14.sp,
+                                            modifier = Modifier.padding(vertical = 8.dp)
+                                        )
+                                    }
+                                } else {
+                                    items(dayTasks, key = { it.id }) { task ->
+                                        GroupTaskItem(
+                                            task = task,
+                                            onToggle = { viewModel.toggleTask(task.id, !task.completed) },
+                                            onDeleteRequest = { taskToDelete = task },
+                                            onEdit = { editingTask = task; showAddTaskSheet = true }
+                                        )
+                                    }
+                                }
+                            } else {
+                                item {
+                                    Text(
+                                        text = "Chọn một ngày để xem nhiệm vụ",
+                                        color = CosmicTheme.colors.textTertiary,
+                                        fontSize = 14.sp,
+                                        modifier = Modifier.padding(vertical = 8.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            TaskFilter.ALL -> {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    if (state.tasks.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Chưa có nhiệm vụ nào",
+                                color = CosmicTheme.colors.textTertiary,
+                                fontSize = 14.sp
+                            )
+                        }
+                    } else {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            contentPadding = PaddingValues(bottom = 100.dp)
+                        ) {
+                            item {
+                                MonthTaskGrid(
+                                    year = state.currentYear,
+                                    month = state.currentMonth,
+                                    tasksByDate = tasksByDate,
+                                    completedByDate = completedByDate,
+                                    selectedDate = selectedDate,
+                                    onDateClick = { viewModel.selectDate(it) },
+                                    onNavigateMonth = { viewModel.navigateMonth(it) }
+                                )
+                            }
+                            if (selectedDate != null) {
+                                if (dayTasks.isEmpty()) {
+                                    item {
+                                        Text(
+                                            text = "Ngày ${selectedDate.substring(8)}/${selectedDate.substring(5, 7)} không có nhiệm vụ nào",
+                                            color = CosmicTheme.colors.textTertiary,
+                                            fontSize = 14.sp,
+                                            modifier = Modifier.padding(vertical = 8.dp)
+                                        )
+                                    }
+                                } else {
+                                    items(dayTasks, key = { it.id }) { task ->
+                                        GroupTaskItem(
+                                            task = task,
+                                            onToggle = { viewModel.toggleTask(task.id, !task.completed) },
+                                            onDeleteRequest = { taskToDelete = task },
+                                            onEdit = { editingTask = task; showAddTaskSheet = true }
+                                        )
+                                    }
+                                }
+                            } else {
+                                item {
+                                    Text(
+                                        text = "Chọn một ngày để xem nhiệm vụ",
+                                        color = CosmicTheme.colors.textTertiary,
+                                        fontSize = 14.sp,
+                                        modifier = Modifier.padding(vertical = 8.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -644,18 +831,24 @@ fun GroupPlanDetailScreen(
     } // Scaffold
 
 
-    // ── Add Task BottomSheet ──
+    // ── Add / Edit Task BottomSheet ──
     if (showAddTaskSheet) {
         AddTaskSheet(
             creatorStudentCode = state.plan?.creatorStudentCode ?: "",
             members = acceptedMembers.map { it.studentCode },
             loading = state.actionLoading,
-            onDismiss = { showAddTaskSheet = false },
-                onConfirm = { title, description, assignedTo, deadline ->
-                    viewModel.addTask(planId, title, description, assignedTo, deadline) {
-                        showAddTaskSheet = false
-                    }
+            editingTask = editingTask,
+            onDismiss = { editingTask = null; showAddTaskSheet = false },
+            onConfirm = { title, description, assignedTo, deadline ->
+                viewModel.addTask(planId, title, description, assignedTo, deadline) {
+                    showAddTaskSheet = false
                 }
+            },
+            onUpdate = { taskId, title, description, assignedTo, deadline ->
+                viewModel.updateTask(taskId, title, description, assignedTo, deadline) {
+                    editingTask = null; showAddTaskSheet = false
+                }
+            }
         )
     }
 
@@ -836,12 +1029,16 @@ private fun memberAvatarColor(studentCode: String): Color {
     return avatarColors[idx]
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun GroupTaskItem(
     task: GroupTaskResponse,
     onToggle: () -> Unit,
-    onDeleteRequest: () -> Unit
+    onDeleteRequest: () -> Unit,
+    onEdit: () -> Unit = {}
 ) {
+    var expanded by remember { mutableStateOf(false) }
+
     val bgColor = if (task.completed)
         Color(0xFF2E7D32).copy(alpha = 0.08f)
     else
@@ -853,7 +1050,12 @@ private fun GroupTaskItem(
         Color(0xFFF9A825).copy(alpha = 0.25f)
 
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .combinedClickable(
+                onClick = {},
+                onDoubleClick = onEdit
+            ),
         shape = RoundedCornerShape(12.dp),
         color = bgColor,
         border = androidx.compose.foundation.BorderStroke(1.dp, borderColor)
@@ -889,17 +1091,17 @@ private fun GroupTaskItem(
                     color = if (task.completed) CosmicTheme.colors.textTertiary else CosmicTheme.colors.textPrimary,
                     fontSize = 14.sp,
                     textDecoration = if (task.completed) TextDecoration.LineThrough else TextDecoration.None,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    modifier = Modifier.clickable(onClick = { expanded = !expanded })
                 )
-                if (!task.description.isNullOrBlank()) {
-                    Text(
-                        text = task.description,
-                        color = CosmicTheme.colors.textSecondary,
-                        fontSize = 12.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                AnimatedVisibility(visible = expanded) {
+                    if (!task.description.isNullOrBlank()) {
+                        Text(
+                            text = task.description,
+                            color = CosmicTheme.colors.textSecondary,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
                 }
                 if (task.assignedTo != null) {
                     Text(

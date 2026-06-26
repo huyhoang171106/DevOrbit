@@ -1,15 +1,20 @@
 package vn.edu.uit.devorbit.mobile.ui.screen.dashboard
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
@@ -37,25 +42,25 @@ import vn.edu.uit.devorbit.mobile.domain.model.TaskItem
 
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.DashboardViewModel
-import vn.edu.uit.devorbit.mobile.ui.viewmodel.TaskFilter
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.WeekDay
-import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DashboardScreen(
     onNavigateToCourse: (Long) -> Unit = {},
     onNavigateToCreateTask: () -> Unit = {},
+    onNavigateToTaskManagement: () -> Unit = {},
+    onNavigateToGroupPlan: (Long) -> Unit = {},
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val filter by viewModel.taskFilter.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
-    val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(state.error) {
@@ -78,28 +83,12 @@ fun DashboardScreen(
         viewModel.loadAllCourses()
     }
 
-    val tasksByDate = remember(state.sortedTasks) {
-        state.sortedTasks
-            .filter { it.deadline != null }
-            .groupBy { task ->
-                Instant.ofEpochMilli(task.deadline!!)
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDate()
-                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-            }
-            .mapValues { it.value.size }
-    }
+    var expandedTaskIds by remember { mutableStateOf(setOf<Long>()) }
+    var showQuickAddSheet by remember { mutableStateOf(false) }
+    var quickAddDeadline by remember { mutableStateOf(
+        LocalDate.now().atTime(23, 59).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    ) }
 
-    val selectedDate = state.selectedDate
-    val dayTasks = remember(state.sortedTasks, selectedDate) {
-        if (selectedDate != null) {
-            state.sortedTasks.filter { task ->
-                task.deadline != null && isTaskOnDate(task.deadline, selectedDate)
-            }
-        } else {
-            emptyList()
-        }
-    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -120,89 +109,33 @@ fun DashboardScreen(
         }
 
         item {
-            TaskFilterSection(
-                selectedFilter = viewModel.taskFilter.collectAsStateWithLifecycle().value,
-                onSelectFilter = { viewModel.setTaskFilter(it) },
-                taskCount = state.totalTaskCount,
-                completedCount = state.completedTaskCount,
-                onNavigateToCreateTask = onNavigateToCreateTask
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Nhiệm vụ",
+                    style = CosmicTheme.typography.command,
+                    color = CosmicTheme.colors.textTertiary
+                )
+                IconButton(onClick = onNavigateToCreateTask) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = "Quản lý nhiệm vụ",
+                        tint = CosmicTheme.colors.plasma
+                    )
+                }
+            }
+            Text(
+                text = "${state.completedTaskCount}/${state.totalTaskCount} hoàn thành",
+                style = CosmicTheme.typography.label,
+                color = CosmicTheme.colors.textTertiary,
+                modifier = Modifier.padding(bottom = 4.dp)
             )
         }
 
-        if (filter == TaskFilter.WEEK) {
-            item {
-                WeekTaskGrid(
-                    weekDates = state.weekDates,
-                    selectedDate = selectedDate,
-                    tasksByDate = tasksByDate,
-                    onDayClick = { viewModel.selectDate(it) }
-                )
-            }
-            if (selectedDate != null) {
-                if (dayTasks.isEmpty()) {
-                    item {
-                        EmptyTaskState(onNavigateToCreateTask = onNavigateToCreateTask)
-                    }
-                } else {
-                    items(dayTasks, key = { it.id }) { task ->
-                        TaskCard(
-                            task = task,
-                            filter = TaskFilter.TODAY,
-                            onClick = { viewModel.toggleTask(task.id, !task.completed) }
-                        )
-                    }
-                }
-            } else {
-                item {
-                    Text(
-                        text = "Chọn một ngày để xem nhiệm vụ",
-                        style = CosmicTheme.typography.body,
-                        color = CosmicTheme.colors.textTertiary,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
-                }
-            }
-        } else if (filter == TaskFilter.ALL) {
-            item {
-                MonthTaskGrid(
-                    year = state.currentYear,
-                    month = state.currentMonth,
-                    tasksByDate = tasksByDate,
-                    selectedDate = selectedDate,
-                    onDateClick = { viewModel.selectDate(it) },
-                    onNavigateMonth = { viewModel.navigateMonth(it) }
-                )
-            }
-            if (selectedDate != null) {
-                if (dayTasks.isEmpty()) {
-                    item {
-                        Text(
-                            text = "Ngày ${selectedDate.substring(8)}/${selectedDate.substring(5, 7)} không có nhiệm vụ nào",
-                            style = CosmicTheme.typography.body,
-                            color = CosmicTheme.colors.textTertiary,
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
-                    }
-                } else {
-                    items(dayTasks, key = { it.id }) { task ->
-                        TaskCard(
-                            task = task,
-                            filter = TaskFilter.TODAY,
-                            onClick = { viewModel.toggleTask(task.id, !task.completed) }
-                        )
-                    }
-                }
-            } else {
-                item {
-                    Text(
-                        text = "Chọn một ngày để xem nhiệm vụ",
-                        style = CosmicTheme.typography.body,
-                        color = CosmicTheme.colors.textTertiary,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
-                }
-            }
-        } else if (state.sortedTasks.isEmpty()) {
+        if (state.sortedTasks.isEmpty()) {
             item {
                 EmptyTaskState(onNavigateToCreateTask = onNavigateToCreateTask)
             }
@@ -210,9 +143,38 @@ fun DashboardScreen(
             items(state.sortedTasks, key = { it.id }) { task ->
                 TaskCard(
                     task = task,
-                    filter = filter,
-                    onClick = { viewModel.toggleTask(task.id, !task.completed) }
+                    expanded = task.id in expandedTaskIds,
+                    onToggleExpanded = { expandedTaskIds = if (task.id in expandedTaskIds) expandedTaskIds - task.id else expandedTaskIds + task.id },
+                    onToggle = { viewModel.toggleTask(task.id, !task.completed) },
+                    onDoubleClick = if (task.isGroupTask) { { task.groupPlanId?.let(onNavigateToGroupPlan) ?: Unit } } else onNavigateToTaskManagement
                 )
+            }
+            item {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    color = CosmicTheme.colors.nebula,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder),
+                    onClick = { showQuickAddSheet = true }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = "Thêm nhiệm vụ nhanh",
+                            tint = CosmicTheme.colors.plasma,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = "Thêm nhiệm vụ nhanh",
+                            style = CosmicTheme.typography.body,
+                            color = CosmicTheme.colors.textSecondary
+                        )
+                    }
+                }
             }
         }
 
@@ -256,6 +218,18 @@ fun DashboardScreen(
                 )
             }
         )
+
+        if (showQuickAddSheet) {
+            QuickAddTaskSheet(
+                initialDeadline = quickAddDeadline,
+                onDeadlineChange = { quickAddDeadline = it },
+                onDismiss = { showQuickAddSheet = false },
+                onConfirm = { title, deadline ->
+                    viewModel.createQuickTask(title, deadline)
+                    showQuickAddSheet = false
+                }
+            )
+        }
     }
 }
 
@@ -637,16 +611,6 @@ private fun StreakSection(
 
 @Composable
 private fun DaySquare(day: WeekDay) {
-    val color = when {
-        day.activity == null -> Color.Transparent
-        day.activity.tasksTotal == 0 -> Color.Transparent
-        day.activity.tasksCompleted >= day.activity.tasksTotal -> Color(0xFF2E7D32).copy(alpha = 0.85f)
-        day.activity.tasksCompleted > 0 -> Color(0xFFF9A825).copy(alpha = 0.5f)
-        else -> Color.Transparent
-    }
-
-    val hasActivity = day.activity != null && day.activity.tasksTotal > 0
-
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.width(36.dp)
@@ -662,13 +626,12 @@ private fun DaySquare(day: WeekDay) {
             modifier = Modifier
                 .size(28.dp)
                 .clip(RoundedCornerShape(6.dp))
-                .background(color)
+                .background(Color.Transparent)
                 .border(
                     1.dp,
                     when {
                         day.isToday -> CosmicTheme.colors.plasma
                         day.qualifiesForStreak -> Color(0xFF2E7D32).copy(alpha = 0.5f)
-                        hasActivity -> Color.White.copy(alpha = 0.15f)
                         else -> Color.White.copy(alpha = 0.06f)
                     },
                     RoundedCornerShape(6.dp)
@@ -677,16 +640,6 @@ private fun DaySquare(day: WeekDay) {
         ) {
             if (day.qualifiesForStreak) {
                 Text(text = "\uD83D\uDD25", fontSize = 12.sp)
-            } else if (day.activity != null) {
-                Text(
-                    text = (day.activity.reposViewed.coerceAtMost(9)).toString(),
-                    style = CosmicTheme.typography.label.copy(
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = if (day.activity.tasksCompleted > 0 || day.activity.reposViewed > 0)
-                        Color.White else Color.Transparent
-                )
             }
         }
     }
@@ -906,22 +859,37 @@ private fun AddTechStackDialog(
 
 // ── Section 4: Tasks ─────────────────────────────────────────────
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun TaskCard(task: TaskItem, filter: TaskFilter, onClick: () -> Unit) {
+private fun TaskCard(
+    task: TaskItem,
+    expanded: Boolean,
+    isLocked: Boolean = false,
+    onToggleExpanded: () -> Unit,
+    onToggle: () -> Unit,
+    onDoubleClick: () -> Unit
+) {
     val bgColor = if (task.completed)
         Color(0xFF2E7D32).copy(alpha = 0.08f)
+    else if (isLocked)
+        Color(0xFFF9A825).copy(alpha = 0.04f)
     else
         Color(0xFFF9A825).copy(alpha = 0.08f)
 
     val borderColor = if (task.completed)
         Color(0xFF2E7D32).copy(alpha = 0.2f)
+    else if (isLocked)
+        Color(0xFFF9A825).copy(alpha = 0.12f)
     else
         Color(0xFFF9A825).copy(alpha = 0.25f)
 
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .combinedClickable(
+                onClick = {},
+                onDoubleClick = onDoubleClick
+            ),
         shape = RoundedCornerShape(12.dp),
         color = bgColor,
         border = androidx.compose.foundation.BorderStroke(1.dp, borderColor)
@@ -933,13 +901,15 @@ private fun TaskCard(task: TaskItem, filter: TaskFilter, onClick: () -> Unit) {
             Box(
                 modifier = Modifier
                     .size(22.dp)
+                    .clip(CircleShape)
+                    .clickable(onClick = { if (!isLocked) onToggle() })
                     .background(
                         if (task.completed) Color(0xFF2E7D32) else Color.Transparent,
                         CircleShape
                     )
                     .border(
                         1.5.dp,
-                        if (task.completed) Color(0xFF2E7D32) else CosmicTheme.colors.textTertiary,
+                        if (task.completed) Color(0xFF2E7D32) else if (isLocked) CosmicTheme.colors.textTertiary.copy(alpha = 0.3f) else CosmicTheme.colors.textTertiary,
                         CircleShape
                     ),
                 contentAlignment = Alignment.Center
@@ -958,9 +928,22 @@ private fun TaskCard(task: TaskItem, filter: TaskFilter, onClick: () -> Unit) {
                 Text(
                     text = task.title,
                     style = CosmicTheme.typography.body,
-                    color = if (task.completed) CosmicTheme.colors.textTertiary else CosmicTheme.colors.textPrimary,
-                    textDecoration = if (task.completed) TextDecoration.LineThrough else TextDecoration.None
+                    color = if (task.completed) CosmicTheme.colors.textTertiary else if (isLocked) CosmicTheme.colors.textTertiary else CosmicTheme.colors.textPrimary,
+                    textDecoration = if (task.completed) TextDecoration.LineThrough else TextDecoration.None,
+                    modifier = Modifier.clickable(onClick = onToggleExpanded)
                 )
+                AnimatedVisibility(visible = expanded) {
+                    Column {
+                        if (task.description.isNotBlank()) {
+                            Text(
+                                text = task.description,
+                                style = CosmicTheme.typography.label,
+                                color = CosmicTheme.colors.textSecondary,
+                                modifier = Modifier.padding(top = 6.dp)
+                            )
+                        }
+                    }
+                }
                 if (task.isGroupTask) {
                     Text(
                         text = "Nhóm",
@@ -971,13 +954,12 @@ private fun TaskCard(task: TaskItem, filter: TaskFilter, onClick: () -> Unit) {
                 }
                 if (task.deadline != null) {
                     Text(
-                        text = "Hạn: ${formatDeadlineByFilter(task.deadline, filter)}",
+                        text = "Hạn: ${formatDeadline(task.deadline)}",
                         style = CosmicTheme.typography.label,
                         color = CosmicTheme.colors.textTertiary
                     )
                 }
-            }
-        }
+            }}
     }
 }
 
@@ -1011,430 +993,155 @@ private fun EmptyTaskState(onNavigateToCreateTask: () -> Unit) {
     }
 }
 
-@Composable
-private fun TaskFilterSection(
-    selectedFilter: TaskFilter,
-    onSelectFilter: (TaskFilter) -> Unit,
-    taskCount: Int,
-    completedCount: Int,
-    onNavigateToCreateTask: () -> Unit
-) {
-    Column {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Nhiệm vụ",
-                style = CosmicTheme.typography.command,
-                color = CosmicTheme.colors.textTertiary
-            )
-            IconButton(onClick = onNavigateToCreateTask) {
-                Icon(
-                    Icons.Default.Add,
-                    contentDescription = "Thêm nhiệm vụ",
-                    tint = CosmicTheme.colors.plasma
-                )
-            }
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            FilterChip(
-                selected = selectedFilter == TaskFilter.TODAY,
-                onClick = { onSelectFilter(TaskFilter.TODAY) },
-                label = { Text("Hôm nay", style = CosmicTheme.typography.label) },
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = CosmicTheme.colors.plasma.copy(alpha = 0.15f),
-                    selectedLabelColor = CosmicTheme.colors.plasma
-                ),
-                border = FilterChipDefaults.filterChipBorder(
-                    borderColor = CosmicTheme.colors.glassBorder,
-                    selectedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
-                    enabled = true,
-                    selected = selectedFilter == TaskFilter.TODAY
-                )
-            )
-            FilterChip(
-                selected = selectedFilter == TaskFilter.WEEK,
-                onClick = { onSelectFilter(TaskFilter.WEEK) },
-                label = { Text("Tuần này", style = CosmicTheme.typography.label) },
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = CosmicTheme.colors.plasma.copy(alpha = 0.15f),
-                    selectedLabelColor = CosmicTheme.colors.plasma
-                ),
-                border = FilterChipDefaults.filterChipBorder(
-                    borderColor = CosmicTheme.colors.glassBorder,
-                    selectedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
-                    enabled = true,
-                    selected = selectedFilter == TaskFilter.WEEK
-                )
-            )
-            FilterChip(
-                selected = selectedFilter == TaskFilter.ALL,
-                onClick = { onSelectFilter(TaskFilter.ALL) },
-                label = { Text("Tất cả", style = CosmicTheme.typography.label) },
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = CosmicTheme.colors.plasma.copy(alpha = 0.15f),
-                    selectedLabelColor = CosmicTheme.colors.plasma
-                ),
-                border = FilterChipDefaults.filterChipBorder(
-                    borderColor = CosmicTheme.colors.glassBorder,
-                    selectedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
-                    enabled = true,
-                    selected = selectedFilter == TaskFilter.ALL
-                )
-            )
-        }
-
-        Text(
-            text = "$completedCount/$taskCount hoàn thành",
-            style = CosmicTheme.typography.label,
-            color = CosmicTheme.colors.textTertiary,
-            modifier = Modifier.padding(bottom = 4.dp)
-        )
-    }
-}
-
-// ── Week Task Grid (for "Tuần này" filter) ──────────────────────
-
-@Composable
-private fun WeekTaskGrid(
-    weekDates: List<WeekDay>,
-    selectedDate: String?,
-    tasksByDate: Map<String, Int>,
-    onDayClick: (String?) -> Unit
-) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        color = CosmicTheme.colors.nebula,
-        border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "Nhiệm vụ trong tuần",
-                        style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
-                        color = CosmicTheme.colors.textPrimary
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                weekDates.forEach { day ->
-                    DayTaskSquare(
-                        day = day,
-                        taskCount = tasksByDate[day.date] ?: 0,
-                        isSelected = day.date == selectedDate,
-                        onClick = {
-                            if (day.date == selectedDate) {
-                                onDayClick(null)
-                            } else {
-                                onDayClick(day.date)
-                            }
-                        }
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Chọn một ngày để xem nhiệm vụ chi tiết",
-                style = CosmicTheme.typography.label,
-                color = CosmicTheme.colors.textTertiary
-            )
-        }
-    }
-}
-
-@Composable
-private fun DayTaskSquare(
-    day: WeekDay,
-    taskCount: Int,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    val bgColor = if (taskCount > 0)
-        CosmicTheme.colors.plasma.copy(alpha = 0.12f)
-    else
-        Color.Transparent
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.width(36.dp)
-    ) {
-        Text(
-            text = day.label,
-            style = CosmicTheme.typography.label.copy(fontSize = 9.sp),
-            color = CosmicTheme.colors.textTertiary,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Box(
-            modifier = Modifier
-                .size(28.dp)
-                .clip(RoundedCornerShape(6.dp))
-                .background(
-                    if (isSelected) CosmicTheme.colors.plasma.copy(alpha = 0.25f) else bgColor
-                )
-                .border(
-                    1.dp,
-                    when {
-                        isSelected -> CosmicTheme.colors.plasma
-                        day.isToday -> CosmicTheme.colors.plasma.copy(alpha = 0.5f)
-                        taskCount > 0 -> Color.White.copy(alpha = 0.15f)
-                        else -> Color.White.copy(alpha = 0.06f)
-                    },
-                    RoundedCornerShape(6.dp)
-                )
-                .clickable(onClick = onClick),
-            contentAlignment = Alignment.Center
-        ) {
-            if (taskCount > 0) {
-                Text(
-                    text = taskCount.toString(),
-                    style = CosmicTheme.typography.label.copy(
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = if (isSelected) Color.White else CosmicTheme.colors.textPrimary
-                )
-            }
-        }
-    }
-}
-
-private data class MonthDayInfo(
-    val dateStr: String,
-    val dayOfMonth: Int,
-    val isToday: Boolean,
-    val hasTasks: Boolean
-)
-
-@Composable
-private fun MonthTaskGrid(
-    year: Int,
-    month: Int,
-    tasksByDate: Map<String, Int>,
-    selectedDate: String?,
-    onDateClick: (String?) -> Unit,
-    onNavigateMonth: (Int) -> Unit
-) {
-    val canGoPrev = year > 2026 || (year == 2026 && month > 6)
-    val monthName = java.time.Month.of(month).getDisplayName(java.time.format.TextStyle.FULL, Locale("vi", "VN"))
-
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        color = CosmicTheme.colors.nebula,
-        border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            // ── Header: Month + Year + Navigation ──
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (canGoPrev) {
-                    IconButton(onClick = { onNavigateMonth(-1) }, modifier = Modifier.size(28.dp)) {
-                        Icon(
-                            Icons.Default.KeyboardArrowLeft,
-                            contentDescription = "Tháng trước",
-                            tint = CosmicTheme.colors.textPrimary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                } else {
-                    Spacer(modifier = Modifier.size(28.dp))
-                }
-                Text(
-                    text = "$monthName $year",
-                    style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
-                    color = CosmicTheme.colors.textPrimary
-                )
-                IconButton(onClick = { onNavigateMonth(1) }, modifier = Modifier.size(28.dp)) {
-                    Icon(
-                        Icons.Default.KeyboardArrowRight,
-                        contentDescription = "Tháng sau",
-                        tint = CosmicTheme.colors.textPrimary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // ── Weekday headers ──
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                listOf("T2", "T3", "T4", "T5", "T6", "T7", "CN").forEach { label ->
-                    Text(
-                        text = label,
-                        style = CosmicTheme.typography.label.copy(fontSize = 10.sp),
-                        color = CosmicTheme.colors.textTertiary,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.width(36.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // ── Calendar grid ──
-            val dayRows = remember(year, month, tasksByDate) {
-                generateMonthDays(year, month, tasksByDate)
-            }
-
-            dayRows.forEach { week ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    week.forEach { cell ->
-                        if (cell != null) {
-                            MonthDayCell(
-                                day = cell,
-                                isSelected = cell.dateStr == selectedDate,
-                                onClick = {
-                                    if (cell.dateStr == selectedDate) {
-                                        onDateClick(null)
-                                    } else {
-                                        onDateClick(cell.dateStr)
-                                    }
-                                }
-                            )
-                        } else {
-                            Spacer(modifier = Modifier.width(36.dp))
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-            }
-        }
-    }
-}
-
-@Composable
-private fun MonthDayCell(
-    day: MonthDayInfo,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    val bgColor = if (day.hasTasks)
-        CosmicTheme.colors.plasma.copy(alpha = 0.12f)
-    else
-        Color.Transparent
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.width(36.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(28.dp)
-                .clip(RoundedCornerShape(6.dp))
-                .background(
-                    if (isSelected) CosmicTheme.colors.plasma.copy(alpha = 0.25f) else bgColor
-                )
-                .border(
-                    1.dp,
-                    when {
-                        isSelected -> CosmicTheme.colors.plasma
-                        day.isToday -> CosmicTheme.colors.plasma.copy(alpha = 0.5f)
-                        day.hasTasks -> CosmicTheme.colors.plasma.copy(alpha = 0.3f)
-                        else -> Color.White.copy(alpha = 0.06f)
-                    },
-                    RoundedCornerShape(6.dp)
-                )
-                .clickable(onClick = onClick),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = day.dayOfMonth.toString(),
-                style = CosmicTheme.typography.label.copy(fontSize = 11.sp),
-                color = when {
-                    isSelected -> Color.White
-                    day.hasTasks -> CosmicTheme.colors.plasma
-                    else -> CosmicTheme.colors.textPrimary
-                }
-            )
-        }
-        if (day.hasTasks) {
-            Text(
-                text = ".",
-                fontSize = 7.sp,
-                color = CosmicTheme.colors.plasma,
-                lineHeight = 7.sp
-            )
-        }
-    }
-}
-
-private fun generateMonthDays(year: Int, month: Int, tasksByDate: Map<String, Int>): List<List<MonthDayInfo?>> {
-    val firstDay = LocalDate.of(year, month, 1)
-    val daysInMonth = firstDay.lengthOfMonth()
-    val startCol = (firstDay.dayOfWeek.value % 7)
-    val today = LocalDate.now()
-    val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-
-    val rows = mutableListOf<List<MonthDayInfo?>>()
-    var cells = mutableListOf<MonthDayInfo?>()
-
-    repeat(startCol) { cells.add(null) }
-
-    for (day in 1..daysInMonth) {
-        val date = LocalDate.of(year, month, day)
-        val dateStr = date.format(dateFormat)
-        cells.add(
-            MonthDayInfo(
-                dateStr = dateStr,
-                dayOfMonth = day,
-                isToday = date == today,
-                hasTasks = tasksByDate.containsKey(dateStr)
-            )
-        )
-        if (cells.size == 7) {
-            rows.add(cells)
-            cells = mutableListOf()
-        }
-    }
-
-    if (cells.isNotEmpty()) {
-        while (cells.size < 7) cells.add(null)
-        rows.add(cells)
-    }
-
-    return rows
-}
-
-private fun isTaskOnDate(epochMillis: Long, dateStr: String): Boolean {
-    val date = Instant.ofEpochMilli(epochMillis)
-        .atZone(ZoneId.systemDefault())
-        .toLocalDate()
-        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-    return date == dateStr
-}
-
-private fun formatDeadlineByFilter(millis: Long, filter: TaskFilter): String {
+private fun formatDeadline(millis: Long): String {
     val zdt = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault())
-    return when (filter) {
-        TaskFilter.TODAY -> zdt.format(DateTimeFormatter.ofPattern("HH:mm", Locale("vi", "VN")))
-        TaskFilter.WEEK -> zdt.format(DateTimeFormatter.ofPattern("EEEE, dd/MM", Locale("vi", "VN")))
-        TaskFilter.ALL -> zdt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale("vi", "VN")))
+    return zdt.format(DateTimeFormatter.ofPattern("HH:mm", Locale("vi", "VN")))
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun QuickAddTaskSheet(
+    initialDeadline: Long,
+    onDeadlineChange: (Long) -> Unit,
+    onDismiss: () -> Unit,
+    onConfirm: (title: String, deadline: Long) -> Unit
+) {
+    var title by remember { mutableStateOf("") }
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialDeadline)
+    val timePickerState = rememberTimePickerState(
+        initialHour = 23,
+        initialMinute = 59,
+        is24Hour = true
+    )
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = CosmicTheme.colors.nebula
+    ) {
+        Column(
+            modifier = Modifier.padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = "Quick Add Task",
+                style = CosmicTheme.typography.titleMedium,
+                color = CosmicTheme.colors.textPrimary
+            )
+
+            OutlinedTextField(
+                value = title,
+                onValueChange = { title = it },
+                label = { Text("Task title", color = CosmicTheme.colors.textTertiary) },
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = CosmicTheme.colors.textPrimary,
+                    unfocusedTextColor = CosmicTheme.colors.textPrimary,
+                    cursorColor = CosmicTheme.colors.plasma,
+                    focusedBorderColor = CosmicTheme.colors.plasma,
+                    unfocusedBorderColor = CosmicTheme.colors.glassBorder
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            TextButton(
+                onClick = { showDatePicker = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    Icons.Default.CalendarToday,
+                    contentDescription = null,
+                    tint = CosmicTheme.colors.textSecondary
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = if (initialDeadline > 0L) {
+                        val zdt = Instant.ofEpochMilli(initialDeadline)
+                            .atZone(ZoneId.systemDefault())
+                        "${zdt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale("vi", "VN")))} ${zdt.format(DateTimeFormatter.ofPattern("HH:mm", Locale("vi", "VN")))}"
+                    } else "Pick deadline",
+                    color = CosmicTheme.colors.textSecondary
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(onClick = onDismiss) {
+                    Text("Cancel", color = CosmicTheme.colors.textSecondary)
+                }
+                Spacer(Modifier.width(8.dp))
+                TextButton(
+                    onClick = {
+                        val deadline = datePickerState.selectedDateMillis
+                            ?: initialDeadline
+                        if (deadline > 0L) {
+                            val zdt = Instant.ofEpochMilli(deadline)
+                                .atZone(ZoneId.systemDefault())
+                                .with(LocalTime.of(timePickerState.hour, timePickerState.minute))
+                            onConfirm(title.trim(), zdt.toInstant().toEpochMilli())
+                        }
+                    },
+                    enabled = title.isNotBlank()
+                ) {
+                    Text(
+                        "Add",
+                        color = if (title.isNotBlank()) CosmicTheme.colors.plasma
+                        else CosmicTheme.colors.textTertiary
+                    )
+                }
+            }
+        }
+    }
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { onDeadlineChange(it) }
+                    showDatePicker = false
+                    showTimePicker = true
+                }) {
+                    Text("Next", color = CosmicTheme.colors.plasma)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel", color = CosmicTheme.colors.textSecondary)
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    if (showTimePicker) {
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    val base = datePickerState.selectedDateMillis ?: initialDeadline
+                    val zdt = Instant.ofEpochMilli(base)
+                        .atZone(ZoneId.systemDefault())
+                        .with(LocalTime.of(timePickerState.hour, timePickerState.minute))
+                    onDeadlineChange(zdt.toInstant().toEpochMilli())
+                    showTimePicker = false
+                }) {
+                    Text("OK", color = CosmicTheme.colors.plasma)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) {
+                    Text("Cancel", color = CosmicTheme.colors.textSecondary)
+                }
+            },
+            title = { Text("Pick time") },
+            text = {
+                TimeInput(state = timePickerState)
+            }
+        )
     }
 }
 

@@ -11,7 +11,9 @@ import vn.edu.uit.devorbit_api.entity.*;
 import vn.edu.uit.devorbit_api.exception.NotFoundException;
 import vn.edu.uit.devorbit_api.repository.GroupPlanMemberRepository;
 import vn.edu.uit.devorbit_api.repository.StudentBookmarkRepository;
+import vn.edu.uit.devorbit_api.repository.StudentCourseSelectionRepository;
 import vn.edu.uit.devorbit_api.repository.StudentNotificationRepository;
+import vn.edu.uit.devorbit_api.repository.StudentTechStackRepository;
 import vn.edu.uit.devorbit_api.repository.StudentUserRepository;
 
 import java.time.LocalDateTime;
@@ -24,6 +26,8 @@ public class StudentNotificationService {
     private static final Logger log = LoggerFactory.getLogger(StudentNotificationService.class);
     private final StudentNotificationRepository notificationRepository;
     private final StudentBookmarkRepository bookmarkRepository;
+    private final StudentCourseSelectionRepository courseSelectionRepository;
+    private final StudentTechStackRepository studentTechStackRepository;
     private final StudentUserRepository studentUserRepository;
     private final GroupPlanMemberRepository groupPlanMemberRepository;
 
@@ -53,12 +57,11 @@ public class StudentNotificationService {
 
     @Transactional
     public void notifyCourseSubscribers(GithubRepo repo, Course course) {
-        List<StudentBookmark> bookmarks = bookmarkRepository.findByTargetTypeAndTargetId("COURSE", course.getId());
-        if (bookmarks.isEmpty()) return;
-
         String title = "Mới: " + repo.getDisplayName();
         String body = "Đã thêm repo mới vào môn " + course.getMaMH() + " - " + course.getTenMH();
+        int count = 0;
 
+        List<StudentBookmark> bookmarks = bookmarkRepository.findByTargetTypeAndTargetId("COURSE", course.getId());
         for (StudentBookmark bookmark : bookmarks) {
             StudentUser student = bookmark.getStudent();
             try {
@@ -71,13 +74,63 @@ public class StudentNotificationService {
                     .course(course)
                     .build();
                 notificationRepository.save(notification);
+                count++;
             } catch (Exception e) {
                 log.warn("Failed to create notification for student {}: {}", student.getStudentCode(), e.getMessage());
             }
         }
 
+        List<StudentCourseSelection> selections = courseSelectionRepository.findByCourseId(course.getId());
+        for (StudentCourseSelection selection : selections) {
+            try {
+                if (bookmarks.stream().anyMatch(b -> b.getStudent().getId().equals(selection.getStudent().getId()))) {
+                    continue;
+                }
+                StudentNotification notification = StudentNotification.builder()
+                    .studentCode(selection.getStudent().getStudentCode())
+                    .title(title)
+                    .body(body)
+                    .type("NEW_REPO_COURSE")
+                    .repo(repo)
+                    .course(course)
+                    .build();
+                notificationRepository.save(notification);
+                count++;
+            } catch (Exception e) {
+                log.warn("Failed to create notification for student {}: {}", selection.getStudent().getStudentCode(), e.getMessage());
+            }
+        }
+
         log.info("notifyCourseSubscribers: created {} notifications for course {} (repo id={})",
-            bookmarks.size(), course.getId(), repo.getId());
+            count, course.getId(), repo.getId());
+    }
+
+    @Transactional
+    public void notifyTechStackSubscribers(GithubRepo repo, TechStack techStack) {
+        List<StudentTechStack> selections = studentTechStackRepository.findByTechStackId(techStack.getId());
+        if (selections.isEmpty()) return;
+
+        String title = "Mới: " + repo.getDisplayName();
+        String body = "Có repo mới về " + techStack.getName() + ": " + repo.getDisplayName();
+
+        for (StudentTechStack selection : selections) {
+            try {
+                StudentNotification notification = StudentNotification.builder()
+                    .studentCode(selection.getStudent().getStudentCode())
+                    .title(title)
+                    .body(body)
+                    .type("NEW_REPO_TECH_STACK")
+                    .repo(repo)
+                    .techStackName(techStack.getName())
+                    .build();
+                notificationRepository.save(notification);
+            } catch (Exception e) {
+                log.warn("Failed to create notification for student {}: {}", selection.getStudent().getStudentCode(), e.getMessage());
+            }
+        }
+
+        log.info("notifyTechStackSubscribers: created {} notifications for tech stack {} (repo id={})",
+            selections.size(), techStack.getName(), repo.getId());
     }
 
     @Transactional

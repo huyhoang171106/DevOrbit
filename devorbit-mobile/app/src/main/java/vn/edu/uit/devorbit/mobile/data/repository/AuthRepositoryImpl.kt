@@ -103,4 +103,8 @@ class AuthRepositoryImpl @Inject constructor(
         runCatching { apiService.studentLogout() }
         settingsDataStore.clearToken()
     }
+
+    override suspend fun clearToken() {
+        settingsDataStore.clearToken()
+    }
 }

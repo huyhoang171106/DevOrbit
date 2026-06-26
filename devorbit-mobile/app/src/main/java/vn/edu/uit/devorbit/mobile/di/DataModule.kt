@@ -21,7 +21,6 @@ import vn.edu.uit.devorbit.mobile.data.local.dao.RepoDao
 import vn.edu.uit.devorbit.mobile.data.local.dao.RelationshipDao
 import vn.edu.uit.devorbit.mobile.data.local.dao.SemesterCourseDao
 import vn.edu.uit.devorbit.mobile.data.local.dao.TechStackDao
-import vn.edu.uit.devorbit.mobile.data.repository.AcademicRepository
 import androidx.room.Room
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
@@ -114,16 +113,5 @@ object DataModule {
     @Singleton
     fun provideTechStackDao(db: DevOrbitDatabase): TechStackDao {
         return db.techStackDao()
-    }
-
-    @Provides
-    @Singleton
-    fun provideAcademicRepository(
-        apiService: ApiService,
-        courseDao: CourseDao,
-        repoDao: RepoDao,
-        relationshipDao: RelationshipDao
-    ): AcademicRepository {
-        return AcademicRepository(apiService, courseDao, repoDao, relationshipDao)
     }
 }

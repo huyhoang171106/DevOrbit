@@ -13,4 +13,5 @@ interface AuthRepository {
     suspend fun getProfile(): Result<StudentInfo>
     suspend fun getToken(): String?
     suspend fun logout()
+    suspend fun clearToken()
 }

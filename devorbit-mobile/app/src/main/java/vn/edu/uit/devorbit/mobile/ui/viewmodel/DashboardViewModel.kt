@@ -17,8 +17,10 @@ import vn.edu.uit.devorbit.mobile.data.local.entity.DailyActivityEntity
 import vn.edu.uit.devorbit.mobile.data.local.entity.SemesterCourseEntity
 import vn.edu.uit.devorbit.mobile.data.local.entity.TechStackEntity
 import vn.edu.uit.devorbit.mobile.data.datastore.SettingsDataStore
+import vn.edu.uit.devorbit.mobile.data.repository.StreakTracker
 import vn.edu.uit.devorbit.mobile.domain.model.TaskItem
 import vn.edu.uit.devorbit.mobile.domain.model.toTaskItem
+import vn.edu.uit.devorbit.mobile.data.remote.dto.CreatePersonalTaskRequest
 import vn.edu.uit.devorbit.mobile.network.ApiService
 import java.time.DayOfWeek
 import java.time.Instant
@@ -26,6 +28,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.temporal.TemporalAdjusters
 import java.util.Locale
 import javax.inject.Inject
 
@@ -69,30 +72,25 @@ class DashboardViewModel @Inject constructor(
     private val semesterCourseDao: SemesterCourseDao,
     private val dailyActivityDao: DailyActivityDao,
     private val techStackDao: TechStackDao,
-    private val apiService: ApiService
+    private val apiService: ApiService,
+    private val streakTracker: StreakTracker
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DashboardUiState())
     val state: StateFlow<DashboardUiState> = _state.asStateFlow()
 
-    private val _taskFilter = MutableStateFlow(TaskFilter.TODAY)
-    val taskFilter: StateFlow<TaskFilter> = _taskFilter.asStateFlow()
 
-    fun setTaskFilter(filter: TaskFilter) {
-        _taskFilter.value = filter
-        _state.update { it.copy(selectedDate = null) }
-    }
 
     private val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     private val displayDateFormat = DateTimeFormatter.ofPattern("EEEE, dd/MM", Locale("vi", "VN"))
 
-    private val minDate: LocalDate = LocalDate.now().minusMonths(6).with(DayOfWeek.MONDAY)
+    private val minDate: LocalDate = LocalDate.now().minusMonths(6).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
 
     private fun computeMaxWeekOffset(): Int {
-        val now = LocalDate.now().with(DayOfWeek.MONDAY)
-        val diff = now.toEpochDay() - minDate.toEpochDay()
-        if (diff < 0) return 0
-        return (diff / 7).toInt()
+        val now = LocalDate.now()
+        val monday = now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+        val diff = monday.toEpochDay() - minDate.toEpochDay()
+        return if (diff < 0) 0 else (diff / 7).toInt()
     }
 
     private var currentStudentCode: String = ""
@@ -101,10 +99,14 @@ class DashboardViewModel @Inject constructor(
     init {
         observeProfile()
         observeSemesterCourses()
-        observeTasks()
         observeTechStacks()
         loadAllTechStacks()
         startStudyTimer()
+        viewModelScope.launch {
+            streakTracker.streakUpdated.collect { newStreak ->
+                _state.update { it.copy(streakCount = newStreak) }
+            }
+        }
     }
 
     override fun onCleared() {
@@ -128,6 +130,8 @@ class DashboardViewModel @Inject constructor(
                     checkStreak()
                     loadWeekDays()
                     loadTodayStudyMinutes()
+                    syncStudentTechStacks()
+                    loadTodayTasks()
                 }
             }
         }
@@ -176,31 +180,56 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
-    private fun observeTasks() {
+    private fun syncSemesterCourses() {
         viewModelScope.launch {
-            _taskFilter.collect { filter ->
-                try {
-                    loadTasksForFilter(filter)
-                } catch (_: Exception) {
-                    _state.update { it.copy(error = "Không thể tải nhiệm vụ") }
-                 }
+            try {
+                val remote = apiService.getSemesterCourses()
+                val localIds = semesterCourseDao.getSemesterCourseIds().toSet()
+                val remoteIds = remote.map { it.courseId }.toSet()
+                for (r in remote) {
+                    if (r.courseId !in localIds) {
+                        semesterCourseDao.addCourse(SemesterCourseEntity(courseId = r.courseId))
+                    }
+                }
+                for (lid in localIds) {
+                    if (lid !in remoteIds) {
+                        semesterCourseDao.removeCourse(lid)
+                    }
+                }
+            } catch (_: Exception) {
+                // offline - use local data
             }
         }
     }
 
-    private suspend fun loadTasksForFilter(filter: TaskFilter) {
-        val filterParam = when (filter) {
-            TaskFilter.TODAY -> "today"
-            TaskFilter.WEEK -> "week"
-            TaskFilter.ALL -> "all"
+    private fun syncStudentTechStacks() {
+        viewModelScope.launch {
+            try {
+                val remote = apiService.getStudentTechStacks()
+                val localNames = techStackDao.getTechStackNames().toSet()
+                val remoteNames = remote.map { it.techStackName }.toSet()
+                for (r in remote) {
+                    if (r.techStackName !in localNames) {
+                        techStackDao.insertTechStack(TechStackEntity(name = r.techStackName))
+                    }
+                }
+                for (ln in localNames) {
+                    if (ln !in remoteNames) {
+                        val local = techStackDao.getAllTechStacks().first().find { it.name == ln }
+                        if (local != null) techStackDao.deleteTechStack(local.id)
+                    }
+                }
+            } catch (_: Exception) {
+                // offline - use local data
+            }
         }
-        val personalTasks = apiService.getPersonalTasks(filterParam).map { it.toTaskItem() }
+    }
+
+
+    private suspend fun loadTodayTasks() {
+        val personalTasks = apiService.getPersonalTasks("today").map { it.toTaskItem() }
         val allGroupTasks = apiService.getAssignedGroupTasks().map { it.toTaskItem() }
-        val groupTasks = when (filter) {
-            TaskFilter.TODAY -> allGroupTasks.filter { isTaskItemToday(it) }
-            TaskFilter.WEEK -> allGroupTasks.filter { isTaskItemInWeek(it) }
-            TaskFilter.ALL -> allGroupTasks
-        }
+        val groupTasks = allGroupTasks.filter { isTaskItemToday(it) }
         val now = System.currentTimeMillis()
         val allTasks = (personalTasks + groupTasks).sortedWith(compareBy<TaskItem> {
             when {
@@ -216,8 +245,7 @@ class DashboardViewModel @Inject constructor(
             totalTaskCount = allTasks.size,
             completedTaskCount = allTasks.count { it.completed }
         ) }
-        val todayTasks = allTasks.filter { isTaskItemToday(it) }
-        recordTaskProgress(todayTasks.count { it.completed }, todayTasks.size)
+        recordTaskProgress(allTasks.count { it.completed }, allTasks.size)
     }
 
     private fun isTaskItemToday(task: TaskItem): Boolean {
@@ -226,14 +254,6 @@ class DashboardViewModel @Inject constructor(
         return date == LocalDate.now()
     }
 
-    private fun isTaskItemInWeek(task: TaskItem): Boolean {
-        if (task.deadline == null) return false
-        val date = Instant.ofEpochMilli(task.deadline).atZone(ZoneId.systemDefault()).toLocalDate()
-        val now = LocalDate.now()
-        val monday = now.with(java.time.DayOfWeek.MONDAY)
-        val sunday = monday.plusDays(6)
-        return date in monday..sunday
-    }
 
     private fun observeTechStacks() {
         viewModelScope.launch {
@@ -259,15 +279,26 @@ class DashboardViewModel @Inject constructor(
 
     fun addTechStack(name: String) {
         viewModelScope.launch {
-            if (!techStackDao.isTechStackAdded(name)) {
-                techStackDao.insertTechStack(TechStackEntity(name = name))
+            try {
+                apiService.addStudentTechStack(mapOf("name" to name))
+                if (!techStackDao.isTechStackAdded(name)) {
+                    techStackDao.insertTechStack(TechStackEntity(name = name))
+                }
+            } catch (_: Exception) {
+                _state.update { it.copy(error = "Không thể đồng bộ tech stack lên server") }
             }
         }
     }
 
     fun removeTechStack(id: Int) {
         viewModelScope.launch {
-            techStackDao.deleteTechStack(id)
+            val entity = techStackDao.getAllTechStacks().first().find { it.id == id } ?: return@launch
+            try {
+                apiService.removeStudentTechStackByName(entity.name)
+                techStackDao.deleteTechStack(id)
+            } catch (_: Exception) {
+                _state.update { it.copy(error = "Không thể đồng bộ tech stack lên server") }
+            }
         }
     }
 
@@ -280,14 +311,24 @@ class DashboardViewModel @Inject constructor(
 
     fun addSemesterCourse(courseId: Long) {
         viewModelScope.launch {
-            semesterCourseDao.addCourse(SemesterCourseEntity(courseId = courseId))
-            loadWeekDays()
+            try {
+                apiService.addSemesterCourse(mapOf("courseId" to courseId))
+                semesterCourseDao.addCourse(SemesterCourseEntity(courseId = courseId))
+                loadWeekDays()
+            } catch (_: Exception) {
+                _state.update { it.copy(error = "Không thể đồng bộ môn học lên server") }
+            }
         }
     }
 
     fun removeSemesterCourse(courseId: Long) {
         viewModelScope.launch {
-            semesterCourseDao.removeCourse(courseId)
+            try {
+                apiService.removeSemesterCourse(courseId)
+                semesterCourseDao.removeCourse(courseId)
+            } catch (_: Exception) {
+                _state.update { it.copy(error = "Không thể đồng bộ môn học lên server") }
+            }
         }
     }
 
@@ -381,7 +422,7 @@ class DashboardViewModel @Inject constructor(
         viewModelScope.launch {
             val offset = _state.value.currentWeekOffset
             val maxOffset = computeMaxWeekOffset()
-            var date = LocalDate.now().minusWeeks(offset.toLong()).with(DayOfWeek.MONDAY)
+            var date = LocalDate.now().minusWeeks(offset.toLong()).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
 
             val days = mutableListOf<WeekDay>()
             val todayStr = LocalDate.now().format(dateFormat)
@@ -460,11 +501,25 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
+    fun createQuickTask(title: String, deadline: Long) {
+        viewModelScope.launch {
+            try {
+                apiService.createPersonalTask(CreatePersonalTaskRequest(
+                    title = title,
+                    deadline = Instant.ofEpochMilli(deadline).toString()
+                ))
+                refreshTasks()
+            } catch (_: Exception) {
+                _state.update { it.copy(error = "Không thể tạo nhiệm vụ") }
+            }
+        }
+    }
+
     fun clearError() { _state.update { it.copy(error = null) } }
 
     private suspend fun refreshTasks() {
         try {
-            loadTasksForFilter(_taskFilter.value)
+            loadTodayTasks()
         } catch (_: Exception) { }
     }
 }

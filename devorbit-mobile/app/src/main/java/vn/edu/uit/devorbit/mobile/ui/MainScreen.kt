@@ -141,6 +141,14 @@ fun MainScreen(
                                 onNavigateToCreateTask = {
                                     currentScreen = Screen.TaskManagement
                                     showPopup = false
+                                },
+                                onNavigateToTaskManagement = {
+                                    currentScreen = Screen.TaskManagement
+                                    showPopup = false
+                                },
+                                onNavigateToGroupPlan = { planId ->
+                                    currentScreen = Screen.GroupPlanDetail(planId)
+                                    showPopup = false
                                 }
                             )
                             Screen.TaskManagement -> TaskManagementScreen(

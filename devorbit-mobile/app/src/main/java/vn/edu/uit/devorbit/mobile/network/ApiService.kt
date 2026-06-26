@@ -80,6 +80,26 @@ interface ApiService {
     @DELETE("/api/student/bookmarks/{id}")
     suspend fun deleteBookmark(@Path("id") id: Long)
 
+    // Semester Courses (student's selection)
+    @GET("/api/student/semester-courses")
+    suspend fun getSemesterCourses(): List<SemesterCourseResponse>
+
+    @POST("/api/student/semester-courses")
+    suspend fun addSemesterCourse(@Body body: Map<String, Long>): SemesterCourseResponse
+
+    @DELETE("/api/student/semester-courses/{courseId}")
+    suspend fun removeSemesterCourse(@Path("courseId") courseId: Long)
+
+    // Student Tech Stacks (student's favorites)
+    @GET("/api/student/tech-stacks")
+    suspend fun getStudentTechStacks(): List<StudentTechStackResponse>
+
+    @POST("/api/student/tech-stacks")
+    suspend fun addStudentTechStack(@Body body: Map<String, String>): StudentTechStackResponse
+
+    @DELETE("/api/student/tech-stacks/by-name/{name}")
+    suspend fun removeStudentTechStackByName(@Path("name") name: String)
+
     // Tech & Discovery
     @GET("/api/tech-stacks")
     suspend fun getTechStacks(): List<TechStack>

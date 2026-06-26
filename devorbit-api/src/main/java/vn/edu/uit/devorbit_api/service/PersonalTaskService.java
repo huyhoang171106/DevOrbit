@@ -100,9 +100,8 @@ public class PersonalTaskService {
     private void validateNotPastDeadline(PersonalTask task) {
         if (task.getDeadline() != null
             && task.getDeadline().toLocalDate().isBefore(LocalDate.now())
-            && !task.isCompleted()
             && task.getRecurrence() == null) {
-            throw new BadRequestException("Cannot modify a past-deadline uncompleted task");
+            throw new BadRequestException("Cannot modify a past-deadline task");
         }
     }
 

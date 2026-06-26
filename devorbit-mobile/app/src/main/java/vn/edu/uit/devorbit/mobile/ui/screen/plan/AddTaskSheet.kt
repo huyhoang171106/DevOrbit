@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import vn.edu.uit.devorbit.mobile.data.remote.dto.GroupTaskResponse
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import java.time.Instant
 import java.time.LocalDate
@@ -24,13 +25,26 @@ fun AddTaskSheet(
     creatorStudentCode: String,
     members: List<String>,
     loading: Boolean = false,
+    editingTask: GroupTaskResponse? = null,
     onDismiss: () -> Unit,
-    onConfirm: (title: String, description: String?, assignedTo: String, deadline: String?) -> Unit
+    onConfirm: (title: String, description: String?, assignedTo: String, deadline: String?) -> Unit,
+    onUpdate: (taskId: Long, title: String, description: String?, assignedTo: String, deadline: String?) -> Unit = { _, _, _, _, _ -> }
 ) {
-    var title by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var assignedTo by remember { mutableStateOf("") }
-    var deadlineMillis by remember { mutableStateOf<Long?>(null) }
+    val isEditing = editingTask != null
+
+    val initialTitle = remember(editingTask) { editingTask?.title ?: "" }
+    val initialDescription = remember(editingTask) { editingTask?.description ?: "" }
+    val initialAssignedTo = remember(editingTask) { editingTask?.assignedTo ?: "" }
+    val initialDeadlineMillis = remember(editingTask) {
+        editingTask?.deadline?.let {
+            try { LocalDate.parse(it).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli() } catch (_: Exception) { null }
+        }
+    }
+
+    var title by remember(editingTask) { mutableStateOf(initialTitle) }
+    var description by remember(editingTask) { mutableStateOf(initialDescription) }
+    var assignedTo by remember(editingTask) { mutableStateOf(initialAssignedTo) }
+    var deadlineMillis by remember(editingTask) { mutableStateOf(initialDeadlineMillis) }
     var showMemberDropdown by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
 
@@ -40,7 +54,6 @@ fun AddTaskSheet(
         Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().format(displayFormatter)
     } ?: ""
 
-    // Combine creator + members, deduplicated
     val allMembers = remember(creatorStudentCode, members) {
         listOf(creatorStudentCode) + members.filter { it != creatorStudentCode }
     }
@@ -115,7 +128,7 @@ fun AddTaskSheet(
                 .padding(bottom = 32.dp)
         ) {
             Text(
-                text = "Thêm nhiệm vụ",
+                text = if (isEditing) "Chỉnh sửa nhiệm vụ" else "Thêm nhiệm vụ",
                 color = CosmicTheme.colors.textPrimary,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
@@ -161,7 +174,7 @@ fun AddTaskSheet(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Assignee dropdown (required) — includes creator
+            // Assignee dropdown (required)
             ExposedDropdownMenuBox(
                 expanded = showMemberDropdown,
                 onExpandedChange = { showMemberDropdown = it }
@@ -170,6 +183,7 @@ fun AddTaskSheet(
                     value = assignedTo,
                     onValueChange = {},
                     readOnly = true,
+                    enabled = !isEditing,
                     placeholder = { Text("Giao cho *", color = CosmicTheme.colors.textTertiary) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = showMemberDropdown) },
                     modifier = Modifier.fillMaxWidth().menuAnchor(),
@@ -200,7 +214,7 @@ fun AddTaskSheet(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Deadline (required) — DatePicker
+            // Deadline — DatePicker
             OutlinedTextField(
                 value = deadlineDisplay,
                 onValueChange = {},
@@ -229,7 +243,13 @@ fun AddTaskSheet(
                     val isoDeadline = deadlineMillis?.let {
                         Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().format(apiFormatter)
                     }
-                    onConfirm(title, description.ifBlank { null }, assignedTo, isoDeadline)
+                    if (isEditing) {
+                        editingTask?.let { task ->
+                            onUpdate(task.id, title, description.ifBlank { null }, assignedTo, isoDeadline)
+                        }
+                    } else {
+                        onConfirm(title, description.ifBlank { null }, assignedTo, isoDeadline)
+                    }
                 },
                 enabled = canSubmit && !loading,
                 modifier = Modifier.fillMaxWidth(),
@@ -239,7 +259,7 @@ fun AddTaskSheet(
                     disabledContainerColor = CosmicTheme.colors.plasma.copy(alpha = 0.3f)
                 )
             ) {
-                Text("Lưu", color = Color.Black, fontWeight = FontWeight.SemiBold)
+                Text(if (isEditing) "Cập nhật" else "Lưu", color = Color.Black, fontWeight = FontWeight.SemiBold)
             }
         }
     }

@@ -10,6 +10,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collect
+import vn.edu.uit.devorbit.mobile.data.datastore.SettingsDataStore
+import vn.edu.uit.devorbit.mobile.data.repository.StreakTracker
 import vn.edu.uit.devorbit.mobile.data.local.entity.CourseEntity
 import vn.edu.uit.devorbit.mobile.data.repository.AcademicRepository
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseArticle
@@ -27,7 +30,9 @@ import javax.inject.Inject
 @HiltViewModel
 class CourseViewModel @Inject constructor(
     private val repository: AcademicRepository,
-    private val bookmarkRepository: BookmarkRepository
+    private val bookmarkRepository: BookmarkRepository,
+    private val streakTracker: StreakTracker,
+    private val settingsDataStore: SettingsDataStore
 ) : ViewModel() {
 
     val courses: StateFlow<List<CourseEntity>> = repository.allCourses
@@ -78,9 +83,15 @@ class CourseViewModel @Inject constructor(
     private val _bookmarkedCourseIds = MutableStateFlow<Set<Long>>(emptySet())
     val bookmarkedCourseIds: StateFlow<Set<Long>> = _bookmarkedCourseIds.asStateFlow()
 
+    private var currentStudentCode: String = ""
     init {
         refreshCourses()
         loadGraph()
+        viewModelScope.launch {
+            settingsDataStore.studentCode.collect { code ->
+                currentStudentCode = code.orEmpty()
+            }
+        }
     }
 
     fun refreshCourses() {
@@ -137,6 +148,9 @@ class CourseViewModel @Inject constructor(
     fun openRepo(repo: RepoSummary) {
         _selectedRepo.value = repo
         _courseHubNavigationState.value = _courseHubNavigationState.value.openRepo(repo.id)
+        if (currentStudentCode.isNotBlank()) {
+            streakTracker.incrementReposViewed(currentStudentCode)
+        }
     }
 
     fun backFromRepo() {

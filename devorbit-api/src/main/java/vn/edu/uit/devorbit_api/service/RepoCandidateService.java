@@ -11,6 +11,7 @@ import vn.edu.uit.devorbit_api.dto.admin.RepoCandidateResponse;
 import vn.edu.uit.devorbit_api.entity.GithubRepo;
 import vn.edu.uit.devorbit_api.entity.RepoCandidate;
 import vn.edu.uit.devorbit_api.entity.RepoCandidateStatus;
+import vn.edu.uit.devorbit_api.entity.TechStack;
 import vn.edu.uit.devorbit_api.exception.BadRequestException;
 import vn.edu.uit.devorbit_api.exception.NotFoundException;
 import vn.edu.uit.devorbit_api.repository.GithubRepoRepository;
@@ -100,6 +101,16 @@ public class RepoCandidateService {
                 studentNotificationService.notifyCourseSubscribers(repo, candidate.getCourse());
             } catch (Exception e) {
                 log.warn("Failed to notify course subscribers: {}", e.getMessage());
+            }
+        }
+
+        if (repo.getTechStacks() != null && !repo.getTechStacks().isEmpty()) {
+            for (TechStack ts : repo.getTechStacks()) {
+                try {
+                    studentNotificationService.notifyTechStackSubscribers(repo, ts);
+                } catch (Exception e) {
+                    log.warn("Failed to notify tech stack subscribers for {}: {}", ts.getName(), e.getMessage());
+                }
             }
         }
 

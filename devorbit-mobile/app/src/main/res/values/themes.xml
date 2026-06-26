@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.DevOrbit.Splash" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="android:windowBackground">#12141A</item>
+    <style name="Theme.DevOrbit.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#12141A</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/Theme.DevOrbit</item>
     </style>
+
+    <style name="Theme.DevOrbit" parent="Theme.Material3.DayNight.NoActionBar" />
 </resources>

@@ -14,7 +14,7 @@ public class TechStackService {
 
     public List<TechStackResponse> getAllTechStacks() {
         return techStackRepository.findAllDistinctOrderByName().stream()
-                .map(techStack -> new TechStackResponse(techStack.getName()))
+                .map(techStack -> new TechStackResponse(techStack.getId(), techStack.getName()))
                 .toList();
     }
 }

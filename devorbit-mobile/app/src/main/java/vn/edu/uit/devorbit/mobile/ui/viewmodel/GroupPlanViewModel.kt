@@ -13,9 +13,13 @@ import vn.edu.uit.devorbit.mobile.data.datastore.SettingsDataStore
 import vn.edu.uit.devorbit.mobile.data.remote.dto.*
 import vn.edu.uit.devorbit.mobile.network.ApiService
 import java.io.IOException
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import retrofit2.HttpException
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.TaskFilter
+import vn.edu.uit.devorbit.mobile.ui.viewmodel.WeekDay
 
 data class GroupPlanDetailState(
     val plan: GroupPlanResponse? = null,
@@ -34,7 +38,13 @@ data class GroupPlanDetailState(
     val timeFilter: TaskFilter = TaskFilter.ALL,
     val memberFilter: String? = null,
     val showTransferDialog: Boolean = false,
-    val transferLoading: Boolean = false
+    val transferLoading: Boolean = false,
+    val selectedDate: String? = null,
+    val currentYear: Int = LocalDate.now().year,
+    val currentMonth: Int = LocalDate.now().monthValue,
+    val currentWeekOffset: Int = 0,
+    val maxWeekOffset: Int = 0,
+    val weekDates: List<WeekDay> = emptyList()
 )
 
 @HiltViewModel
@@ -57,6 +67,7 @@ class GroupPlanViewModel @Inject constructor(
             val code = settingsDataStore.studentCode.first().orEmpty()
             _detail.update { it.copy(currentUserCode = code) }
         }
+        loadWeekDays()
     }
 
     fun loadMyPlans() {
@@ -97,6 +108,21 @@ class GroupPlanViewModel @Inject constructor(
                 onSuccess()
             } catch (e: Exception) {
                 _detail.update { it.copy(actionLoading = false, actionError = "Không thể thêm nhiệm vụ") }
+            }
+        }
+    }
+
+    fun updateTask(taskId: Long, title: String, description: String?, assignedTo: String?, deadline: String?, onSuccess: () -> Unit = {}) {
+        viewModelScope.launch {
+            _detail.update { it.copy(actionLoading = true, actionError = null) }
+            try {
+                apiService.updateGroupTask(taskId, UpdateGroupTaskRequest(title, description, assignedTo, deadline, null))
+                val planId = _detail.value.plan?.id ?: return@launch
+                val tasks = apiService.getGroupTasks(planId)
+                _detail.update { it.copy(tasks = tasks, actionLoading = false) }
+                onSuccess()
+            } catch (e: Exception) {
+                _detail.update { it.copy(actionLoading = false, actionError = "Không thể cập nhật nhiệm vụ") }
             }
         }
     }
@@ -304,6 +330,70 @@ class GroupPlanViewModel @Inject constructor(
             } finally {
                 _detail.update { it.copy(actionLoading = false) }
             }
+        }
+    }
+
+    private val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    private val minDate: LocalDate = LocalDate.now().minusMonths(6).with(java.time.temporal.TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+
+    private fun computeMaxWeekOffset(): Int {
+        val now = LocalDate.now()
+        val monday = now.with(java.time.temporal.TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+        val diff = monday.toEpochDay() - minDate.toEpochDay()
+        return if (diff < 0) 0 else (diff / 7).toInt()
+    }
+
+    fun selectDate(date: String?) {
+        _detail.update { it.copy(selectedDate = date) }
+    }
+
+    fun navigateMonth(delta: Int) {
+        val s = _detail.value
+        var newMonth = s.currentMonth + delta
+        var newYear = s.currentYear
+        if (newMonth < 1) { newMonth = 12; newYear-- }
+        else if (newMonth > 12) { newMonth = 1; newYear++ }
+        if (newYear < 2026 || (newYear == 2026 && newMonth < 6)) return
+        _detail.update { it.copy(currentYear = newYear, currentMonth = newMonth, selectedDate = null) }
+    }
+
+    fun navigateWeek(delta: Int) {
+        val current = _detail.value.currentWeekOffset
+        val maxOffset = computeMaxWeekOffset()
+        val proposed = (current + delta).coerceIn(0, maxOffset)
+        _detail.update { it.copy(currentWeekOffset = proposed, selectedDate = null) }
+        loadWeekDays()
+    }
+
+    private fun loadWeekDays() {
+        viewModelScope.launch {
+            val offset = _detail.value.currentWeekOffset
+            val maxOffset = computeMaxWeekOffset()
+            var date = LocalDate.now().minusWeeks(offset.toLong()).with(java.time.temporal.TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+            val todayStr = LocalDate.now().format(dateFormat)
+            val days = mutableListOf<WeekDay>()
+
+            for (i in 0..6) {
+                val dateStr = date.format(dateFormat)
+                val dayLabel = when (date.dayOfWeek) {
+                    DayOfWeek.MONDAY -> "T2"
+                    DayOfWeek.TUESDAY -> "T3"
+                    DayOfWeek.WEDNESDAY -> "T4"
+                    DayOfWeek.THURSDAY -> "T5"
+                    DayOfWeek.FRIDAY -> "T6"
+                    DayOfWeek.SATURDAY -> "T7"
+                    DayOfWeek.SUNDAY -> "CN"
+                }
+                days.add(WeekDay(
+                    date = dateStr,
+                    label = dayLabel,
+                    activity = null,
+                    isToday = dateStr == todayStr,
+                    qualifiesForStreak = false
+                ))
+                date = date.plusDays(1)
+            }
+            _detail.update { it.copy(weekDates = days, maxWeekOffset = maxOffset) }
         }
     }
 }

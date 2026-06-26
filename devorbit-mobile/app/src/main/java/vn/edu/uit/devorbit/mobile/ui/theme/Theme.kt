@@ -38,9 +38,11 @@ fun DevOrbitTheme(
 
     val view = LocalView.current
     if (!view.isInEditMode) {
-        val window = (view.context as android.app.Activity).window
-        window.statusBarColor = Color.Transparent.toArgb()
-        WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
+        val activity = view.context as? android.app.Activity
+        activity?.window?.let { window ->
+            window.statusBarColor = Color.Transparent.toArgb()
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
+        }
     }
 
     CompositionLocalProvider(

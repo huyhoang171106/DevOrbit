@@ -14,7 +14,9 @@ import vn.edu.uit.devorbit.mobile.data.remote.dto.UpdatePersonalTaskRequest
 import vn.edu.uit.devorbit.mobile.domain.model.TaskItem
 import vn.edu.uit.devorbit.mobile.domain.model.millisToIso
 import vn.edu.uit.devorbit.mobile.domain.model.toTaskItem
+import vn.edu.uit.devorbit.mobile.domain.repository.AuthRepository
 import vn.edu.uit.devorbit.mobile.network.ApiService
+import vn.edu.uit.devorbit.mobile.ui.viewmodel.WeekDay
 import android.util.Log
 import java.io.IOException
 import java.time.DayOfWeek
@@ -22,6 +24,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import retrofit2.HttpException
 
@@ -52,7 +55,13 @@ data class TaskManagementUiState(
     val taskLoading: Boolean = false,
     val saveLoading: Boolean = false,
     val deleteLoading: Boolean = false,
-    val continuedDates: Set<LocalDate> = emptySet()
+    val continuedDates: Set<LocalDate> = emptySet(),
+    val selectedDate: String? = null,
+    val currentYear: Int = LocalDate.now().year,
+    val currentMonth: Int = LocalDate.now().monthValue,
+    val currentWeekOffset: Int = 0,
+    val maxWeekOffset: Int = 0,
+    val weekDates: List<WeekDay> = emptyList()
 )
 
 @HiltViewModel
@@ -68,6 +77,7 @@ class TaskManagementViewModel @Inject constructor(
     init {
         observeTasks()
         loadGroupPlans()
+        loadWeekDays()
     }
 
     private fun observeTasks() {
@@ -447,6 +457,71 @@ class TaskManagementViewModel @Inject constructor(
 
     fun updatePlanTitle(title: String) {
         _state.update { it.copy(planTitle = title) }
+    }
+
+    private val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    private val minDate: LocalDate = LocalDate.now().minusMonths(6).with(DayOfWeek.MONDAY)
+
+    private fun computeMaxWeekOffset(): Int {
+        val now = LocalDate.now()
+        val monday = now.with(java.time.temporal.TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+        val minDate = LocalDate.now().minusMonths(6).with(java.time.temporal.TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+        val diff = monday.toEpochDay() - minDate.toEpochDay()
+        return if (diff < 0) 0 else (diff / 7).toInt()
+    }
+
+    fun selectDate(date: String?) {
+        _state.update { it.copy(selectedDate = date) }
+    }
+
+    fun navigateMonth(delta: Int) {
+        val s = _state.value
+        var newMonth = s.currentMonth + delta
+        var newYear = s.currentYear
+        if (newMonth < 1) { newMonth = 12; newYear-- }
+        else if (newMonth > 12) { newMonth = 1; newYear++ }
+        if (newYear < 2026 || (newYear == 2026 && newMonth < 6)) return
+        _state.update { it.copy(currentYear = newYear, currentMonth = newMonth, selectedDate = null) }
+    }
+
+    fun navigateWeek(delta: Int) {
+        val current = _state.value.currentWeekOffset
+        val maxOffset = computeMaxWeekOffset()
+        val proposed = (current + delta).coerceIn(0, maxOffset)
+        _state.update { it.copy(currentWeekOffset = proposed, selectedDate = null) }
+        loadWeekDays()
+    }
+
+    private fun loadWeekDays() {
+        viewModelScope.launch {
+            val offset = _state.value.currentWeekOffset
+            val maxOffset = computeMaxWeekOffset()
+            var date = LocalDate.now().minusWeeks(offset.toLong()).with(DayOfWeek.MONDAY)
+            val todayStr = LocalDate.now().format(dateFormat)
+            val days = mutableListOf<WeekDay>()
+
+            for (i in 0..6) {
+                val dateStr = date.format(dateFormat)
+                val dayLabel = when (date.dayOfWeek) {
+                    DayOfWeek.MONDAY -> "T2"
+                    DayOfWeek.TUESDAY -> "T3"
+                    DayOfWeek.WEDNESDAY -> "T4"
+                    DayOfWeek.THURSDAY -> "T5"
+                    DayOfWeek.FRIDAY -> "T6"
+                    DayOfWeek.SATURDAY -> "T7"
+                    DayOfWeek.SUNDAY -> "CN"
+                }
+                days.add(WeekDay(
+                    date = dateStr,
+                    label = dayLabel,
+                    activity = null,
+                    isToday = dateStr == todayStr,
+                    qualifiesForStreak = false
+                ))
+                date = date.plusDays(1)
+            }
+            _state.update { it.copy(weekDates = days, maxWeekOffset = maxOffset) }
+        }
     }
 
     fun createGroupPlan(onSuccess: (Long) -> Unit) {

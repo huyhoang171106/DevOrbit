@@ -311,9 +311,9 @@ fun RepoDetailScreen(
                     Column(modifier = Modifier.weight(1f)) {
                         MetaRow(Icons.Filled.Star, "$starCount")
                         Spacer(Modifier.height(10.dp))
-                        MetaRow(Icons.Filled.CallSplit, repo.forkCount?.toString() ?: "—")
+                        MetaRow(Icons.Filled.CallSplit, repo.forkCount?.toString() ?: "Chưa có")
                         Spacer(Modifier.height(10.dp))
-                        MetaRow(Icons.Filled.Description, repo.license ?: "—")
+                        MetaRow(Icons.Filled.Description, repo.license ?: "Chưa có")
                     }
                 }
                 Spacer(Modifier.height(12.dp))

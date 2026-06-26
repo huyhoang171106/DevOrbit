@@ -227,19 +227,27 @@ fun SemesterPlannerScreen(
                         shape = RoundedCornerShape(10.dp)
                     )
                     Spacer(Modifier.height(8.dp))
+                    if (currentCredits >= 22) {
+                        Text("Học kỳ này đã đạt tối đa 22 TC!", style = CosmicTheme.typography.label, color = CosmicTheme.colors.supernova, modifier = Modifier.padding(bottom = 8.dp))
+                    }
                     LazyColumn(modifier = Modifier.heightIn(max = 300.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         items(availableCourses) { course ->
+                            val wouldExceed = currentCredits + course.credits > 22
                             Surface(
-                                modifier = Modifier.fillMaxWidth().clickable { viewModel.addCourseToSemester(course.id, addTargetSemester) },
+                                modifier = Modifier.fillMaxWidth().clickable(enabled = !wouldExceed) { viewModel.addCourseToSemester(course.id, addTargetSemester) },
                                 shape = RoundedCornerShape(10.dp),
                                 color = CosmicTheme.colors.nebula
                             ) {
                                 Row(modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Text(course.maMH, style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.Bold), color = CosmicTheme.colors.plasma)
-                                        Text(course.tenMH, style = CosmicTheme.typography.body, color = CosmicTheme.colors.textPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                        Text(course.maMH, style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.Bold), color = if (wouldExceed) CosmicTheme.colors.textTertiary else CosmicTheme.colors.plasma)
+                                        Text(course.tenMH, style = CosmicTheme.typography.body, color = if (wouldExceed) CosmicTheme.colors.textTertiary else CosmicTheme.colors.textPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                     }
-                                    Text("${course.credits} TC", style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.SemiBold), color = CosmicTheme.colors.aurora)
+                                    Text("${course.credits} TC", style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.SemiBold), color = if (wouldExceed) CosmicTheme.colors.supernova else CosmicTheme.colors.aurora)
+                                    if (wouldExceed) {
+                                        Spacer(Modifier.width(4.dp))
+                                        Text("Quá 22", style = CosmicTheme.typography.label.copy(fontSize = 10.sp), color = CosmicTheme.colors.supernova)
+                                    }
                                 }
                             }
                         }

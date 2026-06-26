@@ -102,9 +102,13 @@ class CourseViewModel @Inject constructor(
     private val _bookmarkedCourseIds = MutableStateFlow<Set<Long>>(emptySet())
     val bookmarkedCourseIds: StateFlow<Set<Long>> = _bookmarkedCourseIds.asStateFlow()
 
+    private val _bookmarkedRepoIds = MutableStateFlow<Set<Long>>(emptySet())
+    val bookmarkedRepoIds: StateFlow<Set<Long>> = _bookmarkedRepoIds.asStateFlow()
+
     init {
         refreshCourses()
         loadGraph()
+        loadAllBookmarkState()
     }
 
     fun refreshCourses() {
@@ -226,6 +230,26 @@ class CourseViewModel @Inject constructor(
         }
     }
 
+    private fun loadAllBookmarkState() {
+        viewModelScope.launch {
+            try {
+                val all = bookmarkRepository.getAllBookmarks().first()
+                val courseIds = mutableSetOf<Long>()
+                val repoIds = mutableSetOf<Long>()
+                for (bm in all) {
+                    when (bm.targetType) {
+                        "COURSE" -> courseIds.add(bm.targetId)
+                        "REPO" -> repoIds.add(bm.targetId)
+                    }
+                }
+                _bookmarkedCourseIds.value = courseIds
+                _bookmarkedRepoIds.value = repoIds
+            } catch (e: Exception) {
+                android.util.Log.e("CourseViewModel", "Failed to load bookmarks", e)
+            }
+        }
+    }
+
     private fun loadRepoAiData(repoId: Long) {
         viewModelScope.launch {
             _aiLoading.value = true
@@ -339,6 +363,39 @@ class CourseViewModel @Inject constructor(
                     )
                 )
                 _bookmarkedCourseIds.value = _bookmarkedCourseIds.value + course.id
+            }
+        }
+    }
+
+    fun toggleRepoBookmark(repo: RepoSummary) {
+        val repoId = repo.id
+        val currentlyBookmarked = repoId in _bookmarkedRepoIds.value
+
+        if (currentlyBookmarked) {
+            _bookmarkedRepoIds.value = _bookmarkedRepoIds.value - repoId
+        } else {
+            _bookmarkedRepoIds.value = _bookmarkedRepoIds.value + repoId
+        }
+
+        viewModelScope.launch {
+            try {
+                if (currentlyBookmarked) {
+                    val all = bookmarkRepository.getAllBookmarks().first()
+                    all.firstOrNull { it.targetType == "REPO" && it.targetId == repoId }?.let {
+                        bookmarkRepository.removeBookmark(it.id)
+                    }
+                } else {
+                    bookmarkRepository.addBookmark(
+                        Bookmark(id = 0, targetType = "REPO", targetId = repoId, title = repo.displayName.orEmpty())
+                    )
+                }
+            } catch (e: Exception) {
+                if (currentlyBookmarked) {
+                    _bookmarkedRepoIds.value = _bookmarkedRepoIds.value + repoId
+                } else {
+                    _bookmarkedRepoIds.value = _bookmarkedRepoIds.value - repoId
+                }
+                android.util.Log.e("CourseViewModel", "Failed to toggle repo bookmark", e)
             }
         }
     }

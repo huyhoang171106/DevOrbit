@@ -42,6 +42,7 @@ fun CourseHubScreen(
     val detailLoading by viewModel.detailLoading.collectAsStateWithLifecycle()
     val detailError by viewModel.detailError.collectAsStateWithLifecycle()
     val bookmarkedCourseIds by viewModel.bookmarkedCourseIds.collectAsStateWithLifecycle()
+    val bookmarkedRepoIds by viewModel.bookmarkedRepoIds.collectAsStateWithLifecycle()
     val repoSummary by viewModel.repoSummary.collectAsStateWithLifecycle()
     val repoAdvice by viewModel.repoAdvice.collectAsStateWithLifecycle()
     val aiLoading by viewModel.aiLoading.collectAsStateWithLifecycle()
@@ -58,7 +59,9 @@ fun CourseHubScreen(
             socialInfo = repoSocialInfo,
             userVote = userVote,
             socialLoading = socialLoading,
+            isBookmarked = selectedRepo!!.id in bookmarkedRepoIds,
             onVote = { viewModel.voteRepo(selectedRepo!!.id, it) },
+            onBookmark = { viewModel.toggleRepoBookmark(selectedRepo!!) },
             onSubmitReview = { rating, comment -> viewModel.submitReview(selectedRepo!!.id, rating, comment) },
             onBack = { viewModel.backFromRepo() }
         )

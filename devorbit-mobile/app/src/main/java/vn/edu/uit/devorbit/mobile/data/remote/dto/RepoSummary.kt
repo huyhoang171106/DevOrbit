@@ -14,5 +14,7 @@ data class RepoSummary(
     val readmeExcerpt: String? = null,
     val fileTree: String? = null,
     val hasReadme: Boolean? = null,
-    val lastPushedAt: String? = null
+    val lastPushedAt: String? = null,
+    val reviewCount: Int? = null,
+    val averageRating: Double? = null
 )

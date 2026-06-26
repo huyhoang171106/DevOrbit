@@ -127,7 +127,7 @@ fun RepoDetailScreen(
             }
         }
 
-        // ─── Info chips (language, stars, tech stacks, last pushed) ───
+        // ─── Info chips (language, stars, tech stacks, last pushed, rating) ───
         item {
             Spacer(Modifier.height(12.dp))
             Row(
@@ -148,6 +148,14 @@ fun RepoDetailScreen(
                 lastPushedFormatted?.let {
                     InfoChip("Cập nhật $it", CosmicTheme.colors.textTertiary)
                 }
+                val avgRating = socialInfo?.averageRating ?: 0.0
+                if (avgRating > 0) {
+                    InfoChip("\u2605 ${"%.1f".format(avgRating)}", CosmicTheme.colors.supernova)
+                }
+                val rCount = socialInfo?.reviews?.size ?: 0
+                if (rCount > 0) {
+                    InfoChip("$rCount reviews", CosmicTheme.colors.plasma)
+                }
             }
         }
 
@@ -166,18 +174,6 @@ fun RepoDetailScreen(
                 Spacer(Modifier.width(8.dp))
                 Text("Mở trên GitHub")
             }
-        }
-
-        // ─── Social bar (vote + rating) ───
-        item {
-            Spacer(Modifier.height(12.dp))
-            SocialBar(
-                voteScore = socialInfo?.voteScore ?: 0,
-                averageRating = socialInfo?.averageRating ?: 0.0,
-                reviewCount = socialInfo?.reviews?.size ?: 0,
-                userVote = userVote,
-                onVote = onVote
-            )
         }
 
         // ─── README excerpt ───
@@ -240,21 +236,51 @@ fun RepoDetailScreen(
             AiSection(title = "Lời khuyên", content = aiAdvice?.content, type = aiAdvice?.type)
         }
 
-        // ─── Reviews header + form ───
+        // ─── Vote buttons + Reviews header ───
         item {
             Spacer(Modifier.height(16.dp))
-            Row(
+            Surface(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                shape = RoundedCornerShape(14.dp),
+                color = CosmicTheme.colors.nebula,
+                border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
             ) {
-                Text(
-                    text = "Đánh giá (${socialInfo?.reviews?.size ?: 0})",
-                    style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold),
-                    color = CosmicTheme.colors.textPrimary
-                )
-                TextButton(onClick = { showReviewForm = !showReviewForm }) {
-                    Text(if (showReviewForm) "Huỷ" else "Viết đánh giá", color = CosmicTheme.colors.plasma)
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = { onVote(if (userVote == 1) 0 else 1) }, modifier = Modifier.size(32.dp)) {
+                            Icon(
+                                Icons.Rounded.ThumbUp, contentDescription = "Upvote",
+                                tint = if (userVote == 1) CosmicTheme.colors.aurora else CosmicTheme.colors.textTertiary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        Text(
+                            text = "${socialInfo?.voteScore ?: 0}",
+                            style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold),
+                            color = CosmicTheme.colors.textPrimary
+                        )
+                        IconButton(onClick = { onVote(if (userVote == -1) 0 else -1) }, modifier = Modifier.size(32.dp)) {
+                            Icon(
+                                Icons.Rounded.ThumbDown, contentDescription = "Downvote",
+                                tint = if (userVote == -1) CosmicTheme.colors.supernova else CosmicTheme.colors.textTertiary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "Đánh giá (${socialInfo?.reviews?.size ?: 0})",
+                            style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold),
+                            color = CosmicTheme.colors.textPrimary
+                        )
+                        TextButton(onClick = { showReviewForm = !showReviewForm }) {
+                            Text(if (showReviewForm) "Huỷ" else "Viết đánh giá", color = CosmicTheme.colors.plasma)
+                        }
+                    }
                 }
             }
         }
@@ -423,49 +449,6 @@ private fun MarkdownContent(text: String) {
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun SocialBar(
-    voteScore: Int,
-    averageRating: Double,
-    reviewCount: Int,
-    userVote: Int,
-    onVote: (Int) -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = { onVote(if (userVote == 1) 0 else 1) }, modifier = Modifier.size(32.dp)) {
-                Icon(
-                    Icons.Rounded.ThumbUp, contentDescription = "Upvote",
-                    tint = if (userVote == 1) CosmicTheme.colors.aurora else CosmicTheme.colors.textTertiary,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-            Text(
-                text = "$voteScore",
-                style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold),
-                color = CosmicTheme.colors.textPrimary
-            )
-            IconButton(onClick = { onVote(if (userVote == -1) 0 else -1) }, modifier = Modifier.size(32.dp)) {
-                Icon(
-                    Icons.Rounded.ThumbDown, contentDescription = "Downvote",
-                    tint = if (userVote == -1) CosmicTheme.colors.supernova else CosmicTheme.colors.textTertiary,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-        }
-        if (averageRating > 0) {
-            InfoChip("%.1f".format(averageRating), CosmicTheme.colors.supernova)
-        }
-        if (reviewCount > 0) {
-            InfoChip("$reviewCount reviews", CosmicTheme.colors.plasma)
         }
     }
 }

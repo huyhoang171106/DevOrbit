@@ -120,6 +120,34 @@ fun RepoListSection(
                                 }
                             }
                         }
+                        val avg = repo.averageRating
+                        val rCount = repo.reviewCount
+                        if (avg != null && avg > 0) {
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = CosmicTheme.colors.supernova.copy(alpha = 0.12f)
+                            ) {
+                                Text(
+                                    text = "\u2605 ${"%.1f".format(avg)}",
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                    style = CosmicTheme.typography.label,
+                                    color = CosmicTheme.colors.supernova
+                                )
+                            }
+                        }
+                        if (rCount != null && rCount > 0) {
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = CosmicTheme.colors.plasma.copy(alpha = 0.12f)
+                            ) {
+                                Text(
+                                    text = "$rCount reviews",
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                    style = CosmicTheme.typography.label,
+                                    color = CosmicTheme.colors.plasma
+                                )
+                            }
+                        }
                     }
                 }
             }

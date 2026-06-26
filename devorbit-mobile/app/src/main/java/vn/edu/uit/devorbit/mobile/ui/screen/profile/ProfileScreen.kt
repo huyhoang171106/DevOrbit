@@ -36,6 +36,8 @@ fun ProfileScreen(
     onNavigateToDetail: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    var courseExpanded by remember { mutableStateOf(false) }
+    var repoExpanded by remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -141,14 +143,28 @@ fun ProfileScreen(
                     color = CosmicTheme.colors.nebula,
                     border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("Chưa có môn nào", style = CosmicTheme.typography.label, color = CosmicTheme.colors.textTertiary)
                     }
                 }
             }
-        }
-        items(courseBookmarks, key = { it.id }) { bookmark ->
-            BookmarkRow(bookmark = bookmark, onRemove = { viewModel.removeBookmark(bookmark.id) })
+        } else {
+            val displayCourses = if (courseExpanded) courseBookmarks else courseBookmarks.take(5)
+            items(displayCourses, key = { it.id }) { bookmark ->
+                BookmarkRow(bookmark = bookmark, onRemove = { viewModel.removeBookmark(bookmark.id) })
+            }
+            if (courseBookmarks.size > 5) {
+                item {
+                    TextButton(onClick = { courseExpanded = !courseExpanded }, modifier = Modifier.fillMaxWidth()) {
+                        Icon(
+                            if (courseExpanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                            contentDescription = null, modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(if (courseExpanded) "Thu gọn" else "Xem thêm (${courseBookmarks.size - 5})", style = CosmicTheme.typography.label, color = CosmicTheme.colors.plasma)
+                    }
+                }
+            }
         }
 
         item { Spacer(Modifier.height(8.dp)) }
@@ -167,14 +183,28 @@ fun ProfileScreen(
                     color = CosmicTheme.colors.nebula,
                     border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("Chưa có repo nào", style = CosmicTheme.typography.label, color = CosmicTheme.colors.textTertiary)
                     }
                 }
             }
-        }
-        items(repoBookmarks, key = { it.id }) { bookmark ->
-            BookmarkRow(bookmark = bookmark, onRemove = { viewModel.removeBookmark(bookmark.id) })
+        } else {
+            val displayRepos = if (repoExpanded) repoBookmarks else repoBookmarks.take(5)
+            items(displayRepos, key = { it.id }) { bookmark ->
+                BookmarkRow(bookmark = bookmark, onRemove = { viewModel.removeBookmark(bookmark.id) })
+            }
+            if (repoBookmarks.size > 5) {
+                item {
+                    TextButton(onClick = { repoExpanded = !repoExpanded }, modifier = Modifier.fillMaxWidth()) {
+                        Icon(
+                            if (repoExpanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                            contentDescription = null, modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(if (repoExpanded) "Thu gọn" else "Xem thêm (${repoBookmarks.size - 5})", style = CosmicTheme.typography.label, color = CosmicTheme.colors.plasma)
+                    }
+                }
+            }
         }
 
         // Settings section

@@ -33,7 +33,8 @@ import vn.edu.uit.devorbit.mobile.ui.viewmodel.ProfileViewModel
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
-    onNavigateToDetail: () -> Unit = {}
+    onNavigateToDetail: () -> Unit = {},
+    onBookmarkClick: (Bookmark) -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var courseExpanded by remember { mutableStateOf(false) }
@@ -151,7 +152,7 @@ fun ProfileScreen(
         } else {
             val displayCourses = if (courseExpanded) courseBookmarks else courseBookmarks.take(5)
             items(displayCourses, key = { it.id }) { bookmark ->
-                BookmarkRow(bookmark = bookmark, onRemove = { viewModel.removeBookmark(bookmark.id) })
+                BookmarkRow(bookmark = bookmark, onClick = { onBookmarkClick(bookmark) }, onRemove = { viewModel.removeBookmark(bookmark.id) })
             }
             if (courseBookmarks.size > 5) {
                 item {
@@ -191,7 +192,7 @@ fun ProfileScreen(
         } else {
             val displayRepos = if (repoExpanded) repoBookmarks else repoBookmarks.take(5)
             items(displayRepos, key = { it.id }) { bookmark ->
-                BookmarkRow(bookmark = bookmark, onRemove = { viewModel.removeBookmark(bookmark.id) })
+                BookmarkRow(bookmark = bookmark, onClick = { onBookmarkClick(bookmark) }, onRemove = { viewModel.removeBookmark(bookmark.id) })
             }
             if (repoBookmarks.size > 5) {
                 item {
@@ -276,9 +277,9 @@ fun ProfileScreen(
 }
 
 @Composable
-private fun BookmarkRow(bookmark: Bookmark, onRemove: () -> Unit) {
+private fun BookmarkRow(bookmark: Bookmark, onClick: () -> Unit = {}, onRemove: () -> Unit) {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
         color = CosmicTheme.colors.nebula,
         border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)

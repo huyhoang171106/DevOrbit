@@ -167,6 +167,8 @@ class AcademicRepository @Inject constructor(
         return vn.edu.uit.devorbit.mobile.domain.model.KnowledgeGraph(nodes, links)
     }
 
+    suspend fun getRepo(repoId: Long): RepoSummary = apiService.getRepo(repoId)
+
     suspend fun getRepoSummary(repoId: Long): AiResponse = apiService.getRepoSummary(repoId)
 
     suspend fun getRepoAdvice(repoId: Long): AiResponse = apiService.getRepoAdvice(repoId)

@@ -182,6 +182,25 @@ class CourseViewModel @Inject constructor(
         }
     }
 
+    fun navigateToRepoFromBookmark(repoId: Long) {
+        viewModelScope.launch {
+            try {
+                val repo = repository.getRepo(repoId)
+                val courseId = repo.courseId ?: return@launch
+                // Open the parent course first
+                val course = courses.value.find { it.id == courseId }
+                if (course != null) {
+                    openCourse(course)
+                    // Wait briefly for course detail to load, then open repo
+                    kotlinx.coroutines.delay(1500)
+                    // Check if repo is now in the loaded repos
+                    val loadedRepo = _detailRepos.value.find { it.id == repoId } ?: repo
+                    openRepo(loadedRepo)
+                }
+            } catch (_: Exception) {}
+        }
+    }
+
     private fun fetchGithubPushedAt(repo: RepoSummary) {
         viewModelScope.launch(Dispatchers.IO) {
             try {

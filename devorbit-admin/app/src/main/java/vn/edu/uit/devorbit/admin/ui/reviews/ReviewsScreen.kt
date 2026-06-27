@@ -12,8 +12,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.foundation.background
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.hilt.navigation.compose.hiltViewModel
 import vn.edu.uit.devorbit.admin.data.remote.dto.*
 import vn.edu.uit.devorbit.admin.ui.components.*
 import vn.edu.uit.devorbit.admin.ui.theme.*
@@ -23,52 +25,78 @@ fun ReviewsScreen(
     viewModel: ReviewsViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val tabs = listOf("Đánh giá môn học", "Đánh giá kho")
-    var deleteTarget by remember { mutableStateOf<Pair<Long, Boolean>?>(null) } // (id, isCourse)
+    val tabs = listOf("Môn học", "Kho")
+    var deleteReviewId by remember { mutableStateOf<Pair<Long, Boolean>?>(null) } // (id, isCourse)
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // ── Page Header ───────────────────────────────────────────────────
         ObsidianPageHeader(
             title = "Đánh giá",
-            subtitle = when {
-                state.isLoading -> null
-                else -> "${state.courseReviews.size + state.repoReviews.size} đánh giá"
-            }
+            subtitle = "${state.courseReviews.size + state.repoReviews.size} đánh giá"
         )
 
         ObsidianDivider()
 
-        // ── Segmented filter ──────────────────────────────────────────────
-        SegmentedFilter(
-            options = tabs,
-            selectedIndex = state.selectedTab,
-            onSelect = { viewModel.selectTab(it) }
-        )
+        // Tabs
+        TabRow(
+            selectedTabIndex = state.selectedTab,
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.primary,
+            indicator = { tabPositions ->
+                if (state.selectedTab < tabPositions.size) {
+                    Box(
+                        Modifier
+                            .tabIndicatorOffset(tabPositions[state.selectedTab])
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
+                    )
+                }
+            },
+            divider = {
+                HorizontalDivider(
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                    thickness = 0.5.dp
+                )
+            }
+        ) {
+            tabs.forEachIndexed { index, title ->
+                Tab(
+                    selected = state.selectedTab == index,
+                    onClick = { viewModel.selectTab(index) },
+                    text = {
+                        Text(
+                            text = title,
+                            style = ObsidianType.labelMedium,
+                            fontWeight = if (state.selectedTab == index) FontWeight.SemiBold else FontWeight.Normal
+                        )
+                    }
+                )
+            }
+        }
 
-        // ── Content ───────────────────────────────────────────────────────
-        when {
-            state.isLoading -> ObsidianLoadingBox(Modifier.weight(1f))
-            state.error != null -> ObsidianEmptyState(
+        if (state.isLoading) {
+            ObsidianLoadingBox()
+        } else if (state.error != null) {
+            ObsidianEmptyState(
                 message = "Lỗi tải dữ liệu",
                 subtitle = state.error,
-                icon = Icons.Rounded.ErrorOutline,
-                modifier = Modifier.weight(1f)
+                icon = Icons.Rounded.ErrorOutline
             )
-            else -> when (state.selectedTab) {
+        } else {
+            when (state.selectedTab) {
                 0 -> CourseReviewsList(
                     reviews = state.courseReviews,
-                    onDelete = { id -> deleteTarget = id to true }
+                    onDelete = { id -> deleteReviewId = id to true }
                 )
                 1 -> RepoReviewsList(
                     reviews = state.repoReviews,
-                    onDelete = { id -> deleteTarget = id to false }
+                    onDelete = { id -> deleteReviewId = id to false }
                 )
             }
         }
     }
 
-    // ── Delete confirmation ─────────────────────────────────────────────
-    deleteTarget?.let { (id, isCourse) ->
+    // Delete confirm dialog
+    deleteReviewId?.let { (id, isCourse) ->
         ObsidianConfirmDialog(
             title = "Xoá đánh giá",
             message = "Bạn có chắc muốn xoá đánh giá này? Hành động này không thể hoàn tác.",
@@ -77,67 +105,31 @@ fun ReviewsScreen(
             onConfirm = {
                 if (isCourse) viewModel.deleteCourseReview(id)
                 else viewModel.deleteRepoReview(id)
-                deleteTarget = null
+                deleteReviewId = null
             },
-            onDismiss = { deleteTarget = null }
+            onDismiss = { deleteReviewId = null }
         )
     }
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// SEGMENTED FILTER
-// ══════════════════════════════════════════════════════════════════════════════
-
+// ── Course Reviews List ────────────────────────────────────────────────────
 @Composable
-private fun SegmentedFilter(
-    options: List<String>,
-    selectedIndex: Int,
-    onSelect: (Int) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        options.forEachIndexed { index, label ->
-            FilterChip(
-                selected = selectedIndex == index,
-                onClick = { onSelect(index) },
-                label = {
-                    Text(
-                        label,
-                        style = ObsidianType.labelMedium,
-                        fontWeight = if (selectedIndex == index) FontWeight.SemiBold else FontWeight.Normal
-                    )
-                }
-            )
-        }
-    }
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// COURSE REVIEWS LIST
-// ══════════════════════════════════════════════════════════════════════════════
-
-@Composable
-private fun ColumnScope.CourseReviewsList(
+private fun CourseReviewsList(
     reviews: List<CourseReviewAdminResponse>,
     onDelete: (Long) -> Unit
 ) {
     if (reviews.isEmpty()) {
         ObsidianEmptyState(
             message = "Không có đánh giá môn học",
-            icon = Icons.Rounded.RateReview,
-            modifier = Modifier.weight(1f)
+            icon = Icons.Rounded.RateReview
         )
     } else {
         LazyColumn(
-            modifier = Modifier.weight(1f),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(reviews, key = { it.id }) { review ->
-                ReviewItemCard(
+                ReviewCard(
                     studentName = review.studentName,
                     targetName = review.courseName,
                     targetLabel = "Môn học",
@@ -151,29 +143,24 @@ private fun ColumnScope.CourseReviewsList(
     }
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// REPO REVIEWS LIST
-// ══════════════════════════════════════════════════════════════════════════════
-
+// ── Repo Reviews List ─────────────────────────────────────────────────────
 @Composable
-private fun ColumnScope.RepoReviewsList(
+private fun RepoReviewsList(
     reviews: List<RepoReviewAdminResponse>,
     onDelete: (Long) -> Unit
 ) {
     if (reviews.isEmpty()) {
         ObsidianEmptyState(
             message = "Không có đánh giá kho lưu trữ",
-            icon = Icons.Rounded.RateReview,
-            modifier = Modifier.weight(1f)
+            icon = Icons.Rounded.RateReview
         )
     } else {
         LazyColumn(
-            modifier = Modifier.weight(1f),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(reviews, key = { it.id }) { review ->
-                ReviewItemCard(
+                ReviewCard(
                     studentName = review.studentName,
                     targetName = review.repoName,
                     targetLabel = "Kho lưu trữ",
@@ -187,12 +174,9 @@ private fun ColumnScope.RepoReviewsList(
     }
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// REVIEW ITEM CARD
-// ══════════════════════════════════════════════════════════════════════════════
-
+// ── Review Card ────────────────────────────────────────────────────────────
 @Composable
-private fun ReviewItemCard(
+private fun ReviewCard(
     studentName: String,
     targetName: String,
     targetLabel: String,
@@ -208,34 +192,25 @@ private fun ReviewItemCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // ── Header: avatar + name + entity + timestamp ──────────────
+            // Header: student avatar + name + date
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                ObsidianAvatar(name = studentName, size = 36)
+                ObsidianAvatar(name = studentName)
                 Spacer(Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = studentName,
                         style = ObsidianType.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    Spacer(Modifier.height(2.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        ObsidianBadge(
-                            text = targetLabel,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        Text(
-                            text = targetName,
-                            style = ObsidianType.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
+                    Text(
+                        text = "$targetLabel: $targetName",
+                        style = ObsidianType.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
                 createdAt?.let {
                     Text(
@@ -246,9 +221,10 @@ private fun ReviewItemCard(
                 }
             }
 
-            // ── Rating stars ────────────────────────────────────────────
+            Spacer(Modifier.height(10.dp))
+
+            // Rating stars
             rating?.let { r ->
-                Spacer(Modifier.height(10.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     repeat(5) { index ->
                         Icon(
@@ -268,7 +244,7 @@ private fun ReviewItemCard(
                 }
             }
 
-            // ── Comment preview ─────────────────────────────────────────
+            // Comment
             comment?.takeIf { it.isNotBlank() }?.let {
                 Spacer(Modifier.height(8.dp))
                 Text(
@@ -280,12 +256,10 @@ private fun ReviewItemCard(
                 )
             }
 
-            // ── Delete action ───────────────────────────────────────────
             Spacer(Modifier.height(10.dp))
-            HorizontalDivider(
-                color = MaterialTheme.colorScheme.outlineVariant,
-                thickness = 0.5.dp
-            )
+            ObsidianDivider()
+
+            // Delete action
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
@@ -296,11 +270,7 @@ private fun ReviewItemCard(
                         contentColor = ObsidianPalette.Red500
                     )
                 ) {
-                    Icon(
-                        Icons.Rounded.Delete,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
+                    Icon(Icons.Rounded.Delete, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
                     Text("Xoá", style = ObsidianType.labelMedium)
                 }

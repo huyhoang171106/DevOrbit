@@ -18,7 +18,7 @@ import org.mockito.kotlin.verify
 import vn.edu.uit.devorbit.admin.domain.repository.AdminRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class LoginViewModelTest {
+class AdminLoginViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
 
@@ -35,7 +35,7 @@ class LoginViewModelTest {
     @Test
     fun `initial state is not logged in`() {
         val repository = mock<AdminRepository>()
-        val viewModel = LoginViewModel(repository)
+        val viewModel = AdminLoginViewModel(repository)
         assertFalse(viewModel.state.value.isLoggedIn)
         assertFalse(viewModel.state.value.isLoading)
     }
@@ -43,7 +43,7 @@ class LoginViewModelTest {
     @Test
     fun `login with blank username shows error`() {
         val repository = mock<AdminRepository>()
-        val viewModel = LoginViewModel(repository)
+        val viewModel = AdminLoginViewModel(repository)
         viewModel.updatePassword("pass123")
         viewModel.login()
         assertEquals("Vui lòng nhập đầy đủ thông tin", viewModel.state.value.error)
@@ -53,7 +53,7 @@ class LoginViewModelTest {
     @Test
     fun `login with blank password shows error`() {
         val repository = mock<AdminRepository>()
-        val viewModel = LoginViewModel(repository)
+        val viewModel = AdminLoginViewModel(repository)
         viewModel.updateUsername("admin")
         viewModel.login()
         assertEquals("Vui lòng nhập đầy đủ thông tin", viewModel.state.value.error)
@@ -66,7 +66,7 @@ class LoginViewModelTest {
                 vn.edu.uit.devorbit.admin.domain.repository.AdminAuthResult("token123")
             )
         }
-        val viewModel = LoginViewModel(repository)
+        val viewModel = AdminLoginViewModel(repository)
         viewModel.updateUsername("admin")
         viewModel.updatePassword("pass")
         viewModel.login()
@@ -81,7 +81,7 @@ class LoginViewModelTest {
                 vn.edu.uit.devorbit.admin.domain.repository.AdminAuthResult("token123")
             )
         }
-        val viewModel = LoginViewModel(repository)
+        val viewModel = AdminLoginViewModel(repository)
         viewModel.updateUsername("admin")
         viewModel.updatePassword("pass")
         viewModel.login()
@@ -95,12 +95,12 @@ class LoginViewModelTest {
         val repository = mock<AdminRepository> {
             onBlocking { login("admin", "pass") } doReturn Result.failure(Exception("Sai thông tin"))
         }
-        val viewModel = LoginViewModel(repository)
+        val viewModel = AdminLoginViewModel(repository)
         viewModel.updateUsername("admin")
         viewModel.updatePassword("pass")
         viewModel.login()
         testDispatcher.scheduler.advanceUntilIdle()
-        assertEquals("Tên đăng nhập hoặc mật khẩu không đúng", viewModel.state.value.error)
+        assertEquals("Sai thông tin", viewModel.state.value.error)
         assertFalse(viewModel.state.value.isLoading)
     }
 
@@ -111,7 +111,7 @@ class LoginViewModelTest {
                 vn.edu.uit.devorbit.admin.domain.repository.AdminAuthResult("token123")
             )
         }
-        val viewModel = LoginViewModel(repository)
+        val viewModel = AdminLoginViewModel(repository)
         viewModel.updateUsername("admin")
         viewModel.updatePassword("pass")
         viewModel.login()

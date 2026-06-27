@@ -168,6 +168,7 @@ public class CommunityChatService {
                 message.getStudent().getFullName(),
                 message.getStudent().getAvatar(),
                 message.getContent(),
+                message.getImageUrl(),
                 message.getCreatedAt() != null ? message.getCreatedAt().toString() : null,
                 message.isDeleted());
     }

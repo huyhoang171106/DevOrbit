@@ -147,11 +147,11 @@ class CommunityMilestone3ContractTest {
         CommunityChatService chatService = mock(CommunityChatService.class);
         SimpMessagingTemplate messagingTemplate = mock(SimpMessagingTemplate.class);
         var response = new vn.edu.uit.devorbit_api.dto.community.ChatMessageResponse(
-                9L, 2L, 5L, "Nguyen Van A", null, "Xin chao", null, false);
+                9L, 2L, 5L, "Nguyen Van A", null, "Xin chao", null, null, false);
         when(chatService.sendMessage(eq("24520554"), eq(2L), any(ChatMessageRequest.class))).thenReturn(response);
 
         StudentCommunityController controller = new StudentCommunityController(chatService, messagingTemplate);
-        controller.sendMessage(2L, new ChatMessageRequest("Xin chao"), () -> "24520554");
+        controller.sendMessage(2L, new ChatMessageRequest("Xin chao", null), () -> "24520554");
 
         verify(messagingTemplate).convertAndSend("/topic/channel/2", response);
     }

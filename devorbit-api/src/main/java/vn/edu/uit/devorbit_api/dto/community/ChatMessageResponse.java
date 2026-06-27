@@ -10,6 +10,7 @@ package vn.edu.uit.devorbit_api.dto.community;
  * @param senderName  Display name of the sender.
  * @param senderAvatar URL or path to the sender's avatar image.
  * @param content     The message text content.
+ * @param imageUrl    Public URL of the image (null for text-only messages).
  * @param createdAt   Timestamp when the message was sent (ISO-8601 format).
  * @param deleted     Whether this message has been deleted (soft-delete).
  */
@@ -20,6 +21,7 @@ public record ChatMessageResponse(
         String senderName,
         String senderAvatar,
         String content,
+        String imageUrl,
         String createdAt,
         boolean deleted
 ) {

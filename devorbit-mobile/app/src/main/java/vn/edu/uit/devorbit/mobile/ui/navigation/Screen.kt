@@ -5,8 +5,12 @@ import androidx.compose.material.icons.rounded.*
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class Screen(val route: String, val label: String, val icon: ImageVector) {
-    object Dashboard : Screen("dashboard", "Tổng quan", Icons.Rounded.Home)
-    object Courses : Screen("courses", "Môn học", Icons.Rounded.List)
+    object Dashboard : Screen("dashboard", "Hôm nay", Icons.Rounded.Home)
+    object Subjects : Screen("subjects", "Môn học", Icons.Rounded.Book)
+    object Tutor : Screen("tutor", "AI Tutor", Icons.Rounded.AutoAwesome)
+    object Plan : Screen("plan", "Kế hoạch", Icons.Rounded.DateRange)
+    object Community : Screen("community", "Cộng đồng", Icons.Rounded.Chat)
+
     object Knowledge : Screen("knowledge", "Kiến thức", Icons.Rounded.Star)
     object Explore : Screen("explore", "Khám phá", Icons.Rounded.Search)
     object Notifications : Screen("notifications", "Thông báo", Icons.Rounded.Notifications)
@@ -16,5 +20,4 @@ sealed class Screen(val route: String, val label: String, val icon: ImageVector)
     data class GroupPlanDetail(val planId: Long) : Screen(
         "group_plan_detail/$planId", "", Icons.Rounded.CheckCircle
     )
-    object Community : Screen("community", "Cộng đồng", Icons.Rounded.Chat)
 }

@@ -99,6 +99,7 @@ public class AdminCommunityController {
                 msg.getStudent().getFullName(),
                 msg.getStudent().getAvatar(),
                 msg.getContent(),
+                msg.getImageUrl(),
                 msg.getCreatedAt() != null ? msg.getCreatedAt().toString() : null,
                 msg.isDeleted());
         messagingTemplate.convertAndSend("/topic/channel/" + channelId, resp);

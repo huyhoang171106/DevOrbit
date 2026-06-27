@@ -713,6 +713,7 @@ export function CommunityPage() {
         senderName: currentStudent.fullName,
         senderAvatar: currentStudent.avatar,
         content: content,
+        imageUrl: null,
         createdAt: new Date().toISOString(),
         sending: true,
       }

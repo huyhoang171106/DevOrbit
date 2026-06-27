@@ -310,6 +310,7 @@ export type ChatMessageResponse = {
   senderName: string
   senderAvatar: string | null
   content: string
+  imageUrl: string | null
   createdAt: string
   deleted?: boolean
   sending?: boolean

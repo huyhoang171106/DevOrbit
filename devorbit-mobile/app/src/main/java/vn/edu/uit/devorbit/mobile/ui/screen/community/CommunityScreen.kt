@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -30,6 +31,7 @@ fun CommunityScreen(
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     var showMembers by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.loadChannels()
@@ -206,6 +208,7 @@ fun CommunityScreen(
                 ChatInputBar(
                     channelName = uiState.activeChannel?.name ?: "",
                     onSend = { viewModel.sendMessage(it) },
+                    onSendImage = { uri -> viewModel.uploadAndSendImage(uri, context) },
                     enabled = uiState.isConnected && uiState.activeChannel != null
                 )
             }

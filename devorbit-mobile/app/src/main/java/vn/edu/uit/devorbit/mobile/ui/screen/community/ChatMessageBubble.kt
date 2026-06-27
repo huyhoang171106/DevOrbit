@@ -1,6 +1,9 @@
 package vn.edu.uit.devorbit.mobile.ui.screen.community
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -96,26 +99,45 @@ fun ChatMessageBubble(
             Column(
                 horizontalAlignment = if (isMine) Alignment.End else Alignment.Start
             ) {
-                Box(
-                    modifier = Modifier
-                        .widthIn(max = 280.dp)
-                        .background(
-                            if (isMine) CosmicTheme.colors.plasma.copy(alpha = 0.15f)
-                            else CosmicTheme.colors.nebula,
-                            RoundedCornerShape(
-                                topStart = 16.dp, topEnd = 16.dp,
-                                bottomStart = if (isMine) 16.dp else 4.dp,
-                                bottomEnd = if (isMine) 4.dp else 16.dp
-                            )
-                        )
-                        .padding(horizontal = 12.dp, vertical = 10.dp)
-                ) {
-                    Text(
-                        text = if (message.deleted) "Tin nhắn đã bị xóa" else message.content,
-                        fontSize = 14.sp,
-                        color = if (message.deleted) CosmicTheme.colors.textTertiary else CosmicTheme.colors.textPrimary,
-                        lineHeight = 20.sp
+                if (!message.imageUrl.isNullOrBlank()) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(context)
+                            .data(message.imageUrl)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = "Image message",
+                        modifier = Modifier
+                            .widthIn(max = 260.dp)
+                            .heightIn(max = 300.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .clickable {
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(message.imageUrl))
+                                context.startActivity(intent)
+                            },
+                        contentScale = ContentScale.Fit
                     )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .widthIn(max = 280.dp)
+                            .background(
+                                if (isMine) CosmicTheme.colors.plasma.copy(alpha = 0.15f)
+                                else CosmicTheme.colors.nebula,
+                                RoundedCornerShape(
+                                    topStart = 16.dp, topEnd = 16.dp,
+                                    bottomStart = if (isMine) 16.dp else 4.dp,
+                                    bottomEnd = if (isMine) 4.dp else 16.dp
+                                )
+                            )
+                            .padding(horizontal = 12.dp, vertical = 10.dp)
+                    ) {
+                        Text(
+                            text = if (message.deleted) "Tin nhắn đã bị xóa" else message.content,
+                            fontSize = 14.sp,
+                            color = if (message.deleted) CosmicTheme.colors.textTertiary else CosmicTheme.colors.textPrimary,
+                            lineHeight = 20.sp
+                        )
+                    }
                 }
 
                 Text(

@@ -165,4 +165,11 @@ interface ApiService {
         @Query("page") page: Int = 0,
         @Query("size") size: Int = 50
     ): PaginatedMessagesResponse
+
+    @Multipart
+    @POST("/api/student/community/channels/{channelId}/upload-image")
+    suspend fun uploadCommunityImage(
+        @Path("channelId") channelId: Long,
+        @Part file: MultipartBody.Part
+    ): Map<String, String>
 }

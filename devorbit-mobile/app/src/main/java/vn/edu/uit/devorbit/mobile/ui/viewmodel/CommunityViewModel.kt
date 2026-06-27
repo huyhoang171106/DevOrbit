@@ -28,6 +28,7 @@ data class ChatMessage(
     val senderName: String,
     val senderAvatar: String?,
     val content: String,
+    val imageUrl: String? = null,
     val createdAt: String,
     val deleted: Boolean = false,
     val isSending: Boolean = false
@@ -180,6 +181,37 @@ class CommunityViewModel @Inject constructor(
         repository.sendMessage(channel.id, trimmed)
     }
 
+    fun sendImage(imageUrl: String) {
+        val channel = _uiState.value.activeChannel ?: return
+
+        val tempId = -(System.currentTimeMillis())
+        val optimistic = ChatMessage(
+            id = tempId, channelId = channel.id, studentId = _uiState.value.currentUserId ?: 0,
+            senderName = _uiState.value.currentUserName.ifBlank { "Bạn" }, senderAvatar = null,
+            content = "", imageUrl = imageUrl,
+            createdAt = java.time.Instant.now().toString(), isSending = true
+        )
+        _uiState.update { it.copy(messages = it.messages + optimistic) }
+
+        repository.sendMessage(channel.id, "", imageUrl)
+    }
+
+    fun uploadAndSendImage(uri: android.net.Uri, context: android.content.Context) {
+        val channel = _uiState.value.activeChannel ?: return
+        viewModelScope.launch {
+            try {
+                val url = repository.uploadImage(channel.id, uri, context)
+                if (url != null) {
+                    sendImage(url)
+                } else {
+                    _uiState.update { it.copy(error = "Tải ảnh lên thất bại") }
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = "Tải ảnh lên thất bại: ${e.message}") }
+            }
+        }
+    }
+
     private fun handleIncomingMessage(destination: String, body: String) {
         try {
             if (destination.contains("/presence")) {
@@ -214,6 +246,6 @@ class CommunityViewModel @Inject constructor(
     }
 
     private fun ChatChannelResponse.toDomain() = ChatChannel(id, channelId, name, type, referenceId)
-    private fun ChatMessageResponse.toDomain() = ChatMessage(id, channelId, studentId, senderName, senderAvatar, content, createdAt, deleted)
+    private fun ChatMessageResponse.toDomain() = ChatMessage(id, channelId, studentId, senderName, senderAvatar, content, imageUrl, createdAt, deleted)
     private fun OnlineMemberResponse.toDomain() = OnlineMember(studentId, studentCode, displayName, avatar)
 }

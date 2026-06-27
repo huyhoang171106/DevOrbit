@@ -1,11 +1,18 @@
 package vn.edu.uit.devorbit.mobile.data.repository
 
+import android.content.Context
+import android.net.Uri
+import com.google.gson.Gson
 import vn.edu.uit.devorbit.mobile.BuildConfig
 import vn.edu.uit.devorbit.mobile.data.remote.dto.*
 import vn.edu.uit.devorbit.mobile.domain.repository.CommunityRepository
 import vn.edu.uit.devorbit.mobile.network.ApiService
 import vn.edu.uit.devorbit.mobile.network.stomp.StompClient
 import vn.edu.uit.devorbit.mobile.network.stomp.StompEventListener
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -40,8 +47,30 @@ class CommunityRepositoryImpl @Inject constructor(
         stompClient.unsubscribe("pres-$channelId")
     }
 
-    override fun sendMessage(channelId: Long, content: String) {
-        stompClient.send("/app/chat.send/$channelId", "{\"content\":\"$content\"}")
+    override fun sendMessage(channelId: Long, content: String, imageUrl: String?) {
+        val payload = mutableMapOf<String, String>()
+        if (content.isNotBlank()) payload["content"] = content
+        if (!imageUrl.isNullOrBlank()) payload["imageUrl"] = imageUrl
+        stompClient.send("/app/chat.send/$channelId", Gson().toJson(payload))
+    }
+
+    override suspend fun uploadImage(channelId: Long, uri: Uri, context: Context): String? {
+        return try {
+            val contentResolver = context.contentResolver
+            val inputStream = contentResolver.openInputStream(uri) ?: return null
+            val tempFile = File(context.cacheDir, "upload_${System.currentTimeMillis()}.jpg")
+            tempFile.outputStream().use { output -> inputStream.copyTo(output) }
+
+            val mimeType = contentResolver.getType(uri) ?: "image/jpeg"
+            val requestBody = tempFile.asRequestBody(mimeType.toMediaTypeOrNull())
+            val part = MultipartBody.Part.createFormData("file", tempFile.name, requestBody)
+
+            val result = apiService.uploadCommunityImage(channelId, part)
+            tempFile.delete()
+            result["url"]
+        } catch (e: Exception) {
+            null
+        }
     }
 
     override fun disconnectWebSocket() {

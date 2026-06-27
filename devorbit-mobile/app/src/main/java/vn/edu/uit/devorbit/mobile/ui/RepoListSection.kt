@@ -6,8 +6,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -21,6 +24,7 @@ fun RepoListSection(
     totalCount: Int = repos.size,
     availableTechStacks: List<String> = emptyList(),
     selectedTechStack: String? = null,
+    bookmarkedIds: Set<Long> = emptySet(),
     onTechStackSelected: (String?) -> Unit = {},
     onRepoClick: (RepoSummary) -> Unit
 ) {
@@ -73,12 +77,23 @@ fun RepoListSection(
                 border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = repo.displayName,
-                        style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
-                        color = CosmicTheme.colors.textPrimary
-                    )
-                    if (repo.description.isNotBlank()) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = repo.displayName.orEmpty(),
+                            style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
+                            color = CosmicTheme.colors.textPrimary,
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (repo.id in bookmarkedIds) {
+                            Icon(
+                                imageVector = Icons.Filled.Star,
+                                contentDescription = "Đã lưu",
+                                tint = CosmicTheme.colors.plasma,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                    if (!repo.description.isNullOrBlank()) {
                         Spacer(Modifier.height(4.dp))
                         Text(
                             text = repo.description,
@@ -91,7 +106,7 @@ fun RepoListSection(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.padding(top = 10.dp)
                     ) {
-                        if (repo.primaryLanguage.isNotBlank()) {
+                        if (!repo.primaryLanguage.isNullOrBlank()) {
                             Surface(
                                 shape = RoundedCornerShape(6.dp),
                                 color = CosmicTheme.colors.plasma.copy(alpha = 0.12f)
@@ -104,17 +119,47 @@ fun RepoListSection(
                                 )
                             }
                         }
-                        repo.techStacks.take(2).forEach { stack ->
+                        repo.techStacks.filter { it.name != repo.primaryLanguage }.take(2).forEach { stack ->
+                            if (!stack.name.isNullOrBlank()) {
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = CosmicTheme.colors.nebula,
+                                    border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+                                ) {
+                                    Text(
+                                        text = stack.name,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                        style = CosmicTheme.typography.label,
+                                        color = CosmicTheme.colors.textSecondary
+                                    )
+                                }
+                            }
+                        }
+                        val avg = repo.averageRating
+                        val rCount = repo.reviewCount
+                        if (avg != null && avg > 0) {
                             Surface(
                                 shape = RoundedCornerShape(6.dp),
-                                color = CosmicTheme.colors.nebula,
-                                border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+                                color = CosmicTheme.colors.supernova.copy(alpha = 0.12f)
                             ) {
                                 Text(
-                                    text = stack.name,
+                                    text = "\u2605 ${"%.1f".format(avg)}",
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
                                     style = CosmicTheme.typography.label,
-                                    color = CosmicTheme.colors.textSecondary
+                                    color = CosmicTheme.colors.supernova
+                                )
+                            }
+                        }
+                        if (rCount != null && rCount > 0) {
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = CosmicTheme.colors.plasma.copy(alpha = 0.12f)
+                            ) {
+                                Text(
+                                    text = "$rCount reviews",
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                    style = CosmicTheme.typography.label,
+                                    color = CosmicTheme.colors.plasma
                                 )
                             }
                         }

@@ -7,6 +7,8 @@ data class RepoSummary(
     val githubUrl: String,
     val primaryLanguage: String,
     val stars: Int? = null,
+    val forkCount: Int? = null,
+    val license: String? = null,
     val techStacks: List<TechStack> = emptyList(),
     val courseId: Long? = null,
     val courseCode: String? = null,
@@ -14,5 +16,12 @@ data class RepoSummary(
     val readmeExcerpt: String? = null,
     val fileTree: String? = null,
     val hasReadme: Boolean? = null,
-    val lastPushedAt: String? = null
+    val lastPushedAt: String? = null,
+    val approvedAt: String? = null,
+    val repoType: String? = null,
+    val usefulnessRating: String? = null,
+    val usefulnessScore: Int? = null,
+    val readyToUseLevel: String? = null,
+    val reviewCount: Int? = null,
+    val averageRating: Double? = null
 )

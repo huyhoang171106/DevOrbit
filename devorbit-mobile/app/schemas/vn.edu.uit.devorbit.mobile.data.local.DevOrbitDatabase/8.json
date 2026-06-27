@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 8,
-    "identityHash": "64aadd0019d1552478282369743450b3",
+    "identityHash": "989a41f6b6e71a375290bdbd87b4f714",
     "entities": [
       {
         "tableName": "courses",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `maMH` TEXT NOT NULL, `tenMH` TEXT NOT NULL, `credits` INTEGER NOT NULL, `description` TEXT, `lastUpdated` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `maMH` TEXT NOT NULL, `tenMH` TEXT NOT NULL, `credits` INTEGER NOT NULL, `description` TEXT, `semester` INTEGER, `loaiMonHoc` TEXT, `lastUpdated` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -35,6 +35,18 @@
           {
             "fieldPath": "description",
             "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "semester",
+            "columnName": "semester",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "loaiMonHoc",
+            "columnName": "loaiMonHoc",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -184,7 +196,7 @@
       },
       {
         "tableName": "tasks",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `courseId` INTEGER, `estimatedMinutes` INTEGER NOT NULL, `achievedMinutes` INTEGER NOT NULL, `deadline` INTEGER, `priority` INTEGER NOT NULL, `completed` INTEGER NOT NULL, `taskType` TEXT NOT NULL, `parentTaskId` INTEGER, `createdAt` INTEGER NOT NULL, `recurrence` TEXT, `recurrenceDaysOfWeek` INTEGER)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `courseId` INTEGER, `estimatedMinutes` INTEGER NOT NULL, `achievedMinutes` INTEGER NOT NULL, `deadline` INTEGER, `priority` INTEGER NOT NULL, `completed` INTEGER NOT NULL, `taskType` TEXT NOT NULL, `parentTaskId` INTEGER, `createdAt` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -257,18 +269,6 @@
             "columnName": "createdAt",
             "affinity": "INTEGER",
             "notNull": true
-          },
-          {
-            "fieldPath": "recurrence",
-            "columnName": "recurrence",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "recurrenceDaysOfWeek",
-            "columnName": "recurrenceDaysOfWeek",
-            "affinity": "INTEGER",
-            "notNull": false
           }
         ],
         "primaryKey": {
@@ -387,7 +387,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '64aadd0019d1552478282369743450b3')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '989a41f6b6e71a375290bdbd87b4f714')"
     ]
   }
 }

@@ -1,5 +1,10 @@
 package vn.edu.uit.devorbit.mobile.data.remote.dto
 
+data class AiResponse(
+    val content: String,
+    val type: String
+)
+
 data class SubjectQaRequest(
     val message: String,
     val sessionId: String? = null

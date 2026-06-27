@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 10,
-    "identityHash": "2e7594f222a88d5d1465ec02d6ae5592",
+    "identityHash": "d6677f7b5e1d88269071d43507949a9f",
     "entities": [
       {
         "tableName": "courses",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `maMH` TEXT NOT NULL, `tenMH` TEXT NOT NULL, `credits` INTEGER NOT NULL, `description` TEXT, `lastUpdated` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `maMH` TEXT NOT NULL, `tenMH` TEXT NOT NULL, `credits` INTEGER NOT NULL, `description` TEXT, `semester` INTEGER, `loaiMonHoc` TEXT, `lastUpdated` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -35,6 +35,18 @@
           {
             "fieldPath": "description",
             "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "semester",
+            "columnName": "semester",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "loaiMonHoc",
+            "columnName": "loaiMonHoc",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -289,7 +301,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2e7594f222a88d5d1465ec02d6ae5592')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd6677f7b5e1d88269071d43507949a9f')"
     ]
   }
 }

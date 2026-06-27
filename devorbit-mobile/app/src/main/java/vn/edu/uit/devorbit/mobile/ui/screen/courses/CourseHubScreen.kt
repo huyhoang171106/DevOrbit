@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import vn.edu.uit.devorbit.mobile.domain.model.GraphNode
+import vn.edu.uit.devorbit.mobile.data.local.entity.CourseEntity
+import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSummary
 import vn.edu.uit.devorbit.mobile.ui.CourseDetailScreen
 import vn.edu.uit.devorbit.mobile.ui.RepoDetailScreen
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
@@ -29,9 +31,15 @@ import vn.edu.uit.devorbit.mobile.ui.viewmodel.CourseViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CourseHubScreen(
-    viewModel: CourseViewModel = hiltViewModel()
+    viewModel: CourseViewModel = hiltViewModel(),
+    onCreatePlan: () -> Unit = {},
+    pendingCourseId: Long? = null,
+    pendingRepoId: Long? = null,
+    onPendingCleared: () -> Unit = {}
 ) {
     var viewMode by remember { mutableStateOf(ViewMode.LIST) }
+    var selectedTutorial by remember { mutableStateOf<vn.edu.uit.devorbit.mobile.data.remote.dto.CourseTutorial?>(null) }
+    val courses by viewModel.courses.collectAsStateWithLifecycle()
     val selectedCourse by viewModel.selectedCourse.collectAsStateWithLifecycle()
     val selectedRepo by viewModel.selectedRepo.collectAsStateWithLifecycle()
     val repos by viewModel.detailRepos.collectAsStateWithLifecycle()
@@ -41,10 +49,55 @@ fun CourseHubScreen(
     val detailLoading by viewModel.detailLoading.collectAsStateWithLifecycle()
     val detailError by viewModel.detailError.collectAsStateWithLifecycle()
     val bookmarkedCourseIds by viewModel.bookmarkedCourseIds.collectAsStateWithLifecycle()
+    val bookmarkedRepoIds by viewModel.bookmarkedRepoIds.collectAsStateWithLifecycle()
+    val repoSummary by viewModel.repoSummary.collectAsStateWithLifecycle()
+    val repoAdvice by viewModel.repoAdvice.collectAsStateWithLifecycle()
+    val aiLoading by viewModel.aiLoading.collectAsStateWithLifecycle()
+    val repoSocialInfo by viewModel.repoSocialInfo.collectAsStateWithLifecycle()
+    val userVote by viewModel.userVote.collectAsStateWithLifecycle()
+    val socialLoading by viewModel.socialLoading.collectAsStateWithLifecycle()
+
+    // Handle deep-linking from bookmarks
+    var processedCourseId by remember { mutableStateOf<Long?>(null) }
+    var processedRepoId by remember { mutableStateOf<Long?>(null) }
+
+    LaunchedEffect(pendingCourseId) {
+        if (pendingCourseId != null && pendingCourseId != processedCourseId) {
+            processedCourseId = pendingCourseId
+            val course = courses.find { it.id == pendingCourseId }
+            if (course != null) viewModel.openCourse(course)
+            onPendingCleared()
+        }
+    }
+
+    LaunchedEffect(pendingRepoId) {
+        if (pendingRepoId != null && pendingRepoId != processedRepoId) {
+            processedRepoId = pendingRepoId
+            // Try to find repo in currently loaded repos
+            val existing = viewModel.detailRepos.value.find { it.id == pendingRepoId }
+            if (existing != null && selectedCourse != null) {
+                viewModel.openRepo(existing)
+                onPendingCleared()
+            } else {
+                // Fetch the repo to get its courseId
+                viewModel.navigateToRepoFromBookmark(pendingRepoId)
+            }
+        }
+    }
 
     when {
         selectedRepo != null -> RepoDetailScreen(
             repo = selectedRepo!!,
+            aiSummary = repoSummary,
+            aiAdvice = repoAdvice,
+            aiLoading = aiLoading,
+            socialInfo = repoSocialInfo,
+            userVote = userVote,
+            socialLoading = socialLoading,
+            isBookmarked = selectedRepo!!.id in bookmarkedRepoIds,
+            onVote = { viewModel.voteRepo(selectedRepo!!.id, it) },
+            onBookmark = { viewModel.toggleRepoBookmark(selectedRepo!!) },
+            onSubmitReview = { rating, comment -> viewModel.submitReview(selectedRepo!!.id, rating, comment) },
             onBack = { viewModel.backFromRepo() }
         )
 
@@ -65,15 +118,17 @@ fun CourseHubScreen(
                         )
                     }
                     CourseDetailScreen(
-                        courseName = selectedCourse!!.tenMH,
+                        course = selectedCourse!!,
                         repos = repos,
                         tutorials = tutorials,
                         videos = videos,
                         articles = articles,
                         bookmarked = selectedCourse!!.id in bookmarkedCourseIds,
+                        bookmarkedRepoIds = bookmarkedRepoIds,
                         onBack = { viewModel.closeCourseDetail() },
                         onBookmarkClick = { viewModel.toggleCourseBookmark(selectedCourse!!) },
-                        onRepoClick = { viewModel.openRepo(it) }
+                        onRepoClick = { viewModel.openRepo(it) },
+                        onCreatePlan = onCreatePlan
                     )
                 }
             }

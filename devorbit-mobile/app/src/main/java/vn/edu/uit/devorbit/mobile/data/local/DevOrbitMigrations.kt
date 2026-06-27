@@ -47,13 +47,15 @@ object DevOrbitMigrations {
 
     val MIGRATION_7_8 = object : Migration(7, 8) {
         override fun migrate(db: SupportSQLiteDatabase) {
-            db.execSQL("ALTER TABLE `tasks` ADD COLUMN `recurrence` TEXT DEFAULT NULL")
-            db.execSQL("ALTER TABLE `tasks` ADD COLUMN `recurrenceDaysOfWeek` INTEGER DEFAULT NULL")
+            db.execSQL("ALTER TABLE `courses` ADD COLUMN `semester` INTEGER")
+            db.execSQL("ALTER TABLE `courses` ADD COLUMN `loaiMonHoc` TEXT")
         }
     }
 
     val MIGRATION_8_9 = object : Migration(8, 9) {
         override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE `tasks` ADD COLUMN `recurrence` TEXT DEFAULT NULL")
+            db.execSQL("ALTER TABLE `tasks` ADD COLUMN `recurrenceDaysOfWeek` INTEGER DEFAULT NULL")
             db.execSQL("ALTER TABLE `tasks` ADD COLUMN `recurrenceStartDate` INTEGER DEFAULT NULL")
             db.execSQL("ALTER TABLE `tasks` ADD COLUMN `recurrenceEndDate` INTEGER DEFAULT NULL")
         }

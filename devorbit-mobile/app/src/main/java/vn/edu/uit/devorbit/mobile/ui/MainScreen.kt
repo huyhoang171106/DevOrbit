@@ -8,6 +8,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Chat
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Person
@@ -34,7 +35,10 @@ import vn.edu.uit.devorbit.mobile.ui.screen.knowledge.KnowledgeTabView
 import vn.edu.uit.devorbit.mobile.ui.screen.notification.NotificationScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.plan.GroupPlanDetailScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.plan.GroupPlanListScreen
+import vn.edu.uit.devorbit.mobile.ui.screen.community.CommunityScreen
+import vn.edu.uit.devorbit.mobile.domain.repository.Bookmark
 import vn.edu.uit.devorbit.mobile.ui.screen.profile.ProfileScreen
+import vn.edu.uit.devorbit.mobile.ui.screen.profile.ProfileDetailScreen
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.AcademicViewModel
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.NotificationViewModel
@@ -47,6 +51,9 @@ fun MainScreen(
 ) {
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Dashboard) }
     var showPopup by remember { mutableStateOf(false) }
+    var showProfileDetail by remember { mutableStateOf(false) }
+    var pendingCourseId by remember { mutableStateOf<Long?>(null) }
+    var pendingRepoId by remember { mutableStateOf<Long?>(null) }
     val unreadCount by notificationVm.unreadCount.collectAsStateWithLifecycle()
 
     val navItemColors = NavigationBarItemDefaults.colors(
@@ -61,12 +68,19 @@ fun MainScreen(
                 bottomBar = {
                     NavigationBar(
                         containerColor = Color.Transparent,
-                        tonalElevation = 0.dp
+                        tonalElevation = 0.dp,
+                        modifier = Modifier.height(56.dp)
                     ) {
                         NavigationBarItem(
                             selected = currentScreen == Screen.Dashboard && !showPopup,
                             onClick = { currentScreen = Screen.Dashboard; showPopup = false },
                             icon = { Icon(Icons.Rounded.Home, contentDescription = "Tổng quan") },
+                            colors = navItemColors
+                        )
+                        NavigationBarItem(
+                            selected = currentScreen == Screen.Community && !showPopup,
+                            onClick = { currentScreen = Screen.Community; showPopup = false },
+                            icon = { Icon(Icons.Rounded.Chat, contentDescription = "Cộng đồng") },
                             colors = navItemColors
                         )
                         NavigationBarItem(
@@ -176,7 +190,18 @@ fun MainScreen(
                                     currentScreen = Screen.Dashboard
                                 }
                             )
-                            Screen.Courses -> CourseHubScreen()
+                            Screen.Courses -> CourseHubScreen(
+                                onCreatePlan = {
+                                    currentScreen = Screen.TaskManagement
+                                    showPopup = false
+                                },
+                                pendingCourseId = pendingCourseId,
+                                pendingRepoId = pendingRepoId,
+                                onPendingCleared = {
+                                    pendingCourseId = null
+                                    pendingRepoId = null
+                                }
+                            )
                             Screen.Knowledge -> KnowledgeTabView()
                             Screen.Explore -> ExploreScreen()
                             Screen.Notifications -> NotificationScreen(
@@ -185,7 +210,19 @@ fun MainScreen(
                                     currentScreen = Screen.GroupPlanDetail(planId)
                                 }
                             )
-                            Screen.Profile -> ProfileScreen()
+                            Screen.Profile -> ProfileScreen(
+                                onNavigateToDetail = { showProfileDetail = true },
+                                onBookmarkClick = { bookmark ->
+                                    currentScreen = Screen.Courses
+                                    showPopup = false
+                                    if (bookmark.targetType == "COURSE") {
+                                        pendingCourseId = bookmark.targetId
+                                    } else if (bookmark.targetType == "REPO") {
+                                        pendingRepoId = bookmark.targetId
+                                    }
+                                }
+                            )
+                            Screen.Community -> CommunityScreen()
                             else -> {}
                         }
                     }
@@ -264,6 +301,19 @@ fun MainScreen(
                         }
                     }
                 }
+            }
+        }
+
+        // Profile detail overlay
+        if (showProfileDetail) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.55f))
+            ) {
+                ProfileDetailScreen(
+                    onBack = { showProfileDetail = false }
+                )
             }
         }
     }

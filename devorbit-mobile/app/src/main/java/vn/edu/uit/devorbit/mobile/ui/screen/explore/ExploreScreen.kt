@@ -247,7 +247,7 @@ private fun ExploreRepoCard(repo: RecentRepo, onClick: () -> Unit) {
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    repo.techStacks.take(4).forEach { stack ->
+                    repo.techStacks.filter { it != repo.language }.take(4).forEach { stack ->
                         Surface(
                             shape = RoundedCornerShape(6.dp),
                             color = CosmicTheme.colors.glass,

@@ -5,10 +5,13 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 import retrofit2.http.Body
 import retrofit2.http.DELETE
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.PUT
 import retrofit2.http.PATCH
 import vn.edu.uit.devorbit.mobile.data.remote.dto.*
+import okhttp3.MultipartBody
 
 interface ApiService {
     @GET("/api/courses")
@@ -71,6 +74,16 @@ interface ApiService {
     @GET("/api/student/me")
     suspend fun getStudentProfile(): Map<String, Any>
 
+    @Multipart
+    @POST("/api/student/me/avatar/upload")
+    suspend fun uploadAvatar(@Part file: MultipartBody.Part): Map<String, Any>
+
+    @POST("/api/student/me/name")
+    suspend fun updateFullName(@Body body: Map<String, String>): Map<String, Any>
+
+    @POST("/api/student/me/password")
+    suspend fun changePassword(@Body body: Map<String, String>): Map<String, Any>
+
     @GET("/api/student/bookmarks")
     suspend fun getBookmarks(): List<StudentBookmarkResponse>
 
@@ -118,10 +131,12 @@ interface ApiService {
 
     // AI
     @GET("/api/ai/repo/{repoId}/summary")
-    suspend fun getRepoSummary(@Path("repoId") repoId: Long): Map<String, Any>
+    suspend fun getRepoSummary(@Path("repoId") repoId: Long): AiResponse
 
     @GET("/api/ai/repo/{repoId}/advice")
-    suspend fun getRepoAdvice(@Path("repoId") repoId: Long): Map<String, Any>
+    suspend fun getRepoAdvice(@Path("repoId") repoId: Long): AiResponse
+
+
 
     @POST("/api/ai/knowledge-graph/query")
     suspend fun queryKnowledgeGraph(@Body body: Map<String, String>): Map<String, Any>
@@ -131,6 +146,22 @@ interface ApiService {
 
     @POST("/api/ai/generate-roadmap")
     suspend fun generateRoadmap(@Body body: RoadmapGenerationRequest): RoadmapRecommendationResponse
+
+    // Social
+    @GET("/api/repos/{repoId}/social-info")
+    suspend fun getRepoSocialInfo(@Path("repoId") repoId: Long): RepoSocialInfoResponse
+
+    @GET("/api/courses/{courseId}/reviews")
+    suspend fun getCourseReviews(@Path("courseId") courseId: Long): ReviewSummaryResponse
+
+    @POST("/api/student/repos/{repoId}/review")
+    suspend fun submitRepoReview(@Path("repoId") repoId: Long, @Body body: ReviewRequest): ReviewResponse
+
+    @DELETE("/api/student/repos/{repoId}/review")
+    suspend fun deleteRepoReview(@Path("repoId") repoId: Long)
+
+    @POST("/api/student/repos/{repoId}/vote")
+    suspend fun voteRepo(@Path("repoId") repoId: Long, @Body body: RepoVoteRequest): RepoVoteResponse
 
     // Student Notifications
     @GET("/api/student/notifications")
@@ -226,4 +257,14 @@ interface ApiService {
         @Path("taskId") taskId: Long,
         @Body body: Map<String, Boolean>
     ): PersonalTaskResponse
+    // Community
+    @GET("/api/student/community")
+    suspend fun getCommunityChannels(): List<ChatChannelResponse>
+
+    @GET("/api/student/community/channels/{channelId}/messages")
+    suspend fun getChannelMessages(
+        @Path("channelId") channelId: Long,
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 50
+    ): PaginatedMessagesResponse
 }

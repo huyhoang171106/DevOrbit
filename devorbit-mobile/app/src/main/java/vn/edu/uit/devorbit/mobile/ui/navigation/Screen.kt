@@ -16,4 +16,5 @@ sealed class Screen(val route: String, val label: String, val icon: ImageVector)
     data class GroupPlanDetail(val planId: Long) : Screen(
         "group_plan_detail/$planId", "", Icons.Rounded.CheckCircle
     )
+    object Community : Screen("community", "Cộng đồng", Icons.Rounded.Chat)
 }

@@ -115,7 +115,7 @@ public class CourseService {
                 c.name().toLowerCase().contains(q.toLowerCase()) ||
                 c.code().toLowerCase().contains(q.toLowerCase()))
             .filter(c -> subjectType == null || subjectType.isBlank() ||
-                subjectType.equalsIgnoreCase(c.loaiMonHoc()))
+                subjectType.equalsIgnoreCase(normalizeSubjectType(c.loaiMonHoc())))
             .filter(c -> semester == null || semester.equals(c.semester()))
             .filter(c -> managementUnit == null || managementUnit.isBlank() ||
                 managementUnit.equalsIgnoreCase(c.managementUnit()))
@@ -185,6 +185,7 @@ public class CourseService {
                 .learningObjectives(request.learningObjectives())
                 .gradingCriteria(request.gradingCriteria())
                 .topics(request.topics())
+                .semester(request.semester())
                 .build();
         Course saved = courseRepository.save(course);
         communityChatService.createChannel(ChatChannelType.COURSE, String.valueOf(saved.getId()), saved.getTenMH());
@@ -331,6 +332,22 @@ public class CourseService {
     }
 
     /**
+     * Normalize subject type short codes to canonical long codes.
+     * The database stores legacy short codes, but the filter API uses
+     * long codes like DAI_CUONG, CO_SO, CHUYEN_NGANH.
+     */
+    private String normalizeSubjectType(String value) {
+        if (value == null) return null;
+        return switch (value) {
+            case "ĐC" -> "DAI_CUONG";
+            case "CSNN", "CSN" -> "CO_SO";
+            case "CN" -> "CHUYEN_NGANH";
+            case "BT" -> "BAT_BUOC";
+            default -> value;
+        };
+    }
+
+    /**
      * Convert null to 0 for numeric fields (credits, hours, etc.).
      * This prevents NullPointerException when the database has null values
      * but the entity uses primitive int (which can't be null).
@@ -360,6 +377,7 @@ public class CourseService {
         course.setLearningObjectives(r.learningObjectives());
         course.setGradingCriteria(r.gradingCriteria());
         course.setTopics(r.topics());
+        course.setSemester(r.semester());
     }
 
     /**

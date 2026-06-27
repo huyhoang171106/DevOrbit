@@ -47,6 +47,9 @@ class GithubRepoServiceTest {
     private RepoEvaluationService repoEvaluationService;
 
     @Mock
+    private StudentNotificationService studentNotificationService;
+
+    @Mock
     private CacheManager cacheManager;
 
     @Test
@@ -71,6 +74,7 @@ class GithubRepoServiceTest {
             repoVoteRepository,
             repoReviewRepository,
             repoEvaluationService,
+            studentNotificationService,
             cacheManager
         );
         org.springframework.test.util.ReflectionTestUtils.setField(service, "self", service);

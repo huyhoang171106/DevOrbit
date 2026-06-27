@@ -10,5 +10,7 @@ data class CourseEntity(
     val tenMH: String,
     val credits: Int,
     val description: String?,
+    val semester: Int? = null,
+    val loaiMonHoc: String? = null,
     val lastUpdated: Long = System.currentTimeMillis()
 )

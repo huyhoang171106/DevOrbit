@@ -209,7 +209,8 @@ fun CommunityScreen(
                     channelName = uiState.activeChannel?.name ?: "",
                     onSend = { viewModel.sendMessage(it) },
                     onSendImage = { uri -> viewModel.uploadAndSendImage(uri, context) },
-                    enabled = uiState.isConnected && uiState.activeChannel != null
+                    enabled = uiState.isConnected && uiState.activeChannel != null,
+                    isUploading = uiState.isUploadingImage
                 )
             }
         }

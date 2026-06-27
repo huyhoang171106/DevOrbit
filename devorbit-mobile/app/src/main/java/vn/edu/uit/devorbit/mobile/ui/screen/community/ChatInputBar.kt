@@ -26,16 +26,15 @@ fun ChatInputBar(
     onSend: (String) -> Unit,
     onSendImage: (Uri) -> Unit,
     enabled: Boolean,
+    isUploading: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     var text by remember { mutableStateOf("") }
-    var isUploading by remember { mutableStateOf(false) }
 
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
-            isUploading = true
             onSendImage(it)
         }
     }

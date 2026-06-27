@@ -49,6 +49,7 @@ data class CommunityUiState(
     val isConnected: Boolean = false,
     val isLoadingChannels: Boolean = false,
     val isLoadingMessages: Boolean = false,
+    val isUploadingImage: Boolean = false,
     val currentUserId: Long? = null,
     val currentUserName: String = "",
     val error: String? = null
@@ -199,6 +200,7 @@ class CommunityViewModel @Inject constructor(
     fun uploadAndSendImage(uri: android.net.Uri, context: android.content.Context) {
         val channel = _uiState.value.activeChannel ?: return
         viewModelScope.launch {
+            _uiState.update { it.copy(isUploadingImage = true) }
             try {
                 val url = repository.uploadImage(channel.id, uri, context)
                 if (url != null) {
@@ -208,6 +210,8 @@ class CommunityViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = "Tải ảnh lên thất bại: ${e.message}") }
+            } finally {
+                _uiState.update { it.copy(isUploadingImage = false) }
             }
         }
     }

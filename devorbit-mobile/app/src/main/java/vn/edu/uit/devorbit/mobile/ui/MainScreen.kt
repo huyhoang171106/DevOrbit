@@ -29,20 +29,20 @@ import vn.edu.uit.devorbit.mobile.ui.components.CosmicBackground
 import vn.edu.uit.devorbit.mobile.ui.navigation.Screen
 import vn.edu.uit.devorbit.mobile.ui.screen.courses.CourseHubScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.dashboard.DashboardScreen
+import vn.edu.uit.devorbit.mobile.ui.screen.dashboard.TaskManagementScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.explore.ExploreScreen
-import vn.edu.uit.devorbit.mobile.ui.screen.knowledge.KnowledgeGraphScreen
+import vn.edu.uit.devorbit.mobile.ui.screen.knowledge.KnowledgeTabView
 import vn.edu.uit.devorbit.mobile.ui.screen.notification.NotificationScreen
+import vn.edu.uit.devorbit.mobile.ui.screen.plan.GroupPlanDetailScreen
+import vn.edu.uit.devorbit.mobile.ui.screen.plan.GroupPlanListScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.community.CommunityScreen
-import vn.edu.uit.devorbit.mobile.ui.screen.plan.StudyPlannerScreen
 import vn.edu.uit.devorbit.mobile.domain.repository.Bookmark
 import vn.edu.uit.devorbit.mobile.ui.screen.profile.ProfileScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.profile.ProfileDetailScreen
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.AcademicViewModel
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.NotificationViewModel
-import vn.edu.uit.devorbit.mobile.domain.model.GraphNode
-import vn.edu.uit.devorbit.mobile.ui.viewmodel.CourseViewModel
-import vn.edu.uit.devorbit.mobile.ui.viewmodel.StudyPlanViewModel
+
 
 @Composable
 fun MainScreen(
@@ -85,7 +85,7 @@ fun MainScreen(
                         )
                         NavigationBarItem(
                             selected = showPopup || currentScreen in listOf(
-                                Screen.Courses, Screen.Explore, Screen.Plan, Screen.Knowledge
+                                Screen.Courses, Screen.Explore, Screen.Knowledge
                             ),
                             onClick = { showPopup = !showPopup },
                             icon = {
@@ -152,14 +152,47 @@ fun MainScreen(
                                     currentScreen = Screen.Courses
                                     showPopup = false
                                 },
-                                onNavigateToPlan = {
-                                    currentScreen = Screen.Plan
+                                onNavigateToCreateTask = {
+                                    currentScreen = Screen.TaskManagement
                                     showPopup = false
+                                },
+                                onNavigateToTaskManagement = {
+                                    currentScreen = Screen.TaskManagement
+                                    showPopup = false
+                                },
+                                onNavigateToGroupPlan = { planId ->
+                                    currentScreen = Screen.GroupPlanDetail(planId)
+                                    showPopup = false
+                                }
+                            )
+                            Screen.TaskManagement -> TaskManagementScreen(
+                                onNavigateBack = {
+                                    currentScreen = Screen.Dashboard
+                                },
+                                onNavigateToGroupPlan = { planId ->
+                                    currentScreen = Screen.GroupPlanDetail(planId)
+                                }
+                            )
+                            is Screen.GroupPlanDetail -> GroupPlanDetailScreen(
+                                planId = screen.planId,
+                                onNavigateBack = {
+                                    currentScreen = Screen.TaskManagement
+                                },
+                                onNavigateLeave = {
+                                    currentScreen = Screen.TaskManagement
+                                }
+                            )
+                            Screen.GroupPlanList -> GroupPlanListScreen(
+                                onNavigateToPlan = { planId ->
+                                    currentScreen = Screen.GroupPlanDetail(planId)
+                                },
+                                onNavigateBack = {
+                                    currentScreen = Screen.Dashboard
                                 }
                             )
                             Screen.Courses -> CourseHubScreen(
                                 onCreatePlan = {
-                                    currentScreen = Screen.Plan
+                                    currentScreen = Screen.TaskManagement
                                     showPopup = false
                                 },
                                 pendingCourseId = pendingCourseId,
@@ -171,8 +204,12 @@ fun MainScreen(
                             )
                             Screen.Knowledge -> KnowledgeTabView()
                             Screen.Explore -> ExploreScreen()
-                            Screen.Notifications -> NotificationScreen(viewModel = notificationVm)
-                            Screen.Plan -> PlanTabView()
+                            Screen.Notifications -> NotificationScreen(
+                                viewModel = notificationVm,
+                                onNavigateToGroupPlan = { planId ->
+                                    currentScreen = Screen.GroupPlanDetail(planId)
+                                }
+                            )
                             Screen.Profile -> ProfileScreen(
                                 onNavigateToDetail = { showProfileDetail = true },
                                 onBookmarkClick = { bookmark ->
@@ -186,6 +223,7 @@ fun MainScreen(
                                 }
                             )
                             Screen.Community -> CommunityScreen()
+                            else -> {}
                         }
                     }
                 }
@@ -249,8 +287,8 @@ fun MainScreen(
                             modifier = Modifier.padding(horizontal = 16.dp),
                             color = CosmicTheme.colors.glassBorder.copy(alpha = 0.3f)
                         )
-                        PopupText("Kế hoạch") {
-                            currentScreen = Screen.Plan
+                        PopupText("Kế hoạch nhóm") {
+                            currentScreen = Screen.GroupPlanList
                             showPopup = false
                         }
                         HorizontalDivider(
@@ -296,46 +334,4 @@ private fun PopupText(text: String, onClick: () -> Unit) {
     )
 }
 
-@Composable
-private fun KnowledgeTabView(courseViewModel: CourseViewModel = hiltViewModel()) {
-    val nodes by courseViewModel.graphNodes.collectAsState()
-    val links by courseViewModel.graphLinks.collectAsState()
-    val loading by courseViewModel.graphLoading.collectAsState()
 
-    var selectedNode by remember { mutableStateOf<GraphNode?>(null) }
-
-    LaunchedEffect(Unit) { courseViewModel.loadGraph() }
-
-    if (loading) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(
-                color = CosmicTheme.colors.plasma,
-                strokeWidth = 2.dp
-            )
-        }
-    } else {
-        KnowledgeGraphScreen(
-            nodes = nodes,
-            links = links,
-            learningPath = emptyList(),
-            selectedNode = selectedNode,
-            onNodeClick = { selectedNode = it }
-        )
-    }
-}
-
-@Composable
-private fun PlanTabView(viewModel: StudyPlanViewModel = hiltViewModel()) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
-
-    StudyPlannerScreen(
-        studyPlan = state.plan,
-        loading = state.loading,
-        error = state.error,
-        onGeneratePlan = { learningGoals, careerPath ->
-            viewModel.generateRoadmap(learningGoals, careerPath)
-        },
-        onToggleItem = { viewModel.toggleItem(it) },
-        onBreakdownTask = { }
-    )
-}

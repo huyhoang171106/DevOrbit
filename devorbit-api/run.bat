@@ -74,7 +74,7 @@ set MAVEN_OPTS=-Xms256m -Xmx512m -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:Ma
 
 echo.
 
-call .\mvnw.cmd spring-boot:run -Dmaven.test.skip=true
+call .\mvnw.cmd spring-boot:run -DskipTests
 echo.
 echo DevOrbit API process exited. If this was unexpected, check the Spring Boot error above.
 

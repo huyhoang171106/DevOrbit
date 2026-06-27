@@ -112,7 +112,7 @@ class AuthViewModel @Inject constructor(
     fun login() {
         val state = _loginState.value
         if (state.studentCode.isBlank() || state.password.isBlank()) {
-            _loginState.value = _loginState.value.copy(error = "Vui lòng nhập đầy đủ MSSV và mật khẩu")
+            _loginState.value = _loginState.value.copy(error = "Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu")
             return
         }
         viewModelScope.launch {
@@ -163,7 +163,7 @@ class AuthViewModel @Inject constructor(
     fun register() {
         val state = _registerState.value
         val error = when {
-            state.studentCode.isBlank() -> "Vui lòng nhập MSSV"
+            state.studentCode.isBlank() -> "Vui lòng nhập tên đăng nhập"
             state.fullName.isBlank() -> "Vui lòng nhập họ và tên"
             state.email.isBlank() -> "Vui lòng nhập email"
             !state.email.contains("@") -> "Email không hợp lệ"
@@ -285,7 +285,7 @@ class AuthViewModel @Inject constructor(
     fun forgotPassword() {
         val code = _forgotState.value.studentCode
         if (code.isBlank()) {
-            _forgotState.value = _forgotState.value.copy(error = "Vui lòng nhập MSSV")
+            _forgotState.value = _forgotState.value.copy(error = "Vui lòng nhập tên đăng nhập")
             return
         }
         viewModelScope.launch {

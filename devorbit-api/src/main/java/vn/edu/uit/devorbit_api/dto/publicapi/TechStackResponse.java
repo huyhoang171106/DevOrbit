@@ -9,4 +9,4 @@ package vn.edu.uit.devorbit_api.dto.publicapi;
  *
  * Example: TechStackResponse(name="React")
  */
-public record TechStackResponse(String name) {}
+public record TechStackResponse(Long id, String name) {}

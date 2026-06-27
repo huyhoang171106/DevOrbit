@@ -18,4 +18,5 @@ interface AuthRepository {
     suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit>
     suspend fun getToken(): String?
     suspend fun logout()
+    suspend fun clearToken()
 }

@@ -53,7 +53,7 @@ class RepoFilterStateTest {
             githubUrl = "https://github.com/example/${name.lowercase().replace(" ", "-")}",
             primaryLanguage = "",
             stars = 0,
-            techStacks = stacks.map(::TechStack)
+            techStacks = stacks.map { TechStack(name = it) }
         )
     }
 }

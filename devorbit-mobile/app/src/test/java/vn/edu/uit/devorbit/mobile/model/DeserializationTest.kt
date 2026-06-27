@@ -141,8 +141,8 @@ class DeserializationTest {
             primaryLanguage = "Rust",
             stars = 99,
             techStacks = listOf(
-                TechStack("Rust"),
-                TechStack("WebAssembly")
+                TechStack(name = "Rust"),
+                TechStack(name = "WebAssembly")
             )
         )
 
@@ -165,9 +165,9 @@ class DeserializationTest {
     @Test
     fun `List of TechStack cache round-trip`() {
         val original = listOf(
-            TechStack("Java"),
-            TechStack("Spring Boot"),
-            TechStack("PostgreSQL")
+            TechStack(name = "Java"),
+            TechStack(name = "Spring Boot"),
+            TechStack(name = "PostgreSQL")
         )
 
         val json = gson.toJson(original)

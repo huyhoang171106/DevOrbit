@@ -993,7 +993,7 @@ public class SubjectQaService {
                     result.chunks().size(), courseCode);
                 for (KnowledgeRetrievalService.ChunkResult chunkResult : result.chunks()) {
                     KnowledgeChunk chunk = chunkResult.chunk();
-                    context.append(String.format(
+                    context.append(String.format(Locale.ROOT,
                         "--- Chunk RAG: course=%s, section=%s, score=%.3f ---\n%s\n\n",
                         chunk.getCourseCode(),
                         chunk.getSectionTitle(),

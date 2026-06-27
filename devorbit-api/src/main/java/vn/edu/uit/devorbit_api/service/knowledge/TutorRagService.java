@@ -8,6 +8,7 @@ import vn.edu.uit.devorbit_api.dto.knowledge.TutorResponse;
 import vn.edu.uit.devorbit_api.service.ai.OpenCodeAiService;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 /**
@@ -89,7 +90,7 @@ public class TutorRagService {
             for (KnowledgeRetrievalService.ChunkResult chunk : searchResult.chunks()) {
                 String sectionTitle = chunk.chunk().getSectionTitle() != null
                     ? chunk.chunk().getSectionTitle() : "Không có tiêu đề";
-                context.append(String.format("[%s | score=%.3f]\n",
+                context.append(String.format(Locale.ROOT, "[%s | score=%.3f]\n",
                     sectionTitle, chunk.score()));
                 context.append(chunk.chunk().getChunkText()).append("\n\n");
             }

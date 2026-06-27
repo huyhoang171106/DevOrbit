@@ -1,15 +1,20 @@
 package vn.edu.uit.devorbit.mobile.ui.screen.dashboard
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
@@ -27,34 +32,73 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import vn.edu.uit.devorbit.mobile.data.local.entity.CourseEntity
-import vn.edu.uit.devorbit.mobile.data.local.entity.TaskEntity
 import vn.edu.uit.devorbit.mobile.data.local.entity.TechStackEntity
+import vn.edu.uit.devorbit.mobile.domain.model.TaskItem
+
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.DashboardViewModel
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.WeekDay
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DashboardScreen(
     onNavigateToCourse: (Long) -> Unit = {},
-    onNavigateToPlan: () -> Unit = {},
+    onNavigateToCreateTask: () -> Unit = {},
+    onNavigateToTaskManagement: () -> Unit = {},
+    onNavigateToGroupPlan: (Long) -> Unit = {},
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(state.error) {
+        val msg = state.error ?: return@LaunchedEffect
+        snackbarHostState.showSnackbar(msg)
+        viewModel.clearError()
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.refreshDate()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.loadAllCourses()
     }
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(
-            start = 16.dp, end = 16.dp,
-            top = 24.dp, bottom = 100.dp
-        )
-    ) {
+    var expandedTaskIds by remember { mutableStateOf(setOf<Long>()) }
+    var showQuickAddSheet by remember { mutableStateOf(false) }
+    var quickAddDeadline by remember { mutableStateOf(
+        LocalDate.now().atTime(23, 59).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    ) }
+
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(
+                start = 16.dp, end = 16.dp,
+                top = 24.dp, bottom = 100.dp
+            )
+        ) {
         item {
             GreetingSection(
                 greeting = state.greeting,
@@ -65,12 +109,26 @@ fun DashboardScreen(
         }
 
         item {
-            SectionLabel("Nhiệm vụ hôm nay")
-        }
-
-        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Nhiệm vụ",
+                    style = CosmicTheme.typography.command,
+                    color = CosmicTheme.colors.textTertiary
+                )
+                IconButton(onClick = onNavigateToCreateTask) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = "Quản lý nhiệm vụ",
+                        tint = CosmicTheme.colors.plasma
+                    )
+                }
+            }
             Text(
-                text = "Hôm nay: ${state.totalTaskCount} nhiệm vụ, ${state.completedTaskCount} hoàn thành",
+                text = "${state.completedTaskCount}/${state.totalTaskCount} hoàn thành",
                 style = CosmicTheme.typography.label,
                 color = CosmicTheme.colors.textTertiary,
                 modifier = Modifier.padding(bottom = 4.dp)
@@ -79,25 +137,45 @@ fun DashboardScreen(
 
         if (state.sortedTasks.isEmpty()) {
             item {
-                EmptyTaskState(onNavigateToPlan = onNavigateToPlan)
+                EmptyTaskState(onNavigateToCreateTask = onNavigateToCreateTask)
             }
         } else {
             items(state.sortedTasks, key = { it.id }) { task ->
                 TaskCard(
                     task = task,
-                    onClick = { onNavigateToPlan() }
+                    expanded = task.id in expandedTaskIds,
+                    onToggleExpanded = { expandedTaskIds = if (task.id in expandedTaskIds) expandedTaskIds - task.id else expandedTaskIds + task.id },
+                    onToggle = { viewModel.toggleTask(task.id, !task.completed) },
+                    onDoubleClick = if (task.isGroupTask) { { task.groupPlanId?.let(onNavigateToGroupPlan) ?: Unit } } else onNavigateToTaskManagement
                 )
             }
-        }
-
-        item {
-            SemesterCoursesSection(
-                courses = state.semesterCourses,
-                allCourses = state.allCourses,
-                onAddCourse = { viewModel.addSemesterCourse(it) },
-                onRemoveCourse = { viewModel.removeSemesterCourse(it) },
-                onCourseClick = onNavigateToCourse
-            )
+            item {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    color = CosmicTheme.colors.nebula,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder),
+                    onClick = { showQuickAddSheet = true }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = "Thêm nhiệm vụ nhanh",
+                            tint = CosmicTheme.colors.plasma,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = "Thêm nhiệm vụ nhanh",
+                            style = CosmicTheme.typography.body,
+                            color = CosmicTheme.colors.textSecondary
+                        )
+                    }
+                }
+            }
         }
 
         item {
@@ -111,11 +189,45 @@ fun DashboardScreen(
         }
 
         item {
+            SemesterCoursesSection(
+                courses = state.semesterCourses,
+                allCourses = state.allCourses,
+                onAddCourse = { viewModel.addSemesterCourse(it) },
+                onRemoveCourse = { viewModel.removeSemesterCourse(it) },
+                onCourseClick = onNavigateToCourse
+            )
+        }
+
+        item {
             TechStackSection(
                 techStacks = state.techStacks,
                 allTechStacks = state.allTechStacks,
                 onAddTechStack = { viewModel.addTechStack(it) },
                 onRemoveTechStack = { viewModel.removeTechStack(it) }
+            )
+        }
+        }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 80.dp),
+            snackbar = { data ->
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = CosmicTheme.colors.nebula,
+                    contentColor = CosmicTheme.colors.textPrimary
+                )
+            }
+        )
+
+        if (showQuickAddSheet) {
+            QuickAddTaskSheet(
+                initialDeadline = quickAddDeadline,
+                onDeadlineChange = { quickAddDeadline = it },
+                onDismiss = { showQuickAddSheet = false },
+                onConfirm = { title, deadline ->
+                    viewModel.createQuickTask(title, deadline)
+                    showQuickAddSheet = false
+                }
             )
         }
     }
@@ -335,6 +447,8 @@ private fun AddCourseDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        shape = RoundedCornerShape(20.dp),
+        containerColor = CosmicTheme.colors.nebula,
         title = {
             Text("Thêm môn học", style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold))
         },
@@ -402,15 +516,24 @@ private fun AddCourseDialog(
             }
         },
         confirmButton = {
-            TextButton(
+            Button(
                 onClick = { selected?.let(onAdd) },
-                enabled = selected != null
+                enabled = selected != null,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = CosmicTheme.colors.plasma.copy(alpha = 0.15f),
+                    contentColor = CosmicTheme.colors.plasma
+                ),
+                shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Thêm", color = CosmicTheme.colors.plasma)
+                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Thêm")
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
+                Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(4.dp))
                 Text("Huỷ", color = CosmicTheme.colors.textSecondary)
             }
         }
@@ -488,16 +611,6 @@ private fun StreakSection(
 
 @Composable
 private fun DaySquare(day: WeekDay) {
-    val color = when {
-        day.activity == null -> Color.Transparent
-        day.activity.tasksTotal == 0 -> Color.Transparent
-        day.activity.tasksCompleted >= day.activity.tasksTotal -> Color(0xFF2E7D32).copy(alpha = 0.85f)
-        day.activity.tasksCompleted > 0 -> Color(0xFFF9A825).copy(alpha = 0.5f)
-        else -> Color.Transparent
-    }
-
-    val hasActivity = day.activity != null && day.activity.tasksTotal > 0
-
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.width(36.dp)
@@ -513,13 +626,12 @@ private fun DaySquare(day: WeekDay) {
             modifier = Modifier
                 .size(28.dp)
                 .clip(RoundedCornerShape(6.dp))
-                .background(color)
+                .background(Color.Transparent)
                 .border(
                     1.dp,
                     when {
                         day.isToday -> CosmicTheme.colors.plasma
                         day.qualifiesForStreak -> Color(0xFF2E7D32).copy(alpha = 0.5f)
-                        hasActivity -> Color.White.copy(alpha = 0.15f)
                         else -> Color.White.copy(alpha = 0.06f)
                     },
                     RoundedCornerShape(6.dp)
@@ -528,16 +640,6 @@ private fun DaySquare(day: WeekDay) {
         ) {
             if (day.qualifiesForStreak) {
                 Text(text = "\uD83D\uDD25", fontSize = 12.sp)
-            } else if (day.activity != null) {
-                Text(
-                    text = (day.activity.reposViewed.coerceAtMost(9)).toString(),
-                    style = CosmicTheme.typography.label.copy(
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = if (day.activity.tasksCompleted > 0 || day.activity.reposViewed > 0)
-                        Color.White else Color.Transparent
-                )
             }
         }
     }
@@ -660,6 +762,7 @@ private fun AddTechStackDialog(
     onDismiss: () -> Unit
 ) {
     var search by remember { mutableStateOf("") }
+    var selectedItem by remember { mutableStateOf<String?>(null) }
 
     val filtered = remember(allTechStacks, addedNames, search) {
         allTechStacks.filter { it !in addedNames }
@@ -668,6 +771,8 @@ private fun AddTechStackDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        shape = RoundedCornerShape(20.dp),
+        containerColor = CosmicTheme.colors.nebula,
         title = {
             Text("Thêm tech stack", style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold))
         },
@@ -675,7 +780,7 @@ private fun AddTechStackDialog(
             Column {
                 OutlinedTextField(
                     value = search,
-                    onValueChange = { search = it },
+                    onValueChange = { search = it; selectedItem = null },
                     placeholder = { Text("Tìm tech stack...") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
@@ -704,9 +809,9 @@ private fun AddTechStackDialog(
                             Surface(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { search = name },
+                                    .clickable { selectedItem = name },
                                 shape = RoundedCornerShape(8.dp),
-                                color = if (search == name)
+                                color = if (selectedItem == name)
                                     CosmicTheme.colors.plasma.copy(alpha = 0.12f)
                                 else Color.Transparent
                             ) {
@@ -723,44 +828,68 @@ private fun AddTechStackDialog(
             }
         },
         confirmButton = {
-            TextButton(
+            Button(
                 onClick = {
-                    val name = search.trim()
-                    if (name.isNotBlank() && name !in addedNames) {
+                    val name = selectedItem?.trim()
+                    if (name != null && name !in addedNames) {
                         onAdd(name)
                     }
                 },
-                enabled = search.isNotBlank() && search.trim() !in addedNames
+                enabled = selectedItem != null && selectedItem!!.trim() !in addedNames,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = CosmicTheme.colors.plasma.copy(alpha = 0.15f),
+                    contentColor = CosmicTheme.colors.plasma
+                ),
+                shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Thêm", color = CosmicTheme.colors.plasma)
+                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Thêm")
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
+                Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(4.dp))
                 Text("Huỷ", color = CosmicTheme.colors.textSecondary)
             }
         }
     )
 }
 
-// ── Section 3: Tasks ─────────────────────────────────────────────
+// ── Section 4: Tasks ─────────────────────────────────────────────
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun TaskCard(task: TaskEntity, onClick: () -> Unit) {
+private fun TaskCard(
+    task: TaskItem,
+    expanded: Boolean,
+    isLocked: Boolean = false,
+    onToggleExpanded: () -> Unit,
+    onToggle: () -> Unit,
+    onDoubleClick: () -> Unit
+) {
     val bgColor = if (task.completed)
         Color(0xFF2E7D32).copy(alpha = 0.08f)
+    else if (isLocked)
+        Color(0xFFF9A825).copy(alpha = 0.04f)
     else
         Color(0xFFF9A825).copy(alpha = 0.08f)
 
     val borderColor = if (task.completed)
         Color(0xFF2E7D32).copy(alpha = 0.2f)
+    else if (isLocked)
+        Color(0xFFF9A825).copy(alpha = 0.12f)
     else
         Color(0xFFF9A825).copy(alpha = 0.25f)
 
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .combinedClickable(
+                onClick = {},
+                onDoubleClick = onDoubleClick
+            ),
         shape = RoundedCornerShape(12.dp),
         color = bgColor,
         border = androidx.compose.foundation.BorderStroke(1.dp, borderColor)
@@ -772,13 +901,15 @@ private fun TaskCard(task: TaskEntity, onClick: () -> Unit) {
             Box(
                 modifier = Modifier
                     .size(22.dp)
+                    .clip(CircleShape)
+                    .clickable(onClick = { if (!isLocked) onToggle() })
                     .background(
                         if (task.completed) Color(0xFF2E7D32) else Color.Transparent,
                         CircleShape
                     )
                     .border(
                         1.5.dp,
-                        if (task.completed) Color(0xFF2E7D32) else CosmicTheme.colors.textTertiary,
+                        if (task.completed) Color(0xFF2E7D32) else if (isLocked) CosmicTheme.colors.textTertiary.copy(alpha = 0.3f) else CosmicTheme.colors.textTertiary,
                         CircleShape
                     ),
                 contentAlignment = Alignment.Center
@@ -793,23 +924,51 @@ private fun TaskCard(task: TaskEntity, onClick: () -> Unit) {
                 }
             }
             Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = task.title,
-                style = CosmicTheme.typography.body,
-                color = if (task.completed) CosmicTheme.colors.textTertiary else CosmicTheme.colors.textPrimary,
-                textDecoration = if (task.completed) TextDecoration.LineThrough else TextDecoration.None,
-                modifier = Modifier.weight(1f)
-            )
-        }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = task.title,
+                    style = CosmicTheme.typography.body,
+                    color = if (task.completed) CosmicTheme.colors.textTertiary else if (isLocked) CosmicTheme.colors.textTertiary else CosmicTheme.colors.textPrimary,
+                    textDecoration = if (task.completed) TextDecoration.LineThrough else TextDecoration.None,
+                    modifier = Modifier.clickable(onClick = onToggleExpanded)
+                )
+                AnimatedVisibility(visible = expanded) {
+                    Column {
+                        if (task.description.isNotBlank()) {
+                            Text(
+                                text = task.description,
+                                style = CosmicTheme.typography.label,
+                                color = CosmicTheme.colors.textSecondary,
+                                modifier = Modifier.padding(top = 6.dp)
+                            )
+                        }
+                    }
+                }
+                if (task.isGroupTask) {
+                    Text(
+                        text = "Nhóm",
+                        fontSize = 10.sp,
+                        color = CosmicTheme.colors.plasma,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                if (task.deadline != null) {
+                    Text(
+                        text = "Hạn: ${formatDeadline(task.deadline)}",
+                        style = CosmicTheme.typography.label,
+                        color = CosmicTheme.colors.textTertiary
+                    )
+                }
+            }}
     }
 }
 
 @Composable
-private fun EmptyTaskState(onNavigateToPlan: () -> Unit) {
+private fun EmptyTaskState(onNavigateToCreateTask: () -> Unit) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onNavigateToPlan),
+            .clickable(onClick = onNavigateToCreateTask),
         shape = RoundedCornerShape(12.dp),
         color = CosmicTheme.colors.nebula,
         border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
@@ -825,7 +984,7 @@ private fun EmptyTaskState(onNavigateToPlan: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Bấm vào đây để lập kế hoạch cho hôm nay",
+                text = "Bấm vào đây để lập kế hoạch",
                 style = CosmicTheme.typography.label,
                 color = CosmicTheme.colors.plasma,
                 textDecoration = TextDecoration.Underline
@@ -834,11 +993,156 @@ private fun EmptyTaskState(onNavigateToPlan: () -> Unit) {
     }
 }
 
-@Composable
-private fun SectionLabel(title: String) {
-    Text(
-        text = title,
-        style = CosmicTheme.typography.command,
-        color = CosmicTheme.colors.textTertiary
-    )
+private fun formatDeadline(millis: Long): String {
+    val zdt = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault())
+    return zdt.format(DateTimeFormatter.ofPattern("HH:mm", Locale("vi", "VN")))
 }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun QuickAddTaskSheet(
+    initialDeadline: Long,
+    onDeadlineChange: (Long) -> Unit,
+    onDismiss: () -> Unit,
+    onConfirm: (title: String, deadline: Long) -> Unit
+) {
+    var title by remember { mutableStateOf("") }
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialDeadline)
+    val timePickerState = rememberTimePickerState(
+        initialHour = 23,
+        initialMinute = 59,
+        is24Hour = true
+    )
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = CosmicTheme.colors.nebula
+    ) {
+        Column(
+            modifier = Modifier.padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = "Quick Add Task",
+                style = CosmicTheme.typography.titleMedium,
+                color = CosmicTheme.colors.textPrimary
+            )
+
+            OutlinedTextField(
+                value = title,
+                onValueChange = { title = it },
+                label = { Text("Task title", color = CosmicTheme.colors.textTertiary) },
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = CosmicTheme.colors.textPrimary,
+                    unfocusedTextColor = CosmicTheme.colors.textPrimary,
+                    cursorColor = CosmicTheme.colors.plasma,
+                    focusedBorderColor = CosmicTheme.colors.plasma,
+                    unfocusedBorderColor = CosmicTheme.colors.glassBorder
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            TextButton(
+                onClick = { showDatePicker = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    Icons.Default.CalendarToday,
+                    contentDescription = null,
+                    tint = CosmicTheme.colors.textSecondary
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = if (initialDeadline > 0L) {
+                        val zdt = Instant.ofEpochMilli(initialDeadline)
+                            .atZone(ZoneId.systemDefault())
+                        "${zdt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale("vi", "VN")))} ${zdt.format(DateTimeFormatter.ofPattern("HH:mm", Locale("vi", "VN")))}"
+                    } else "Pick deadline",
+                    color = CosmicTheme.colors.textSecondary
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(onClick = onDismiss) {
+                    Text("Cancel", color = CosmicTheme.colors.textSecondary)
+                }
+                Spacer(Modifier.width(8.dp))
+                TextButton(
+                    onClick = {
+                        val deadline = datePickerState.selectedDateMillis
+                            ?: initialDeadline
+                        if (deadline > 0L) {
+                            val zdt = Instant.ofEpochMilli(deadline)
+                                .atZone(ZoneId.systemDefault())
+                                .with(LocalTime.of(timePickerState.hour, timePickerState.minute))
+                            onConfirm(title.trim(), zdt.toInstant().toEpochMilli())
+                        }
+                    },
+                    enabled = title.isNotBlank()
+                ) {
+                    Text(
+                        "Add",
+                        color = if (title.isNotBlank()) CosmicTheme.colors.plasma
+                        else CosmicTheme.colors.textTertiary
+                    )
+                }
+            }
+        }
+    }
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { onDeadlineChange(it) }
+                    showDatePicker = false
+                    showTimePicker = true
+                }) {
+                    Text("Next", color = CosmicTheme.colors.plasma)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel", color = CosmicTheme.colors.textSecondary)
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    if (showTimePicker) {
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    val base = datePickerState.selectedDateMillis ?: initialDeadline
+                    val zdt = Instant.ofEpochMilli(base)
+                        .atZone(ZoneId.systemDefault())
+                        .with(LocalTime.of(timePickerState.hour, timePickerState.minute))
+                    onDeadlineChange(zdt.toInstant().toEpochMilli())
+                    showTimePicker = false
+                }) {
+                    Text("OK", color = CosmicTheme.colors.plasma)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) {
+                    Text("Cancel", color = CosmicTheme.colors.textSecondary)
+                }
+            },
+            title = { Text("Pick time") },
+            text = {
+                TimeInput(state = timePickerState)
+            }
+        )
+    }
+}
+
+

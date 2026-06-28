@@ -51,6 +51,19 @@ class CourseViewModel @Inject constructor(
     private val _graphLinks = MutableStateFlow<List<GraphLink>>(emptyList())
     val graphLinks: StateFlow<List<GraphLink>> = _graphLinks.asStateFlow()
 
+    private val _semesterPlan = MutableStateFlow<Map<Int, List<GraphNode>>>(emptyMap())
+    val semesterPlan: StateFlow<Map<Int, List<GraphNode>>> = _semesterPlan.asStateFlow()
+
+    private fun CourseEntity.toGraphNode(semester: Int) = GraphNode(
+        id = this.id,
+        name = this.tenMH,
+        code = this.maMH,
+        description = this.description,
+        level = 0,
+        impactScore = 0.0,
+        semester = semester
+    )
+
     private val _graphLoading = MutableStateFlow(false)
     val graphLoading: StateFlow<Boolean> = _graphLoading.asStateFlow()
 
@@ -159,6 +172,10 @@ class CourseViewModel @Inject constructor(
                 _graphNodes.value = kg.nodes
                 _graphLinks.value = kg.links
                 _graphError.value = null
+                _semesterPlan.value = kg.nodes
+                    .filter { it.semester != null && it.semester in 1..8 }
+                    .groupBy { it.semester!! }
+                    .toSortedMap()
             } catch (e: Exception) {
                 _graphError.value = e.message ?: "Không thể tải kế hoạch"
             } finally {
@@ -169,6 +186,33 @@ class CourseViewModel @Inject constructor(
 
     fun clearGraphError() {
         _graphError.value = null
+    }
+
+    fun addCourseToSemester(semester: Int, courseCode: String) {
+        val existing = courses.value.find { it.maMH == courseCode } ?: return
+        _semesterPlan.value = _semesterPlan.value.toMutableMap().also { map ->
+            val current = map[semester]?.toMutableList() ?: mutableListOf()
+            if (current.none { it.code == courseCode }) {
+                current.add(existing.toGraphNode(semester))
+                map[semester] = current
+            }
+        }
+    }
+
+    fun removeCourseFromSemester(semester: Int, courseCode: String) {
+        _semesterPlan.value = _semesterPlan.value.toMutableMap().also { map ->
+            map[semester] = (map[semester] ?: emptyList()).filter { it.code != courseCode }
+        }
+    }
+
+    fun getAvailableCourses(query: String = ""): List<CourseEntity> {
+        val plannedCodes = _semesterPlan.value.values.flatten().map { it.code }.toSet()
+        return courses.value
+            .filter { it.maMH !in plannedCodes }
+            .filter {
+                query.isBlank() || it.maMH.contains(query, ignoreCase = true) || it.tenMH.contains(query, ignoreCase = true)
+            }
+            .sortedBy { it.maMH }
     }
 
     fun getNodesGroupedBySemester(): Map<Int, List<GraphNode>> {

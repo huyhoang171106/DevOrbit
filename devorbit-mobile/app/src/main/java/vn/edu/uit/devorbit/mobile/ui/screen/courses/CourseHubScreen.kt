@@ -9,7 +9,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.rounded.List
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.*
@@ -19,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -223,10 +228,10 @@ private val MAJOR_OPTIONS = listOf(
 
 @Composable
 private fun SemesterGraphView(viewModel: CourseViewModel) {
-    val nodes by viewModel.graphNodes.collectAsState()
-    val links by viewModel.graphLinks.collectAsState()
+    val semesterPlan by viewModel.semesterPlan.collectAsState()
     val loading by viewModel.graphLoading.collectAsState()
     val error by viewModel.graphError.collectAsState()
+    val allCourses by viewModel.courses.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -236,10 +241,14 @@ private fun SemesterGraphView(viewModel: CourseViewModel) {
         viewModel.clearGraphError()
     }
 
-    val hasData = nodes.isNotEmpty()
+    val hasData = semesterPlan.values.any { it.isNotEmpty() }
 
     var selectedMajor by remember { mutableStateOf("SE") }
     var majorExpanded by remember { mutableStateOf(false) }
+    var addTargetSemester by remember { mutableIntStateOf(1) }
+    var showAddDialog by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
+    var expandedSemesters by remember { mutableStateOf(setOf<Int>()) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -317,12 +326,7 @@ private fun SemesterGraphView(viewModel: CourseViewModel) {
                 }
 
                 hasData -> {
-                    val bySemester = remember(nodes) {
-                        nodes.filter { it.semester != null && it.semester in 1..8 }
-                            .groupBy { it.semester!! }.toSortedMap()
-                    }
-
-                    var expandedSemesters by remember { mutableStateOf(setOf<Int>()) }
+                    val totalCourses = semesterPlan.values.sumOf { it.size }
 
                     LazyColumn(
                         modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
@@ -331,28 +335,103 @@ private fun SemesterGraphView(viewModel: CourseViewModel) {
                     ) {
                         item {
                             Text(
-                                text = "${nodes.size} môn · ${bySemester.size} học kỳ",
+                                text = "$totalCourses môn · ${semesterPlan.size} học kỳ",
                                 style = CosmicTheme.typography.label,
                                 color = CosmicTheme.colors.textTertiary
                             )
                             Spacer(Modifier.height(8.dp))
                         }
 
-                        items(bySemester.entries.toList()) { (semester, semesterNodes) ->
-                            SemesterCard(
-                                semester = semester,
-                                nodes = semesterNodes,
-                                expanded = semester in expandedSemesters,
-                                onToggle = {
-                                    expandedSemesters = if (semester in expandedSemesters)
-                                        expandedSemesters - semester
-                                    else expandedSemesters + semester
-                                }
-                            )
+                        semesterPlan.entries.forEach { (semester, nodes) ->
+                            item(key = semester) {
+                                EditableSemesterCard(
+                                    semester = semester,
+                                    nodes = nodes,
+                                    expanded = semester in expandedSemesters,
+                                    onToggle = {
+                                        expandedSemesters = if (semester in expandedSemesters)
+                                            expandedSemesters - semester
+                                        else expandedSemesters + semester
+                                    },
+                                    onAddClick = {
+                                        addTargetSemester = semester
+                                        searchQuery = ""
+                                        showAddDialog = true
+                                    },
+                                    onRemoveCourse = { courseCode ->
+                                        viewModel.removeCourseFromSemester(semester, courseCode)
+                                    }
+                                )
+                            }
                         }
                     }
                 }
             }
+        }
+
+        // Add course dialog
+        if (showAddDialog) {
+            val targetSemester = addTargetSemester
+            val available = remember(searchQuery, semesterPlan) {
+                viewModel.getAvailableCourses(searchQuery)
+            }
+            val semesterCourses = semesterPlan[targetSemester].orEmpty()
+
+            AlertDialog(
+                onDismissRequest = { showAddDialog = false },
+                title = { Text("Thêm môn - Học kỳ $targetSemester", fontWeight = FontWeight.Bold) },
+                text = {
+                    Column {
+                        Text(
+                            "${semesterCourses.size} môn",
+                            style = CosmicTheme.typography.label,
+                            color = CosmicTheme.colors.textTertiary
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text("Tìm mã hoặc tên môn...") },
+                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                            singleLine = true,
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        LazyColumn(modifier = Modifier.heightIn(max = 300.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            items(available) { course ->
+                                Surface(
+                                    modifier = Modifier.fillMaxWidth().clickable {
+                                        viewModel.addCourseToSemester(targetSemester, course.maMH)
+                                    },
+                                    shape = RoundedCornerShape(10.dp),
+                                    color = CosmicTheme.colors.nebula
+                                ) {
+                                    Row(modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(course.maMH, style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.Bold), color = CosmicTheme.colors.plasma)
+                                            Text(course.tenMH, style = CosmicTheme.typography.body, color = CosmicTheme.colors.textPrimary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                        }
+                                        Text("${course.credits} TC", style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.SemiBold), color = CosmicTheme.colors.aurora)
+                                    }
+                                }
+                            }
+                            if (available.isEmpty()) {
+                                item {
+                                    Text(
+                                        if (searchQuery.isBlank()) "Tất cả môn đã được thêm" else "Không tìm thấy",
+                                        modifier = Modifier.padding(16.dp),
+                                        style = CosmicTheme.typography.label,
+                                        color = CosmicTheme.colors.textTertiary,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+                        }
+                    }
+                },
+                confirmButton = { TextButton(onClick = { showAddDialog = false }) { Text("Đóng") } }
+            )
         }
 
         SnackbarHost(
@@ -370,11 +449,13 @@ private fun SemesterGraphView(viewModel: CourseViewModel) {
 }
 
 @Composable
-private fun SemesterCard(
+private fun EditableSemesterCard(
     semester: Int,
     nodes: List<GraphNode>,
     expanded: Boolean,
-    onToggle: () -> Unit
+    onToggle: () -> Unit,
+    onAddClick: () -> Unit,
+    onRemoveCourse: (courseCode: String) -> Unit
 ) {
     val semesterColor = when (semester) {
         1, 2 -> CosmicTheme.colors.aurora
@@ -387,7 +468,7 @@ private fun SemesterCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
         color = CosmicTheme.colors.nebula,
-        border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+        border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
     ) {
         Column {
             Row(
@@ -419,6 +500,9 @@ private fun SemesterCard(
                         color = CosmicTheme.colors.textTertiary
                     )
                     Spacer(Modifier.width(8.dp))
+                    IconButton(onClick = onAddClick, modifier = Modifier.size(28.dp)) {
+                        Icon(Icons.Default.Add, contentDescription = "Thêm môn", tint = CosmicTheme.colors.plasma, modifier = Modifier.size(18.dp))
+                    }
                     Icon(
                         imageVector = if (expanded) Icons.Rounded.Star else Icons.Rounded.List,
                         contentDescription = null,
@@ -431,7 +515,7 @@ private fun SemesterCard(
             if (expanded) {
                 Divider(color = CosmicTheme.colors.glassBorder, thickness = 1.dp)
                 nodes.forEach { node ->
-                    CourseNodeRow(node = node)
+                    EditableCourseRow(node = node, onRemove = { onRemoveCourse(node.code) })
                 }
                 Spacer(Modifier.height(8.dp))
             }
@@ -440,44 +524,32 @@ private fun SemesterCard(
 }
 
 @Composable
-private fun CourseNodeRow(node: GraphNode) {
+private fun EditableCourseRow(node: GraphNode, onRemove: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(start = 16.dp, end = 4.dp, top = 8.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        val dotColor = when {
-            node.impactScore >= 7.0 -> CosmicTheme.colors.supernova
-            node.impactScore >= 4.0 -> CosmicTheme.colors.plasma
-            else -> CosmicTheme.colors.aurora
-        }
-        Box(
-            modifier = Modifier
-                .size(6.dp)
-                .clip(RoundedCornerShape(3.dp))
-                .background(dotColor)
-        )
-        Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = node.code,
-                style = CosmicTheme.typography.label,
-                color = CosmicTheme.colors.plasma
-            )
-            Text(
-                text = node.name,
-                style = CosmicTheme.typography.body,
-                color = CosmicTheme.colors.textPrimary,
-                maxLines = 1
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = node.code,
+                    style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.Bold),
+                    color = CosmicTheme.colors.plasma
+                )
+                Spacer(Modifier.width(6.dp))
+                Text(
+                    text = node.name,
+                    style = CosmicTheme.typography.body,
+                    color = CosmicTheme.colors.textPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
-        if (node.impactScore > 0) {
-            Text(
-                text = "%.1f".format(node.impactScore),
-                style = CosmicTheme.typography.label,
-                color = dotColor
-            )
+        IconButton(onClick = onRemove, modifier = Modifier.size(28.dp)) {
+            Icon(Icons.Default.Close, contentDescription = "Bỏ môn", tint = CosmicTheme.colors.supernova.copy(alpha = 0.7f), modifier = Modifier.size(16.dp))
         }
     }
 }

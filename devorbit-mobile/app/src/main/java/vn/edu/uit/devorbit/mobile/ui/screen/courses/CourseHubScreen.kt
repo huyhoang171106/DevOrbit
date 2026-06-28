@@ -1,5 +1,6 @@
 package vn.edu.uit.devorbit.mobile.ui.screen.courses
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -227,97 +228,144 @@ private fun SemesterGraphView(viewModel: CourseViewModel) {
     val loading by viewModel.graphLoading.collectAsState()
     val error by viewModel.graphError.collectAsState()
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(error) {
+        val msg = error ?: return@LaunchedEffect
+        snackbarHostState.showSnackbar(msg)
+        viewModel.clearGraphError()
+    }
+
+    val hasData = nodes.isNotEmpty()
+
     var selectedMajor by remember { mutableStateOf("SE") }
     var majorExpanded by remember { mutableStateOf(false) }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        // Major selector + generate button
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(modifier = Modifier.weight(1f)) {
-                OutlinedTextField(
-                    value = MAJOR_OPTIONS.firstOrNull { it.first == selectedMajor }?.second ?: selectedMajor,
-                    onValueChange = {},
-                    readOnly = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Ngành") },
-                    trailingIcon = {
-                        IconButton(onClick = { majorExpanded = true }) {
-                            Icon(Icons.Default.ArrowDropDown, contentDescription = null)
-                        }
-                    },
-                    singleLine = true,
-                    shape = RoundedCornerShape(10.dp)
-                )
-                DropdownMenu(expanded = majorExpanded, onDismissRequest = { majorExpanded = false }) {
-                    MAJOR_OPTIONS.forEach { (code, name) ->
-                        DropdownMenuItem(
-                            text = { Text("$code — $name") },
-                            onClick = { selectedMajor = code; majorExpanded = false }
-                        )
-                    }
-                }
-            }
-            Button(
-                onClick = { viewModel.loadGraph(selectedMajor) },
-                enabled = !loading,
-                shape = RoundedCornerShape(10.dp),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            // Major selector + generate button
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Tạo kế hoạch")
-            }
-        }
-
-        when {
-            loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = CosmicTheme.colors.plasma, strokeWidth = 2.dp, modifier = Modifier.size(32.dp))
-            }
-            error != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Lỗi: $error", color = CosmicTheme.colors.supernova, style = CosmicTheme.typography.body)
-            }
-            nodes.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Chọn ngành và bấm \"Tạo kế hoạch\"", color = CosmicTheme.colors.textTertiary, style = CosmicTheme.typography.body)
-            }
-            else -> {
-                val bySemester = remember(nodes) {
-                    nodes.filter { it.semester != null && it.semester in 1..8 }
-                        .groupBy { it.semester!! }.toSortedMap()
-                }
-
-                var expandedSemesters by remember { mutableStateOf(setOf<Int>()) }
-
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    contentPadding = PaddingValues(bottom = 24.dp, top = 8.dp)
-                ) {
-                    item {
-                        Text(
-                            text = "${nodes.size} môn · ${bySemester.size} học kỳ",
-                            style = CosmicTheme.typography.label,
-                            color = CosmicTheme.colors.textTertiary
-                        )
-                        Spacer(Modifier.height(8.dp))
-                    }
-
-                    items(bySemester.entries.toList()) { (semester, semesterNodes) ->
-                        SemesterCard(
-                            semester = semester,
-                            nodes = semesterNodes,
-                            expanded = semester in expandedSemesters,
-                            onToggle = {
-                                expandedSemesters = if (semester in expandedSemesters)
-                                    expandedSemesters - semester
-                                else expandedSemesters + semester
+                Box(modifier = Modifier.weight(1f)) {
+                    OutlinedTextField(
+                        value = MAJOR_OPTIONS.firstOrNull { it.first == selectedMajor }?.second ?: selectedMajor,
+                        onValueChange = {},
+                        readOnly = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("Ngành") },
+                        trailingIcon = {
+                            IconButton(onClick = { majorExpanded = true }) {
+                                Icon(Icons.Default.ArrowDropDown, contentDescription = null)
                             }
-                        )
+                        },
+                        singleLine = true,
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                    DropdownMenu(expanded = majorExpanded, onDismissRequest = { majorExpanded = false }) {
+                        MAJOR_OPTIONS.forEach { (code, name) ->
+                            DropdownMenuItem(
+                                text = { Text("$code — $name") },
+                                onClick = { selectedMajor = code; majorExpanded = false }
+                            )
+                        }
+                    }
+                }
+                Button(
+                    onClick = { viewModel.loadGraph(selectedMajor) },
+                    enabled = !loading,
+                    shape = RoundedCornerShape(10.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+                ) {
+                    Text("Tạo kế hoạch")
+                }
+            }
+
+            // Linear progress during loading (inline, doesn't replace content)
+            AnimatedVisibility(visible = loading) {
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                    color = CosmicTheme.colors.plasma,
+                    trackColor = CosmicTheme.colors.glassBorder
+                )
+            }
+
+            // Content area
+            when {
+                !hasData && loading -> Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = CosmicTheme.colors.plasma,
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+
+                !hasData && !loading -> Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "Chọn ngành và bấm \"Tạo kế hoạch\"",
+                        color = CosmicTheme.colors.textTertiary,
+                        style = CosmicTheme.typography.body
+                    )
+                }
+
+                hasData -> {
+                    val bySemester = remember(nodes) {
+                        nodes.filter { it.semester != null && it.semester in 1..8 }
+                            .groupBy { it.semester!! }.toSortedMap()
+                    }
+
+                    var expandedSemesters by remember { mutableStateOf(setOf<Int>()) }
+
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        contentPadding = PaddingValues(bottom = 24.dp, top = 8.dp)
+                    ) {
+                        item {
+                            Text(
+                                text = "${nodes.size} môn · ${bySemester.size} học kỳ",
+                                style = CosmicTheme.typography.label,
+                                color = CosmicTheme.colors.textTertiary
+                            )
+                            Spacer(Modifier.height(8.dp))
+                        }
+
+                        items(bySemester.entries.toList()) { (semester, semesterNodes) ->
+                            SemesterCard(
+                                semester = semester,
+                                nodes = semesterNodes,
+                                expanded = semester in expandedSemesters,
+                                onToggle = {
+                                    expandedSemesters = if (semester in expandedSemesters)
+                                        expandedSemesters - semester
+                                    else expandedSemesters + semester
+                                }
+                            )
+                        }
                     }
                 }
             }
         }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp),
+            snackbar = { data ->
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = CosmicTheme.colors.nebula,
+                    contentColor = CosmicTheme.colors.supernova
+                )
+            }
+        )
     }
 }
 

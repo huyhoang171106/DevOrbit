@@ -117,7 +117,6 @@ class CourseViewModel @Inject constructor(
     private var currentStudentCode: String = ""
     init {
         refreshCourses()
-        loadGraph()
         loadAllBookmarkState()
         viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             settingsDataStore.studentCode.collect { code ->
@@ -155,17 +154,21 @@ class CourseViewModel @Inject constructor(
     fun loadGraph(major: String? = null) {
         viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _graphLoading.value = true
-            _graphError.value = null
             try {
                 val kg = repository.getCourseGraph(major)
                 _graphNodes.value = kg.nodes
                 _graphLinks.value = kg.links
+                _graphError.value = null
             } catch (e: Exception) {
-                _graphError.value = e.message ?: "Failed to load graph"
+                _graphError.value = e.message ?: "Không thể tải kế hoạch"
             } finally {
                 _graphLoading.value = false
             }
         }
+    }
+
+    fun clearGraphError() {
+        _graphError.value = null
     }
 
     fun getNodesGroupedBySemester(): Map<Int, List<GraphNode>> {

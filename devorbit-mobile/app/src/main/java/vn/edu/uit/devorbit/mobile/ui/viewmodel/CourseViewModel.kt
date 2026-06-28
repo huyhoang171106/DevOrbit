@@ -13,7 +13,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collect
 import vn.edu.uit.devorbit.mobile.data.datastore.SettingsDataStore
 import vn.edu.uit.devorbit.mobile.data.repository.StreakTracker
+import vn.edu.uit.devorbit.mobile.data.local.dao.SemesterCourseDao
 import vn.edu.uit.devorbit.mobile.data.local.entity.CourseEntity
+import vn.edu.uit.devorbit.mobile.data.local.entity.SemesterCourseEntity
 import vn.edu.uit.devorbit.mobile.data.repository.AcademicRepository
 import vn.edu.uit.devorbit.mobile.data.remote.dto.AiResponse
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseArticle
@@ -39,7 +41,8 @@ class CourseViewModel @Inject constructor(
     private val repository: AcademicRepository,
     private val bookmarkRepository: BookmarkRepository,
     private val streakTracker: StreakTracker,
-    private val settingsDataStore: SettingsDataStore
+    private val settingsDataStore: SettingsDataStore,
+    private val semesterCourseDao: SemesterCourseDao
 ) : ViewModel() {
 
     val courses: StateFlow<List<CourseEntity>> = repository.allCourses
@@ -63,6 +66,20 @@ class CourseViewModel @Inject constructor(
         impactScore = 0.0,
         semester = semester
     )
+
+    private suspend fun loadFromRoom() {
+        val semesterCourses = semesterCourseDao.getAllSemesterCourses().first()
+        if (semesterCourses.isEmpty()) return
+        val courseMap = courses.value.associateBy { it.id }
+        val plan = mutableMapOf<Int, MutableList<GraphNode>>()
+        for (sc in semesterCourses) {
+            val course = courseMap[sc.courseId] ?: continue
+            plan.getOrPut(sc.semester) { mutableListOf() }.add(course.toGraphNode(sc.semester))
+        }
+        if (plan.isNotEmpty()) {
+            _semesterPlan.value = plan.toSortedMap()
+        }
+    }
 
     private val _graphLoading = MutableStateFlow(false)
     val graphLoading: StateFlow<Boolean> = _graphLoading.asStateFlow()
@@ -136,6 +153,9 @@ class CourseViewModel @Inject constructor(
                 currentStudentCode = code.orEmpty()
             }
         }
+        viewModelScope.launch {
+            loadFromRoom()
+        }
     }
 
     fun refreshCourses() {
@@ -176,6 +196,12 @@ class CourseViewModel @Inject constructor(
                     .filter { it.semester != null && it.semester in 1..8 }
                     .groupBy { it.semester!! }
                     .toSortedMap()
+                semesterCourseDao.clearAll()
+                for (node in kg.nodes) {
+                    val sem = node.semester ?: continue
+                    if (sem !in 1..8) continue
+                    semesterCourseDao.addCourse(SemesterCourseEntity(courseId = node.id, semester = sem))
+                }
             } catch (e: Exception) {
                 _graphError.value = e.message ?: "Không thể tải kế hoạch"
             } finally {
@@ -197,11 +223,22 @@ class CourseViewModel @Inject constructor(
                 map[semester] = current
             }
         }
+        viewModelScope.launch {
+            if (!semesterCourseDao.isCourseAdded(existing.id)) {
+                semesterCourseDao.addCourse(SemesterCourseEntity(courseId = existing.id, semester = semester))
+            }
+        }
     }
 
     fun removeCourseFromSemester(semester: Int, courseCode: String) {
+        val existing = courses.value.find { it.maMH == courseCode }
         _semesterPlan.value = _semesterPlan.value.toMutableMap().also { map ->
             map[semester] = (map[semester] ?: emptyList()).filter { it.code != courseCode }
+        }
+        existing?.let { course ->
+            viewModelScope.launch {
+                semesterCourseDao.removeCourse(course.id)
+            }
         }
     }
 

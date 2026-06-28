@@ -342,11 +342,12 @@ private fun SemesterGraphView(viewModel: CourseViewModel) {
                             Spacer(Modifier.height(8.dp))
                         }
 
-                        semesterPlan.entries.forEach { (semester, nodes) ->
+                        (1..8).forEach { semester ->
+                            val semesterNodes = semesterPlan[semester].orEmpty()
                             item(key = semester) {
                                 EditableSemesterCard(
                                     semester = semester,
-                                    nodes = nodes,
+                                    nodes = semesterNodes,
                                     expanded = semester in expandedSemesters,
                                     onToggle = {
                                         expandedSemesters = if (semester in expandedSemesters)

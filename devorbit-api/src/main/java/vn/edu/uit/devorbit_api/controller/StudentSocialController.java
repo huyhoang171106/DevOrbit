@@ -10,6 +10,14 @@ import vn.edu.uit.devorbit_api.dto.community.ReviewRequest;
 import vn.edu.uit.devorbit_api.dto.community.ReviewResponse;
 import vn.edu.uit.devorbit_api.service.SocialService;
 
+import java.util.List;
+import org.springframework.web.bind.annotation.*;
+import vn.edu.uit.devorbit_api.dto.community.RepoVoteRequest;
+import vn.edu.uit.devorbit_api.dto.community.RepoVoteResponse;
+import vn.edu.uit.devorbit_api.dto.community.ReviewRequest;
+import vn.edu.uit.devorbit_api.dto.community.ReviewResponse;
+import vn.edu.uit.devorbit_api.service.SocialService;
+
 /**
  * Student controller for social features (reviews, votes).
  * <p>
@@ -84,6 +92,19 @@ public class StudentSocialController {
             @PathVariable Long repoId,
             @RequestBody @Valid RepoVoteRequest request) {
         return socialService.voteRepo(studentCode, repoId, request);
+    }
+
+    /**
+     * Get all repos the authenticated student has voted on.
+     *
+     * @param studentCode Authenticated student code
+     * @return List of votes with repo information
+     * @apiNote GET /api/student/votes
+     */
+    @GetMapping("/votes")
+    public List<vn.edu.uit.devorbit_api.dto.student.StudentVoteResponse> getVotes(
+            @AuthenticationPrincipal String studentCode) {
+        return socialService.getStudentVotes(studentCode);
     }
 
     /**

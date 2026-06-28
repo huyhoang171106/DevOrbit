@@ -37,7 +37,6 @@ fun CourseHubScreen(
     pendingRepoId: Long? = null,
     onPendingCleared: () -> Unit = {}
 ) {
-    var viewMode by remember { mutableStateOf(ViewMode.LIST) }
     var selectedTutorial by remember { mutableStateOf<vn.edu.uit.devorbit.mobile.data.remote.dto.CourseTutorial?>(null) }
     val courses by viewModel.courses.collectAsStateWithLifecycle()
     val selectedCourse by viewModel.selectedCourse.collectAsStateWithLifecycle()
@@ -120,9 +119,6 @@ fun CourseHubScreen(
                     CourseDetailScreen(
                         course = selectedCourse!!,
                         repos = repos,
-                        tutorials = tutorials,
-                        videos = videos,
-                        articles = articles,
                         bookmarked = selectedCourse!!.id in bookmarkedCourseIds,
                         bookmarkedRepoIds = bookmarkedRepoIds,
                         onBack = { viewModel.closeCourseDetail() },
@@ -144,33 +140,9 @@ fun CourseHubScreen(
                         color = CosmicTheme.colors.textPrimary
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-
-                    // View toggle
-                    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                        SegmentedButton(
-                            selected = viewMode == ViewMode.LIST,
-                            onClick = { viewMode = ViewMode.LIST },
-                            shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
-                            icon = { Icon(Icons.Rounded.List, contentDescription = null, modifier = Modifier.size(18.dp)) }
-                        ) {
-                            Text("Danh sách")
-                        }
-                        SegmentedButton(
-                            selected = viewMode == ViewMode.GALAXY,
-                            onClick = { viewMode = ViewMode.GALAXY },
-                            shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
-                            icon = { Icon(Icons.Rounded.Star, contentDescription = null, modifier = Modifier.size(18.dp)) }
-                        ) {
-                            Text("Học kỳ")
-                        }
-                    }
                 }
 
-                if (viewMode == ViewMode.LIST) {
-                    CourseListScreen(viewModel = viewModel, onCourseClick = { viewModel.openCourse(it) })
-                } else {
-                    SemesterGraphView(viewModel = viewModel)
-                }
+                CourseListScreen(viewModel = viewModel, onCourseClick = { viewModel.openCourse(it) })
             }
         }
     }
@@ -207,175 +179,3 @@ private fun CourseDetailLoading(
         }
     }
 }
-
-@Composable
-private fun SemesterGraphView(viewModel: CourseViewModel) {
-    val nodes by viewModel.graphNodes.collectAsState()
-    val links by viewModel.graphLinks.collectAsState()
-    val loading by viewModel.graphLoading.collectAsState()
-    val error by viewModel.graphError.collectAsState()
-
-    LaunchedEffect(Unit) {
-        viewModel.loadGraph()
-    }
-
-    when {
-        loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(color = CosmicTheme.colors.plasma, strokeWidth = 2.dp, modifier = Modifier.size(32.dp))
-        }
-        error != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Lỗi: $error", color = CosmicTheme.colors.supernova, style = CosmicTheme.typography.body)
-        }
-        else -> {
-            val bySemester = remember(nodes) {
-                nodes.filter { it.semester != null && it.semester in 1..8 }
-                    .groupBy { it.semester!! }.toSortedMap()
-            }
-
-            var expandedSemesters by remember { mutableStateOf(setOf<Int>()) }
-
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                contentPadding = PaddingValues(bottom = 24.dp, top = 8.dp)
-            ) {
-                item {
-                    Text(
-                        text = "${nodes.size} môn · ${bySemester.size} học kỳ",
-                        style = CosmicTheme.typography.label,
-                        color = CosmicTheme.colors.textTertiary
-                    )
-                    Spacer(Modifier.height(8.dp))
-                }
-
-                items(bySemester.entries.toList()) { (semester, semesterNodes) ->
-                    SemesterCard(
-                        semester = semester,
-                        nodes = semesterNodes,
-                        expanded = semester in expandedSemesters,
-                        onToggle = {
-                            expandedSemesters = if (semester in expandedSemesters)
-                                expandedSemesters - semester
-                            else expandedSemesters + semester
-                        }
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun SemesterCard(
-    semester: Int,
-    nodes: List<GraphNode>,
-    expanded: Boolean,
-    onToggle: () -> Unit
-) {
-    val semesterColor = when (semester) {
-        1, 2 -> CosmicTheme.colors.aurora
-        3, 4 -> CosmicTheme.colors.plasma
-        5, 6 -> CosmicTheme.colors.plasma.copy(alpha = 0.7f)
-        else -> CosmicTheme.colors.supernova
-    }
-
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(14.dp),
-        color = CosmicTheme.colors.nebula,
-        border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
-    ) {
-        Column {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(onClick = onToggle)
-                    .padding(horizontal = 16.dp, vertical = 14.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(semesterColor)
-                    )
-                    Spacer(Modifier.width(12.dp))
-                    Text(
-                        text = "HK $semester",
-                        style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold),
-                        color = CosmicTheme.colors.textPrimary
-                    )
-                }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "${nodes.size} môn",
-                        style = CosmicTheme.typography.label,
-                        color = CosmicTheme.colors.textTertiary
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Icon(
-                        imageVector = if (expanded) Icons.Rounded.Star else Icons.Rounded.List,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = CosmicTheme.colors.textTertiary
-                    )
-                }
-            }
-
-            if (expanded) {
-                Divider(color = CosmicTheme.colors.glassBorder, thickness = 1.dp)
-                nodes.forEach { node ->
-                    CourseNodeRow(node = node)
-                }
-                Spacer(Modifier.height(8.dp))
-            }
-        }
-    }
-}
-
-@Composable
-private fun CourseNodeRow(node: GraphNode) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        val dotColor = when {
-            node.impactScore >= 7.0 -> CosmicTheme.colors.supernova
-            node.impactScore >= 4.0 -> CosmicTheme.colors.plasma
-            else -> CosmicTheme.colors.aurora
-        }
-        Box(
-            modifier = Modifier
-                .size(6.dp)
-                .clip(RoundedCornerShape(3.dp))
-                .background(dotColor)
-        )
-        Spacer(Modifier.width(12.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = node.code,
-                style = CosmicTheme.typography.label,
-                color = CosmicTheme.colors.plasma
-            )
-            Text(
-                text = node.name,
-                style = CosmicTheme.typography.body,
-                color = CosmicTheme.colors.textPrimary,
-                maxLines = 1
-            )
-        }
-        if (node.impactScore > 0) {
-            Text(
-                text = "%.1f".format(node.impactScore),
-                style = CosmicTheme.typography.label,
-                color = dotColor
-            )
-        }
-    }
-}
-
-enum class ViewMode { LIST, GALAXY }

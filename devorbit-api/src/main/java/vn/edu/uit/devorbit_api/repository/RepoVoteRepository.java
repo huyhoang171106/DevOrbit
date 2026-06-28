@@ -42,4 +42,7 @@ public interface RepoVoteRepository extends JpaRepository<RepoVote, Long> {
 
     /** Delete all votes for MULTIPLE repos (batch cleanup). */
     void deleteByRepoIdIn(List<Long> repoIds);
+    /** Get all votes by a specific student. */
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"repo"})
+    List<RepoVote> findByStudentId(Long studentId);
 }

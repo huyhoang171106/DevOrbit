@@ -61,6 +61,7 @@ public class SocialService {
     }
 
     @Transactional
+    @org.springframework.cache.annotation.CacheEvict(value = {"studentVotes", "repoSocialInfo"}, allEntries = true)
     public RepoVoteResponse voteRepo(String studentCode, Long repoId, RepoVoteRequest request) {
         GithubRepo repo = githubRepoRepository.findById(repoId)
                 .orElseThrow(() -> new NotFoundException("Repository not found"));
@@ -85,6 +86,21 @@ public class SocialService {
         vote.setVoteValue(value);
         repoVoteRepository.save(vote);
         return new RepoVoteResponse(repoId, student.getId(), value, voteScore(repoId));
+    }
+
+    @org.springframework.cache.annotation.Cacheable(value = "studentVotes", key = "#studentCode")
+    public List<vn.edu.uit.devorbit_api.dto.student.StudentVoteResponse> getStudentVotes(String studentCode) {
+        StudentUser student = findStudent(studentCode);
+        return repoVoteRepository.findByStudentId(student.getId())
+            .stream()
+            .map(v -> new vn.edu.uit.devorbit_api.dto.student.StudentVoteResponse(
+                v.getRepo().getId(),
+                v.getRepo().getRepoName(),
+                v.getRepo().getGithubUrl(),
+                v.getVoteValue(),
+                v.getCreatedAt() != null ? v.getCreatedAt().toString() : null
+            ))
+            .toList();
     }
 
     public RepoSocialInfoResponse getRepoSocialInfo(Long repoId) {

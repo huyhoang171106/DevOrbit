@@ -50,14 +50,10 @@ fun CourseListScreen(
             singleLine = true
         )
 
-        // Subject type & semester dropdown filters
+        // Subject type dropdown filter
         var subjectExpanded by remember { mutableStateOf(false) }
         val selectedSubjectLabel = CourseSearchFilterState.subjectFilters
             .firstOrNull { it.value == filterState.subjectType }?.label ?: "Tất cả"
-
-        var semesterExpanded by remember { mutableStateOf(false) }
-        val selectedSemesterLabel = CourseSearchFilterState.semesterFilters
-            .firstOrNull { it.value == filterState.semester }?.label ?: "Tất cả HK"
 
         Column(
             modifier = Modifier
@@ -109,51 +105,6 @@ fun CourseListScreen(
                     }
                 }
             }
-
-            ExposedDropdownMenuBox(
-                expanded = semesterExpanded,
-                onExpandedChange = { semesterExpanded = it }
-            ) {
-                OutlinedTextField(
-                    value = selectedSemesterLabel,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Học kỳ") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = semesterExpanded) },
-                    modifier = Modifier.fillMaxWidth().menuAnchor(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = CosmicTheme.colors.aurora,
-                        unfocusedBorderColor = CosmicTheme.colors.glassBorder,
-                        focusedLabelColor = CosmicTheme.colors.aurora,
-                        unfocusedLabelColor = CosmicTheme.colors.textTertiary,
-                        cursorColor = CosmicTheme.colors.aurora,
-                        focusedTextColor = CosmicTheme.colors.textPrimary,
-                        unfocusedTextColor = CosmicTheme.colors.textPrimary
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                )
-                ExposedDropdownMenu(
-                    expanded = semesterExpanded,
-                    onDismissRequest = { semesterExpanded = false }
-                ) {
-                    CourseSearchFilterState.semesterFilters.forEach { option ->
-                        val isSelected = option.value == filterState.semester ||
-                            (option.value == null && filterState.semester == null)
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    option.label,
-                                    color = if (isSelected) CosmicTheme.colors.aurora else CosmicTheme.colors.textPrimary
-                                )
-                            },
-                            onClick = {
-                                viewModel.selectSemester(option.value)
-                                semesterExpanded = false
-                            }
-                        )
-                    }
-                }
-            }
         }
 
         if (courses.isEmpty()) {
@@ -188,19 +139,6 @@ fun CourseListScreen(
     }
 }
 
-private fun deriveDifficulty(credits: Int, semester: Int?, loaiMonHoc: String?): String {
-    var score = credits
-    if (semester != null && semester >= 3) score += 1
-    when (loaiMonHoc) {
-        "CHUYEN_NGANH" -> score += 2
-        "CO_SO" -> score += 1
-    }
-    return when {
-        score >= 4 -> "Khó"
-        score >= 2 -> "Trung bình"
-        else -> "Dễ"
-    }
-}
 private fun formatSubjectType(raw: String?): String? = when (raw) {
     "DAI_CUONG" -> "Đại cương"
     "CO_SO" -> "Cơ sở ngành"
@@ -261,52 +199,8 @@ fun CourseListItem(course: CourseEntity, isBookmarked: Boolean = false, onClick:
             }
 
             val subjectLabel = formatSubjectType(course.loaiMonHoc)
-            val difficulty = deriveDifficulty(course.credits, course.semester, course.loaiMonHoc)
-            val difficultyColor = when (difficulty) {
-                "Khó" -> CosmicTheme.colors.supernova
-                "Trung bình" -> CosmicTheme.colors.plasma
-                else -> CosmicTheme.colors.aurora
-            }
             Spacer(Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                SuggestionChip(
-                    onClick = {},
-                    label = {
-                        Text(
-                            difficulty,
-                            style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.Medium),
-                            color = difficultyColor
-                        )
-                    },
-                    shape = RoundedCornerShape(8.dp),
-                    border = SuggestionChipDefaults.suggestionChipBorder(
-                        borderColor = difficultyColor.copy(alpha = 0.3f),
-                        enabled = true
-                    ),
-                    colors = SuggestionChipDefaults.suggestionChipColors(
-                        containerColor = difficultyColor.copy(alpha = 0.08f)
-                    )
-                )
-                if (course.semester != null) {
-                    SuggestionChip(
-                        onClick = {},
-                        label = {
-                            Text(
-                                "HK ${course.semester}",
-                                style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.Medium),
-                                color = CosmicTheme.colors.plasma
-                            )
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        border = SuggestionChipDefaults.suggestionChipBorder(
-                            borderColor = CosmicTheme.colors.plasma.copy(alpha = 0.3f),
-                            enabled = true
-                        ),
-                        colors = SuggestionChipDefaults.suggestionChipColors(
-                            containerColor = CosmicTheme.colors.plasma.copy(alpha = 0.08f)
-                        )
-                    )
-                }
                 if (subjectLabel != null) {
                     SuggestionChip(
                         onClick = {},

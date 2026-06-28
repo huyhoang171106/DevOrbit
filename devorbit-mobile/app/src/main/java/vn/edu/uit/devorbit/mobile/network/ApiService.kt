@@ -174,6 +174,9 @@ interface ApiService {
     @POST("/api/student/repos/{repoId}/vote")
     suspend fun voteRepo(@Path("repoId") repoId: Long, @Body body: RepoVoteRequest): RepoVoteResponse
 
+    @GET("/api/student/votes")
+    suspend fun getVotes(): List<vn.edu.uit.devorbit.mobile.data.remote.dto.StudentVoteResponse>
+
     // Student Notifications
     @GET("/api/student/notifications")
     suspend fun getNotifications(): List<StudentNotificationResponse>

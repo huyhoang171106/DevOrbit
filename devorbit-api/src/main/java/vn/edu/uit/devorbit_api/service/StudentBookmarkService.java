@@ -1,6 +1,8 @@
 package vn.edu.uit.devorbit_api.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.edu.uit.devorbit_api.dto.student.StudentBookmarkRequest;
@@ -22,6 +24,7 @@ public class StudentBookmarkService {
     private final StudentBookmarkRepository bookmarkRepository;
     private final StudentUserRepository studentUserRepository;
 
+    @Cacheable(value = "studentBookmarks", key = "#studentCode")
     public List<StudentBookmarkResponse> getBookmarks(String studentCode) {
         StudentUser student = studentUserRepository.findByStudentCode(studentCode)
                 .orElseThrow(() -> new NotFoundException("Student not found"));
@@ -33,6 +36,7 @@ public class StudentBookmarkService {
     }
 
     @Transactional
+    @CacheEvict(value = "studentBookmarks", key = "#studentCode")
     public StudentBookmarkResponse addBookmark(String studentCode, StudentBookmarkRequest request) {
         StudentUser student = studentUserRepository.findByStudentCode(studentCode)
                 .orElseThrow(() -> new NotFoundException("Student not found"));
@@ -63,6 +67,7 @@ public class StudentBookmarkService {
     }
 
     @Transactional
+    @CacheEvict(value = "studentBookmarks", key = "#studentCode")
     public void removeBookmark(String studentCode, Long bookmarkId) {
         StudentUser student = studentUserRepository.findByStudentCode(studentCode)
                 .orElseThrow(() -> new NotFoundException("Student not found"));

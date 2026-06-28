@@ -85,23 +85,6 @@ private fun WheelPickerColumn(
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialIndex)
     var isSnapping by remember { mutableStateOf(false) }
 
-    LaunchedEffect(listState) {
-        snapshotFlow {
-            listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset
-        }.collect { (index, offset) ->
-            if (isSnapping) return@collect
-            delay(100)
-            if (!listState.isScrollInProgress) {
-                val nearestIndex = if (offset > itemHeightPx.toInt() / 2) index + 1 else index
-                val clampedIndex = nearestIndex.coerceIn(0, items.size - 1)
-                isSnapping = true
-                listState.animateScrollToItem(clampedIndex)
-                isSnapping = false
-                onItemSelected(items[clampedIndex])
-            }
-        }
-    }
-
     val centerItem by remember {
         derivedStateOf {
             val layoutInfo = listState.layoutInfo
@@ -109,6 +92,22 @@ private fun WheelPickerColumn(
             layoutInfo.visibleItemsInfo.minByOrNull {
                 abs(it.offset + it.size / 2 - viewportCenter)
             }?.index ?: initialIndex
+        }
+    }
+
+    LaunchedEffect(listState) {
+        snapshotFlow {
+            centerItem
+        }.collect { center ->
+            if (isSnapping) return@collect
+            delay(200)
+            if (!listState.isScrollInProgress) {
+                val clampedIndex = center.coerceIn(0, items.size - 1)
+                isSnapping = true
+                listState.animateScrollToItem(clampedIndex)
+                isSnapping = false
+                onItemSelected(items[clampedIndex])
+            }
         }
     }
 

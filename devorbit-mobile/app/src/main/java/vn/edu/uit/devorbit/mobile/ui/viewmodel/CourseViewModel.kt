@@ -280,6 +280,44 @@ class CourseViewModel @Inject constructor(
         }
     }
 
+    fun moveCourse(fromSemester: Int, toSemester: Int, courseCode: String) {
+        val course = courses.value.find { it.maMH == courseCode } ?: return
+        val currentPlan = _semesterPlan.value
+        val targetNodes = currentPlan[toSemester].orEmpty()
+        if (targetNodes.any { it.code == courseCode }) {
+            _graphError.value = "Môn $courseCode đã tồn tại ở học kỳ $toSemester"
+            return
+        }
+        val targetCredits = targetNodes.sumOf { node ->
+            courses.value.find { it.maMH == node.code }?.credits ?: 0
+        }
+        if (targetCredits + course.credits > SemesterValidationService.MAX_CREDITS_PER_SEMESTER) {
+            _graphError.value = "Học kỳ $toSemester đã đạt tối đa ${SemesterValidationService.MAX_CREDITS_PER_SEMESTER} tín chỉ"
+            return
+        }
+        val prereqs = _prerequisiteMap.value[courseCode].orEmpty()
+        if (prereqs.isNotEmpty()) {
+            val plannedBefore = currentPlan.entries
+                .filter { it.key < toSemester }
+                .flatMap { it.value.map { n -> n.code } }
+                .toSet()
+            val missing = prereqs.filter { it !in plannedBefore }
+            if (missing.isNotEmpty()) {
+                _graphError.value = "Không thể chuyển: thiếu môn tiên quyết ${missing.joinToString(", ")}"
+                return
+            }
+        }
+        _semesterPlan.value = currentPlan.toMutableMap().also { map ->
+            map[fromSemester] = (map[fromSemester] ?: emptyList()).filter { it.code != courseCode }
+            val updated = map[toSemester]?.toMutableList() ?: mutableListOf()
+            updated.add(course.toGraphNode(toSemester))
+            map[toSemester] = updated
+        }
+        viewModelScope.launch {
+            semesterCourseDao.moveCourse(course.id, toSemester)
+        }
+    }
+
     fun getAvailableCourses(query: String = ""): List<CourseEntity> {
         val plannedCodes = _semesterPlan.value.values.flatten().map { it.code }.toSet()
         return courses.value

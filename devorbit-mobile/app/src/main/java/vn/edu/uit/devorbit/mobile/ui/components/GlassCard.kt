@@ -20,6 +20,7 @@ fun GlassCard(
         shape = RoundedCornerShape(16.dp),
         color = CosmicTheme.colors.nebula,
         border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder),
+        shadowElevation = 2.dp, // Premium soft drop shadow
         tonalElevation = 0.dp
     ) {
         Box(modifier = Modifier.padding(16.dp)) {

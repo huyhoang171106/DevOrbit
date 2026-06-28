@@ -102,6 +102,7 @@ app:
     api-url: ${OPENCODE_API_URL:https://opencode.ai/zen/go/v1}
     api-key: ${OPENCODE_API_KEY:}
     model: ${OPENCODE_MODEL:deepseek-v4-flash}
+    timeout-seconds: ${OPENCODE_TIMEOUT_SECONDS:30}
   embedding:
     offline: ${EMBEDDING_OFFLINE:false}
     provider: ${EMBEDDING_PROVIDER:fireworks}

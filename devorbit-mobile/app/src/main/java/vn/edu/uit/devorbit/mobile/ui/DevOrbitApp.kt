@@ -18,7 +18,11 @@ fun DevOrbitApp() {
 
     if (loginState.isLoggedIn) {
         val academicVm: AcademicViewModel = hiltViewModel()
-        MainScreen(academicVm = academicVm)
+        MainScreen(
+            academicVm = academicVm,
+            showRegistrationOnboarding = loginState.isNewRegistration,
+            onRegistrationOnboardingCompleted = authVm::completeRegistrationOnboarding
+        )
     } else {
         AuthScreen(
             viewModel = authVm,

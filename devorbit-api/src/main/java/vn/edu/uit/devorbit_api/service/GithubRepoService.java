@@ -151,7 +151,7 @@ public class GithubRepoService {
     // =====================================================================
 
     @Transactional
-    @CacheEvict(value = {"reposByCourse", "repoById", "allRepos"}, allEntries = true)
+    @CacheEvict(value = {"reposByCourse", "repoById", "allRepos", "courses", "knowledgeGraph"}, allEntries = true)
     public RepoSummaryResponse updateApprovedRepo(Long repoId, ApprovedRepoUpdateRequest request) {
         GithubRepo repo = githubRepoRepository.findById(repoId)
                 .orElseThrow(() -> new NotFoundException("Repo not found: " + repoId));
@@ -208,7 +208,7 @@ public class GithubRepoService {
     }
 
     @Transactional
-    @CacheEvict(value = {"reposByCourse", "repoById", "allRepos"}, allEntries = true)
+    @CacheEvict(value = {"reposByCourse", "repoById", "allRepos", "courses", "knowledgeGraph"}, allEntries = true)
     public void deleteApprovedRepo(Long repoId) {
         GithubRepo repo = githubRepoRepository.findById(repoId)
                 .orElseThrow(() -> new NotFoundException("Repo not found: " + repoId));
@@ -225,7 +225,7 @@ public class GithubRepoService {
     }
 
     @Transactional
-    @CacheEvict(value = {"reposByCourse", "repoById", "allRepos"}, allEntries = true)
+    @CacheEvict(value = {"reposByCourse", "repoById", "allRepos", "courses", "knowledgeGraph"}, allEntries = true)
     public RepoSummaryResponse syncApprovedRepo(Long repoId) {
         GithubRepo repo = githubRepoRepository.findById(repoId)
                 .orElseThrow(() -> new NotFoundException("Repo not found: " + repoId));

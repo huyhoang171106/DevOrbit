@@ -141,7 +141,7 @@ private fun WheelPickerColumn(
                     )
 
                     drawRoundRect(
-                        color = Color.White.copy(alpha = 0.06f),
+                        color = Color.Black.copy(alpha = 0.06f),
                         topLeft = Offset(0f, centerY - itemHeightPx / 2),
                         size = Size(size.width, itemHeightPx),
                         cornerRadius = CornerRadius(12.dp.toPx())
@@ -157,7 +157,7 @@ private fun WheelPickerColumn(
                 Text(
                     text = item.toString().padStart(2, '0'),
                     fontSize = if (isCenter) 22.sp else (18 - distance * 2).sp,
-                    color = Color.White.copy(alpha = alpha),
+                    color = CosmicTheme.colors.textPrimary.copy(alpha = alpha),
                     fontWeight = if (isCenter) FontWeight.Bold else FontWeight.Normal,
                     modifier = Modifier
                         .fillMaxWidth()

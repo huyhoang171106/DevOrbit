@@ -74,18 +74,22 @@ class TaskManagementViewModel @Inject constructor(
 
     private var searchJob: Job? = null
 
+    private val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    private val minDate: LocalDate = LocalDate.now().minusMonths(6).with(DayOfWeek.MONDAY)
+
     init {
         observeTasks()
         loadGroupPlans()
         loadWeekDays()
     }
 
+
     private fun observeTasks() {
         refreshTasks()
     }
 
     private fun refreshTasks(filter: TaskFilter = _state.value.filter, searchQuery: String = _state.value.searchQuery) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             try {
                 val filterParam = when (filter) {
                     TaskFilter.TODAY -> "today"
@@ -121,7 +125,7 @@ class TaskManagementViewModel @Inject constructor(
     fun updateSearchQuery(query: String) {
         _state.update { it.copy(searchQuery = query) }
         searchJob?.cancel()
-        searchJob = viewModelScope.launch {
+        searchJob = viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             delay(300)
             refreshTasks()
         }
@@ -244,7 +248,7 @@ class TaskManagementViewModel @Inject constructor(
             _state.update { it.copy(error = "Vui lòng chọn deadline hoặc thiết lập lặp lại") }
             return
         }
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _state.update { it.copy(saveLoading = true) }
             try {
                 val deadline = if (s.inputRecurrence != null) {
@@ -345,7 +349,7 @@ class TaskManagementViewModel @Inject constructor(
     }
 
     fun toggleTask(taskId: Long, completed: Boolean) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _state.update { it.copy(taskLoading = true) }
             try {
                 if (completed) {
@@ -381,7 +385,7 @@ class TaskManagementViewModel @Inject constructor(
     }
 
     fun deleteTask(taskId: Long) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _state.update { it.copy(deleteLoading = true) }
             try {
                 apiService.deletePersonalTask(taskId)
@@ -396,7 +400,7 @@ class TaskManagementViewModel @Inject constructor(
 
 
     fun continueDateTasks(date: LocalDate) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _state.update { it.copy(taskLoading = true) }
             val tasksToContinue = _state.value.tasks.filter { task ->
                 if (task.completed || task.recurrence != null || task.deadline == null) return@filter false
@@ -434,7 +438,7 @@ class TaskManagementViewModel @Inject constructor(
     }
 
     fun loadGroupPlans() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _state.update { it.copy(groupPlansLoading = true) }
             try {
                 val plans = apiService.getMyGroupPlans()
@@ -459,8 +463,6 @@ class TaskManagementViewModel @Inject constructor(
         _state.update { it.copy(planTitle = title) }
     }
 
-    private val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    private val minDate: LocalDate = LocalDate.now().minusMonths(6).with(DayOfWeek.MONDAY)
 
     private fun computeMaxWeekOffset(): Int {
         val now = LocalDate.now()
@@ -493,7 +495,7 @@ class TaskManagementViewModel @Inject constructor(
     }
 
     private fun loadWeekDays() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             val offset = _state.value.currentWeekOffset
             val maxOffset = computeMaxWeekOffset()
             var date = LocalDate.now().minusWeeks(offset.toLong()).with(DayOfWeek.MONDAY)
@@ -530,7 +532,7 @@ class TaskManagementViewModel @Inject constructor(
             _state.update { it.copy(planError = "Vui lòng nhập tên kế hoạch") }
             return
         }
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _state.update { it.copy(creatingPlan = true, planError = null) }
             try {
                 val response = apiService.createGroupPlan(
@@ -598,3 +600,4 @@ private fun computeNextDeadline(task: TaskItem): Long? {
     }
     return nextDate.atTime(currentTime).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 }
+

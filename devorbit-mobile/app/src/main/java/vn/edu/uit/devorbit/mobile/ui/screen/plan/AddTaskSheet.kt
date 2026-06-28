@@ -145,7 +145,7 @@ fun AddTaskSheet(
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
-                    unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
+                    unfocusedBorderColor = CosmicTheme.colors.glassBorder,
                     cursorColor = CosmicTheme.colors.plasma,
                     focusedTextColor = CosmicTheme.colors.textPrimary,
                     unfocusedTextColor = CosmicTheme.colors.textPrimary
@@ -164,7 +164,7 @@ fun AddTaskSheet(
                 maxLines = 3,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
-                    unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
+                    unfocusedBorderColor = CosmicTheme.colors.glassBorder,
                     cursorColor = CosmicTheme.colors.plasma,
                     focusedTextColor = CosmicTheme.colors.textPrimary,
                     unfocusedTextColor = CosmicTheme.colors.textPrimary
@@ -189,7 +189,7 @@ fun AddTaskSheet(
                     modifier = Modifier.fillMaxWidth().menuAnchor(),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
-                        unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
+                        unfocusedBorderColor = CosmicTheme.colors.glassBorder,
                         cursorColor = CosmicTheme.colors.plasma,
                         focusedTextColor = CosmicTheme.colors.textPrimary,
                         unfocusedTextColor = CosmicTheme.colors.textPrimary
@@ -228,7 +228,7 @@ fun AddTaskSheet(
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
-                    unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
+                    unfocusedBorderColor = CosmicTheme.colors.glassBorder,
                     cursorColor = CosmicTheme.colors.plasma,
                     focusedTextColor = CosmicTheme.colors.textPrimary,
                     unfocusedTextColor = CosmicTheme.colors.textPrimary

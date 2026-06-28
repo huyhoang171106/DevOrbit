@@ -115,9 +115,9 @@ fun TaskManagementScreen(
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
-                            unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
-                            cursorColor = CosmicTheme.colors.plasma,
+                             focusedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
+                             unfocusedBorderColor = CosmicTheme.colors.glassBorder,
+                             cursorColor = CosmicTheme.colors.plasma,
                             focusedTextColor = CosmicTheme.colors.textPrimary,
                             unfocusedTextColor = CosmicTheme.colors.textPrimary
                         ),
@@ -197,7 +197,7 @@ fun TaskManagementScreen(
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
-                    unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
+                    unfocusedBorderColor = CosmicTheme.colors.glassBorder,
                     cursorColor = CosmicTheme.colors.plasma,
                     focusedTextColor = CosmicTheme.colors.textPrimary,
                     unfocusedTextColor = CosmicTheme.colors.textPrimary
@@ -707,7 +707,7 @@ private fun RecurrenceDropdown(
             modifier = Modifier.fillMaxWidth().menuAnchor(),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
-                unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
+                unfocusedBorderColor = CosmicTheme.colors.glassBorder,
                 cursorColor = CosmicTheme.colors.plasma,
                 focusedTextColor = CosmicTheme.colors.textPrimary,
                 unfocusedTextColor = CosmicTheme.colors.textPrimary
@@ -884,7 +884,7 @@ private fun AddTaskModal(
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
-                    unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
+                    unfocusedBorderColor = CosmicTheme.colors.glassBorder,
                     cursorColor = CosmicTheme.colors.plasma,
                     focusedTextColor = CosmicTheme.colors.textPrimary,
                     unfocusedTextColor = CosmicTheme.colors.textPrimary
@@ -902,7 +902,7 @@ private fun AddTaskModal(
                 maxLines = 3,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
-                    unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
+                    unfocusedBorderColor = CosmicTheme.colors.glassBorder,
                     cursorColor = CosmicTheme.colors.plasma,
                     focusedTextColor = CosmicTheme.colors.textPrimary,
                     unfocusedTextColor = CosmicTheme.colors.textPrimary
@@ -929,9 +929,9 @@ private fun AddTaskModal(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.outlinedCardColors(
-                        containerColor = Color.White.copy(alpha = 0.03f)
+                        containerColor = CosmicTheme.colors.nebula
                     ),
-                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+                    border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
@@ -958,9 +958,9 @@ private fun AddTaskModal(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.outlinedCardColors(
-                        containerColor = Color.White.copy(alpha = 0.03f)
+                        containerColor = CosmicTheme.colors.nebula
                     ),
-                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+                    border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
@@ -989,9 +989,9 @@ private fun AddTaskModal(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.outlinedCardColors(
-                        containerColor = Color.White.copy(alpha = 0.03f)
+                        containerColor = CosmicTheme.colors.nebula
                     ),
-                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+                    border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
@@ -1020,9 +1020,9 @@ private fun AddTaskModal(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.outlinedCardColors(
-                        containerColor = Color.White.copy(alpha = 0.03f)
+                        containerColor = CosmicTheme.colors.nebula
                     ),
-                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+                    border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),

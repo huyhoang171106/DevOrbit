@@ -27,9 +27,11 @@ class SettingsDataStore @Inject constructor(
         val STUDENT_CODE = stringPreferencesKey("student_code")
         val STUDENT_ID = intPreferencesKey("student_id")
         val DARK_MODE = booleanPreferencesKey("dark_mode")
+        val REFRESH_TOKEN = stringPreferencesKey("refresh_token")
     }
 
     val token: Flow<String?> = context.settingsStore.data.map { it[Keys.JWT_TOKEN] }
+    val refreshToken: Flow<String?> = context.settingsStore.data.map { it[Keys.REFRESH_TOKEN] }
     val studentName: Flow<String?> = context.settingsStore.data.map { it[Keys.STUDENT_NAME] }
     val studentCode: Flow<String?> = context.settingsStore.data.map { it[Keys.STUDENT_CODE] }
     val studentId: Flow<Int?> = context.settingsStore.data.map { it[Keys.STUDENT_ID] }
@@ -42,6 +44,15 @@ class SettingsDataStore @Inject constructor(
     suspend fun clearToken() {
         context.settingsStore.edit { it.remove(Keys.JWT_TOKEN) }
     }
+    
+    suspend fun saveRefreshToken(token: String) {
+        context.settingsStore.edit { it[Keys.REFRESH_TOKEN] = token }
+    }
+    
+    suspend fun clearRefreshToken() {
+        context.settingsStore.edit { it.remove(Keys.REFRESH_TOKEN) }
+    }
+    
 
     suspend fun saveStudentName(name: String) {
         context.settingsStore.edit { it[Keys.STUDENT_NAME] = name }

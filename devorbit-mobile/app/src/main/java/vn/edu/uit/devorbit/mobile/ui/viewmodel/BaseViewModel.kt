@@ -11,7 +11,7 @@ abstract class BaseViewModel(
 ) : ViewModel() {
 
     protected fun handleUnauthorized() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             authRepository.clearToken()
         }
     }

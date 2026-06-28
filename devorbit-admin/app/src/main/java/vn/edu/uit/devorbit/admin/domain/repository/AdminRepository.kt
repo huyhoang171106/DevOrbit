@@ -2,7 +2,7 @@ package vn.edu.uit.devorbit.admin.domain.repository
 
 import vn.edu.uit.devorbit.admin.data.remote.dto.*
 
-data class AdminAuthResult(val token: String)
+data class AdminAuthResult(val token: String, val refreshToken: String? = null)
 
 interface AdminRepository {
     // Auth
@@ -71,6 +71,9 @@ interface AdminRepository {
     suspend fun scanAllCourses(): Result<Map<String, String>>
     suspend fun getScanLogs(): Result<List<String>>
     suspend fun clearScanLogs(): Result<Unit>
+    suspend fun getGithubAutomationStatus(): Result<GithubAutomationStatus>
+    suspend fun getAutoApprovedRepos(): Result<List<RepoCandidateResponse>>
+    suspend fun runAutoApproval(): Result<AutoApprovalRun>
 
     // Community
     suspend fun getChannels(): Result<List<ChatChannel>>

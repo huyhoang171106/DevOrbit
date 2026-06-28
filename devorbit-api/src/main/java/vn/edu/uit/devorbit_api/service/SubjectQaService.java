@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import vn.edu.uit.devorbit_api.constant.CurriculumConstants;
 import vn.edu.uit.devorbit_api.dto.publicapi.*;
 import vn.edu.uit.devorbit_api.entity.*;
@@ -24,12 +23,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import reactor.core.Disposable;
 
 /**
  * Service orchestrating AI Q&A operations for course selection and advice.
@@ -312,7 +308,8 @@ public class SubjectQaService {
 
         // Run self-critique on SEARCH/DIRECT responses to catch hallucination/issues
         // Only for queries with reasonable length (not greeting) and when answer is substantial
-        if ("SEARCH".equals(preparation.queryType()) || "DIRECT".equals(preparation.queryType())) {
+        if (!openCodeAiService.isOfflineFallbackResponse(answer)
+                && ("SEARCH".equals(preparation.queryType()) || "DIRECT".equals(preparation.queryType()))) {
             try {
                 String critiqueResult = runResponseCritique(request.message(), preparation.systemPrompt(), answer);
                 if (critiqueResult != null) {
@@ -363,130 +360,51 @@ public class SubjectQaService {
 
     // ─── Streaming query ───
 
-    public SseEmitter streamQuery(SubjectQaRequest request) {
-        SseEmitter emitter = new SseEmitter(120_000L);
-        AtomicReference<Disposable> subscriptionRef = new AtomicReference<>();
-        AtomicBoolean completed = new AtomicBoolean(false);
+    public void streamQuery(SubjectQaRequest request, SubjectQaProgressSink sink) {
+        try {
+            SubjectQaPreparation preparation = prepareQuery(request, sink);
 
-        Runnable cleanup = () -> {
-            completed.set(true);
-            Disposable d = subscriptionRef.get();
-            if (d != null) {
-                d.dispose();
+            if (preparation.directResponse() != null) {
+                sink.emit(SubjectQaStreamEvent.status("answer", "Đang soạn câu trả lời"));
+                sink.emit(SubjectQaStreamEvent.delta(removeEmojis(preparation.directResponse().answer())));
+                sink.emit(SubjectQaStreamEvent.complete(preparation.directResponse()));
+                return;
             }
-        };
 
-        emitter.onCompletion(cleanup);
-        emitter.onTimeout(() -> {
-            cleanup.run();
+            sink.emit(SubjectQaStreamEvent.status("answer", "Đang soạn câu trả lời"));
+
+            // Real streaming: collect deltas from Flux and emit each one to client
+            StringBuilder accumulated = new StringBuilder();
             try {
-                emit(emitter, SubjectQaStreamEvent.error("Stream timeout. Vui lòng thử lại."));
-            } catch (Exception ignored) {}
-            emitter.complete();
-        });
-
-        subjectQaStreamExecutor.execute(() -> {
-            StringBuilder answerBuffer = new StringBuilder();
-            try {
-                SubjectQaPreparation preparation = prepareQuery(request, event -> emit(emitter, event));
-
-                // Direct response (greeting, needs-course-code) → emit as single delta
-                if (preparation.directResponse() != null) {
-                    emit(emitter, SubjectQaStreamEvent.status("answer", "Đang soạn câu trả lời"));
-                    emit(emitter, SubjectQaStreamEvent.delta(removeEmojis(preparation.directResponse().answer())));
-                    emit(emitter, SubjectQaStreamEvent.complete(preparation.directResponse()));
-                    emitter.complete();
-                    cleanup.run();
-                    return;
-                }
-
-                if (completed.get()) {
-                    return;
-                }
-
-                emit(emitter, SubjectQaStreamEvent.status("answer", "Đang soạn câu trả lời"));
-
-                // Stream from LLM
-                Disposable disposable = openCodeAiService.streamCompletion(preparation.systemPrompt(), preparation.userMessage())
-                    .subscribe(
-                        delta -> {
-                            String cleanedDelta = removeEmojis(delta);
-                            if (cleanedDelta != null && !cleanedDelta.isEmpty()) {
-                                answerBuffer.append(cleanedDelta);
-                                emit(emitter, SubjectQaStreamEvent.delta(cleanedDelta));
-                            }
-                        },
-                        error -> {
-                            log.error("SubjectQaService: streaming error: {}", error.getMessage());
-                            // If no deltas emitted yet, fall back to one-shot
-                            if (answerBuffer.isEmpty()) {
-                                String fallbackAnswer = openCodeAiService.generateCompletion(
-                                    preparation.systemPrompt(), preparation.userMessage()
-                                );
-                                if (fallbackAnswer == null || fallbackAnswer.isBlank()) {
-                                    fallbackAnswer = openCodeAiService.generateCompletion(
-                                        preparation.fallbackSystemPrompt(), preparation.userMessage()
-                                    );
-                                }
-                                if (fallbackAnswer == null || fallbackAnswer.isBlank()) {
-                                    fallbackAnswer = "Mình đã lấy được ngữ cảnh thật từ DevOrbit nhưng LLM không trả về nội dung trả lời. "
-                                        + "Mình sẽ không bịa thêm thông tin. Bạn hãy thử hỏi lại với mã môn cụ thể hoặc câu hỏi hẹp hơn.";
-                                }
-                                fallbackAnswer = removeEmojis(fallbackAnswer);
-                                answerBuffer.append(fallbackAnswer);
-                                emit(emitter, SubjectQaStreamEvent.delta(fallbackAnswer));
-                            }
-                            completeStream(emitter, preparation, answerBuffer.toString());
-                            cleanup.run();
-                        },
-                        () -> {
-                            // Stream completed normally
-                            String finalAnswer = answerBuffer.toString();
-                            if (finalAnswer.isBlank()) {
-                                // LLM returned no deltas, fall back to one-shot
-                                log.warn("SubjectQaService: streaming returned blank, falling back to one-shot");
-                                finalAnswer = openCodeAiService.generateCompletion(
-                                    preparation.systemPrompt(), preparation.userMessage()
-                                );
-                                if (finalAnswer == null || finalAnswer.isBlank()) {
-                                    finalAnswer = openCodeAiService.generateCompletion(
-                                        preparation.fallbackSystemPrompt(), preparation.userMessage()
-                                    );
-                                }
-                                if (finalAnswer == null || finalAnswer.isBlank()) {
-                                    finalAnswer = "Mình đã lấy được ngữ cảnh thật từ DevOrbit nhưng LLM không trả về nội dung trả lời. "
-                                        + "Mình sẽ không bịa thêm thông tin. Bạn hãy thử hỏi lại với mã môn cụ thể hoặc câu hỏi hẹp hơn.";
-                                }
-                                finalAnswer = removeEmojis(finalAnswer);
-                                emit(emitter, SubjectQaStreamEvent.delta(finalAnswer));
-                                answerBuffer.setLength(0);
-                                answerBuffer.append(finalAnswer);
-                            }
-                            completeStream(emitter, preparation, answerBuffer.toString());
-                            cleanup.run();
-                        }
-                    );
-
-                subscriptionRef.set(disposable);
-                if (completed.get()) {
-                    disposable.dispose();
-                }
+                openCodeAiService.streamCompletion(preparation.systemPrompt(), preparation.userMessage())
+                    .doOnNext(delta -> {
+                        accumulated.append(delta);
+                        sink.emit(SubjectQaStreamEvent.delta(delta));
+                    })
+                    .doOnError(e -> {
+                        log.error("SubjectQaService: stream completion error: {}", e.getMessage());
+                    })
+                    .blockLast();
             } catch (Exception e) {
-                log.error("SubjectQaService: stream query failed: {}", e.getMessage());
-                try {
-                    emit(emitter, SubjectQaStreamEvent.error("Không thể stream câu trả lời. Vui lòng thử lại."));
-                } catch (Exception ignored) {
-                    // Emitter may already be closed
-                }
-                emitter.completeWithError(e);
-                cleanup.run();
+                log.error("SubjectQaService: streamCompletion failed: {}", e.getMessage());
             }
-        });
 
-        return emitter;
+            String finalAnswer = accumulated.toString();
+            if (finalAnswer.isBlank()) {
+                finalAnswer = "Mình đã lấy được ngữ cảnh thật từ DevOrbit nhưng LLM không trả về nội dung trả lời. "
+                    + "Bạn hãy thử hỏi lại với mã môn cụ thể hoặc câu hỏi hẹp hơn.";
+                sink.emit(SubjectQaStreamEvent.delta(finalAnswer));
+            }
+
+            finalAnswer = removeEmojis(finalAnswer);
+            sink.emit(SubjectQaStreamEvent.complete(buildCompletedStreamResponse(preparation, finalAnswer)));
+        } catch (Exception e) {
+            log.error("SubjectQaService: stream query failed: {}", e.getMessage());
+            sink.emit(SubjectQaStreamEvent.error("Không thể stream câu trả lời. Vui lòng thử lại."));
+        }
     }
 
-    private void completeStream(SseEmitter emitter, SubjectQaPreparation preparation, String finalAnswer) {
+    private SubjectQaResponse buildCompletedStreamResponse(SubjectQaPreparation preparation, String finalAnswer) {
         saveAiResponseBestEffort(preparation.session(), finalAnswer, preparation.sources());
 
         // Store session summary for cross-turn context
@@ -516,18 +434,7 @@ public class SubjectQaService {
             followUps,
             confidence
         );
-        emit(emitter, SubjectQaStreamEvent.complete(response));
-        emitter.complete();
-    }
-
-    private void emit(SseEmitter emitter, SubjectQaStreamEvent event) {
-        synchronized (emitter) {
-            try {
-                emitter.send(SseEmitter.event().name(event.type()).data(event));
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to send SSE event: " + e.getMessage(), e);
-            }
-        }
+        return response;
     }
 
     // ─── Shared preparation (both one-shot and streaming) ───
@@ -717,7 +624,7 @@ public class SubjectQaService {
                     : java.util.concurrent.CompletableFuture.supplyAsync(() -> {
                         sink.emit(SubjectQaStreamEvent.status("rag", "Đang tìm trong Knowledge RAG"));
                         return buildSemanticKnowledgeContext(userMessage, detectedCodes);
-                    }, java.util.concurrent.Executors.newCachedThreadPool(r -> new Thread(r, "parallel-rag")));
+                    }, subjectQaStreamExecutor);
 
             java.util.concurrent.CompletableFuture<WebSearchResponse> webFuture =
                 java.util.concurrent.CompletableFuture.supplyAsync(() -> {
@@ -728,7 +635,7 @@ public class SubjectQaService {
                         log.warn("SubjectQaService: parallel web search failed: {}", e.getMessage());
                         return null;
                     }
-                }, java.util.concurrent.Executors.newCachedThreadPool(r -> new Thread(r, "parallel-web")));
+                }, subjectQaStreamExecutor);
 
             try {
                 java.util.concurrent.CompletableFuture.allOf(ragFuture, webFuture).join();

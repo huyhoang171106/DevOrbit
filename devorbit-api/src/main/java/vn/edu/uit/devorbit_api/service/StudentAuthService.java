@@ -69,8 +69,9 @@ public class StudentAuthService {
         }
 
         loginRateLimitService.onSuccess(request.studentCode(), ip);
-        String token = jwtService.generateToken(student.getStudentCode(), "STUDENT");
-        return new StudentAuthResponse(token, student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail(), student.getAvatar());
+        String accessToken = jwtService.generateAccessToken(student.getStudentCode(), "STUDENT");
+        String refreshToken = jwtService.generateRefreshToken(student.getStudentCode(), "STUDENT");
+        return new StudentAuthResponse(accessToken, student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail(), student.getAvatar(), refreshToken);
     }
 
     public StudentProfileResponse me(String studentCode) {
@@ -154,8 +155,9 @@ public class StudentAuthService {
             "/admin/students"
         ));
 
-        String token = jwtService.generateToken(student.getStudentCode(), "STUDENT");
-        return new StudentAuthResponse(token, student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail(), student.getAvatar());
+        String accessToken = jwtService.generateAccessToken(student.getStudentCode(), "STUDENT");
+        String refreshToken = jwtService.generateRefreshToken(student.getStudentCode(), "STUDENT");
+        return new StudentAuthResponse(accessToken, student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail(), student.getAvatar(), refreshToken);
     }
 
     // ───────── RESEND OTP ─────────
@@ -244,8 +246,9 @@ public class StudentAuthService {
         studentUserRepository.save(student);
         otpRepository.delete(otp);
 
-        String token = jwtService.generateToken(student.getStudentCode(), "STUDENT");
-        return new StudentAuthResponse(token, student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail(), student.getAvatar());
+        String accessToken = jwtService.generateAccessToken(student.getStudentCode(), "STUDENT");
+        String refreshToken = jwtService.generateRefreshToken(student.getStudentCode(), "STUDENT");
+        return new StudentAuthResponse(accessToken, student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail(), student.getAvatar(), refreshToken);
     }
 
     @Transactional

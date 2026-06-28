@@ -30,6 +30,12 @@ public interface RepoCandidateRepository extends JpaRepository<RepoCandidate, Lo
     @EntityGraph(attributePaths = {"course"})
     List<RepoCandidate> findByStatus(RepoCandidateStatus status);
 
+    @EntityGraph(attributePaths = {"course"})
+    List<RepoCandidate> findByStatusAndReviewNoteStartingWithOrderByApprovedAtDesc(
+        RepoCandidateStatus status,
+        String reviewNotePrefix
+    );
+
     /** 10 most recent candidates (for admin dashboard). */
     List<RepoCandidate> findTop10ByOrderByIdDesc();
     @EntityGraph(attributePaths = {"course"})

@@ -253,7 +253,7 @@ fun CourseListItem(course: CourseEntity, isBookmarked: Boolean = false, onClick:
                         )
                     }
                     Text(
-                        text = "${course.credits} TC",
+                        text = "${course.repoCount} repo · ${course.credits} TC",
                         style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.SemiBold),
                         color = CosmicTheme.colors.textTertiary
                     )

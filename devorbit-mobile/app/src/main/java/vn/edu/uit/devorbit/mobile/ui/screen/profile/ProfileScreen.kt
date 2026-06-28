@@ -208,45 +208,6 @@ fun ProfileScreen(
             }
         }
 
-        // Settings section
-        item {
-            Text(
-                "Cài đặt",
-                style = CosmicTheme.typography.command,
-                color = CosmicTheme.colors.textTertiary
-            )
-        }
-        item {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                color = CosmicTheme.colors.nebula,
-                border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        "Chế độ tối",
-                        style = CosmicTheme.typography.body,
-                        color = CosmicTheme.colors.textPrimary
-                    )
-                    Switch(
-                        checked = state.darkMode,
-                        onCheckedChange = { viewModel.toggleDarkMode() },
-                        colors = SwitchDefaults.colors(
-                            checkedTrackColor = CosmicTheme.colors.plasma.copy(alpha = 0.4f),
-                            checkedThumbColor = CosmicTheme.colors.plasma
-                        )
-                    )
-                }
-            }
-        }
-
         // Logout
         if (state.isLoggedIn) {
             item {

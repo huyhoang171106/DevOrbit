@@ -28,7 +28,7 @@ class StudyPlanViewModel @Inject constructor(
     val state: StateFlow<StudyPlanUiState> = _state.asStateFlow()
 
     fun generateRoadmap(learningGoals: String, careerPath: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _state.value = _state.value.copy(loading = true, error = null)
             try {
                 val plan = studyPlanRepository.generateRoadmap(learningGoals, careerPath)
@@ -51,3 +51,4 @@ class StudyPlanViewModel @Inject constructor(
         }))
     }
 }
+

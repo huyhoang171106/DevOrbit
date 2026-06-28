@@ -42,20 +42,51 @@ public class JwtService {
         }
     }
 
-    public String generateToken(String username) {
-        return generateToken(username, "ADMIN");
-    }
+    private static final int ACCESS_TOKEN_EXPIRATION_MINUTES = 15;
 
-    public String generateToken(String username, String tokenType) {
+    public String generateAccessToken(String username, String tokenType) {
         long now = System.currentTimeMillis();
         return Jwts.builder()
                 .id(UUID.randomUUID().toString())
                 .subject(username)
                 .claim("type", tokenType)
+                .claim("tokenKind", "ACCESS")
                 .issuedAt(new Date(now))
-                .expiration(new Date(now + jwtProperties.expirationMinutes() * 60 * 1000))
+                .expiration(new Date(now + ACCESS_TOKEN_EXPIRATION_MINUTES * 60 * 1000L))
                 .signWith(secretKey)
                 .compact();
+    }
+
+    public String generateRefreshToken(String username, String tokenType) {
+        long now = System.currentTimeMillis();
+        long refreshMillis = jwtProperties.refreshExpirationDays() * 24L * 60 * 60 * 1000;
+        return Jwts.builder()
+                .id(UUID.randomUUID().toString())
+                .subject(username)
+                .claim("type", tokenType)
+                .claim("tokenKind", "REFRESH")
+                .issuedAt(new Date(now))
+                .expiration(new Date(now + refreshMillis))
+                .signWith(secretKey)
+                .compact();
+    }
+
+    // ----- backward compat delegators -----
+
+    public String generateToken(String username) {
+        return generateAccessToken(username, "ADMIN");
+    }
+
+    public String generateToken(String username, String tokenType) {
+        return generateAccessToken(username, tokenType);
+    }
+
+    // ----- extraction -----
+
+    public String extractTokenKind(String token) {
+        Claims claims = parseToken(token);
+        String kind = claims.get("tokenKind", String.class);
+        return kind != null ? kind : "ACCESS";
     }
 
     public String extractJti(String token) {

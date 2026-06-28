@@ -42,7 +42,6 @@ class StompClient @Inject constructor() {
 
         okHttpClient = OkHttpClient.Builder()
             .readTimeout(0, TimeUnit.MILLISECONDS)
-            .pingInterval(15, TimeUnit.SECONDS)
             .build()
 
         val request = Request.Builder().url(url).build()
@@ -161,7 +160,6 @@ class StompClient @Inject constructor() {
         okHttpClient?.dispatcher?.executorService?.shutdown()
         okHttpClient = null
         connected = false
-        scope.cancel()
     }
 
     fun isConnected(): Boolean = connected

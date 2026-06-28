@@ -2,7 +2,7 @@ package vn.edu.uit.devorbit.mobile.domain.repository
 
 import android.net.Uri
 
-data class AuthResult(val token: String, val studentCode: String, val fullName: String, val email: String)
+data class AuthResult(val token: String, val studentCode: String, val fullName: String, val email: String, val refreshToken: String = "")
 data class StudentInfo(val studentCode: String, val fullName: String, val email: String, val active: Boolean, val avatar: String? = null)
 
 interface AuthRepository {

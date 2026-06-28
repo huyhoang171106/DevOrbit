@@ -49,7 +49,8 @@ object DataModule {
             .addInterceptor(loggingInterceptor)
             .addInterceptor(authInterceptor)
             .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
+            // AI/RAG responses may legitimately take longer than a regular API call.
+            .readTimeout(90, TimeUnit.SECONDS)
             .build()
     }
 

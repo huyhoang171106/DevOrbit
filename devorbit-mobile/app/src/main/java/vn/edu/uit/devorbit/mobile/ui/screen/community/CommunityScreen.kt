@@ -59,22 +59,42 @@ fun CommunityScreen(
 
     if (uiState.channels.isEmpty()) {
         Box(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().padding(horizontal = 32.dp),
             contentAlignment = Alignment.Center
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Surface(
+                    shape = androidx.compose.foundation.shape.CircleShape,
+                    color = CosmicTheme.colors.plasma.copy(alpha = 0.1f)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.People,
+                        contentDescription = null,
+                        tint = CosmicTheme.colors.plasma,
+                        modifier = Modifier.padding(18.dp).size(32.dp)
+                    )
+                }
                 Text(
                     text = "Cộng đồng",
-                    fontSize = 20.sp,
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = CosmicTheme.colors.textPrimary
                 )
-                Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = uiState.error ?: "Đăng nhập để tham gia",
+                    text = uiState.error ?: "Chưa có kênh trò chuyện để hiển thị.",
                     fontSize = 14.sp,
-                    color = CosmicTheme.colors.textTertiary
+                    color = CosmicTheme.colors.textSecondary,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
+                Button(
+                    onClick = viewModel::retryLoadChannels,
+                    colors = ButtonDefaults.buttonColors(containerColor = CosmicTheme.colors.plasma)
+                ) {
+                    Text("Thử lại")
+                }
             }
         }
         return
@@ -157,6 +177,28 @@ fun CommunityScreen(
                     .fillMaxSize()
                     .padding(padding)
             ) {
+                uiState.error?.let { message ->
+                    Surface(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(10.dp),
+                        color = CosmicTheme.colors.supernova.copy(alpha = 0.08f)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(start = 12.dp, end = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = message,
+                                fontSize = 12.sp,
+                                color = CosmicTheme.colors.textSecondary,
+                                modifier = Modifier.weight(1f)
+                            )
+                            TextButton(onClick = viewModel::retryLoadChannels) {
+                                Text("Thử lại", color = CosmicTheme.colors.plasma)
+                            }
+                        }
+                    }
+                }
                 if (uiState.isLoadingMessages && uiState.messages.isEmpty()) {
                     Box(
                         modifier = Modifier

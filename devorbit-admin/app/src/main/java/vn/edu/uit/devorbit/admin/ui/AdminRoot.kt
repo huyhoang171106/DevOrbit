@@ -31,6 +31,7 @@ import vn.edu.uit.devorbit.admin.ui.courses.CourseRelationshipsScreen
 import vn.edu.uit.devorbit.admin.ui.courses.CoursesScreen
 import vn.edu.uit.devorbit.admin.ui.dashboard.DashboardScreen
 import vn.edu.uit.devorbit.admin.ui.github.GithubScreen
+import vn.edu.uit.devorbit.admin.ui.github.AutoApprovalScreen
 import vn.edu.uit.devorbit.admin.ui.login.AdminLoginScreen
 import vn.edu.uit.devorbit.admin.ui.login.AdminLoginViewModel
 import vn.edu.uit.devorbit.admin.ui.navigation.AdminRoutes
@@ -207,6 +208,7 @@ private fun AdminShell(onLogout: () -> Unit) {
             composable(AdminRoutes.CANDIDATES) { CandidatesScreen() }
             composable(AdminRoutes.REVIEWS) { ReviewsScreen() }
             composable(AdminRoutes.GITHUB) { GithubScreen() }
+            composable(AdminRoutes.AUTO_APPROVAL) { AutoApprovalScreen() }
             composable(AdminRoutes.COMMUNITY) { CommunityScreen() }
             composable(AdminRoutes.TECHSTACK) { TechStackScreen() }
             composable(AdminRoutes.REPORTS) { ReportsScreen() }

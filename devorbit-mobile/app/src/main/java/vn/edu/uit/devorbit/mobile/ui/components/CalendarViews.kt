@@ -133,8 +133,8 @@ fun DayTaskSquare(
                     when {
                         isSelected -> CosmicTheme.colors.plasma
                         day.isToday -> CosmicTheme.colors.plasma
-                        taskCount > 0 -> Color.White.copy(alpha = 0.15f)
-                        else -> Color.White.copy(alpha = 0.06f)
+                        taskCount > 0 -> CosmicTheme.colors.glassBorder.copy(alpha = 0.6f)
+                        else -> CosmicTheme.colors.glassBorder
                     },
                     RoundedCornerShape(6.dp)
                 )
@@ -301,7 +301,7 @@ fun MonthDayCell(
                         isSelected -> CosmicTheme.colors.plasma
                         day.isToday -> CosmicTheme.colors.plasma
                         day.hasTasks -> CosmicTheme.colors.plasma.copy(alpha = 0.3f)
-                        else -> Color.White.copy(alpha = 0.06f)
+                        else -> CosmicTheme.colors.glassBorder
                     },
                     RoundedCornerShape(6.dp)
                 )
@@ -313,7 +313,7 @@ fun MonthDayCell(
                 style = CosmicTheme.typography.label.copy(fontSize = 11.sp),
                 color = when {
                     isSelected -> Color.White
-                    day.hasTasks -> Color.White
+                    day.hasTasks -> CosmicTheme.colors.textPrimary
                     else -> CosmicTheme.colors.textPrimary
                 }
             )

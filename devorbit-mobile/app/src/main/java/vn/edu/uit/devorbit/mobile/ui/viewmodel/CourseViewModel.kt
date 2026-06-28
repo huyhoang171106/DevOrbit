@@ -24,6 +24,7 @@ import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseYoutubePlaylist
 import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSocialInfoResponse
 import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSummary
 import vn.edu.uit.devorbit.mobile.data.remote.dto.ReviewResponse
+import vn.edu.uit.devorbit.mobile.domain.engine.SemesterValidationService
 import vn.edu.uit.devorbit.mobile.domain.model.GraphNode
 import vn.edu.uit.devorbit.mobile.domain.model.GraphLink
 import vn.edu.uit.devorbit.mobile.domain.repository.Bookmark
@@ -47,6 +48,8 @@ class CourseViewModel @Inject constructor(
 
     val courses: StateFlow<List<CourseEntity>> = repository.allCourses
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    private val validationService = SemesterValidationService()
 
     private val _graphNodes = MutableStateFlow<List<GraphNode>>(emptyList())
     val graphNodes: StateFlow<List<GraphNode>> = _graphNodes.asStateFlow()
@@ -215,13 +218,18 @@ class CourseViewModel @Inject constructor(
     }
 
     fun addCourseToSemester(semester: Int, courseCode: String) {
+        val result = validationService.validateAddCourse(
+            semester, courseCode, courses.value, _semesterPlan.value
+        )
+        if (!result.isValid) {
+            _graphError.value = result.errors.joinToString("\n")
+            return
+        }
         val existing = courses.value.find { it.maMH == courseCode } ?: return
         _semesterPlan.value = _semesterPlan.value.toMutableMap().also { map ->
             val current = map[semester]?.toMutableList() ?: mutableListOf()
-            if (current.none { it.code == courseCode }) {
-                current.add(existing.toGraphNode(semester))
-                map[semester] = current
-            }
+            current.add(existing.toGraphNode(semester))
+            map[semester] = current
         }
         viewModelScope.launch {
             if (!semesterCourseDao.isCourseAdded(existing.id)) {
@@ -232,13 +240,18 @@ class CourseViewModel @Inject constructor(
 
     fun removeCourseFromSemester(semester: Int, courseCode: String) {
         val existing = courses.value.find { it.maMH == courseCode }
+        val course = existing ?: return
+        val result = validationService.validateRemoveCourse(
+            semester, courseCode, courses.value, _semesterPlan.value
+        )
         _semesterPlan.value = _semesterPlan.value.toMutableMap().also { map ->
             map[semester] = (map[semester] ?: emptyList()).filter { it.code != courseCode }
         }
-        existing?.let { course ->
-            viewModelScope.launch {
-                semesterCourseDao.removeCourse(course.id)
-            }
+        if (result.warnings.isNotEmpty()) {
+            _graphError.value = result.warnings.joinToString("\n")
+        }
+        viewModelScope.launch {
+            semesterCourseDao.removeCourse(course.id)
         }
     }
 

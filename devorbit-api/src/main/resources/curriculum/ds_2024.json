@@ -1,17 +1,24 @@
 {
-  "major": "SE",
+  "major": "DS",
   "version": "2024",
   "semesters": [
-    { "semester": 1, "courses": ["MA006", "MA003", "ENG01", "SE005", "IT001", "IT007"] },
-    { "semester": 2, "courses": ["IT002", "IT003", "MA004", "MA005", "ENG02"] },
-    { "semester": 3, "courses": ["IT004", "IT005", "IT012", "IT008", "ENG03"] },
-    { "semester": 4, "courses": ["SE104", "SS007", "SS008", "SS004"] },
-    { "semester": 5, "courses": ["SS009", "SS010", "SE100"] },
-    { "semester": 6, "courses": ["SS006", "SS003", "SE503"] },
-    { "semester": 7, "courses": ["SE502"] },
+    { "semester": 1, "courses": ["IT001", "MA006", "MA003", "SS006", "DS005", "ENG01"] },
+    { "semester": 2, "courses": ["IT010", "SS004", "IT003", "MA004", "MA005", "ENG02"] },
+    { "semester": 3, "courses": ["IT004", "IT005", "IT002", "DS101", "ENG03"] },
+    { "semester": 4, "courses": ["SS007", "IT007", "DS108", "DS107"] },
+    { "semester": 5, "courses": ["SS008", "DS111", "DS102"] },
+    { "semester": 6, "courses": ["SS009"] },
+    { "semester": 7, "courses": ["SS010", "SS003", "DS400"] },
     { "semester": 8, "courses": [] }
   ],
   "courseCatalog": [
+    { "code": "DS005", "name": "Giới thiệu ngành Khoa học dữ liệu", "credits": 1, "prerequisites": [] },
+    { "code": "DS101", "name": "Thống kê và xác suất chuyên sâu", "credits": 3, "prerequisites": [] },
+    { "code": "DS102", "name": "Học máy thống kê", "credits": 4, "prerequisites": [] },
+    { "code": "DS107", "name": "Tư duy tính toán cho Khoa học dữ liệu", "credits": 4, "prerequisites": [] },
+    { "code": "DS108", "name": "Tiền xử lý và xây dựng bộ dữ liệu", "credits": 4, "prerequisites": [] },
+    { "code": "DS111", "name": "Phân tích dữ liệu", "credits": 4, "prerequisites": [] },
+    { "code": "DS400", "name": "Chuyên đề tốt nghiệp Khoa học dữ liệu", "credits": 4, "prerequisites": [] },
     { "code": "ENG01", "name": "Anh văn 1", "credits": 4, "prerequisites": [] },
     { "code": "ENG02", "name": "Anh văn 2", "credits": 4, "prerequisites": ["ENG01"] },
     { "code": "ENG03", "name": "Anh văn 3", "credits": 4, "prerequisites": ["ENG02"] },
@@ -21,17 +28,11 @@
     { "code": "IT004", "name": "Cơ sở dữ liệu", "credits": 4, "prerequisites": ["IT002"] },
     { "code": "IT005", "name": "Nhập môn mạng máy tính", "credits": 4, "prerequisites": [] },
     { "code": "IT007", "name": "Hệ điều hành", "credits": 4, "prerequisites": [] },
-    { "code": "IT008", "name": "Lập trình trực quan", "credits": 4, "prerequisites": ["IT002"] },
-    { "code": "IT012", "name": "Tổ chức và cấu trúc máy tính 2", "credits": 4, "prerequisites": [] },
+    { "code": "IT010", "name": "Cơ sở toán học cho Khoa học dữ liệu", "credits": 3, "prerequisites": ["MA003"] },
     { "code": "MA003", "name": "Đại số tuyến tính", "credits": 3, "prerequisites": [] },
     { "code": "MA004", "name": "Cấu trúc rời rạc", "credits": 4, "prerequisites": [] },
     { "code": "MA005", "name": "Xác suất thống kê", "credits": 3, "prerequisites": [] },
     { "code": "MA006", "name": "Giải tích", "credits": 4, "prerequisites": [] },
-    { "code": "SE005", "name": "Giới thiệu ngành Kỹ thuật Phần mềm", "credits": 1, "prerequisites": [] },
-    { "code": "SE100", "name": "Phương pháp phát triển phần mềm hướng đối tượng", "credits": 4, "prerequisites": ["IT002"] },
-    { "code": "SE104", "name": "Nhập môn công nghệ phần mềm", "credits": 4, "prerequisites": [] },
-    { "code": "SE502", "name": "Thực tập", "credits": 2, "prerequisites": [] },
-    { "code": "SE503", "name": "Đồ án", "credits": 2, "prerequisites": [] },
     { "code": "SS003", "name": "Chủ nghĩa xã hội khoa học", "credits": 2, "prerequisites": [] },
     { "code": "SS004", "name": "Tư tưởng Hồ Chí Minh", "credits": 2, "prerequisites": [] },
     { "code": "SS006", "name": "Lịch sử Đảng Cộng sản Việt Nam", "credits": 2, "prerequisites": [] },
@@ -42,21 +43,9 @@
   ],
   "electiveGroups": [
     {
-      "id": "co_so_nganh",
-      "name": "co_so_nganh",
-      "minCredits": 12,
-      "courseCodes": []
-    },
-    {
       "id": "chuyen_nganh",
       "name": "chuyen_nganh",
-      "minCredits": 16,
-      "courseCodes": []
-    },
-    {
-      "id": "tu_chon_tu_do",
-      "name": "tu_chon_tu_do",
-      "minCredits": 6,
+      "minCredits": 26,
       "courseCodes": []
     }
   ],

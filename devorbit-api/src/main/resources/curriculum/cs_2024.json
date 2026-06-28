@@ -1,17 +1,20 @@
 {
-  "major": "SE",
+  "major": "CS",
   "version": "2024",
   "semesters": [
-    { "semester": 1, "courses": ["MA006", "MA003", "ENG01", "SE005", "IT001", "IT007"] },
-    { "semester": 2, "courses": ["IT002", "IT003", "MA004", "MA005", "ENG02"] },
-    { "semester": 3, "courses": ["IT004", "IT005", "IT012", "IT008", "ENG03"] },
-    { "semester": 4, "courses": ["SE104", "SS007", "SS008", "SS004"] },
-    { "semester": 5, "courses": ["SS009", "SS010", "SE100"] },
-    { "semester": 6, "courses": ["SS006", "SS003", "SE503"] },
-    { "semester": 7, "courses": ["SE502"] },
+    { "semester": 1, "courses": ["IT001", "MA006", "MA003", "CS005", "ENG01", "SS006"] },
+    { "semester": 2, "courses": ["IT002", "IT003", "IT012", "MA004", "MA005", "ENG02"] },
+    { "semester": 3, "courses": ["IT004", "IT005", "IT007", "ENG03", "CS115", "SS007"] },
+    { "semester": 4, "courses": ["CS112", "SS004", "SS008"] },
+    { "semester": 5, "courses": ["SS009", "SS010"] },
+    { "semester": 6, "courses": ["SS003"] },
+    { "semester": 7, "courses": [] },
     { "semester": 8, "courses": [] }
   ],
   "courseCatalog": [
+    { "code": "CS005", "name": "Giới thiệu ngành Khoa học Máy tính", "credits": 1, "prerequisites": [] },
+    { "code": "CS112", "name": "Kiến trúc máy tính", "credits": 4, "prerequisites": [] },
+    { "code": "CS115", "name": "Toán cho Khoa học Máy tính", "credits": 4, "prerequisites": [] },
     { "code": "ENG01", "name": "Anh văn 1", "credits": 4, "prerequisites": [] },
     { "code": "ENG02", "name": "Anh văn 2", "credits": 4, "prerequisites": ["ENG01"] },
     { "code": "ENG03", "name": "Anh văn 3", "credits": 4, "prerequisites": ["ENG02"] },
@@ -21,17 +24,11 @@
     { "code": "IT004", "name": "Cơ sở dữ liệu", "credits": 4, "prerequisites": ["IT002"] },
     { "code": "IT005", "name": "Nhập môn mạng máy tính", "credits": 4, "prerequisites": [] },
     { "code": "IT007", "name": "Hệ điều hành", "credits": 4, "prerequisites": [] },
-    { "code": "IT008", "name": "Lập trình trực quan", "credits": 4, "prerequisites": ["IT002"] },
-    { "code": "IT012", "name": "Tổ chức và cấu trúc máy tính 2", "credits": 4, "prerequisites": [] },
+    { "code": "IT012", "name": "Tổ chức và cấu trúc máy tính II", "credits": 4, "prerequisites": [] },
     { "code": "MA003", "name": "Đại số tuyến tính", "credits": 3, "prerequisites": [] },
     { "code": "MA004", "name": "Cấu trúc rời rạc", "credits": 4, "prerequisites": [] },
     { "code": "MA005", "name": "Xác suất thống kê", "credits": 3, "prerequisites": [] },
     { "code": "MA006", "name": "Giải tích", "credits": 4, "prerequisites": [] },
-    { "code": "SE005", "name": "Giới thiệu ngành Kỹ thuật Phần mềm", "credits": 1, "prerequisites": [] },
-    { "code": "SE100", "name": "Phương pháp phát triển phần mềm hướng đối tượng", "credits": 4, "prerequisites": ["IT002"] },
-    { "code": "SE104", "name": "Nhập môn công nghệ phần mềm", "credits": 4, "prerequisites": [] },
-    { "code": "SE502", "name": "Thực tập", "credits": 2, "prerequisites": [] },
-    { "code": "SE503", "name": "Đồ án", "credits": 2, "prerequisites": [] },
     { "code": "SS003", "name": "Chủ nghĩa xã hội khoa học", "credits": 2, "prerequisites": [] },
     { "code": "SS004", "name": "Tư tưởng Hồ Chí Minh", "credits": 2, "prerequisites": [] },
     { "code": "SS006", "name": "Lịch sử Đảng Cộng sản Việt Nam", "credits": 2, "prerequisites": [] },
@@ -42,21 +39,27 @@
   ],
   "electiveGroups": [
     {
-      "id": "co_so_nganh",
-      "name": "co_so_nganh",
-      "minCredits": 12,
+      "id": "co_so_nganh_lap_trinh",
+      "name": "co_so_nganh_lap_trinh",
+      "minCredits": 8,
+      "courseCodes": []
+    },
+    {
+      "id": "co_so_nganh_thuat_toan",
+      "name": "co_so_nganh_thuat_toan",
+      "minCredits": 4,
       "courseCodes": []
     },
     {
       "id": "chuyen_nganh",
       "name": "chuyen_nganh",
-      "minCredits": 16,
+      "minCredits": 8,
       "courseCodes": []
     },
     {
       "id": "tu_chon_tu_do",
       "name": "tu_chon_tu_do",
-      "minCredits": 6,
+      "minCredits": 16,
       "courseCodes": []
     }
   ],

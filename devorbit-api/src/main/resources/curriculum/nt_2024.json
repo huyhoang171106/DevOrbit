@@ -1,14 +1,14 @@
 {
-  "major": "SE",
+  "major": "NT",
   "version": "2024",
   "semesters": [
-    { "semester": 1, "courses": ["MA006", "MA003", "ENG01", "SE005", "IT001", "IT007"] },
-    { "semester": 2, "courses": ["IT002", "IT003", "MA004", "MA005", "ENG02"] },
-    { "semester": 3, "courses": ["IT004", "IT005", "IT012", "IT008", "ENG03"] },
-    { "semester": 4, "courses": ["SE104", "SS007", "SS008", "SS004"] },
-    { "semester": 5, "courses": ["SS009", "SS010", "SE100"] },
-    { "semester": 6, "courses": ["SS006", "SS003", "SE503"] },
-    { "semester": 7, "courses": ["SE502"] },
+    { "semester": 1, "courses": ["IT001", "MA006", "MA003", "PH002", "NT005", "ENG01"] },
+    { "semester": 2, "courses": ["IT002", "IT005", "MA004", "IT006", "ENG02"] },
+    { "semester": 3, "courses": ["IT004", "IT007", "IT003", "NT106", "ENG03"] },
+    { "semester": 4, "courses": ["NT132", "NT105", "NT131", "MA005", "SS004"] },
+    { "semester": 5, "courses": ["NT101", "NT118", "SS003", "SS007"] },
+    { "semester": 6, "courses": ["NT114", "NT113", "SS009"] },
+    { "semester": 7, "courses": ["NT215", "SS006", "SS008", "SS010"] },
     { "semester": 8, "courses": [] }
   ],
   "courseCatalog": [
@@ -20,18 +20,23 @@
     { "code": "IT003", "name": "Cấu trúc dữ liệu và giải thuật", "credits": 4, "prerequisites": ["IT001"] },
     { "code": "IT004", "name": "Cơ sở dữ liệu", "credits": 4, "prerequisites": ["IT002"] },
     { "code": "IT005", "name": "Nhập môn mạng máy tính", "credits": 4, "prerequisites": [] },
+    { "code": "IT006", "name": "Kỹ thuật số", "credits": 3, "prerequisites": [] },
     { "code": "IT007", "name": "Hệ điều hành", "credits": 4, "prerequisites": [] },
-    { "code": "IT008", "name": "Lập trình trực quan", "credits": 4, "prerequisites": ["IT002"] },
-    { "code": "IT012", "name": "Tổ chức và cấu trúc máy tính 2", "credits": 4, "prerequisites": [] },
     { "code": "MA003", "name": "Đại số tuyến tính", "credits": 3, "prerequisites": [] },
     { "code": "MA004", "name": "Cấu trúc rời rạc", "credits": 4, "prerequisites": [] },
     { "code": "MA005", "name": "Xác suất thống kê", "credits": 3, "prerequisites": [] },
     { "code": "MA006", "name": "Giải tích", "credits": 4, "prerequisites": [] },
-    { "code": "SE005", "name": "Giới thiệu ngành Kỹ thuật Phần mềm", "credits": 1, "prerequisites": [] },
-    { "code": "SE100", "name": "Phương pháp phát triển phần mềm hướng đối tượng", "credits": 4, "prerequisites": ["IT002"] },
-    { "code": "SE104", "name": "Nhập môn công nghệ phần mềm", "credits": 4, "prerequisites": [] },
-    { "code": "SE502", "name": "Thực tập", "credits": 2, "prerequisites": [] },
-    { "code": "SE503", "name": "Đồ án", "credits": 2, "prerequisites": [] },
+    { "code": "NT005", "name": "Giới thiệu ngành Mạng máy tính & Truyền thông dữ liệu", "credits": 1, "prerequisites": [] },
+    { "code": "NT101", "name": "An toàn mạng máy tính", "credits": 4, "prerequisites": [] },
+    { "code": "NT105", "name": "Truyền dữ liệu", "credits": 4, "prerequisites": [] },
+    { "code": "NT106", "name": "Lập trình mạng căn bản", "credits": 3, "prerequisites": [] },
+    { "code": "NT113", "name": "Thiết kế mạng", "credits": 3, "prerequisites": [] },
+    { "code": "NT114", "name": "Đồ án chuyên ngành", "credits": 2, "prerequisites": [] },
+    { "code": "NT118", "name": "Phát triển ứng dụng trên thiết bị di động", "credits": 3, "prerequisites": [] },
+    { "code": "NT131", "name": "Hệ thống nhúng mạng không dây", "credits": 4, "prerequisites": [] },
+    { "code": "NT132", "name": "Quản trị mạng và hệ thống", "credits": 4, "prerequisites": [] },
+    { "code": "NT215", "name": "Thực tập doanh nghiệp", "credits": 2, "prerequisites": [] },
+    { "code": "PH002", "name": "Nhập môn mạch số", "credits": 4, "prerequisites": [] },
     { "code": "SS003", "name": "Chủ nghĩa xã hội khoa học", "credits": 2, "prerequisites": [] },
     { "code": "SS004", "name": "Tư tưởng Hồ Chí Minh", "credits": 2, "prerequisites": [] },
     { "code": "SS006", "name": "Lịch sử Đảng Cộng sản Việt Nam", "credits": 2, "prerequisites": [] },
@@ -42,20 +47,14 @@
   ],
   "electiveGroups": [
     {
-      "id": "co_so_nganh",
-      "name": "co_so_nganh",
+      "id": "chuyen_nganh",
+      "name": "chuyen_nganh",
       "minCredits": 12,
       "courseCodes": []
     },
     {
-      "id": "chuyen_nganh",
-      "name": "chuyen_nganh",
-      "minCredits": 16,
-      "courseCodes": []
-    },
-    {
-      "id": "tu_chon_tu_do",
-      "name": "tu_chon_tu_do",
+      "id": "tu_chon",
+      "name": "tu_chon",
       "minCredits": 6,
       "courseCodes": []
     }

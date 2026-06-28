@@ -20,7 +20,8 @@ class SemesterValidationService {
         semester: Int,
         courseCode: String,
         courses: List<CourseEntity>,
-        semesterPlan: Map<Int, List<GraphNode>>
+        semesterPlan: Map<Int, List<GraphNode>>,
+        prerequisiteMap: Map<String, List<String>> = emptyMap()
     ): ValidationResult {
         val errors = mutableListOf<String>()
 
@@ -42,6 +43,19 @@ class SemesterValidationService {
         if (course == null) {
             errors.add("Không tìm thấy môn $courseCode")
             return ValidationResult(isValid = false, errors = errors)
+        }
+
+        val prereqs = prerequisiteMap[courseCode].orEmpty()
+        if (prereqs.isNotEmpty()) {
+            val plannedCodesBefore = semesterPlan.entries
+                .filter { it.key < semester }
+                .flatMap { it.value.map { n -> n.code } }
+                .toSet()
+            val missing = prereqs.filter { it !in plannedCodesBefore }
+            if (missing.isNotEmpty()) {
+                errors.add("Thiếu môn tiên quyết: ${missing.joinToString(", ")}")
+                return ValidationResult(isValid = false, errors = errors)
+            }
         }
 
         val currentCredits = currentNodes.sumOf { node ->
@@ -73,6 +87,17 @@ class SemesterValidationService {
         }
 
         return ValidationResult(isValid = true, warnings = warnings)
+    }
+
+    fun getMissingPrerequisites(
+        courseCode: String,
+        semesterPlan: Map<Int, List<GraphNode>>,
+        prerequisiteMap: Map<String, List<String>>
+    ): List<String> {
+        val prereqs = prerequisiteMap[courseCode].orEmpty()
+        if (prereqs.isEmpty()) return emptyList()
+        val plannedCodes = semesterPlan.values.flatten().map { it.code }.toSet()
+        return prereqs.filter { it !in plannedCodes }
     }
 
     fun getSemesterCredits(

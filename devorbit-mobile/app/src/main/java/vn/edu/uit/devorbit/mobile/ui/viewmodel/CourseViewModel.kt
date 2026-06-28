@@ -51,6 +51,21 @@ class CourseViewModel @Inject constructor(
 
     private val validationService = SemesterValidationService()
 
+    private val _prerequisiteMap = MutableStateFlow<Map<String, List<String>>>(emptyMap())
+    val prerequisiteMap: StateFlow<Map<String, List<String>>> = _prerequisiteMap.asStateFlow()
+
+    private fun buildPrerequisiteMap(nodes: List<GraphNode>, links: List<GraphLink>): Map<String, List<String>> {
+        val idToCode = nodes.associate { it.id to it.code }
+        val prereqMap = mutableMapOf<String, MutableList<String>>()
+        for (link in links) {
+            if (link.type != "PREREQUISITE") continue
+            val targetCode = idToCode[link.targetId] ?: continue
+            val sourceCode = idToCode[link.sourceId] ?: continue
+            prereqMap.getOrPut(targetCode) { mutableListOf() }.add(sourceCode)
+        }
+        return prereqMap
+    }
+
     private val _graphNodes = MutableStateFlow<List<GraphNode>>(emptyList())
     val graphNodes: StateFlow<List<GraphNode>> = _graphNodes.asStateFlow()
 
@@ -194,6 +209,7 @@ class CourseViewModel @Inject constructor(
                 val kg = repository.getCourseGraph(major)
                 _graphNodes.value = kg.nodes
                 _graphLinks.value = kg.links
+                _prerequisiteMap.value = buildPrerequisiteMap(kg.nodes, kg.links)
                 _graphError.value = null
                 _semesterPlan.value = kg.nodes
                     .filter { it.semester != null && it.semester in 1..8 }
@@ -219,7 +235,7 @@ class CourseViewModel @Inject constructor(
 
     fun addCourseToSemester(semester: Int, courseCode: String) {
         val result = validationService.validateAddCourse(
-            semester, courseCode, courses.value, _semesterPlan.value
+            semester, courseCode, courses.value, _semesterPlan.value, _prerequisiteMap.value
         )
         if (!result.isValid) {
             _graphError.value = result.errors.joinToString("\n")

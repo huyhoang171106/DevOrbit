@@ -27,7 +27,6 @@ import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSummary
 import vn.edu.uit.devorbit.mobile.ui.CourseDetailScreen
 import vn.edu.uit.devorbit.mobile.ui.RepoDetailScreen
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
-import vn.edu.uit.devorbit.mobile.ui.screen.courses.SemesterPlannerScreen
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.CourseViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,7 +39,6 @@ fun CourseHubScreen(
     onPendingCleared: () -> Unit = {}
 ) {
     var viewMode by remember { mutableStateOf(ViewMode.LIST) }
-    var showPlanner by remember { mutableStateOf(false) }
     var selectedTutorial by remember { mutableStateOf<vn.edu.uit.devorbit.mobile.data.remote.dto.CourseTutorial?>(null) }
     val courses by viewModel.courses.collectAsStateWithLifecycle()
     val selectedCourse by viewModel.selectedCourse.collectAsStateWithLifecycle()
@@ -103,8 +101,6 @@ fun CourseHubScreen(
             onSubmitReview = { rating, comment -> viewModel.submitReview(selectedRepo!!.id, rating, comment) },
             onBack = { viewModel.backFromRepo() }
         )
-
-        showPlanner -> SemesterPlannerScreen(onBack = { showPlanner = false })
 
         selectedCourse != null -> {
             if (detailLoading) {
@@ -169,17 +165,6 @@ fun CourseHubScreen(
                         ) {
                             Text("Học kỳ")
                         }
-                    }
-                    OutlinedButton(
-                        onClick = { showPlanner = true },
-                        shape = RoundedCornerShape(10.dp),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
-                        border = BorderStroke(1.dp, CosmicTheme.colors.plasma.copy(alpha = 0.3f)),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = CosmicTheme.colors.plasma)
-                    ) {
-                        Icon(Icons.Rounded.Star, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(Modifier.width(4.dp))
-                        Text("Kế hoạch", fontSize = 12.sp)
                     }
                 }
                 }

@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.rounded.List
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.*
@@ -211,6 +212,14 @@ private fun CourseDetailLoading(
     }
 }
 
+private val MAJOR_OPTIONS = listOf(
+    "SE" to "Kỹ thuật Phần mềm",
+    "CS" to "Khoa học Máy tính",
+    "DS" to "Khoa học Dữ liệu",
+    "IS" to "Hệ thống Thông tin",
+    "CE" to "Kỹ thuật Máy tính"
+)
+
 @Composable
 private fun SemesterGraphView(viewModel: CourseViewModel) {
     val nodes by viewModel.graphNodes.collectAsState()
@@ -218,50 +227,94 @@ private fun SemesterGraphView(viewModel: CourseViewModel) {
     val loading by viewModel.graphLoading.collectAsState()
     val error by viewModel.graphError.collectAsState()
 
-    LaunchedEffect(Unit) {
-        viewModel.loadGraph()
-    }
+    var selectedMajor by remember { mutableStateOf("SE") }
+    var majorExpanded by remember { mutableStateOf(false) }
 
-    when {
-        loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator(color = CosmicTheme.colors.plasma, strokeWidth = 2.dp, modifier = Modifier.size(32.dp))
-        }
-        error != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Lỗi: $error", color = CosmicTheme.colors.supernova, style = CosmicTheme.typography.body)
-        }
-        else -> {
-            val bySemester = remember(nodes) {
-                nodes.filter { it.semester != null && it.semester in 1..8 }
-                    .groupBy { it.semester!! }.toSortedMap()
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Major selector + generate button
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(modifier = Modifier.weight(1f)) {
+                OutlinedTextField(
+                    value = MAJOR_OPTIONS.firstOrNull { it.first == selectedMajor }?.second ?: selectedMajor,
+                    onValueChange = {},
+                    readOnly = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Ngành") },
+                    trailingIcon = {
+                        IconButton(onClick = { majorExpanded = true }) {
+                            Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                        }
+                    },
+                    singleLine = true,
+                    shape = RoundedCornerShape(10.dp)
+                )
+                DropdownMenu(expanded = majorExpanded, onDismissRequest = { majorExpanded = false }) {
+                    MAJOR_OPTIONS.forEach { (code, name) ->
+                        DropdownMenuItem(
+                            text = { Text("$code — $name") },
+                            onClick = { selectedMajor = code; majorExpanded = false }
+                        )
+                    }
+                }
             }
-
-            var expandedSemesters by remember { mutableStateOf(setOf<Int>()) }
-
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-                contentPadding = PaddingValues(bottom = 24.dp, top = 8.dp)
+            Button(
+                onClick = { viewModel.loadGraph(selectedMajor) },
+                enabled = !loading,
+                shape = RoundedCornerShape(10.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
             ) {
-                item {
-                    Text(
-                        text = "${nodes.size} môn · ${bySemester.size} học kỳ",
-                        style = CosmicTheme.typography.label,
-                        color = CosmicTheme.colors.textTertiary
-                    )
-                    Spacer(Modifier.height(8.dp))
+                Text("Tạo kế hoạch")
+            }
+        }
+
+        when {
+            loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = CosmicTheme.colors.plasma, strokeWidth = 2.dp, modifier = Modifier.size(32.dp))
+            }
+            error != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Lỗi: $error", color = CosmicTheme.colors.supernova, style = CosmicTheme.typography.body)
+            }
+            nodes.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Chọn ngành và bấm \"Tạo kế hoạch\"", color = CosmicTheme.colors.textTertiary, style = CosmicTheme.typography.body)
+            }
+            else -> {
+                val bySemester = remember(nodes) {
+                    nodes.filter { it.semester != null && it.semester in 1..8 }
+                        .groupBy { it.semester!! }.toSortedMap()
                 }
 
-                items(bySemester.entries.toList()) { (semester, semesterNodes) ->
-                    SemesterCard(
-                        semester = semester,
-                        nodes = semesterNodes,
-                        expanded = semester in expandedSemesters,
-                        onToggle = {
-                            expandedSemesters = if (semester in expandedSemesters)
-                                expandedSemesters - semester
-                            else expandedSemesters + semester
-                        }
-                    )
+                var expandedSemesters by remember { mutableStateOf(setOf<Int>()) }
+
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    contentPadding = PaddingValues(bottom = 24.dp, top = 8.dp)
+                ) {
+                    item {
+                        Text(
+                            text = "${nodes.size} môn · ${bySemester.size} học kỳ",
+                            style = CosmicTheme.typography.label,
+                            color = CosmicTheme.colors.textTertiary
+                        )
+                        Spacer(Modifier.height(8.dp))
+                    }
+
+                    items(bySemester.entries.toList()) { (semester, semesterNodes) ->
+                        SemesterCard(
+                            semester = semester,
+                            nodes = semesterNodes,
+                            expanded = semester in expandedSemesters,
+                            onToggle = {
+                                expandedSemesters = if (semester in expandedSemesters)
+                                    expandedSemesters - semester
+                                else expandedSemesters + semester
+                            }
+                        )
+                    }
                 }
             }
         }

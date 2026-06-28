@@ -150,8 +150,8 @@ class AcademicRepository @Inject constructor(
         }
     }
 
-    suspend fun getCourseGraph(): vn.edu.uit.devorbit.mobile.domain.model.KnowledgeGraph {
-        val response = apiService.getKnowledgeGraph()
+    suspend fun getCourseGraph(major: String? = null): vn.edu.uit.devorbit.mobile.domain.model.KnowledgeGraph {
+        val response = apiService.getKnowledgeGraph(major)
         val nodes = response.nodes.map { dto ->
             vn.edu.uit.devorbit.mobile.domain.model.GraphNode(
                 id = dto.id, name = dto.name, code = dto.code,

@@ -152,12 +152,12 @@ class CourseViewModel @Inject constructor(
         refreshCourses()
     }
 
-    fun loadGraph() {
+    fun loadGraph(major: String? = null) {
         viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _graphLoading.value = true
             _graphError.value = null
             try {
-                val kg = repository.getCourseGraph()
+                val kg = repository.getCourseGraph(major)
                 _graphNodes.value = kg.nodes
                 _graphLinks.value = kg.links
             } catch (e: Exception) {

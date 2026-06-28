@@ -51,6 +51,9 @@ class CourseViewModel @Inject constructor(
 
     private val validationService = SemesterValidationService()
 
+    private val _currentMajor = MutableStateFlow("SE")
+    val currentMajor: StateFlow<String> = _currentMajor.asStateFlow()
+
     private val _prerequisiteMap = MutableStateFlow<Map<String, List<String>>>(emptyMap())
     val prerequisiteMap: StateFlow<Map<String, List<String>>> = _prerequisiteMap.asStateFlow()
 
@@ -172,6 +175,9 @@ class CourseViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
+            settingsDataStore.currentMajor.first().let { saved ->
+                _currentMajor.value = saved
+            }
             loadFromRoom()
         }
     }
@@ -206,7 +212,10 @@ class CourseViewModel @Inject constructor(
         viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _graphLoading.value = true
             try {
-                val kg = repository.getCourseGraph(major)
+                val majorCode = major ?: _currentMajor.value
+                _currentMajor.value = majorCode
+                settingsDataStore.saveCurrentMajor(majorCode)
+                val kg = repository.getCourseGraph(majorCode)
                 _graphNodes.value = kg.nodes
                 _graphLinks.value = kg.links
                 _prerequisiteMap.value = buildPrerequisiteMap(kg.nodes, kg.links)

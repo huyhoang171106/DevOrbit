@@ -241,9 +241,9 @@ private fun SemesterGraphView(viewModel: CourseViewModel) {
         viewModel.clearGraphError()
     }
 
+    val currentMajor by viewModel.currentMajor.collectAsState()
     val hasData = semesterPlan.values.any { it.isNotEmpty() }
 
-    var selectedMajor by remember { mutableStateOf("SE") }
     var majorExpanded by remember { mutableStateOf(false) }
     var addTargetSemester by remember { mutableIntStateOf(1) }
     var showAddDialog by remember { mutableStateOf(false) }
@@ -260,7 +260,7 @@ private fun SemesterGraphView(viewModel: CourseViewModel) {
             ) {
                 Box(modifier = Modifier.weight(1f)) {
                     OutlinedTextField(
-                        value = MAJOR_OPTIONS.firstOrNull { it.first == selectedMajor }?.second ?: selectedMajor,
+                        value = MAJOR_OPTIONS.firstOrNull { it.first == currentMajor }?.second ?: currentMajor,
                         onValueChange = {},
                         readOnly = true,
                         modifier = Modifier.fillMaxWidth(),
@@ -277,13 +277,13 @@ private fun SemesterGraphView(viewModel: CourseViewModel) {
                         MAJOR_OPTIONS.forEach { (code, name) ->
                             DropdownMenuItem(
                                 text = { Text("$code — $name") },
-                                onClick = { selectedMajor = code; majorExpanded = false }
+                                onClick = { viewModel.loadGraph(code); majorExpanded = false }
                             )
                         }
                     }
                 }
                 Button(
-                    onClick = { viewModel.loadGraph(selectedMajor) },
+                    onClick = { viewModel.loadGraph(currentMajor) },
                     enabled = !loading,
                     shape = RoundedCornerShape(10.dp),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)

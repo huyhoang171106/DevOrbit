@@ -21,16 +21,18 @@ class AdminRepositoryImpl @Inject constructor(
     /** Hydrate the in-memory token cache from DataStore on first access. */
     suspend fun initToken() {
         val storedToken = settingsDataStore.token.first()
-        authInterceptor.updateToken(storedToken)
+        val storedRefreshToken = settingsDataStore.refreshToken.first()
+        authInterceptor.updateTokens(storedToken, storedRefreshToken)
     }
 
     override suspend fun login(username: String, password: String): Result<AdminAuthResult> {
         return safeApiCall {
             val response = apiService.login(AdminLoginRequest(username, password))
             settingsDataStore.saveToken(response.token)
-            authInterceptor.updateToken(response.token)
+            settingsDataStore.saveRefreshToken(response.refreshToken)
+            authInterceptor.updateTokens(response.token, response.refreshToken)
             settingsDataStore.saveUsername(username)
-            AdminAuthResult(response.token)
+            AdminAuthResult(response.token, response.refreshToken)
         }
     }
 
@@ -45,7 +47,7 @@ class AdminRepositoryImpl @Inject constructor(
                 // Best-effort server logout; proceed with local cleanup
             }
         }
-        authInterceptor.updateToken(null)
+        authInterceptor.clear()
         settingsDataStore.clear()
     }
 
@@ -214,6 +216,18 @@ class AdminRepositoryImpl @Inject constructor(
 
     override suspend fun getScanLogs(): Result<List<String>> = safeApiCall {
         apiService.getScanLogs()
+    }
+
+    override suspend fun getGithubAutomationStatus(): Result<GithubAutomationStatus> = safeApiCall {
+        apiService.getGithubAutomationStatus()
+    }
+
+    override suspend fun getAutoApprovedRepos(): Result<List<RepoCandidateResponse>> = safeApiCall {
+        apiService.getAutoApprovedRepos()
+    }
+
+    override suspend fun runAutoApproval(): Result<AutoApprovalRun> = safeApiCall {
+        apiService.runAutoApproval()
     }
 
     override suspend fun clearScanLogs(): Result<Unit> = safeApiCall {

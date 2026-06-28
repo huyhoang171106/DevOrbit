@@ -1,71 +1,69 @@
 package vn.edu.uit.devorbit.mobile.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.Modifier
-import androidx.compose.foundation.background
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-private val GroundedColorScheme = darkColorScheme(
-    primary = Amber,
-    secondary = Ocean,
-    tertiary = Sage,
-    background = Slate900,
-    surface = Slate850,
-    onPrimary = Slate900,
-    onSecondary = TextHigh,
-    onTertiary = TextHigh,
-    onBackground = TextHigh,
-    onSurface = TextHigh,
-    surfaceVariant = Slate800,
-    outline = BorderSubtle,
-    outlineVariant = BorderMedium,
+private val GroundedLightColorScheme = lightColorScheme(
+    primary = PrimaryBlue,
+    primaryContainer = PrimaryBlueContainer,
+    secondary = SecondarySky,
+    tertiary = AccentCyan,
+    background = PureWhite,
+    surface = WarmWhite,
+    onPrimary = PureWhite,
+    onSecondary = PureWhite,
+    onBackground = TextCharcoalPrimary,
+    onSurface = TextCharcoalPrimary,
+    surfaceVariant = SlateWhite,
+    outline = SubtleGrayBlueBorder,
+    error = DiagnosticRed,
+    errorContainer = DiagnosticRedContainer
 )
 
 @Composable
 fun DevOrbitTheme(
-    isBurnedOut: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colors = if (isBurnedOut) {
-        // Warm, muted tones for burnout: reduce amber intensity, soften contrast
-        LocalCosmicColors.current.copy(
-            plasma = Color(0xFFB8906A),       // muted warm brown
-            void = Color(0xFF14161C),          // slightly warmer base
-            nebula = Color(0xFF1A1D24),        // slightly warmer surface
-            textPrimary = Color(0xFFD0D4DA),   // reduced contrast
-            supernova = Color(0xFFB87070)      // softer red
-        )
-    } else {
-        LocalCosmicColors.current
-    }
-
     val view = LocalView.current
     if (!view.isInEditMode) {
-        val window = (view.context as android.app.Activity).window
-        window.statusBarColor = Color.Transparent.toArgb()
-        WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
+        val activity = view.context as? android.app.Activity
+        activity?.window?.let { window ->
+            // Transparent status bar for edge-to-edge layouts
+            window.statusBarColor = Color.Transparent.toArgb()
+            window.navigationBarColor = Color.Transparent.toArgb()
+            
+            val insetsController = WindowCompat.getInsetsController(window, view)
+            // Enable dark icons on status and navigation bars for light mode
+            insetsController.isAppearanceLightStatusBars = true
+            insetsController.isAppearanceLightNavigationBars = true
+        }
     }
 
     CompositionLocalProvider(
-        LocalCosmicColors provides colors,
+        LocalCosmicColors provides CosmicColors(
+            void = PureWhite,
+            nebula = WarmWhite,
+            plasma = PrimaryBlue,
+            supernova = DiagnosticRed,
+            aurora = FreshGreen,
+            glass = Color(0x99FFFFFF), // Refined white transparency for floating panels
+            glassBorder = SubtleGrayBlueBorder,
+            textPrimary = TextCharcoalPrimary,
+            textSecondary = TextSlateSecondary,
+            textTertiary = TextCoolGrayTertiary
+        ),
         LocalCosmicTypography provides LocalCosmicTypography.current,
-        LocalCosmicGradients provides LocalCosmicGradients.current,
         LocalCosmicSpacing provides LocalCosmicSpacing.current
     ) {
         MaterialTheme(
-            colorScheme = GroundedColorScheme,
+            colorScheme = GroundedLightColorScheme,
             content = content
         )
     }
-
-
 }

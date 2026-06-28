@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import vn.edu.uit.devorbit.mobile.data.remote.dto.ApproveDeleteRequest
+import vn.edu.uit.devorbit.mobile.data.remote.dto.RespondInviteRequest
 import vn.edu.uit.devorbit.mobile.data.remote.dto.StudentNotificationResponse
 import vn.edu.uit.devorbit.mobile.network.ApiService
 import javax.inject.Inject
@@ -29,13 +31,31 @@ class NotificationViewModel @Inject constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
+    private val _actionLoadingId = MutableStateFlow<Long?>(null)
+    val actionLoadingId: StateFlow<Long?> = _actionLoadingId.asStateFlow()
+
+    private var pollingJob: kotlinx.coroutines.Job? = null
+
     init {
         loadNotifications()
         startPolling()
     }
 
+    fun resumePolling() {
+        if (pollingJob?.isActive != true) startPolling()
+    }
+
+    fun stopPolling() {
+        pollingJob?.cancel()
+        pollingJob = null
+    }
+
+    fun clearError() {
+        _error.value = null
+    }
+
     fun loadNotifications() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _loading.value = true
             _error.value = null
             try {
@@ -51,12 +71,11 @@ class NotificationViewModel @Inject constructor(
     }
 
     private fun startPolling() {
-        viewModelScope.launch {
+        pollingJob?.cancel()
+        pollingJob = viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             while (true) {
-                delay(60_000)
+                delay(15_000)
                 try {
-                    val countResponse = apiService.getUnreadNotificationCount()
-                    _unreadCount.value = countResponse.count
                     loadNotifications()
                 } catch (_: Exception) { }
             }
@@ -64,23 +83,106 @@ class NotificationViewModel @Inject constructor(
     }
 
     fun markAsRead(id: Long) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             try {
                 apiService.markNotificationRead(id)
                 val current = _unreadCount.value
                 if (current > 0) _unreadCount.value = current - 1
                 loadNotifications()
-            } catch (_: Exception) { }
+            } catch (e: Exception) {
+                _error.value = "Không thể đánh dấu đã đọc"
+            }
         }
     }
 
     fun markAllAsRead() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             try {
                 apiService.markAllNotificationsRead()
                 _unreadCount.value = 0
                 loadNotifications()
-            } catch (_: Exception) { }
+            } catch (e: Exception) {
+                _error.value = "Không thể đánh dấu tất cả đã đọc"
+            }
         }
     }
+
+    fun acceptInvite(notificationId: Long, planId: Long) {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            _actionLoadingId.value = notificationId
+            try {
+                apiService.respondInvite(planId, RespondInviteRequest("accept"))
+                markAsRead(notificationId)
+            } catch (e: Exception) {
+                _error.value = "Không thể chấp nhận lời mời"
+            }
+            _actionLoadingId.value = null
+        }
+    }
+
+    fun declineInvite(notificationId: Long, planId: Long) {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            _actionLoadingId.value = notificationId
+            try {
+                apiService.respondInvite(planId, RespondInviteRequest("decline"))
+                markAsRead(notificationId)
+            } catch (e: Exception) {
+                _error.value = "Không thể từ chối lời mời"
+            }
+            _actionLoadingId.value = null
+        }
+    }
+
+    fun approveDelete(notificationId: Long, taskId: Long) {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            _actionLoadingId.value = notificationId
+            try {
+                apiService.approveDeleteTask(taskId, ApproveDeleteRequest("APPROVE"))
+                markAsRead(notificationId)
+            } catch (e: Exception) {
+                _error.value = "Không thể phê duyệt xoá"
+            }
+            _actionLoadingId.value = null
+        }
+    }
+
+    fun rejectDelete(notificationId: Long, taskId: Long) {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            _actionLoadingId.value = notificationId
+            try {
+                apiService.approveDeleteTask(taskId, ApproveDeleteRequest("REJECT"))
+                markAsRead(notificationId)
+            } catch (e: Exception) {
+                _error.value = "Không thể từ chối xoá"
+            }
+            _actionLoadingId.value = null
+        }
+    }
+    fun approvePlanDelete(notificationId: Long, planId: Long) {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            _actionLoadingId.value = notificationId
+            try {
+                apiService.approveDeletePlan(planId, ApproveDeleteRequest("APPROVE"))
+                markAsRead(notificationId)
+            } catch (e: Exception) {
+                _error.value = "Không thể phê duyệt xoá kế hoạch"
+            }
+            _actionLoadingId.value = null
+        }
+    }
+
+    fun rejectPlanDelete(notificationId: Long, planId: Long) {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            _actionLoadingId.value = notificationId
+            try {
+                apiService.approveDeletePlan(planId, ApproveDeleteRequest("REJECT"))
+                markAsRead(notificationId)
+            } catch (e: Exception) {
+                _error.value = "Không thể từ chối xoá kế hoạch"
+            }
+            _actionLoadingId.value = null
+        }
+    }
+
 }
+

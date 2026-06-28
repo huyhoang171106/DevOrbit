@@ -1,9 +1,21 @@
-﻿package vn.edu.uit.devorbit.mobile.data.local
+package vn.edu.uit.devorbit.mobile.data.local
 
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 object DevOrbitMigrations {
+
+    val MIGRATION_1_2 = object : Migration(1, 2) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // No-op: schema unchanged between v1 and v2
+        }
+    }
+
+    val MIGRATION_2_3 = object : Migration(2, 3) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // No-op: schema unchanged between v2 and v3
+        }
+    }
 
     val MIGRATION_3_4 = object : Migration(3, 4) {
         override fun migrate(db: SupportSQLiteDatabase) {
@@ -42,16 +54,35 @@ object DevOrbitMigrations {
 
     val MIGRATION_8_9 = object : Migration(8, 9) {
         override fun migrate(db: SupportSQLiteDatabase) {
-            db.execSQL("ALTER TABLE `semester_courses` ADD COLUMN `semester` INTEGER NOT NULL DEFAULT 1")
+            db.execSQL("ALTER TABLE `tasks` ADD COLUMN `recurrence` TEXT DEFAULT NULL")
+            db.execSQL("ALTER TABLE `tasks` ADD COLUMN `recurrenceDaysOfWeek` INTEGER DEFAULT NULL")
+            db.execSQL("ALTER TABLE `tasks` ADD COLUMN `recurrenceStartDate` INTEGER DEFAULT NULL")
+            db.execSQL("ALTER TABLE `tasks` ADD COLUMN `recurrenceEndDate` INTEGER DEFAULT NULL")
+        }
+    }
+
+    val MIGRATION_9_10 = object : Migration(9, 10) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("DROP TABLE IF EXISTS tasks")
+        }
+    }
+
+    val MIGRATION_10_11 = object : Migration(10, 11) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE `courses` ADD COLUMN `repoCount` INTEGER NOT NULL DEFAULT 0")
         }
     }
 
     val ALL_MIGRATIONS = arrayOf(
+        MIGRATION_1_2,
+        MIGRATION_2_3,
         MIGRATION_3_4,
         MIGRATION_4_5,
         MIGRATION_5_6,
         MIGRATION_6_7,
         MIGRATION_7_8,
-        MIGRATION_8_9
+        MIGRATION_8_9,
+        MIGRATION_9_10,
+        MIGRATION_10_11
     )
 }

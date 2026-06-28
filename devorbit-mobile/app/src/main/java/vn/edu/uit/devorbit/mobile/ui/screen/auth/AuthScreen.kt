@@ -36,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import vn.edu.uit.devorbit.mobile.ui.components.DevOrbitLogo
+import vn.edu.uit.devorbit.mobile.ui.components.DevOrbitMark
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.AuthMode
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.AuthUiState
@@ -161,7 +163,7 @@ private fun LoginForm(
     onSwitchToForgot: () -> Unit
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        HeaderIcon(Icons.Filled.Person)
+        DevOrbitLogo(withText = true)
         Spacer(modifier = Modifier.height(16.dp))
         Heading("Đăng nhập")
         Spacer(modifier = Modifier.height(24.dp))
@@ -252,7 +254,7 @@ private fun RegisterForm(
     val focusManager = LocalFocusManager.current
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        HeaderIcon(Icons.Filled.Person)
+        DevOrbitMark()
         Spacer(modifier = Modifier.height(16.dp))
         Heading("Tạo tài khoản")
         Spacer(modifier = Modifier.height(24.dp))
@@ -669,7 +671,7 @@ private fun FormField(
         ),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
-            unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
+            unfocusedBorderColor = CosmicTheme.colors.glassBorder,
             cursorColor = CosmicTheme.colors.plasma,
             focusedTextColor = CosmicTheme.colors.textPrimary,
             unfocusedTextColor = CosmicTheme.colors.textPrimary
@@ -716,7 +718,7 @@ private fun PasswordField(
         keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus(); onDone?.invoke() }),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
-            unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
+            unfocusedBorderColor = CosmicTheme.colors.glassBorder,
             cursorColor = CosmicTheme.colors.plasma,
             focusedTextColor = CosmicTheme.colors.textPrimary,
             unfocusedTextColor = CosmicTheme.colors.textPrimary
@@ -770,12 +772,12 @@ private fun DigitInput(
     val borderColor = when {
         filled -> CosmicTheme.colors.plasma.copy(alpha = 0.5f)
         isFocused -> CosmicTheme.colors.plasma.copy(alpha = 0.5f)
-        else -> Color.White.copy(alpha = 0.1f)
+        else -> CosmicTheme.colors.glassBorder
     }
 
     val bgColor = when {
         filled -> CosmicTheme.colors.plasma.copy(alpha = 0.05f)
-        else -> Color.White.copy(alpha = 0.05f)
+        else -> Color.Black.copy(alpha = 0.03f)
     }
 
     Box(

@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 9,
-    "identityHash": "dfa3c956c78641d27921a1a7cc187bd6",
+    "identityHash": "2e7594f222a88d5d1465ec02d6ae5592",
     "entities": [
       {
         "tableName": "courses",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `maMH` TEXT NOT NULL, `tenMH` TEXT NOT NULL, `credits` INTEGER NOT NULL, `description` TEXT, `semester` INTEGER, `loaiMonHoc` TEXT, `lastUpdated` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `maMH` TEXT NOT NULL, `tenMH` TEXT NOT NULL, `credits` INTEGER NOT NULL, `description` TEXT, `lastUpdated` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -35,18 +35,6 @@
           {
             "fieldPath": "description",
             "columnName": "description",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "semester",
-            "columnName": "semester",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "loaiMonHoc",
-            "columnName": "loaiMonHoc",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -195,92 +183,6 @@
         "foreignKeys": []
       },
       {
-        "tableName": "tasks",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `courseId` INTEGER, `estimatedMinutes` INTEGER NOT NULL, `achievedMinutes` INTEGER NOT NULL, `deadline` INTEGER, `priority` INTEGER NOT NULL, `completed` INTEGER NOT NULL, `taskType` TEXT NOT NULL, `parentTaskId` INTEGER, `createdAt` INTEGER NOT NULL)",
-        "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "title",
-            "columnName": "title",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "description",
-            "columnName": "description",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "courseId",
-            "columnName": "courseId",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "estimatedMinutes",
-            "columnName": "estimatedMinutes",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "achievedMinutes",
-            "columnName": "achievedMinutes",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "deadline",
-            "columnName": "deadline",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "priority",
-            "columnName": "priority",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "completed",
-            "columnName": "completed",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "taskType",
-            "columnName": "taskType",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "parentTaskId",
-            "columnName": "parentTaskId",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "createdAt",
-            "columnName": "createdAt",
-            "affinity": "INTEGER",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": true,
-          "columnNames": [
-            "id"
-          ]
-        },
-        "indices": [],
-        "foreignKeys": []
-      },
-      {
         "tableName": "daily_activity",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`studentCode` TEXT NOT NULL, `date` TEXT NOT NULL, `reposViewed` INTEGER NOT NULL, `tasksCompleted` INTEGER NOT NULL, `tasksTotal` INTEGER NOT NULL, `studyMinutes` INTEGER NOT NULL, PRIMARY KEY(`studentCode`, `date`))",
         "fields": [
@@ -333,17 +235,11 @@
       },
       {
         "tableName": "semester_courses",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`courseId` INTEGER NOT NULL, `semester` INTEGER NOT NULL, `addedAt` INTEGER NOT NULL, PRIMARY KEY(`courseId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`courseId` INTEGER NOT NULL, `addedAt` INTEGER NOT NULL, PRIMARY KEY(`courseId`))",
         "fields": [
           {
             "fieldPath": "courseId",
             "columnName": "courseId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "semester",
-            "columnName": "semester",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -393,7 +289,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'dfa3c956c78641d27921a1a7cc187bd6')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2e7594f222a88d5d1465ec02d6ae5592')"
     ]
   }
 }

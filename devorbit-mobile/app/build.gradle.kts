@@ -90,6 +90,9 @@ dependencies {
     implementation("androidx.compose.material3.adaptive:adaptive-navigation:1.0.0")
     implementation("androidx.compose.material3:material3-adaptive-navigation-suite")
 
+    // SplashScreen
+    implementation("androidx.core:core-splashscreen:1.0.1")
+
     // Hilt
     implementation("com.google.dagger:hilt-android:2.51.1")
     kapt("com.google.dagger:hilt-android-compiler:2.51.1")
@@ -116,6 +119,9 @@ dependencies {
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("com.google.code.gson:gson:2.11.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
+    testImplementation("org.mockito:mockito-inline:5.2.0")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
 }

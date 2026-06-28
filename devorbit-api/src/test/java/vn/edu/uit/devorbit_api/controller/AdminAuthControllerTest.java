@@ -38,7 +38,7 @@ class AdminAuthControllerTest {
 
     @Test
     void shouldReturnJwtForValidAdmin() throws Exception {
-        when(adminAuthService.login(any(), any())).thenReturn(new LoginResponse("token-value"));
+        when(adminAuthService.login(any(), any())).thenReturn(new LoginResponse("token-value", "refresh-token"));
 
         mockMvc.perform(post("/api/admin/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)

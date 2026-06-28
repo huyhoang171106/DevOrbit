@@ -149,16 +149,19 @@ export function useCommunitySocket({ channelId, enabled, onMessage, onPresence }
     doSubscribe(client, channelId)
   }, [channelId])
 
-  const sendMessage = useCallback((channelId: number, content: string) => {
+  const sendMessage = useCallback((channelId: number, content: string, imageUrl?: string) => {
     const client = clientRef.current
     if (!client || !client.connected) {
       console.error('[WS] cannot send - client not connected')
       return false
     }
     try {
+      const payload: Record<string, string> = {}
+      if (content) payload.content = content
+      if (imageUrl) payload.imageUrl = imageUrl
       client.publish({
         destination: `/app/chat.send/${channelId}`,
-        body: JSON.stringify({ content }),
+        body: JSON.stringify(payload),
       })
       return true
     } catch (e) {

@@ -3,247 +3,78 @@ package vn.edu.uit.devorbit.admin.ui.github
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import vn.edu.uit.devorbit.admin.data.remote.dto.CourseSummaryResponse
 import vn.edu.uit.devorbit.admin.data.remote.dto.GithubScanRequest
 import vn.edu.uit.devorbit.admin.data.remote.dto.RepoCandidateResponse
 import vn.edu.uit.devorbit.admin.domain.repository.AdminRepository
 import javax.inject.Inject
 
-sealed class GithubUiState {
-    data object Loading : GithubUiState()
-    data class Idle(
-        val scanLogs: List<String> = emptyList(),
-        val allCourses: List<CourseSummaryResponse> = emptyList(),
-    ) : GithubUiState()
-    data class Scanning(
-        val courseId: Long? = null,
-        val query: String? = null,
-        val isScanAll: Boolean = false,
-        val scanLogs: List<String> = emptyList(),
-        val allCourses: List<CourseSummaryResponse> = emptyList(),
-    ) : GithubUiState()
-    data class ScanResult(
-        val results: List<RepoCandidateResponse>,
-        val scanLogs: List<String> = emptyList(),
-        val allCourses: List<CourseSummaryResponse> = emptyList(),
-        val scanMessage: String? = null,
-    ) : GithubUiState()
-    data class Error(
-        val message: String,
-        val scanLogs: List<String> = emptyList(),
-        val allCourses: List<CourseSummaryResponse> = emptyList(),
-    ) : GithubUiState()
-}
+data class GithubUiState(
+    val scanLogs: List<String> = emptyList(),
+    val scanResult: List<RepoCandidateResponse>? = null,
+    val isLoading: Boolean = false,
+    val isScanning: Boolean = false,
+    val error: String? = null,
+    val scanMessage: String? = null
+)
 
 @HiltViewModel
 class GithubViewModel @Inject constructor(
     private val adminRepository: AdminRepository
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow<GithubUiState>(GithubUiState.Loading)
+    private val _state = MutableStateFlow(GithubUiState())
     val state: StateFlow<GithubUiState> = _state.asStateFlow()
 
-    private var scanJob: Job? = null
-
-    init { loadInitialData() }
-
-    private fun loadInitialData() {
-        viewModelScope.launch {
-            val logsResult = adminRepository.getScanLogs()
-            val coursesResult = adminRepository.getAllCourses()
-
-            val courses = coursesResult.getOrNull() ?: emptyList()
-
-            logsResult.fold(
-                onSuccess = { logs ->
-                    _state.value = GithubUiState.Idle(
-                        scanLogs = logs,
-                        allCourses = courses,
-                    )
-                },
-                onFailure = { e ->
-                    _state.value = GithubUiState.Error(
-                        message = e.message ?: "Không thể tải nhật ký quét",
-                        allCourses = courses,
-                    )
-                }
-            )
-        }
-    }
+    init { loadLogs() }
 
     private fun loadLogs() {
         viewModelScope.launch {
+            _state.value = _state.value.copy(isLoading = true)
             adminRepository.getScanLogs().fold(
-                onSuccess = { logs ->
-                    _state.update { current ->
-                        when (current) {
-                            is GithubUiState.Idle -> current.copy(scanLogs = logs)
-                            is GithubUiState.Scanning -> current.copy(scanLogs = logs)
-                            is GithubUiState.ScanResult -> current.copy(scanLogs = logs)
-                            is GithubUiState.Error -> {
-                                GithubUiState.Idle(
-                                    scanLogs = logs,
-                                    allCourses = current.allCourses,
-                                )
-                            }
-                            else -> current
-                        }
-                    }
-                },
-                onFailure = { /* best-effort */ }
+                onSuccess = { _state.value = _state.value.copy(scanLogs = it, isLoading = false) },
+                onFailure = { _state.value = _state.value.copy(isLoading = false, error = it.message) }
             )
         }
     }
-
-    /**
-     * Scan a single course with 300ms debounce.
-     */
-    fun scan(courseId: Long, query: String) {
-        if (query.isBlank()) return
-        scanJob?.cancel()
-        scanJob = viewModelScope.launch {
-            delay(300L)
-            executeScan(courseId, query)
-        }
-    }
-
-    private fun executeScan(courseId: Long, query: String) {
-        val (logs, courses) = extractCurrent()
-        _state.value = GithubUiState.Scanning(
-            courseId = courseId,
-            query = query,
-            scanLogs = logs,
-            allCourses = courses,
-        )
-        viewModelScope.launch {
-            adminRepository.scanGithub(
-                GithubScanRequest(courseId = courseId, query = query)
-            ).fold(
-                onSuccess = { result ->
-                    val (newLogs, newCourses) = extractCurrent()
-                    _state.value = GithubUiState.ScanResult(
-                        results = result,
-                        scanLogs = newLogs,
-                        allCourses = newCourses,
-                    )
-                    loadLogs()
-                },
-                onFailure = { e ->
-                    val (newLogs, newCourses) = extractCurrent()
-                    _state.value = GithubUiState.Error(
-                        message = e.message ?: "Quét thất bại",
-                        scanLogs = newLogs,
-                        allCourses = newCourses,
-                    )
-                }
-            )
-        }
-    }
-
-    /**
-     * Scan all courses with 300ms debounce.
-     */
     fun scanAll() {
-        scanJob?.cancel()
-        scanJob = viewModelScope.launch {
-            delay(300L)
-            executeScanAll()
-        }
-    }
-
-    private fun executeScanAll() {
-        val (logs, courses) = extractCurrent()
-        _state.value = GithubUiState.Scanning(
-            isScanAll = true,
-            scanLogs = logs,
-            allCourses = courses,
-        )
+        if (_state.value.isScanning) return
         viewModelScope.launch {
+            _state.value = _state.value.copy(isScanning = true, error = null, scanMessage = null)
             adminRepository.scanAllCourses().fold(
                 onSuccess = { msg ->
-                    val (newLogs, newCourses) = extractCurrent()
-                    _state.value = GithubUiState.ScanResult(
-                        results = emptyList(),
-                        scanLogs = newLogs,
-                        allCourses = newCourses,
-                        scanMessage = msg["message"],
-                    )
+                    _state.value = _state.value.copy(isScanning = false, scanMessage = msg["message"])
                     loadLogs()
                 },
-                onFailure = { e ->
-                    val (newLogs, newCourses) = extractCurrent()
-                    _state.value = GithubUiState.Error(
-                        message = e.message ?: "Quét tất cả thất bại",
-                        scanLogs = newLogs,
-                        allCourses = newCourses,
-                    )
-                }
+                onFailure = { _state.value = _state.value.copy(isScanning = false, error = it.message, scanMessage = null) }
             )
         }
     }
 
-    fun clearResults() {
-        val (logs, courses) = extractCurrent()
-        _state.value = GithubUiState.Idle(
-            scanLogs = logs,
-            allCourses = courses,
-        )
+    fun scan(courseId: Long, query: String) {
+        if (_state.value.isScanning) return
+        viewModelScope.launch {
+            _state.value = _state.value.copy(isScanning = true, error = null)
+            adminRepository.scanGithub(GithubScanRequest(courseId = courseId, query = query)).fold(
+                onSuccess = { result -> _state.value = _state.value.copy(scanResult = result, isScanning = false); loadLogs() },
+                onFailure = { _state.value = _state.value.copy(isScanning = false, error = it.message) }
+            )
+        }
     }
 
     fun clearLogs() {
         viewModelScope.launch {
             adminRepository.clearScanLogs().fold(
-                onSuccess = {
-                    _state.update { current ->
-                        when (current) {
-                            is GithubUiState.Idle -> current.copy(scanLogs = emptyList())
-                            is GithubUiState.Scanning -> current.copy(scanLogs = emptyList())
-                            is GithubUiState.ScanResult -> current.copy(scanLogs = emptyList())
-                            is GithubUiState.Error -> current.copy(scanLogs = emptyList())
-                            else -> current
-                        }
-                    }
-                },
-                onFailure = { e ->
-                    val (logs, courses) = extractCurrent()
-                    _state.value = GithubUiState.Error(
-                        message = e.message ?: "Không thể xoá nhật ký",
-                        scanLogs = logs,
-                        allCourses = courses,
-                    )
-                }
+                onSuccess = { _state.value = _state.value.copy(scanLogs = emptyList()) },
+                onFailure = { _state.value = _state.value.copy(error = it.message) }
             )
         }
     }
 
     fun clearScanMessage() {
-        _state.update { current ->
-            if (current is GithubUiState.ScanResult) {
-                current.copy(scanMessage = null)
-            } else current
-        }
-    }
-
-    fun clearError() {
-        val (logs, courses) = extractCurrent()
-        _state.value = GithubUiState.Idle(
-            scanLogs = logs,
-            allCourses = courses,
-        )
-    }
-
-    private fun extractCurrent(): Pair<List<String>, List<CourseSummaryResponse>> = when (val s = _state.value) {
-        is GithubUiState.Idle -> s.scanLogs to s.allCourses
-        is GithubUiState.Scanning -> s.scanLogs to s.allCourses
-        is GithubUiState.ScanResult -> s.scanLogs to s.allCourses
-        is GithubUiState.Error -> s.scanLogs to s.allCourses
-        else -> emptyList<String>() to emptyList()
+        _state.value = _state.value.copy(scanMessage = null)
     }
 }

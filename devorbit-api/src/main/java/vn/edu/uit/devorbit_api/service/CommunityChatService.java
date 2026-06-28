@@ -34,6 +34,7 @@ public class CommunityChatService {
 
     private final AtomicBoolean syncDone = new AtomicBoolean(false);
 
+    @Transactional(readOnly = true)
     public List<ChatChannelResponse> getChannels() {
         if (syncDone.compareAndSet(false, true)) {
             syncChannels();
@@ -82,6 +83,7 @@ public class CommunityChatService {
                 .build());
     }
 
+    @Transactional(readOnly = true)
     public Page<ChatMessageResponse> getMessages(Long channelId, int page, int size) {
         if (!channelRepository.existsById(channelId)) {
             throw new NotFoundException("Channel not found");
@@ -132,10 +134,20 @@ public class CommunityChatService {
         StudentUser student = studentUserRepository.findByStudentCode(studentCode)
                 .orElseThrow(() -> new NotFoundException("Student not found"));
 
+        boolean hasContent = request.content() != null && !request.content().isBlank();
+        boolean hasImage = request.imageUrl() != null && !request.imageUrl().isBlank();
+        if (!hasContent && !hasImage) {
+            throw new BadRequestException("Message must have content or image");
+        }
+        if (hasContent && hasImage) {
+            throw new BadRequestException("Cannot send both text and image in same message");
+        }
+
         CommunityMessage message = CommunityMessage.builder()
                 .channel(channel)
                 .student(student)
-                .content(request.content().trim())
+                .content(hasContent ? request.content().trim() : "")
+                .imageUrl(hasImage ? request.imageUrl().trim() : null)
                 .build();
 
         ChatMessageResponse response = toMessageResponse(messageRepository.save(message));
@@ -168,6 +180,7 @@ public class CommunityChatService {
                 message.getStudent().getFullName(),
                 message.getStudent().getAvatar(),
                 message.getContent(),
+                message.getImageUrl(),
                 message.getCreatedAt() != null ? message.getCreatedAt().toString() : null,
                 message.isDeleted());
     }

@@ -51,9 +51,12 @@ public class CommunityMessage {
     private StudentUser student;
 
     /** The message body text. */
-    @NotBlank
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String content;
+
+    /** Public URL of an image message (nullable for text-only messages). */
+    @Column(name = "image_url", columnDefinition = "TEXT")
+    private String imageUrl;
 
     /**
      * Soft delete flag.

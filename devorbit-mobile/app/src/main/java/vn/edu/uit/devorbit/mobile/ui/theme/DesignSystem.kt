@@ -13,8 +13,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 /**
- * Grounded Academic Design System for DevOrbit.
- * Warm, structured, tactile. A campus planner, not a spaceship.
+ * Redesigned UIT 2026 Light Design System for DevOrbit.
+ * Calm, premium, clear, structured.
  */
 
 @Immutable
@@ -61,16 +61,16 @@ data class CosmicSpacing(
 
 val LocalCosmicColors = staticCompositionLocalOf {
     CosmicColors(
-        void = Slate900,
-        nebula = Slate850,
-        plasma = Amber,
-        supernova = Crimson,
-        aurora = Sage,
-        glass = Color(0x0AFFFFFF),
-        glassBorder = BorderSubtle,
-        textPrimary = TextHigh,
-        textSecondary = TextMedium,
-        textTertiary = TextLow
+        void = PureWhite,
+        nebula = WarmWhite,
+        plasma = PrimaryBlue,
+        supernova = DiagnosticRed,
+        aurora = FreshGreen,
+        glass = Color(0x99FFFFFF),
+        glassBorder = SubtleGrayBlueBorder,
+        textPrimary = TextCharcoalPrimary,
+        textSecondary = TextSlateSecondary,
+        textTertiary = TextCoolGrayTertiary
     )
 }
 
@@ -85,34 +85,34 @@ val LocalCosmicTypography = staticCompositionLocalOf {
         ),
         command = TextStyle(
             fontFamily = FontFamily.SansSerif,
-            fontWeight = FontWeight.SemiBold,
+            fontWeight = FontWeight.Bold,
             fontSize = 13.sp,
-            letterSpacing = 0.8.sp,
+            letterSpacing = 0.5.sp,
             lineHeight = 18.sp
         ),
         body = TextStyle(
             fontFamily = FontFamily.SansSerif,
             fontWeight = FontWeight.Normal,
             fontSize = 15.sp,
-            lineHeight = 24.sp
+            lineHeight = 22.sp
         ),
         metric = TextStyle(
             fontFamily = FontFamily.SansSerif,
             fontWeight = FontWeight.Bold,
             fontSize = 36.sp,
             letterSpacing = (-0.5).sp,
-            lineHeight = 40.sp
+            lineHeight = 42.sp
         ),
         label = TextStyle(
             fontFamily = FontFamily.SansSerif,
             fontWeight = FontWeight.Medium,
             fontSize = 12.sp,
-            letterSpacing = 0.3.sp,
-            lineHeight = 18.sp
+            letterSpacing = 0.2.sp,
+            lineHeight = 16.sp
         ),
         titleMedium = TextStyle(
             fontFamily = FontFamily.SansSerif,
-            fontWeight = FontWeight.Medium,
+            fontWeight = FontWeight.SemiBold,
             fontSize = 16.sp,
             lineHeight = 24.sp
         )
@@ -121,11 +121,11 @@ val LocalCosmicTypography = staticCompositionLocalOf {
 
 val LocalCosmicGradients = staticCompositionLocalOf {
     CosmicGradients(
-        primary = Brush.verticalGradient(listOf(Amber, AmberLight)),
-        secondary = Brush.horizontalGradient(listOf(Ocean, Color(0xFF7BA8D4))),
-        danger = Brush.linearGradient(listOf(Crimson, Color(0xFFD4884E))),
-        success = Brush.linearGradient(listOf(Sage, Color(0xFF8FCFAC))),
-        voidDepth = Brush.verticalGradient(listOf(Slate900, Slate850))
+        primary = Brush.verticalGradient(listOf(PrimaryBlue, SecondarySky)),
+        secondary = Brush.horizontalGradient(listOf(SecondarySky, AccentCyan)),
+        danger = Brush.linearGradient(listOf(DiagnosticRed, Color(0xFFE57373))),
+        success = Brush.linearGradient(listOf(FreshGreen, Color(0xFF81C784))),
+        voidDepth = Brush.verticalGradient(listOf(PureWhite, WarmWhite))
     )
 }
 

@@ -17,7 +17,11 @@ class DiscoveryMappersTest {
             primaryLanguage = "Kotlin",
             stars = 12,
             courseName = "Mobile Programming",
-            techStacks = listOf(TechStack("Kotlin"), TechStack("Compose"), TechStack(""))
+            techStacks = listOf(
+                TechStack(name = "Kotlin"),
+                TechStack(name = "Compose"),
+                TechStack(name = "")
+            )
         )
 
         val result = repo.toRecentRepo()

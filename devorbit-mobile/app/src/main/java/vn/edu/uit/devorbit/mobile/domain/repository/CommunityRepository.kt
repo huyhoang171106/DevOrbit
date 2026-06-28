@@ -1,5 +1,7 @@
 package vn.edu.uit.devorbit.mobile.domain.repository
 
+import android.content.Context
+import android.net.Uri
 import vn.edu.uit.devorbit.mobile.data.remote.dto.*
 import vn.edu.uit.devorbit.mobile.network.stomp.StompEventListener
 
@@ -9,7 +11,8 @@ interface CommunityRepository {
     fun connectWebSocket(token: String, listener: StompEventListener)
     fun subscribeToChannel(channelId: Long)
     fun unsubscribeFromChannel(channelId: Long)
-    fun sendMessage(channelId: Long, content: String)
+    fun sendMessage(channelId: Long, content: String, imageUrl: String? = null)
+    suspend fun uploadImage(channelId: Long, uri: Uri, context: Context): String?
     fun disconnectWebSocket()
     fun isConnected(): Boolean
 }

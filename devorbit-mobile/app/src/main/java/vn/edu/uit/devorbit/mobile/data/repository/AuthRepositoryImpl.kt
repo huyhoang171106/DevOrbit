@@ -8,6 +8,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import vn.edu.uit.devorbit.mobile.data.datastore.SettingsDataStore
+import vn.edu.uit.devorbit.mobile.data.auth.TokenRefreshManager
 import vn.edu.uit.devorbit.mobile.domain.repository.AuthRepository
 import vn.edu.uit.devorbit.mobile.domain.repository.AuthResult
 import vn.edu.uit.devorbit.mobile.domain.repository.StudentInfo
@@ -20,7 +21,8 @@ import javax.inject.Singleton
 class AuthRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val apiService: ApiService,
-    private val settingsDataStore: SettingsDataStore
+    private val settingsDataStore: SettingsDataStore,
+    private val tokenRefreshManager: TokenRefreshManager
 ) : AuthRepository {
 
     override suspend fun register(
@@ -47,10 +49,14 @@ class AuthRepositoryImpl @Inject constructor(
         val studentCode = response["studentCode"] as? String ?: ""
         val fullName = response["fullName"] as? String ?: ""
         val verifiedEmail = response["email"] as? String ?: email
+        val refreshToken = response["refreshToken"] as? String ?: ""
         settingsDataStore.saveToken(token)
+        if (refreshToken.isNotBlank()) settingsDataStore.saveRefreshToken(refreshToken)
         settingsDataStore.saveStudentName(fullName)
         settingsDataStore.saveStudentCode(studentCode)
-        AuthResult(token, studentCode, fullName, verifiedEmail)
+        tokenRefreshManager.accessToken = token
+        if (refreshToken.isNotBlank()) tokenRefreshManager.refreshToken = refreshToken
+        AuthResult(token, studentCode, fullName, verifiedEmail, refreshToken)
     }
 
     override suspend fun login(studentCode: String, password: String): Result<AuthResult> = runCatching {
@@ -58,10 +64,14 @@ class AuthRepositoryImpl @Inject constructor(
         val token = response["token"] as? String ?: throw Exception("Login failed")
         val fullName = response["fullName"] as? String ?: ""
         val email = response["email"] as? String ?: ""
+        val refreshToken = response["refreshToken"] as? String ?: ""
         settingsDataStore.saveToken(token)
+        if (refreshToken.isNotBlank()) settingsDataStore.saveRefreshToken(refreshToken)
         settingsDataStore.saveStudentName(fullName)
         settingsDataStore.saveStudentCode(studentCode)
-        AuthResult(token, studentCode, fullName, email)
+        tokenRefreshManager.accessToken = token
+        if (refreshToken.isNotBlank()) tokenRefreshManager.refreshToken = refreshToken
+        AuthResult(token, studentCode, fullName, email, refreshToken)
     }
 
     override suspend fun forgotPassword(studentCode: String): Result<Unit> = runCatching {
@@ -80,10 +90,14 @@ class AuthRepositoryImpl @Inject constructor(
         val token = response["token"] as? String ?: throw Exception("Reset password failed")
         val fullName = response["fullName"] as? String ?: ""
         val email = response["email"] as? String ?: ""
+        val refreshToken = response["refreshToken"] as? String ?: ""
         settingsDataStore.saveToken(token)
+        if (refreshToken.isNotBlank()) settingsDataStore.saveRefreshToken(refreshToken)
         settingsDataStore.saveStudentName(fullName)
         settingsDataStore.saveStudentCode(studentCode)
-        AuthResult(token, studentCode, fullName, email)
+        tokenRefreshManager.accessToken = token
+        if (refreshToken.isNotBlank()) tokenRefreshManager.refreshToken = refreshToken
+        AuthResult(token, studentCode, fullName, email, refreshToken)
     }
 
     override suspend fun resendOtp(email: String, purpose: String?): Result<Unit> = runCatching {
@@ -151,5 +165,13 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun logout() {
         runCatching { apiService.studentLogout() }
         settingsDataStore.clearToken()
+        settingsDataStore.clearRefreshToken()
+        tokenRefreshManager.clear()
+    }
+
+    override suspend fun clearToken() {
+        settingsDataStore.clearToken()
+        settingsDataStore.clearRefreshToken()
+        tokenRefreshManager.clear()
     }
 }

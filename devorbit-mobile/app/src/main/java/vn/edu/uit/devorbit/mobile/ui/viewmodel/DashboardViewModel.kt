@@ -1,23 +1,35 @@
 package vn.edu.uit.devorbit.mobile.ui.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import vn.edu.uit.devorbit.mobile.data.local.dao.CourseDao
 import vn.edu.uit.devorbit.mobile.data.local.dao.DailyActivityDao
 import vn.edu.uit.devorbit.mobile.data.local.dao.SemesterCourseDao
 import vn.edu.uit.devorbit.mobile.data.local.dao.TechStackDao
 import vn.edu.uit.devorbit.mobile.data.local.entity.CourseEntity
 import vn.edu.uit.devorbit.mobile.data.local.entity.DailyActivityEntity
 import vn.edu.uit.devorbit.mobile.data.local.entity.SemesterCourseEntity
-import vn.edu.uit.devorbit.mobile.data.local.entity.TaskEntity
 import vn.edu.uit.devorbit.mobile.data.local.entity.TechStackEntity
-import vn.edu.uit.devorbit.mobile.data.repository.AcademicRepository
 import vn.edu.uit.devorbit.mobile.data.datastore.SettingsDataStore
+import vn.edu.uit.devorbit.mobile.data.repository.StreakTracker
+import vn.edu.uit.devorbit.mobile.domain.model.TaskItem
+import vn.edu.uit.devorbit.mobile.domain.model.toTaskItem
+import vn.edu.uit.devorbit.mobile.data.remote.dto.CreatePersonalTaskRequest
 import vn.edu.uit.devorbit.mobile.network.ApiService
-import java.text.SimpleDateFormat
-import java.util.*
+import java.time.DayOfWeek
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.temporal.TemporalAdjusters
+import java.util.Locale
 import javax.inject.Inject
 
 data class DashboardUiState(
@@ -27,7 +39,7 @@ data class DashboardUiState(
     val studyHoursToday: Int = 0,
     val semesterCourses: List<CourseEntity> = emptyList(),
     val allCourses: List<CourseEntity> = emptyList(),
-    val sortedTasks: List<TaskEntity> = emptyList(),
+    val sortedTasks: List<TaskItem> = emptyList(),
     val completedTaskCount: Int = 0,
     val totalTaskCount: Int = 0,
     val streakCount: Int = 0,
@@ -36,8 +48,15 @@ data class DashboardUiState(
     val maxWeekOffset: Int = 0,
     val techStacks: List<TechStackEntity> = emptyList(),
     val allTechStacks: List<String> = emptyList(),
-    val isLoading: Boolean = false
+    val selectedDate: String? = null,
+    val currentYear: Int = 2026,
+    val currentMonth: Int = 6,
+    val isLoading: Boolean = false,
+    val isSavingOnboarding: Boolean = false,
+    val error: String? = null
 )
+
+enum class TaskFilter { TODAY, WEEK, ALL }
 
 data class WeekDay(
     val date: String,
@@ -50,46 +69,45 @@ data class WeekDay(
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
     private val settingsDataStore: SettingsDataStore,
+    private val courseDao: CourseDao,
     private val semesterCourseDao: SemesterCourseDao,
     private val dailyActivityDao: DailyActivityDao,
     private val techStackDao: TechStackDao,
     private val apiService: ApiService,
-    private val academicRepository: AcademicRepository
+    private val streakTracker: StreakTracker
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DashboardUiState())
     val state: StateFlow<DashboardUiState> = _state.asStateFlow()
 
-    private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale("vi", "VN"))
-    private val displayDateFormat = SimpleDateFormat("EEEE, dd/MM", Locale("vi", "VN"))
 
-    private val minDate: Calendar = Calendar.getInstance().apply {
-        set(2026, Calendar.JUNE, 8, 0, 0, 0)
-        set(Calendar.MILLISECOND, 0)
-    }
+
+    private val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    private val displayDateFormat = DateTimeFormatter.ofPattern("EEEE, dd/MM", Locale("vi", "VN"))
+
+    private val minDate: LocalDate = LocalDate.now().minusMonths(6).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
 
     private fun computeMaxWeekOffset(): Int {
-        val now = Calendar.getInstance()
-        now.set(Calendar.DAY_OF_WEEK, now.firstDayOfWeek)
-        now.set(Calendar.HOUR_OF_DAY, 0)
-        now.set(Calendar.MINUTE, 0)
-        now.set(Calendar.SECOND, 0)
-        now.set(Calendar.MILLISECOND, 0)
-        val diff = now.timeInMillis - minDate.timeInMillis
-        if (diff < 0) return 0
-        return (diff / (7L * 24 * 60 * 60 * 1000)).toInt()
+        val now = LocalDate.now()
+        val monday = now.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+        val diff = monday.toEpochDay() - minDate.toEpochDay()
+        return if (diff < 0) 0 else (diff / 7).toInt()
     }
 
     private var currentStudentCode: String = ""
+    private val dailyUpdateMutex = Mutex()
 
     init {
         observeProfile()
         observeSemesterCourses()
-        observeTasks()
         observeTechStacks()
-        loadWeekDays()
         loadAllTechStacks()
         startStudyTimer()
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            streakTracker.streakUpdated.collect { newStreak ->
+                _state.update { it.copy(streakCount = newStreak) }
+            }
+        }
     }
 
     override fun onCleared() {
@@ -98,42 +116,46 @@ class DashboardViewModel @Inject constructor(
     }
 
     private fun observeProfile() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             settingsDataStore.studentName.collect { name ->
                 updateGreeting(name.orEmpty())
             }
         }
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             settingsDataStore.studentCode.collect { code ->
                 val c = code.orEmpty()
                 if (c.isNotBlank()) {
                     currentStudentCode = c
-                    launch {
-                        loadWeekDays()
-                        loadTodayStudyMinutes()
-                    }
+                    val streak = settingsDataStore.getStreakCount(c)
+                    _state.update { it.copy(streakCount = streak) }
+                    checkStreak()
+                    loadWeekDays()
+                    loadTodayStudyMinutes()
+                    syncStudentTechStacks()
+                    loadTodayTasks()
                 }
             }
         }
     }
 
     private suspend fun loadTodayStudyMinutes() {
-        val today = dateFormat.format(Date())
+        val today = LocalDate.now().format(dateFormat)
         val activity = dailyActivityDao.getActivity(currentStudentCode, today)
         val hours = (activity?.studyMinutes ?: 0) / 60
         _state.update { it.copy(studyHoursToday = hours) }
     }
 
     private fun updateGreeting(name: String) {
-        val calendar = Calendar.getInstance()
-        val hour = calendar.get(Calendar.HOUR_OF_DAY)
+        val now = LocalTime.now()
+        val today = LocalDate.now()
+        val hour = now.hour
         val greeting = when (hour) {
             in 5..11 -> "Chào buổi sáng"
             in 12..17 -> "Chào buổi chiều"
             else -> "Chào buổi tối"
         }
         val displayName = name.ifBlank { "bạn" }
-        val dateText = displayDateFormat.format(calendar.time)
+        val dateText = today.format(displayDateFormat)
             .replaceFirstChar { it.uppercase() }
         _state.update { it.copy(
             studentName = name,
@@ -143,37 +165,99 @@ class DashboardViewModel @Inject constructor(
     }
 
     private fun observeSemesterCourses() {
-        viewModelScope.launch {
-            semesterCourseDao.getAllSemesterCourses().collect { semesterCourses ->
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            combine(
+                semesterCourseDao.getAllSemesterCourses(),
+                courseDao.getAllCourses()
+            ) { semesterCourses, allCourses ->
                 val courseIds = semesterCourses.map { it.courseId }
                 if (courseIds.isEmpty()) {
                     _state.update { it.copy(semesterCourses = emptyList()) }
                 } else {
-                    val allCourses = academicRepository.allCourses.first()
                     val selected = allCourses.filter { it.id in courseIds }
                     _state.update { it.copy(semesterCourses = selected) }
                 }
+            }.collect()
+        }
+    }
+
+    private fun syncSemesterCourses() {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            try {
+                val remote = apiService.getSemesterCourses()
+                val localIds = semesterCourseDao.getSemesterCourseIds().toSet()
+                val remoteIds = remote.map { it.courseId }.toSet()
+                for (r in remote) {
+                    if (r.courseId !in localIds) {
+                        semesterCourseDao.addCourse(SemesterCourseEntity(courseId = r.courseId))
+                    }
+                }
+                for (lid in localIds) {
+                    if (lid !in remoteIds) {
+                        semesterCourseDao.removeCourse(lid)
+                    }
+                }
+            } catch (_: Exception) {
+                // offline - use local data
             }
         }
     }
 
-    private fun observeTasks() {
-        viewModelScope.launch {
-            academicRepository.allTasks.collect { tasks ->
-                val total = tasks.size
-                val completed = tasks.count { it.completed }
-                val sorted = tasks.sortedBy { it.completed }
-                _state.update { it.copy(
-                    sortedTasks = sorted,
-                    totalTaskCount = total,
-                    completedTaskCount = completed
-                ) }
+    private fun syncStudentTechStacks() {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            try {
+                val remote = apiService.getStudentTechStacks()
+                val localNames = techStackDao.getTechStackNames().toSet()
+                val remoteNames = remote.map { it.techStackName }.toSet()
+                for (r in remote) {
+                    if (r.techStackName !in localNames) {
+                        techStackDao.insertTechStack(TechStackEntity(name = r.techStackName))
+                    }
+                }
+                for (ln in localNames) {
+                    if (ln !in remoteNames) {
+                        val local = techStackDao.getAllTechStacks().first().find { it.name == ln }
+                        if (local != null) techStackDao.deleteTechStack(local.id)
+                    }
+                }
+            } catch (_: Exception) {
+                // offline - use local data
             }
         }
     }
+
+
+    private suspend fun loadTodayTasks() {
+        val personalTasks = apiService.getPersonalTasks("today").map { it.toTaskItem() }
+        val allGroupTasks = apiService.getAssignedGroupTasks().map { it.toTaskItem() }
+        val groupTasks = allGroupTasks.filter { isTaskItemToday(it) }
+        val now = System.currentTimeMillis()
+        val allTasks = (personalTasks + groupTasks).sortedWith(compareBy<TaskItem> {
+            when {
+                it.completed -> 2
+                it.deadline != null && it.deadline < now -> 1
+                else -> 0
+            }
+        }.thenBy {
+            it.deadline ?: Long.MAX_VALUE
+        })
+        _state.update { it.copy(
+            sortedTasks = allTasks,
+            totalTaskCount = allTasks.size,
+            completedTaskCount = allTasks.count { it.completed }
+        ) }
+        recordTaskProgress(allTasks.count { it.completed }, allTasks.size)
+    }
+
+    private fun isTaskItemToday(task: TaskItem): Boolean {
+        if (task.deadline == null) return false
+        val date = Instant.ofEpochMilli(task.deadline).atZone(ZoneId.systemDefault()).toLocalDate()
+        return date == LocalDate.now()
+    }
+
 
     private fun observeTechStacks() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             techStackDao.getAllTechStacks().collect { stacks ->
                 _state.update { it.copy(techStacks = stacks) }
             }
@@ -181,44 +265,110 @@ class DashboardViewModel @Inject constructor(
     }
 
     fun loadAllTechStacks() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             val stacks = runCatching { apiService.getTechStacks().map { it.name } }
                 .getOrDefault(emptyList())
             _state.update { it.copy(allTechStacks = stacks) }
         }
     }
 
+    fun refreshDate() {
+        val name = _state.value.studentName
+        updateGreeting(name)
+        loadWeekDays()
+    }
+
     fun addTechStack(name: String) {
-        viewModelScope.launch {
-            if (!techStackDao.isTechStackAdded(name)) {
-                techStackDao.insertTechStack(TechStackEntity(name = name))
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            try {
+                apiService.addStudentTechStack(mapOf("name" to name))
+                if (!techStackDao.isTechStackAdded(name)) {
+                    techStackDao.insertTechStack(TechStackEntity(name = name))
+                }
+            } catch (_: Exception) {
+                _state.update { it.copy(error = "Không thể đồng bộ tech stack lên server") }
             }
         }
     }
 
     fun removeTechStack(id: Int) {
-        viewModelScope.launch {
-            techStackDao.deleteTechStack(id)
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            val entity = techStackDao.getAllTechStacks().first().find { it.id == id } ?: return@launch
+            try {
+                apiService.removeStudentTechStackByName(entity.name)
+                techStackDao.deleteTechStack(id)
+            } catch (_: Exception) {
+                _state.update { it.copy(error = "Không thể đồng bộ tech stack lên server") }
+            }
         }
     }
 
     fun loadAllCourses() {
-        viewModelScope.launch {
-            val courses = academicRepository.allCourses.first()
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            val courses = courseDao.getAllCourses().first()
             _state.update { it.copy(allCourses = courses) }
         }
     }
 
     fun addSemesterCourse(courseId: Long) {
-        viewModelScope.launch {
-            semesterCourseDao.addCourse(SemesterCourseEntity(courseId = courseId))
-            loadWeekDays()
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            try {
+                apiService.addSemesterCourse(mapOf("courseId" to courseId))
+                semesterCourseDao.addCourse(SemesterCourseEntity(courseId = courseId))
+                loadWeekDays()
+            } catch (_: Exception) {
+                _state.update { it.copy(error = "Không thể đồng bộ môn học lên server") }
+            }
         }
     }
 
     fun removeSemesterCourse(courseId: Long) {
-        viewModelScope.launch {
-            semesterCourseDao.removeCourse(courseId)
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            try {
+                apiService.removeSemesterCourse(courseId)
+                semesterCourseDao.removeCourse(courseId)
+            } catch (_: Exception) {
+                _state.update { it.copy(error = "Không thể đồng bộ môn học lên server") }
+            }
+        }
+    }
+
+    fun saveOnboardingPreferences(
+        courseIds: Set<Long>,
+        techStackNames: Set<String>,
+        onSuccess: () -> Unit
+    ) {
+        if (courseIds.isEmpty() || techStackNames.isEmpty()) {
+            _state.update { it.copy(error = "Hãy chọn ít nhất một môn học và một tech stack") }
+            return
+        }
+
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            _state.update { it.copy(isSavingOnboarding = true, error = null) }
+            try {
+                val existingCourseIds = _state.value.semesterCourses.mapTo(mutableSetOf()) { it.id }
+                for (courseId in courseIds - existingCourseIds) {
+                    apiService.addSemesterCourse(mapOf("courseId" to courseId))
+                    semesterCourseDao.addCourse(SemesterCourseEntity(courseId = courseId))
+                }
+
+                val existingStacks = _state.value.techStacks.mapTo(mutableSetOf()) { it.name }
+                for (name in techStackNames - existingStacks) {
+                    apiService.addStudentTechStack(mapOf("name" to name))
+                    if (!techStackDao.isTechStackAdded(name)) {
+                        techStackDao.insertTechStack(TechStackEntity(name = name))
+                    }
+                }
+
+                loadWeekDays()
+                onSuccess()
+            } catch (_: Exception) {
+                _state.update {
+                    it.copy(error = "Không thể lưu lựa chọn. Vui lòng kiểm tra kết nối và thử lại")
+                }
+            } finally {
+                _state.update { it.copy(isSavingOnboarding = false) }
+            }
         }
     }
 
@@ -226,92 +376,107 @@ class DashboardViewModel @Inject constructor(
         val current = _state.value.currentWeekOffset
         val maxOffset = computeMaxWeekOffset()
         val proposed = (current + delta).coerceIn(0, maxOffset)
-        _state.update { it.copy(currentWeekOffset = proposed) }
+        _state.update { it.copy(currentWeekOffset = proposed, selectedDate = null) }
         loadWeekDays()
     }
 
+    fun selectDate(date: String?) {
+        _state.update { it.copy(selectedDate = date) }
+    }
+
+    fun navigateMonth(delta: Int) {
+        val s = _state.value
+        var newMonth = s.currentMonth + delta
+        var newYear = s.currentYear
+        if (newMonth < 1) { newMonth = 12; newYear-- }
+        else if (newMonth > 12) { newMonth = 1; newYear++ }
+        if (newYear < 2026 || (newYear == 2026 && newMonth < 6)) return
+        _state.update { it.copy(currentYear = newYear, currentMonth = newMonth, selectedDate = null) }
+    }
+
     fun addReposViewed(count: Int = 1) {
-        viewModelScope.launch {
-            if (currentStudentCode.isBlank()) return@launch
-            val today = dateFormat.format(Date())
-            val existing = dailyActivityDao.getActivity(currentStudentCode, today)
-            val current = existing?.reposViewed ?: 0
-            dailyActivityDao.upsertActivity(DailyActivityEntity(
-                studentCode = currentStudentCode,
-                date = today,
-                reposViewed = current + count,
-                tasksCompleted = existing?.tasksCompleted ?: 0,
-                tasksTotal = existing?.tasksTotal ?: 0
-            ))
-            loadWeekDays()
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            dailyUpdateMutex.withLock {
+                if (currentStudentCode.isBlank()) return@withLock
+                val today = LocalDate.now().format(dateFormat)
+                val existing = dailyActivityDao.getActivity(currentStudentCode, today)
+                dailyActivityDao.upsertActivity(DailyActivityEntity(
+                    studentCode = currentStudentCode,
+                    date = today,
+                    reposViewed = (existing?.reposViewed ?: 0) + count,
+                    tasksCompleted = existing?.tasksCompleted ?: 0,
+                    tasksTotal = existing?.tasksTotal ?: 0
+                ))
+                loadWeekDays()
+            }
             checkStreak()
         }
     }
 
     fun recordTaskProgress(completedCount: Int, totalCount: Int) {
-        viewModelScope.launch {
-            if (currentStudentCode.isBlank()) return@launch
-            val today = dateFormat.format(Date())
-            val existing = dailyActivityDao.getActivity(currentStudentCode, today)
-            dailyActivityDao.upsertActivity(DailyActivityEntity(
-                studentCode = currentStudentCode,
-                date = today,
-                reposViewed = existing?.reposViewed ?: 0,
-                tasksCompleted = completedCount,
-                tasksTotal = totalCount
-            ))
-            loadWeekDays()
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            dailyUpdateMutex.withLock {
+                if (currentStudentCode.isBlank()) return@withLock
+                val today = LocalDate.now().format(dateFormat)
+                val existing = dailyActivityDao.getActivity(currentStudentCode, today)
+                dailyActivityDao.upsertActivity(DailyActivityEntity(
+                    studentCode = currentStudentCode,
+                    date = today,
+                    reposViewed = existing?.reposViewed ?: 0,
+                    tasksCompleted = completedCount,
+                    tasksTotal = totalCount
+                ))
+                loadWeekDays()
+            }
         }
     }
 
     private suspend fun checkStreak() {
         if (currentStudentCode.isBlank()) return
-        val today = dateFormat.format(Date())
-        val calendar = Calendar.getInstance()
-        calendar.add(Calendar.DAY_OF_YEAR, -1)
-        val yesterday = dateFormat.format(calendar.time)
+        val today = LocalDate.now().format(dateFormat)
+        val todayActivity = dailyActivityDao.getActivity(currentStudentCode, today)
+        val todayRepos = todayActivity?.reposViewed ?: 0
 
-        val yesterdayActivity = dailyActivityDao.getActivity(currentStudentCode, yesterday)
-        val yesterdayRepos = yesterdayActivity?.reposViewed ?: 0
+        val qualifiesForToday = todayRepos >= 3
+        if (!qualifiesForToday) return
 
         val lastStreakDate = settingsDataStore.getLastStreakDate(currentStudentCode)
+        if (lastStreakDate == today) return
+
+        val yesterday = LocalDate.now().minusDays(1).format(dateFormat)
+        val yesterdayActivity = dailyActivityDao.getActivity(currentStudentCode, yesterday)
+        val yesterdayRepos = yesterdayActivity?.reposViewed ?: 0
+        val qualifiesForYesterday = yesterdayRepos >= 3
         val currentStreak = settingsDataStore.getStreakCount(currentStudentCode)
 
-        if (yesterdayRepos >= 3) {
-            if (lastStreakDate != today) {
-                val newStreak = currentStreak + 1
-                settingsDataStore.setStreak(currentStudentCode, newStreak, today)
-                _state.update { it.copy(streakCount = newStreak) }
-            }
-        } else if (yesterdayActivity != null) {
-            settingsDataStore.setStreak(currentStudentCode, 0, today)
-            _state.update { it.copy(streakCount = 0) }
+        val newStreak = if (qualifiesForYesterday && lastStreakDate == yesterday) {
+            currentStreak + 1
+        } else {
+            1
         }
+        settingsDataStore.setStreak(currentStudentCode, newStreak, today)
+        _state.update { it.copy(streakCount = newStreak) }
     }
 
     private fun loadWeekDays() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             val offset = _state.value.currentWeekOffset
             val maxOffset = computeMaxWeekOffset()
-            val calendar = Calendar.getInstance()
-            calendar.add(Calendar.WEEK_OF_YEAR, -offset)
-            val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
-            calendar.add(Calendar.DAY_OF_YEAR, -(dayOfWeek - Calendar.MONDAY + 7) % 7)
+            var date = LocalDate.now().minusWeeks(offset.toLong()).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
 
             val days = mutableListOf<WeekDay>()
-            val todayStr = dateFormat.format(Date())
+            val todayStr = LocalDate.now().format(dateFormat)
 
             for (i in 0..6) {
-                val dateStr = dateFormat.format(calendar.time)
-                val dayLabel = when (calendar.get(Calendar.DAY_OF_WEEK)) {
-                    Calendar.MONDAY -> "T2"
-                    Calendar.TUESDAY -> "T3"
-                    Calendar.WEDNESDAY -> "T4"
-                    Calendar.THURSDAY -> "T5"
-                    Calendar.FRIDAY -> "T6"
-                    Calendar.SATURDAY -> "T7"
-                    Calendar.SUNDAY -> "CN"
-                    else -> ""
+                val dateStr = date.format(dateFormat)
+                val dayLabel = when (date.dayOfWeek) {
+                    DayOfWeek.MONDAY -> "T2"
+                    DayOfWeek.TUESDAY -> "T3"
+                    DayOfWeek.WEDNESDAY -> "T4"
+                    DayOfWeek.THURSDAY -> "T5"
+                    DayOfWeek.FRIDAY -> "T6"
+                    DayOfWeek.SATURDAY -> "T7"
+                    DayOfWeek.SUNDAY -> "CN"
                 }
                 val activity = if (currentStudentCode.isNotBlank()) {
                     dailyActivityDao.getActivity(currentStudentCode, dateStr)
@@ -323,7 +488,7 @@ class DashboardViewModel @Inject constructor(
                     isToday = dateStr == todayStr,
                     qualifiesForStreak = activity != null && activity.reposViewed >= 3
                 ))
-                calendar.add(Calendar.DAY_OF_YEAR, 1)
+                date = date.plusDays(1)
             }
             _state.update { it.copy(weekDates = days, maxWeekOffset = maxOffset) }
         }
@@ -333,22 +498,28 @@ class DashboardViewModel @Inject constructor(
 
     private fun startStudyTimer() {
         studyTimerJob?.cancel()
-        studyTimerJob = viewModelScope.launch {
+        studyTimerJob = viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             while (true) {
                 kotlinx.coroutines.delay(60_000)
-                if (currentStudentCode.isNotBlank()) {
-                    val today = dateFormat.format(Date())
-                    val existing = dailyActivityDao.getActivity(currentStudentCode, today)
-                    dailyActivityDao.upsertActivity(DailyActivityEntity(
-                        studentCode = currentStudentCode,
-                        date = today,
-                        reposViewed = existing?.reposViewed ?: 0,
-                        tasksCompleted = existing?.tasksCompleted ?: 0,
-                        tasksTotal = existing?.tasksTotal ?: 0,
-                        studyMinutes = (existing?.studyMinutes ?: 0) + 1
-                    ))
-                    val hours = ((existing?.studyMinutes ?: 0) + 1) / 60
-                    _state.update { it.copy(studyHoursToday = hours) }
+                dailyUpdateMutex.withLock {
+                    if (currentStudentCode.isNotBlank()) {
+                        try {
+                            val today = LocalDate.now().format(dateFormat)
+                            val existing = dailyActivityDao.getActivity(currentStudentCode, today)
+                            dailyActivityDao.upsertActivity(DailyActivityEntity(
+                                studentCode = currentStudentCode,
+                                date = today,
+                                reposViewed = existing?.reposViewed ?: 0,
+                                tasksCompleted = existing?.tasksCompleted ?: 0,
+                                tasksTotal = existing?.tasksTotal ?: 0,
+                                studyMinutes = (existing?.studyMinutes ?: 0) + 1
+                            ))
+                            val hours = ((existing?.studyMinutes ?: 0) + 1) / 60
+                            _state.update { it.copy(studyHoursToday = hours) }
+                        } catch (e: Exception) {
+                            Log.e("DashboardVM", "Study timer DB error", e)
+                        }
+                    }
                 }
             }
         }
@@ -359,14 +530,37 @@ class DashboardViewModel @Inject constructor(
         studyTimerJob = null
     }
 
-    fun createTask(title: String, courseId: Long?) {
-        viewModelScope.launch {
-            val task = TaskEntity(
-                title = title,
-                courseId = courseId,
-                taskType = "general"
-            )
-            academicRepository.saveTask(task)
+    fun toggleTask(taskId: Long, completed: Boolean) {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            try {
+                apiService.togglePersonalTask(taskId, mapOf("completed" to completed))
+                refreshTasks()
+            } catch (_: Exception) {
+                _state.update { it.copy(error = "Không thể cập nhật nhiệm vụ") }
+            }
         }
     }
+
+    fun createQuickTask(title: String, deadline: Long) {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            try {
+                apiService.createPersonalTask(CreatePersonalTaskRequest(
+                    title = title,
+                    deadline = Instant.ofEpochMilli(deadline).toString()
+                ))
+                refreshTasks()
+            } catch (_: Exception) {
+                _state.update { it.copy(error = "Không thể tạo nhiệm vụ") }
+            }
+        }
+    }
+
+    fun clearError() { _state.update { it.copy(error = null) } }
+
+    private suspend fun refreshTasks() {
+        try {
+            loadTodayTasks()
+        } catch (_: Exception) { }
+    }
 }
+

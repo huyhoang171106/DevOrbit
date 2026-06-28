@@ -2,8 +2,12 @@ package vn.edu.uit.devorbit.mobile.data.repository
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import vn.edu.uit.devorbit.mobile.data.local.dao.*
-import vn.edu.uit.devorbit.mobile.data.local.entity.*
+import vn.edu.uit.devorbit.mobile.data.local.dao.CourseDao
+import vn.edu.uit.devorbit.mobile.data.local.dao.RelationshipDao
+import vn.edu.uit.devorbit.mobile.data.local.dao.RepoDao
+import vn.edu.uit.devorbit.mobile.data.local.entity.CourseEntity
+import vn.edu.uit.devorbit.mobile.data.local.entity.CourseRelationshipEntity
+import vn.edu.uit.devorbit.mobile.data.local.entity.RepoEntity
 import vn.edu.uit.devorbit.mobile.data.remote.dto.GraphNodeDto
 import vn.edu.uit.devorbit.mobile.data.remote.dto.GraphLinkDto
 import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseArticle
@@ -31,13 +35,10 @@ class AcademicRepository @Inject constructor(
     private val apiService: ApiService,
     private val courseDao: CourseDao,
     private val repoDao: RepoDao,
-    private val relationshipDao: RelationshipDao,
-    private val taskDao: TaskDao
+    private val relationshipDao: RelationshipDao
 ) {
     val allCourses: Flow<List<CourseEntity>> = courseDao.getAllCourses()
     val allRelationships: Flow<List<CourseRelationshipEntity>> = relationshipDao.getAllRelationships()
-    val allTasks: Flow<List<TaskEntity>> = taskDao.getAllTasks()
-    val incompleteTasks: Flow<List<TaskEntity>> = taskDao.getIncompleteTasks()
 
     fun getReposByCourse(courseId: Long): Flow<List<RepoEntity>> = 
         repoDao.getReposByCourse(courseId)
@@ -61,7 +62,8 @@ class AcademicRepository @Inject constructor(
                     credits = it.credits,
                     description = it.description.orEmpty(),
                     semester = it.semester,
-                    loaiMonHoc = it.loaiMonHoc
+                    loaiMonHoc = it.loaiMonHoc,
+                    repoCount = it.repoCount
                 )
             }
             courseDao.deleteAll()
@@ -184,8 +186,4 @@ class AcademicRepository @Inject constructor(
 
     suspend fun voteRepo(repoId: Long, voteValue: Int): RepoVoteResponse =
         apiService.voteRepo(repoId, RepoVoteRequest(voteValue))
-
-    suspend fun saveTask(task: TaskEntity) = taskDao.upsertTask(task)
-    suspend fun completeTask(id: Long) = taskDao.setCompleted(id, true)
-    suspend fun deleteTask(task: TaskEntity) = taskDao.deleteTask(task)
 }

@@ -14,6 +14,7 @@ object AdminRoutes {
     const val CANDIDATES = "candidates"
     const val REVIEWS = "reviews"
     const val GITHUB = "github"
+    const val AUTO_APPROVAL = "auto-approval"
     const val COMMUNITY = "community"
     const val TECHSTACK = "techstack"
     const val NOTES = "notes"
@@ -47,6 +48,7 @@ sealed class AdminScreen(val route: String, val label: String, val icon: ImageVe
     object Candidates : AdminScreen(AdminRoutes.CANDIDATES, "Duyệt kho", Icons.Rounded.RateReview, "Quản lý")
     object Reviews : AdminScreen(AdminRoutes.REVIEWS, "Đánh giá", Icons.Rounded.Star, "Quản lý")
     object Github : AdminScreen(AdminRoutes.GITHUB, "Quét GitHub", Icons.Rounded.Code, "Công cụ")
+    object AutoApproval : AdminScreen(AdminRoutes.AUTO_APPROVAL, "Tự động duyệt kho", Icons.Rounded.AutoAwesome, "Công cụ")
     object Community : AdminScreen(AdminRoutes.COMMUNITY, "Cộng đồng", Icons.Rounded.Forum, "Quản lý")
     object TechStack : AdminScreen(AdminRoutes.TECHSTACK, "Công nghệ", Icons.Rounded.Settings, "Công cụ")
     object Reports : AdminScreen(AdminRoutes.REPORTS, "Báo cáo", Icons.Rounded.BarChart, "Quản lý")
@@ -55,6 +57,6 @@ sealed class AdminScreen(val route: String, val label: String, val icon: ImageVe
 
     companion object {
         val primaryTabs = listOf(Dashboard, Students, Courses, Repos)
-        val secondaryScreens = listOf(Candidates, Reviews, Github, Community, TechStack, Reports, Notes, Notifications)
+        val secondaryScreens = listOf(Candidates, Reviews, Github, AutoApproval, Community, TechStack, Reports, Notes, Notifications)
     }
 }

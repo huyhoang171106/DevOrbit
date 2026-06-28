@@ -37,3 +37,10 @@ data class TopStackDto(
 
 data class AiSummaryDto(val summary: String, val keyTopics: List<String>? = null)
 data class AiAdviceDto(val advice: String, val difficulty: String? = null, val prerequisites: List<String>? = null)
+
+data class RefreshTokenRequest(val refreshToken: String)
+data class TokenPairResponse(
+    val accessToken: String,
+    val refreshToken: String,
+    val tokenType: String
+)

@@ -11,6 +11,7 @@ import vn.edu.uit.devorbit_api.dto.admin.RepoCandidateResponse;
 import vn.edu.uit.devorbit_api.entity.GithubRepo;
 import vn.edu.uit.devorbit_api.entity.RepoCandidate;
 import vn.edu.uit.devorbit_api.entity.RepoCandidateStatus;
+import vn.edu.uit.devorbit_api.entity.TechStack;
 import vn.edu.uit.devorbit_api.exception.BadRequestException;
 import vn.edu.uit.devorbit_api.exception.NotFoundException;
 import vn.edu.uit.devorbit_api.repository.GithubRepoRepository;
@@ -103,6 +104,16 @@ public class RepoCandidateService {
             }
         }
 
+        if (repo.getTechStacks() != null && !repo.getTechStacks().isEmpty()) {
+            for (TechStack ts : repo.getTechStacks()) {
+                try {
+                    studentNotificationService.notifyTechStackSubscribers(repo, ts);
+                } catch (Exception e) {
+                    log.warn("Failed to notify tech stack subscribers for {}: {}", ts.getName(), e.getMessage());
+                }
+            }
+        }
+
         distributeCandidates();
 
         return RepoCandidateResponse.from(candidate);
@@ -165,7 +176,7 @@ public class RepoCandidateService {
     }
 
     private void evictReposCache() {
-        for (String name : new String[]{"allRepos", "reposByCourse", "repoById"}) {
+        for (String name : new String[]{"allRepos", "reposByCourse", "repoById", "courses", "knowledgeGraph"}) {
             org.springframework.cache.Cache cache = cacheManager.getCache(name);
             if (cache != null) cache.clear();
         }

@@ -3,19 +3,23 @@ package vn.edu.uit.devorbit_api.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import vn.edu.uit.devorbit_api.dto.community.ChatChannelResponse;
 import vn.edu.uit.devorbit_api.dto.community.ChatMessageRequest;
 import vn.edu.uit.devorbit_api.dto.community.ChatMessageResponse;
 import vn.edu.uit.devorbit_api.service.CommunityChatService;
+import vn.edu.uit.devorbit_api.service.SupabaseStorageService;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/student/community")
@@ -24,6 +28,7 @@ public class StudentCommunityController {
 
     private final CommunityChatService communityChatService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final SupabaseStorageService supabaseStorageService;
 
     @GetMapping
     public List<ChatChannelResponse> getChannels() {
@@ -48,5 +53,12 @@ public class StudentCommunityController {
         }
         ChatMessageResponse response = communityChatService.sendMessage(principal.getName(), channelId, request);
         messagingTemplate.convertAndSend("/topic/channel/" + channelId, response);
+    }
+
+    @PostMapping(value = "/channels/{channelId}/upload-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Map<String, String> uploadImage(
+            @PathVariable Long channelId,
+            @RequestParam("file") MultipartFile file) {
+        return supabaseStorageService.upload(file);
     }
 }

@@ -27,7 +27,6 @@ class NotificationsViewModel @Inject constructor(
     val state: StateFlow<NotificationsUiState> = _state.asStateFlow()
 
     init { loadNotifications() }
-    fun retry() = loadNotifications()
 
     private fun loadNotifications() {
         viewModelScope.launch {

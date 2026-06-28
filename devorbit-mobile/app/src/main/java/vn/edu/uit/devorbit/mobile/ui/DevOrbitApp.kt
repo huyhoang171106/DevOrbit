@@ -5,7 +5,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import vn.edu.uit.devorbit.mobile.ui.screen.auth.AuthScreen
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.AcademicViewModel
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.AuthViewModel
-import vn.edu.uit.devorbit.mobile.ui.theme.*
 
 @Composable
 fun DevOrbitApp() {
@@ -19,17 +18,15 @@ fun DevOrbitApp() {
 
     if (loginState.isLoggedIn) {
         val academicVm: AcademicViewModel = hiltViewModel()
-        val isBurnedOut = academicVm.burnout.value.riskLevel != vn.edu.uit.devorbit.mobile.domain.model.BurnoutRisk.NONE
-
-        DevOrbitTheme(isBurnedOut = isBurnedOut) {
-            MainScreen(academicVm = academicVm)
-        }
+        MainScreen(
+            academicVm = academicVm,
+            showRegistrationOnboarding = loginState.isNewRegistration,
+            onRegistrationOnboardingCompleted = authVm::completeRegistrationOnboarding
+        )
     } else {
-        DevOrbitTheme {
-            AuthScreen(
-                viewModel = authVm,
-                onLoggedIn = { /* State change handled by observeAuthToken */ }
-            )
-        }
+        AuthScreen(
+            viewModel = authVm,
+            onLoggedIn = { /* State change handled by observeAuthToken */ }
+        )
     }
 }

@@ -67,7 +67,7 @@ class KnowledgeViewModel @Inject constructor(
     fun loadGraph() {
         val s = _state.value
         if (s.loading || s.nodes.isNotEmpty()) return
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _state.value = _state.value.copy(loading = true, error = null)
             try {
                 val kg = repository.getCourseGraph()
@@ -186,3 +186,4 @@ class KnowledgeViewModel @Inject constructor(
         )
     }
 }
+

@@ -15,6 +15,7 @@ data class ChatMessageResponse(
     val senderName: String,
     val senderAvatar: String?,
     val content: String,
+    val imageUrl: String? = null,
     val createdAt: String,
     val deleted: Boolean = false
 )

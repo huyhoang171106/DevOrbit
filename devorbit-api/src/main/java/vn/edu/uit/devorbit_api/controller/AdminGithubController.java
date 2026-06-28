@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import vn.edu.uit.devorbit_api.dto.admin.GithubScanRequest;
 import vn.edu.uit.devorbit_api.dto.admin.RepoCandidateResponse;
 import vn.edu.uit.devorbit_api.service.GithubScanService;
+import vn.edu.uit.devorbit_api.service.GithubAutoApprovalService;
 
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import java.util.concurrent.Executors;
 public class AdminGithubController {
 
     private final GithubScanService githubScanService;
+    private final GithubAutoApprovalService githubAutoApprovalService;
     private final ExecutorService scanExecutor = Executors.newSingleThreadExecutor(
             r -> Thread.ofVirtual().name("github-scan").unstarted(r));
 
@@ -68,5 +70,25 @@ public class AdminGithubController {
     public ResponseEntity<Void> clearScanLogs() {
         githubScanService.clearLogs();
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/auto-approve")
+    public GithubAutoApprovalService.AutoApprovalRun autoApprove() {
+        return githubAutoApprovalService.reviewPendingCandidates();
+    }
+
+    @GetMapping("/auto-approvals")
+    public List<RepoCandidateResponse> getAutoApprovals() {
+        return githubAutoApprovalService.getAutoApprovedCandidates();
+    }
+
+    @GetMapping("/automation-status")
+    public Map<String, Object> getAutomationStatus() {
+        return Map.of(
+            "enabled", true,
+            "cron", "0 0 3 * * SAT",
+            "zone", "UTC",
+            "description", "Every Saturday at 03:00 UTC"
+        );
     }
 }

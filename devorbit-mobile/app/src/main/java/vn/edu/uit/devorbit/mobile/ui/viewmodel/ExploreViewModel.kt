@@ -6,7 +6,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import vn.edu.uit.devorbit.mobile.data.datastore.SettingsDataStore
+import vn.edu.uit.devorbit.mobile.data.repository.StreakTracker
 import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSummary
 import vn.edu.uit.devorbit.mobile.data.remote.dto.TechStack
 import vn.edu.uit.devorbit.mobile.domain.repository.*
@@ -28,15 +31,27 @@ data class ExploreUiState(
 @HiltViewModel
 class ExploreViewModel @Inject constructor(
     private val discoveryRepository: DiscoveryRepository,
+    private val streakTracker: StreakTracker,
+    private val settingsDataStore: SettingsDataStore
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ExploreUiState())
     val state: StateFlow<ExploreUiState> = _state.asStateFlow()
 
-    init { load() }
+    private var currentStudentCode: String = ""
+
+    init {
+        load()
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            settingsDataStore.studentCode.collect { code ->
+                currentStudentCode = code.orEmpty()
+            }
+        }
+    }
+
 
     fun load() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _state.value = _state.value.copy(loading = true, error = null)
             try {
                 val recentRepos = discoveryRepository.getRecentRepos()
@@ -61,7 +76,7 @@ class ExploreViewModel @Inject constructor(
     fun updateSearch(query: String) {
         val nextFilter = _state.value.filterState.updateQuery(query)
         _state.value = _state.value.copy(filterState = nextFilter)
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _state.value = _state.value.copy(loading = true, error = null)
             try {
                 val repos = if (nextFilter.normalizedQuery == null) {
@@ -87,6 +102,9 @@ class ExploreViewModel @Inject constructor(
 
     fun openRepo(repo: RecentRepo) {
         _state.value = _state.value.copy(selectedRepo = repo.toRepoSummary())
+        if (currentStudentCode.isNotBlank()) {
+            streakTracker.incrementReposViewed(currentStudentCode)
+        }
     }
 
     fun closeRepo() {
@@ -101,8 +119,9 @@ class ExploreViewModel @Inject constructor(
             githubUrl = githubUrl,
             primaryLanguage = language,
             stars = stars,
-            techStacks = techStacks.map(::TechStack),
+            techStacks = techStacks.map { TechStack(name = it) },
             courseName = courseName
         )
     }
 }
+

@@ -41,8 +41,9 @@ public class AdminAuthService {
         }
 
         loginRateLimitService.onSuccess(request.username(), ip);
-        String token = jwtService.generateToken(adminUser.getUsername());
-        return new LoginResponse(token);
+        String accessToken = jwtService.generateAccessToken(adminUser.getUsername(), "ADMIN");
+        String refreshToken = jwtService.generateRefreshToken(adminUser.getUsername(), "ADMIN");
+        return new LoginResponse(accessToken, refreshToken);
     }
 
     public void logout(String token) {

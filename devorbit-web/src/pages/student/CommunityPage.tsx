@@ -9,9 +9,11 @@ import {
   CaretDown,
   SignIn,
   ArrowDown,
+  Image as ImageIcon,
 } from '@phosphor-icons/react'
 import { useChannels, useInvalidateChannelMessages, useCurrentStudent, getCachedMessages, setCachedMessages } from '../../hooks/useCommunity'
 import { apiStudentGet } from '../../lib/api'
+import { getStudentToken } from '../../lib/auth'
 import { useCommunitySocket } from '../../hooks/useCommunitySocket'
 import { isStudentAuthenticated } from '../../lib/auth'
 import { useNavigate } from 'react-router-dom'
@@ -261,6 +263,7 @@ function ChatArea({
   messages,
   loadingMessages,
   onSend,
+  onSendImage,
   authenticated,
   currentUserId,
 }: {
@@ -268,6 +271,7 @@ function ChatArea({
   messages: ChatMessageResponse[]
   loadingMessages: boolean
   onSend: (content: string) => void
+  onSendImage: (imageUrl: string) => void
   authenticated: boolean
   currentUserId: number | null
 }) {
@@ -276,6 +280,8 @@ function ChatArea({
   const containerRef = useRef<HTMLDivElement>(null)
   const autoScrollRef = useRef(true)
   const prevMessagesLength = useRef(0)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false)
 
   // Reset auto-scroll when channel changes
   useEffect(() => {
@@ -327,6 +333,44 @@ function ChatArea({
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSend()
+    }
+  }
+
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !channel) return
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Kích thước ảnh tối đa 5MB')
+      return
+    }
+    if (!['image/png', 'image/jpeg', 'image/webp', 'image/gif'].includes(file.type)) {
+      alert('Chỉ chấp nhận ảnh PNG, JPEG, WebP, GIF')
+      return
+    }
+
+    setUploading(true)
+    try {
+      const token = getStudentToken()
+      if (!token) return
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await fetch(`/api/student/community/channels/${channel.id}/upload-image`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      })
+      if (!res.ok) throw new Error('Upload failed')
+      const data = await res.json()
+      if (data.url) {
+        onSendImage(data.url)
+      }
+    } catch (err) {
+      console.error('[Community] image upload failed', err)
+      alert('Tải ảnh lên thất bại')
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
 
@@ -404,6 +448,16 @@ function ChatArea({
                     <p className={`text-[13px] leading-relaxed italic text-zinc-400 border border-dashed border-zinc-600 rounded-2xl px-3 py-2 bg-zinc-800/40 w-fit ${!isMine ? 'mt-1' : ''}`}>
                       {msg.content}
                     </p>
+                  ) : msg.imageUrl ? (
+                    <div className={`${isMine ? 'max-w-[75%]' : 'max-w-[80%]'} ${!isMine ? 'mt-1' : ''}`}>
+                      <img
+                        src={msg.imageUrl}
+                        alt="Image message"
+                        className="rounded-2xl max-h-[300px] w-auto object-cover border border-orbit-border cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => window.open(msg.imageUrl!, '_blank')}
+                        loading="lazy"
+                      />
+                    </div>
                   ) : (
                     <p className={`text-[14px] leading-relaxed whitespace-pre-wrap break-words ${isMine ? 'bg-orbit-accent/20 text-orbit-text border border-orbit-accent/20 rounded-2xl px-3 py-2 max-w-[75%] text-right' : 'text-orbit-text'}`}>
                       {msg.content}
@@ -435,6 +489,25 @@ function ChatArea({
       <div className="shrink-0 px-4 py-3 border-t border-orbit-border">
         {authenticated ? (
           <div className="flex items-center gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              className="hidden"
+              onChange={handleImageSelect}
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="shrink-0 h-10 w-10 rounded-xl bg-orbit-surface border border-orbit-border flex items-center justify-center hover:bg-orbit-surface-hover transition-colors disabled:opacity-30"
+              title="Gửi ảnh"
+            >
+              {uploading ? (
+                <Spinner className="h-5 w-5 text-orbit-accent animate-spin" />
+              ) : (
+                <ImageIcon className="h-5 w-5 text-orbit-text-muted" weight="bold" />
+              )}
+            </button>
             <div className="flex-1 relative">
               <textarea
                 value={input}
@@ -713,6 +786,7 @@ export function CommunityPage() {
         senderName: currentStudent.fullName,
         senderAvatar: currentStudent.avatar,
         content: content,
+        imageUrl: null,
         createdAt: new Date().toISOString(),
         sending: true,
       }
@@ -723,6 +797,30 @@ export function CommunityPage() {
     addSubscribedId(activeChannel.id)
     setSubscribedIds(getSubscribedIds())
     setSearch('')
+  }
+
+  const handleSendImage = (imageUrl: string) => {
+    if (!activeChannel || activeChannel.id <= 0) return
+
+    if (currentStudent && authenticated) {
+      const tempId = -(Date.now())
+      const optimisticMsg: ChatMessageResponse = {
+        id: tempId,
+        channelId: activeChannel.id,
+        studentId: currentStudent.id,
+        senderName: currentStudent.fullName,
+        senderAvatar: currentStudent.avatar,
+        content: '',
+        imageUrl: imageUrl,
+        createdAt: new Date().toISOString(),
+        sending: true,
+      }
+      setAllMessages((prev) => [...prev, optimisticMsg])
+    }
+
+    sendMessage(activeChannel.id, '', imageUrl)
+    addSubscribedId(activeChannel.id)
+    setSubscribedIds(getSubscribedIds())
   }
 
   return (
@@ -775,6 +873,7 @@ export function CommunityPage() {
                 messages={allMessages}
                 loadingMessages={messagesLoading || messagesFetching}
                 onSend={handleSendMessage}
+                onSendImage={handleSendImage}
                 authenticated={authenticated}
                 currentUserId={currentStudent?.id ?? null}
               />

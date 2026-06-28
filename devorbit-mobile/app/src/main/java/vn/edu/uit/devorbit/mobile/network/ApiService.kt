@@ -9,8 +9,12 @@ import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.PUT
+import retrofit2.http.PATCH
 import vn.edu.uit.devorbit.mobile.data.remote.dto.*
 import okhttp3.MultipartBody
+import okhttp3.ResponseBody
+import retrofit2.Response
+import retrofit2.http.Streaming
 
 interface ApiService {
     @GET("/api/courses")
@@ -70,6 +74,10 @@ interface ApiService {
     @POST("/api/student/logout")
     suspend fun studentLogout(): Map<String, Any>
 
+    // Token Refresh
+    @POST("/api/auth/refresh")
+    suspend fun refreshAccessToken(@Body request: RefreshTokenRequest): TokenPairResponse
+
     @GET("/api/student/me")
     suspend fun getStudentProfile(): Map<String, Any>
 
@@ -91,6 +99,26 @@ interface ApiService {
 
     @DELETE("/api/student/bookmarks/{id}")
     suspend fun deleteBookmark(@Path("id") id: Long)
+
+    // Semester Courses (student's selection)
+    @GET("/api/student/semester-courses")
+    suspend fun getSemesterCourses(): List<SemesterCourseResponse>
+
+    @POST("/api/student/semester-courses")
+    suspend fun addSemesterCourse(@Body body: Map<String, Long>): SemesterCourseResponse
+
+    @DELETE("/api/student/semester-courses/{courseId}")
+    suspend fun removeSemesterCourse(@Path("courseId") courseId: Long)
+
+    // Student Tech Stacks (student's favorites)
+    @GET("/api/student/tech-stacks")
+    suspend fun getStudentTechStacks(): List<StudentTechStackResponse>
+
+    @POST("/api/student/tech-stacks")
+    suspend fun addStudentTechStack(@Body body: Map<String, String>): StudentTechStackResponse
+
+    @DELETE("/api/student/tech-stacks/by-name/{name}")
+    suspend fun removeStudentTechStackByName(@Path("name") name: String)
 
     // Tech & Discovery
     @GET("/api/tech-stacks")
@@ -122,6 +150,10 @@ interface ApiService {
 
     @POST("/api/ai/subject-qa/query")
     suspend fun querySubjectQa(@Body body: SubjectQaRequest): SubjectQaResponse
+
+    @Streaming
+    @POST("/api/ai/subject-qa/stream")
+    suspend fun streamSubjectQa(@Body body: SubjectQaRequest): Response<ResponseBody>
 
     @POST("/api/ai/generate-roadmap")
     suspend fun generateRoadmap(@Body body: RoadmapGenerationRequest): RoadmapRecommendationResponse
@@ -155,6 +187,87 @@ interface ApiService {
     @PUT("/api/student/notifications/read-all")
     suspend fun markAllNotificationsRead(): Map<String, Any>
 
+    // Group Plans
+    @POST("/api/student/group-plans")
+    suspend fun createGroupPlan(@Body request: CreateGroupPlanRequest): GroupPlanResponse
+
+    @GET("/api/student/group-plans")
+    suspend fun getMyGroupPlans(): List<GroupPlanResponse>
+
+    @GET("/api/student/group-plans/{id}")
+    suspend fun getGroupPlanDetail(@Path("id") id: Long): GroupPlanResponse
+
+    @DELETE("/api/student/group-plans/{id}")
+    suspend fun deleteGroupPlan(@Path("id") id: Long)
+    @POST("/api/student/group-plans/{id}/request-delete")
+    suspend fun requestDeletePlan(@Path("id") id: Long)
+
+    @POST("/api/student/group-plans/{id}/approve-delete")
+    suspend fun approveDeletePlan(@Path("id") id: Long, @Body request: ApproveDeleteRequest)
+
+
+    @POST("/api/student/group-plans/{id}/invite")
+    suspend fun inviteMember(@Path("id") planId: Long, @Body request: InviteMemberRequest)
+
+    @GET("/api/student/group-plans/{id}/members")
+    suspend fun getGroupPlanMembers(@Path("id") planId: Long): List<GroupPlanMemberResponse>
+
+    @POST("/api/student/group-plans/{id}/respond")
+    suspend fun respondInvite(@Path("id") planId: Long, @Body request: RespondInviteRequest)
+
+    @POST("/api/student/group-plans/{id}/leave")
+    suspend fun leavePlan(@Path("id") planId: Long)
+
+    @POST("/api/student/group-plans/{id}/transfer")
+    suspend fun transferOwnership(@Path("id") planId: Long, @Body request: TransferOwnershipRequest): GroupPlanResponse
+
+    @DELETE("/api/student/group-plans/{planId}/members/{memberId}")
+    suspend fun removeMember(@Path("planId") planId: Long, @Path("memberId") memberId: Long)
+
+    @GET("/api/student/group-plans/{id}/tasks")
+    suspend fun getGroupTasks(@Path("id") planId: Long): List<GroupTaskResponse>
+
+    @GET("/api/student/group-plans/assigned-tasks")
+    suspend fun getAssignedGroupTasks(): List<GroupTaskResponse>
+
+    @POST("/api/student/group-plans/{id}/tasks")
+    suspend fun addGroupTask(@Path("id") planId: Long, @Body request: AddGroupTaskRequest): GroupTaskResponse
+
+    @PUT("/api/student/group-plans/tasks/{taskId}")
+    suspend fun updateGroupTask(
+        @Path("taskId") taskId: Long,
+        @Body request: UpdateGroupTaskRequest
+    ): GroupTaskResponse
+
+    @POST("/api/student/group-plans/tasks/{taskId}/request-delete")
+    suspend fun requestDeleteTask(@Path("taskId") taskId: Long)
+
+    @POST("/api/student/group-plans/tasks/{taskId}/approve-delete")
+    suspend fun approveDeleteTask(@Path("taskId") taskId: Long, @Body request: ApproveDeleteRequest)
+
+    // Personal Tasks
+    @GET("/api/student/tasks")
+    suspend fun getPersonalTasks(
+        @Query("filter") filter: String = "all"
+    ): List<PersonalTaskResponse>
+
+    @POST("/api/student/tasks")
+    suspend fun createPersonalTask(@Body request: CreatePersonalTaskRequest): PersonalTaskResponse
+
+    @PUT("/api/student/tasks/{taskId}")
+    suspend fun updatePersonalTask(
+        @Path("taskId") taskId: Long,
+        @Body request: UpdatePersonalTaskRequest
+    ): PersonalTaskResponse
+
+    @DELETE("/api/student/tasks/{taskId}")
+    suspend fun deletePersonalTask(@Path("taskId") taskId: Long)
+
+    @PATCH("/api/student/tasks/{taskId}/toggle")
+    suspend fun togglePersonalTask(
+        @Path("taskId") taskId: Long,
+        @Body body: Map<String, Boolean>
+    ): PersonalTaskResponse
     // Community
     @GET("/api/student/community")
     suspend fun getCommunityChannels(): List<ChatChannelResponse>
@@ -165,4 +278,11 @@ interface ApiService {
         @Query("page") page: Int = 0,
         @Query("size") size: Int = 50
     ): PaginatedMessagesResponse
+
+    @Multipart
+    @POST("/api/student/community/channels/{channelId}/upload-image")
+    suspend fun uploadCommunityImage(
+        @Path("channelId") channelId: Long,
+        @Part file: MultipartBody.Part
+    ): Map<String, String>
 }

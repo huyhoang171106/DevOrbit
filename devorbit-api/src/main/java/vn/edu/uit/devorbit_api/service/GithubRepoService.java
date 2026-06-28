@@ -46,6 +46,7 @@ public class GithubRepoService {
     private final RepoVoteRepository repoVoteRepository;
     private final RepoReviewRepository repoReviewRepository;
     private final RepoEvaluationService repoEvaluationService;
+    private final StudentNotificationService studentNotificationService;
     private final CacheManager cacheManager;
 
     // Self-inject for proxy-aware @Cacheable + @Async from same class
@@ -150,7 +151,7 @@ public class GithubRepoService {
     // =====================================================================
 
     @Transactional
-    @CacheEvict(value = {"reposByCourse", "repoById", "allRepos"}, allEntries = true)
+    @CacheEvict(value = {"reposByCourse", "repoById", "allRepos", "courses", "knowledgeGraph"}, allEntries = true)
     public RepoSummaryResponse updateApprovedRepo(Long repoId, ApprovedRepoUpdateRequest request) {
         GithubRepo repo = githubRepoRepository.findById(repoId)
                 .orElseThrow(() -> new NotFoundException("Repo not found: " + repoId));
@@ -161,6 +162,9 @@ public class GithubRepoService {
         if (request.primaryLanguage() != null) repo.setPrimaryLanguage(trimToNull(request.primaryLanguage()));
         if (request.stars() != null) repo.setStars(Math.max(0, request.stars()));
         if (request.active() != null) repo.setActive(request.active());
+
+        Course oldCourse = repo.getCourse();
+        Set<TechStack> oldTechStacks = repo.getTechStacks() != null ? new java.util.LinkedHashSet<>(repo.getTechStacks()) : new java.util.LinkedHashSet<>();
 
         if (request.techStacks() != null) {
             repo.setTechStacks(resolveTechStacks(request.techStacks()));
@@ -175,6 +179,27 @@ public class GithubRepoService {
 
         repoEvaluationService.evaluateRepo(repo);
         GithubRepo saved = githubRepoRepository.save(repo);
+
+        if (saved.getCourse() != null && !saved.getCourse().equals(oldCourse)) {
+            try {
+                studentNotificationService.notifyCourseSubscribers(saved, saved.getCourse());
+            } catch (Exception e) {
+                log.warn("Failed to notify course subscribers on update: {}", e.getMessage());
+            }
+        }
+
+        if (saved.getTechStacks() != null) {
+            for (TechStack ts : saved.getTechStacks()) {
+                if (!oldTechStacks.contains(ts)) {
+                    try {
+                        studentNotificationService.notifyTechStackSubscribers(saved, ts);
+                    } catch (Exception e) {
+                        log.warn("Failed to notify tech stack subscribers on update: {}", e.getMessage());
+                    }
+                }
+            }
+        }
+
         Map<Long, double[]> statsMap = buildReviewStatsMap(List.of(saved.getId()));
         double[] stats = statsMap.getOrDefault(saved.getId(), new double[]{0, 0.0});
         RepoSummaryResponse response = mapToRepoSummary(saved, (int) stats[0], stats[1]);
@@ -183,7 +208,7 @@ public class GithubRepoService {
     }
 
     @Transactional
-    @CacheEvict(value = {"reposByCourse", "repoById", "allRepos"}, allEntries = true)
+    @CacheEvict(value = {"reposByCourse", "repoById", "allRepos", "courses", "knowledgeGraph"}, allEntries = true)
     public void deleteApprovedRepo(Long repoId) {
         GithubRepo repo = githubRepoRepository.findById(repoId)
                 .orElseThrow(() -> new NotFoundException("Repo not found: " + repoId));
@@ -200,7 +225,7 @@ public class GithubRepoService {
     }
 
     @Transactional
-    @CacheEvict(value = {"reposByCourse", "repoById", "allRepos"}, allEntries = true)
+    @CacheEvict(value = {"reposByCourse", "repoById", "allRepos", "courses", "knowledgeGraph"}, allEntries = true)
     public RepoSummaryResponse syncApprovedRepo(Long repoId) {
         GithubRepo repo = githubRepoRepository.findById(repoId)
                 .orElseThrow(() -> new NotFoundException("Repo not found: " + repoId));
@@ -367,7 +392,7 @@ public class GithubRepoService {
                 repo.getPrimaryLanguage(),
                 repo.getStars() != null ? repo.getStars() : 0,
                 repo.getTechStacks().stream()
-                        .map(ts -> new TechStackResponse(ts.getName()))
+                        .map(ts -> new TechStackResponse(ts.getId(), ts.getName()))
                         .toList(),
                 courseId,
                 courseCode,

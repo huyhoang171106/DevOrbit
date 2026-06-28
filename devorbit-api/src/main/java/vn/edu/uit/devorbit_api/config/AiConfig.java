@@ -30,10 +30,13 @@ public class AiConfig {
     @Value("${app.opencode.model:deepseek-v4-flash}")
     private String model;
 
+    @Value("${app.opencode.timeout-seconds:90}")
+    private int timeoutSeconds = 90;
+
     /**
      * WebClient bean with timeout configuration for LLM API calls.
      * Connect timeout: 10 seconds
-     * Read timeout: 90 seconds
+     * Read timeout: configurable, 30 seconds by default
      */
     @Bean
     public WebClient aiWebClient() {
@@ -45,12 +48,13 @@ public class AiConfig {
             .evictInBackground(Duration.ofSeconds(60))
             .build();
 
+        int timeout = getTimeoutSeconds();
         HttpClient httpClient = HttpClient.create(pool)
             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
-            .responseTimeout(Duration.ofSeconds(90))
+            .responseTimeout(Duration.ofSeconds(timeout))
             .doOnConnected(conn ->
-                conn.addHandlerLast(new ReadTimeoutHandler(90, TimeUnit.SECONDS))
-                    .addHandlerLast(new WriteTimeoutHandler(90, TimeUnit.SECONDS))
+                conn.addHandlerLast(new ReadTimeoutHandler(timeout, TimeUnit.SECONDS))
+                    .addHandlerLast(new WriteTimeoutHandler(timeout, TimeUnit.SECONDS))
             );
 
         return WebClient.builder()
@@ -77,5 +81,9 @@ public class AiConfig {
 
     public String getModel() {
         return model;
+    }
+
+    public int getTimeoutSeconds() {
+        return Math.max(5, timeoutSeconds);
     }
 }

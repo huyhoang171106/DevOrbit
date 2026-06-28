@@ -6,7 +6,7 @@ import vn.edu.uit.devorbit.mobile.data.local.entity.CourseEntity
 
 @Dao
 interface CourseDao {
-    @Query("SELECT * FROM courses ORDER BY maMH ASC")
+    @Query("SELECT * FROM courses ORDER BY repoCount DESC, maMH ASC")
     fun getAllCourses(): Flow<List<CourseEntity>>
 
     @Query("SELECT * FROM courses WHERE id = :id")

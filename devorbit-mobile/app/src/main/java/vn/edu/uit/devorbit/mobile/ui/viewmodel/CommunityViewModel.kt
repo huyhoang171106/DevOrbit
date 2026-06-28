@@ -28,6 +28,7 @@ data class ChatMessage(
     val senderName: String,
     val senderAvatar: String?,
     val content: String,
+    val imageUrl: String? = null,
     val createdAt: String,
     val deleted: Boolean = false,
     val isSending: Boolean = false
@@ -48,6 +49,7 @@ data class CommunityUiState(
     val isConnected: Boolean = false,
     val isLoadingChannels: Boolean = false,
     val isLoadingMessages: Boolean = false,
+    val isUploadingImage: Boolean = false,
     val currentUserId: Long? = null,
     val currentUserName: String = "",
     val error: String? = null
@@ -70,7 +72,7 @@ class CommunityViewModel @Inject constructor(
     }
 
     private fun loadCurrentUser() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             val token = settingsDataStore.token.first()
             if (token.isNullOrBlank()) {
                 val name = settingsDataStore.studentName.first() ?: ""
@@ -93,7 +95,7 @@ class CommunityViewModel @Inject constructor(
     }
 
     fun connect() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             val token = settingsDataStore.token.first() ?: return@launch
             repository.connectWebSocket(token, object : StompEventListener {
                 override fun onConnected() {
@@ -104,7 +106,7 @@ class CommunityViewModel @Inject constructor(
                     handleIncomingMessage(destination, body)
                 }
                 override fun onError(message: String) {
-                    _uiState.update { it.copy(error = message) }
+                    _uiState.update { it.copy(error = userFacingError(message)) }
                 }
                 override fun onDisconnected() {
                     _uiState.update { it.copy(isConnected = false) }
@@ -117,17 +119,22 @@ class CommunityViewModel @Inject constructor(
     }
 
     fun loadChannels() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _uiState.update { it.copy(isLoadingChannels = true) }
             try {
                 val channels = repository.getChannels().map { it.toDomain() }
-                _uiState.update { it.copy(channels = channels, isLoadingChannels = false) }
+                _uiState.update { it.copy(channels = channels, isLoadingChannels = false, error = null) }
                 if (_uiState.value.activeChannel == null) {
                     val general = channels.find { it.type == "GENERAL" } ?: channels.firstOrNull()
                     general?.let { selectChannel(it) }
                 }
             } catch (e: Exception) {
-                _uiState.update { it.copy(isLoadingChannels = false, error = e.message) }
+                _uiState.update {
+                    it.copy(
+                        isLoadingChannels = false,
+                        error = userFacingError(e.message.orEmpty())
+                    )
+                }
             }
         }
     }
@@ -144,7 +151,7 @@ class CommunityViewModel @Inject constructor(
     }
 
     private fun loadMessages(channelId: Long) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _uiState.update { it.copy(isLoadingMessages = true) }
             try {
                 val allMessages = mutableListOf<ChatMessageResponse>()
@@ -180,6 +187,40 @@ class CommunityViewModel @Inject constructor(
         repository.sendMessage(channel.id, trimmed)
     }
 
+    fun sendImage(imageUrl: String) {
+        val channel = _uiState.value.activeChannel ?: return
+
+        val tempId = -(System.currentTimeMillis())
+        val optimistic = ChatMessage(
+            id = tempId, channelId = channel.id, studentId = _uiState.value.currentUserId ?: 0,
+            senderName = _uiState.value.currentUserName.ifBlank { "Bạn" }, senderAvatar = null,
+            content = "", imageUrl = imageUrl,
+            createdAt = java.time.Instant.now().toString(), isSending = true
+        )
+        _uiState.update { it.copy(messages = it.messages + optimistic) }
+
+        repository.sendMessage(channel.id, "", imageUrl)
+    }
+
+    fun uploadAndSendImage(uri: android.net.Uri, context: android.content.Context) {
+        val channel = _uiState.value.activeChannel ?: return
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            _uiState.update { it.copy(isUploadingImage = true) }
+            try {
+                val url = repository.uploadImage(channel.id, uri, context)
+                if (url != null) {
+                    sendImage(url)
+                } else {
+                    _uiState.update { it.copy(error = "Tải ảnh lên thất bại") }
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = "Tải ảnh lên thất bại: ${e.message}") }
+            } finally {
+                _uiState.update { it.copy(isUploadingImage = false) }
+            }
+        }
+    }
+
     private fun handleIncomingMessage(destination: String, body: String) {
         try {
             if (destination.contains("/presence")) {
@@ -208,12 +249,31 @@ class CommunityViewModel @Inject constructor(
 
     fun clearError() { _uiState.update { it.copy(error = null) } }
 
+    fun retryLoadChannels() {
+        clearError()
+        loadChannels()
+    }
+
+    private fun userFacingError(message: String): String {
+        val detail = message.lowercase()
+        return when {
+            "ping" in detail || "pong" in detail || "websocket" in detail || "not connected" in detail ->
+                "Kết nối trò chuyện đang bị gián đoạn. Ứng dụng sẽ tự kết nối lại."
+            "timeout" in detail || "timed out" in detail ->
+                "Máy chủ phản hồi chậm. Vui lòng thử lại."
+            "unable to resolve host" in detail || "failed to connect" in detail ->
+                "Không thể kết nối đến Cộng đồng. Kiểm tra mạng rồi thử lại."
+            else -> "Chưa thể tải Cộng đồng. Vui lòng thử lại."
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         repository.disconnectWebSocket()
     }
 
     private fun ChatChannelResponse.toDomain() = ChatChannel(id, channelId, name, type, referenceId)
-    private fun ChatMessageResponse.toDomain() = ChatMessage(id, channelId, studentId, senderName, senderAvatar, content, createdAt, deleted)
+    private fun ChatMessageResponse.toDomain() = ChatMessage(id, channelId, studentId, senderName, senderAvatar, content, imageUrl, createdAt, deleted)
     private fun OnlineMemberResponse.toDomain() = OnlineMember(studentId, studentCode, displayName, avatar)
 }
+

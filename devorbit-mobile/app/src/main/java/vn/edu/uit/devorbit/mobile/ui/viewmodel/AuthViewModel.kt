@@ -23,7 +23,8 @@ data class AuthUiState(
     val passwordVisible: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
-    val isLoggedIn: Boolean = false
+    val isLoggedIn: Boolean = false,
+    val isNewRegistration: Boolean = false
 )
 
 data class RegisterUiState(
@@ -84,7 +85,7 @@ class AuthViewModel @Inject constructor(
     }
 
     private fun observeAuthToken() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             settingsDataStore.token.collect { token ->
                 val loggedIn = !token.isNullOrBlank()
                 _loginState.value = _loginState.value.copy(isLoggedIn = loggedIn)
@@ -112,14 +113,18 @@ class AuthViewModel @Inject constructor(
     fun login() {
         val state = _loginState.value
         if (state.studentCode.isBlank() || state.password.isBlank()) {
-            _loginState.value = _loginState.value.copy(error = "Vui lòng nhập đầy đủ MSSV và mật khẩu")
+            _loginState.value = _loginState.value.copy(error = "Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu")
             return
         }
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _loginState.value = _loginState.value.copy(isLoading = true, error = null)
             authRepository.login(state.studentCode, state.password)
                 .onSuccess {
-                    _loginState.value = _loginState.value.copy(isLoading = false, isLoggedIn = true)
+                    _loginState.value = _loginState.value.copy(
+                        isLoading = false,
+                        isLoggedIn = true,
+                        isNewRegistration = false
+                    )
                 }
                 .onFailure { e ->
                     _loginState.value = _loginState.value.copy(
@@ -163,7 +168,7 @@ class AuthViewModel @Inject constructor(
     fun register() {
         val state = _registerState.value
         val error = when {
-            state.studentCode.isBlank() -> "Vui lòng nhập MSSV"
+            state.studentCode.isBlank() -> "Vui lòng nhập tên đăng nhập"
             state.fullName.isBlank() -> "Vui lòng nhập họ và tên"
             state.email.isBlank() -> "Vui lòng nhập email"
             !state.email.contains("@") -> "Email không hợp lệ"
@@ -176,7 +181,7 @@ class AuthViewModel @Inject constructor(
             _registerState.value = _registerState.value.copy(error = error)
             return
         }
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _registerState.value = _registerState.value.copy(isLoading = true, error = null)
             authRepository.register(
                 studentCode = state.studentCode,
@@ -207,13 +212,17 @@ class AuthViewModel @Inject constructor(
             _registerState.value = state.copy(error = "Vui lòng nhập đầy đủ mã OTP")
             return
         }
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _registerState.value = state.copy(isLoading = true, error = null)
             authRepository.verifyOtp(email, otpCode)
                 .onSuccess {
                     countdownJob?.cancel()
                     _registerState.value = _registerState.value.copy(isLoading = false)
-                    _loginState.value = _loginState.value.copy(isLoading = false, isLoggedIn = true)
+                    _loginState.value = _loginState.value.copy(
+                        isLoading = false,
+                        isLoggedIn = true,
+                        isNewRegistration = true
+                    )
                 }
                 .onFailure { e ->
                     _registerState.value = _registerState.value.copy(
@@ -227,7 +236,7 @@ class AuthViewModel @Inject constructor(
     fun resendOtpForRegister() {
         val email = _registerState.value.registeredEmail.ifBlank { _registerState.value.email }
         if (email.isBlank()) return
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             authRepository.resendOtp(email, "registration")
                 .onSuccess { startRegisterOtpCountdown() }
                 .onFailure { e ->
@@ -240,7 +249,7 @@ class AuthViewModel @Inject constructor(
 
     private fun startRegisterOtpCountdown() {
         countdownJob?.cancel()
-        countdownJob = viewModelScope.launch {
+        countdownJob = viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             var sec = 60
             _registerState.value = _registerState.value.copy(otpCountdown = sec)
             while (sec > 0) {
@@ -285,10 +294,10 @@ class AuthViewModel @Inject constructor(
     fun forgotPassword() {
         val code = _forgotState.value.studentCode
         if (code.isBlank()) {
-            _forgotState.value = _forgotState.value.copy(error = "Vui lòng nhập MSSV")
+            _forgotState.value = _forgotState.value.copy(error = "Vui lòng nhập tên đăng nhập")
             return
         }
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _forgotState.value = _forgotState.value.copy(isLoading = true, error = null)
             authRepository.forgotPassword(code)
                 .onSuccess {
@@ -321,13 +330,17 @@ class AuthViewModel @Inject constructor(
             _forgotState.value = state.copy(error = error)
             return
         }
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _forgotState.value = state.copy(isLoading = true, error = null)
             authRepository.resetPassword(state.studentCode, otpCode, state.newPassword)
                 .onSuccess {
                     countdownJob?.cancel()
                     _forgotState.value = _forgotState.value.copy(isLoading = false)
-                    _loginState.value = _loginState.value.copy(isLoading = false, isLoggedIn = true)
+                    _loginState.value = _loginState.value.copy(
+                        isLoading = false,
+                        isLoggedIn = true,
+                        isNewRegistration = false
+                    )
                 }
                 .onFailure { e ->
                     _forgotState.value = _forgotState.value.copy(
@@ -341,7 +354,7 @@ class AuthViewModel @Inject constructor(
     fun resendOtpForForgot() {
         val code = _forgotState.value.studentCode
         if (code.isBlank()) return
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             authRepository.resendOtp(code, "PASSWORD_RESET")
                 .onSuccess { startForgotOtpCountdown() }
                 .onFailure { e ->
@@ -354,7 +367,7 @@ class AuthViewModel @Inject constructor(
 
     private fun startForgotOtpCountdown() {
         countdownJob?.cancel()
-        countdownJob = viewModelScope.launch {
+        countdownJob = viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             var sec = 60
             _forgotState.value = _forgotState.value.copy(countdown = sec)
             while (sec > 0) {
@@ -387,8 +400,12 @@ class AuthViewModel @Inject constructor(
         switchMode(AuthMode.FORGOT)
     }
 
+    fun completeRegistrationOnboarding() {
+        _loginState.value = _loginState.value.copy(isNewRegistration = false)
+    }
+
     fun logout() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             authRepository.logout()
             _loginState.value = AuthUiState(isLoggedIn = false)
             _registerState.value = RegisterUiState()
@@ -397,3 +414,4 @@ class AuthViewModel @Inject constructor(
         }
     }
 }
+

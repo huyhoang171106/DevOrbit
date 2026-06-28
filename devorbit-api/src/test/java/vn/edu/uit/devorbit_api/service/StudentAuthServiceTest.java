@@ -297,7 +297,8 @@ class StudentAuthServiceTest {
                 .active(true).build();
 
         when(studentUserRepository.findByStudentCode("24520554")).thenReturn(Optional.of(student));
-        when(jwtService.generateToken("24520554", "STUDENT")).thenReturn("token");
+        when(jwtService.generateAccessToken("24520554", "STUDENT")).thenReturn("access-token");
+        when(jwtService.generateRefreshToken("24520554", "STUDENT")).thenReturn("refresh-token");
 
         StudentLoginRequest req = new StudentLoginRequest("24520554", "password123");
         service.login(req, httpRequest);

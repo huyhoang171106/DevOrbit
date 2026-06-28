@@ -328,6 +328,15 @@ private fun SemesterGraphView(viewModel: CourseViewModel) {
                 hasData -> {
                     val totalCourses = semesterPlan.values.sumOf { it.size }
 
+                    val creditMap = remember(allCourses) {
+                        allCourses.associate { it.maMH to it.credits }
+                    }
+                    val semesterCredits = remember(semesterPlan, creditMap) {
+                        semesterPlan.mapValues { (_, nodes) ->
+                            nodes.sumOf { creditMap[it.code] ?: 0 }
+                        }
+                    }
+
                     LazyColumn(
                         modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -344,10 +353,13 @@ private fun SemesterGraphView(viewModel: CourseViewModel) {
 
                         (1..8).forEach { semester ->
                             val semesterNodes = semesterPlan[semester].orEmpty()
+                            val totalCredits = semesterCredits[semester] ?: 0
                             item(key = semester) {
                                 EditableSemesterCard(
                                     semester = semester,
                                     nodes = semesterNodes,
+                                    totalCredits = totalCredits,
+                                    creditMap = creditMap,
                                     expanded = semester in expandedSemesters,
                                     onToggle = {
                                         expandedSemesters = if (semester in expandedSemesters)
@@ -453,6 +465,8 @@ private fun SemesterGraphView(viewModel: CourseViewModel) {
 private fun EditableSemesterCard(
     semester: Int,
     nodes: List<GraphNode>,
+    totalCredits: Int,
+    creditMap: Map<String, Int>,
     expanded: Boolean,
     onToggle: () -> Unit,
     onAddClick: () -> Unit,
@@ -496,7 +510,7 @@ private fun EditableSemesterCard(
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "${nodes.size} môn",
+                        text = "${nodes.size} môn · ${totalCredits}TC",
                         style = CosmicTheme.typography.label,
                         color = CosmicTheme.colors.textTertiary
                     )
@@ -516,7 +530,8 @@ private fun EditableSemesterCard(
             if (expanded) {
                 Divider(color = CosmicTheme.colors.glassBorder, thickness = 1.dp)
                 nodes.forEach { node ->
-                    EditableCourseRow(node = node, onRemove = { onRemoveCourse(node.code) })
+                    val courseCredits = creditMap[node.code] ?: 0
+                    EditableCourseRow(node = node, credits = courseCredits, onRemove = { onRemoveCourse(node.code) })
                 }
                 Spacer(Modifier.height(8.dp))
             }
@@ -525,7 +540,7 @@ private fun EditableSemesterCard(
 }
 
 @Composable
-private fun EditableCourseRow(node: GraphNode, onRemove: () -> Unit) {
+private fun EditableCourseRow(node: GraphNode, credits: Int, onRemove: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -538,6 +553,12 @@ private fun EditableCourseRow(node: GraphNode, onRemove: () -> Unit) {
                     text = node.code,
                     style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.Bold),
                     color = CosmicTheme.colors.plasma
+                )
+                Spacer(Modifier.width(4.dp))
+                Text(
+                    text = "($credits TC)",
+                    style = CosmicTheme.typography.label.copy(fontSize = 11.sp),
+                    color = CosmicTheme.colors.aurora
                 )
                 Spacer(Modifier.width(6.dp))
                 Text(

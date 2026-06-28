@@ -119,7 +119,7 @@ class CourseViewModel @Inject constructor(
         refreshCourses()
         loadGraph()
         loadAllBookmarkState()
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             settingsDataStore.studentCode.collect { code ->
                 currentStudentCode = code.orEmpty()
             }
@@ -127,7 +127,7 @@ class CourseViewModel @Inject constructor(
     }
 
     fun refreshCourses() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             val filter = _courseSearchFilterState.value
             repository.refreshCourses(
                 query = filter.normalizedQuery,
@@ -153,7 +153,7 @@ class CourseViewModel @Inject constructor(
     }
 
     fun loadGraph() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _graphLoading.value = true
             _graphError.value = null
             try {
@@ -197,7 +197,7 @@ class CourseViewModel @Inject constructor(
     }
 
     fun navigateToRepoFromBookmark(repoId: Long) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             try {
                 val repo = repository.getRepo(repoId)
                 val courseId = repo.courseId ?: return@launch
@@ -216,7 +216,7 @@ class CourseViewModel @Inject constructor(
     }
 
     private fun fetchGithubPushedAt(repo: RepoSummary) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO + kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             try {
                 val (owner, name) = parseGithubSlug(repo.githubUrl) ?: return@launch
                 val url = URL("https://api.github.com/repos/$owner/$name")
@@ -272,7 +272,7 @@ class CourseViewModel @Inject constructor(
     }
 
     private fun loadCourseDetail(courseId: Long) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _detailLoading.value = true
             _detailError.value = null
             try {
@@ -294,7 +294,7 @@ class CourseViewModel @Inject constructor(
     }
 
     private fun loadCourseBookmarkState(courseId: Long) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             try {
                 if (bookmarkRepository.isBookmarked("COURSE", courseId)) {
                     _bookmarkedCourseIds.value = _bookmarkedCourseIds.value + courseId
@@ -306,7 +306,7 @@ class CourseViewModel @Inject constructor(
     }
 
     private fun loadAllBookmarkState() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             try {
                 val all = bookmarkRepository.getAllBookmarks().first()
                 val courseIds = mutableSetOf<Long>()
@@ -326,7 +326,7 @@ class CourseViewModel @Inject constructor(
     }
 
     private fun loadRepoAiData(repoId: Long) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _aiLoading.value = true
             _repoSummary.value = null
             _repoAdvice.value = null
@@ -343,7 +343,7 @@ class CourseViewModel @Inject constructor(
     }
 
     private fun loadRepoSocialInfo(repoId: Long) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _socialLoading.value = true
             try {
                 val info = repository.getRepoSocialInfo(repoId)
@@ -381,7 +381,7 @@ class CourseViewModel @Inject constructor(
         }
         _userReview.value = optimisticReview
 
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             try {
                 val review = repository.submitRepoReview(repoId, rating, comment)
                 // Replace optimistic review with real one from server
@@ -401,7 +401,7 @@ class CourseViewModel @Inject constructor(
     }
 
     fun deleteReview(repoId: Long) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             try {
                 repository.deleteRepoReview(repoId)
                 _userReview.value = null
@@ -411,7 +411,7 @@ class CourseViewModel @Inject constructor(
     }
 
     fun voteRepo(repoId: Long, voteValue: Int) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             try {
                 val result = repository.voteRepo(repoId, voteValue)
                 _userVote.value = result.voteValue
@@ -421,7 +421,7 @@ class CourseViewModel @Inject constructor(
     }
 
     fun toggleCourseBookmark(course: CourseEntity) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             val existing = bookmarkRepository.getAllBookmarks().first()
                 .firstOrNull { it.targetType == "COURSE" && it.targetId == course.id }
 
@@ -452,7 +452,7 @@ class CourseViewModel @Inject constructor(
             _bookmarkedRepoIds.value = _bookmarkedRepoIds.value + repoId
         }
 
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             try {
                 if (currentlyBookmarked) {
                     val all = bookmarkRepository.getAllBookmarks().first()
@@ -475,3 +475,4 @@ class CourseViewModel @Inject constructor(
         }
     }
 }
+

@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -51,42 +52,60 @@ public class OpenCodeAiService {
             return generateOfflineFallback(userMessage);
         }
 
-        try {
-            Map<String, Object> requestBody = Map.of(
-                "model", aiConfig.getModel(),
-                "messages", List.of(
-                    Map.of("role", "system", "content", systemPrompt),
-                    Map.of("role", "user", "content", userMessage)
-                ),
-                "temperature", 0.3
-            );
+        int maxRetries = 2;
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                Map<String, Object> requestBody = Map.of(
+                    "model", aiConfig.getModel(),
+                    "messages", List.of(
+                        Map.of("role", "system", "content", systemPrompt),
+                        Map.of("role", "user", "content", userMessage)
+                    ),
+                    "temperature", 0.3
+                );
 
-            Map<String, Object> response = webClient.post()
-                .uri(aiConfig.getApiUrl() + "/chat/completions")
-                .header("Authorization", "Bearer " + aiConfig.getApiKey())
-                .bodyValue(requestBody)
-                .retrieve()
-                .bodyToMono(Map.class)
-                .timeout(Duration.ofSeconds(90))
-                .block();
+                Map<String, Object> response = webClient.post()
+                    .uri(aiConfig.getApiUrl() + "/chat/completions")
+                    .header("Authorization", "Bearer " + aiConfig.getApiKey())
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .timeout(Duration.ofSeconds(aiConfig.getTimeoutSeconds()))
+                    .block();
 
-            if (response != null && response.containsKey("choices")) {
-                List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
-                if (!choices.isEmpty()) {
-                    Map<String, Object> firstChoice = choices.get(0);
-                    if (firstChoice.containsKey("message")) {
-                        Map<String, Object> message = (Map<String, Object>) firstChoice.get("message");
-                        String content = (String) message.get("content");
-                        log.debug("LLM response received, length: {}", content != null ? content.length() : 0);
-                        return content;
+                if (response != null && response.containsKey("choices")) {
+                    List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
+                    if (!choices.isEmpty()) {
+                        Map<String, Object> firstChoice = choices.get(0);
+                        if (firstChoice.containsKey("message")) {
+                            Map<String, Object> message = (Map<String, Object>) firstChoice.get("message");
+                            String content = (String) message.get("content");
+                            if (content != null && !content.isBlank()) {
+                                log.debug("LLM response received on attempt {}, length: {}", attempt, content.length());
+                                return content;
+                            }
+                        }
                     }
                 }
+                log.warn("LLM returned empty response on attempt {}/{}", attempt, maxRetries);
+            } catch (Exception e) {
+                log.warn("LLM call failed on attempt {}/{}: {}", attempt, maxRetries, e.getMessage());
             }
-        } catch (Exception e) {
-            log.warn("LLM call failed, falling back to offline stub: {}", e.getMessage());
+
+            // Backoff before retry: 2s, 4s
+            if (attempt < maxRetries) {
+                try {
+                    long backoffMs = attempt * 2000L;
+                    log.info("LLM retry in {}ms...", backoffMs);
+                    Thread.sleep(backoffMs);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
         }
 
-        return generateOfflineFallback(userMessage);
+        return generateOfflineFallback(userMessage, true);
     }
 
     /**
@@ -114,7 +133,7 @@ public class OpenCodeAiService {
             .bodyValue(requestBody)
             .retrieve()
             .bodyToMono(Map.class)
-            .timeout(Duration.ofSeconds(90))
+            .timeout(Duration.ofSeconds(aiConfig.getTimeoutSeconds()))
             .map(response -> {
                 if (response != null && response.containsKey("choices")) {
                     List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
@@ -126,11 +145,11 @@ public class OpenCodeAiService {
                         }
                     }
                 }
-                return generateOfflineFallback(userMessage);
+                return generateOfflineFallback(userMessage, true);
             })
             .onErrorResume(e -> {
                 log.warn("Async LLM call failed: {}", e.getMessage());
-                return Mono.just(generateOfflineFallback(userMessage));
+                return Mono.just(generateOfflineFallback(userMessage, true));
             });
     }
 
@@ -162,7 +181,12 @@ public class OpenCodeAiService {
             "stream", true
         );
 
+        // Streaming needs longer timeout — use 3x the base timeout for total stream
+        int streamTimeoutSeconds = aiConfig.getTimeoutSeconds() * 3;
+
         AtomicBoolean emittedAnyDelta = new AtomicBoolean(false);
+        AtomicInteger retryCount = new AtomicInteger(0);
+        int maxStreamRetries = 2;
 
         Flux<String> stream = webClient.post()
             .uri(aiConfig.getApiUrl() + "/chat/completions")
@@ -171,7 +195,7 @@ public class OpenCodeAiService {
             .bodyValue(requestBody)
             .retrieve()
             .bodyToFlux(new ParameterizedTypeReference<ServerSentEvent<String>>() {})
-            .timeout(Duration.ofSeconds(90))
+            .timeout(Duration.ofSeconds(streamTimeoutSeconds))
             .flatMap(event -> {
                 String data = event.data();
                 List<String> deltas = extractDeltaContents(data == null ? null : "data: " + data);
@@ -181,9 +205,15 @@ public class OpenCodeAiService {
                 return Flux.fromIterable(deltas);
             })
             .onErrorResume(e -> {
+                if (!emittedAnyDelta.get() && retryCount.getAndIncrement() < maxStreamRetries) {
+                    log.warn("Streaming LLM failed before first token (attempt {}), retrying: {}",
+                        retryCount.get(), e.getMessage());
+                    // Retry the entire stream
+                    return streamCompletion(systemPrompt, userMessage);
+                }
                 if (!emittedAnyDelta.get()) {
-                    log.warn("Streaming LLM call failed before first token: {}", e.getMessage());
-                    return generateCompletionAsync(systemPrompt, userMessage).flatMapMany(Flux::just);
+                    log.warn("Streaming LLM call failed after retries: {}", e.getMessage());
+                    return Flux.just(generateOfflineFallback(userMessage, true));
                 }
                 log.error("Streaming LLM call failed after at least one delta: {}", e.getMessage());
                 return Flux.error(e);
@@ -191,7 +221,7 @@ public class OpenCodeAiService {
 
         return stream.switchIfEmpty(Flux.defer(() -> {
             log.warn("Streaming LLM returned no deltas, falling back to one-shot");
-            return generateCompletionAsync(systemPrompt, userMessage).flatMapMany(Flux::just);
+            return Flux.just(generateOfflineFallback(userMessage, true));
         }));
     }
 
@@ -246,7 +276,23 @@ public class OpenCodeAiService {
         return deltas;
     }
 
+    public boolean isOfflineFallbackResponse(String response) {
+        return response != null && (
+            response.startsWith("Dịch vụ AI đang phản hồi không ổn định")
+                || response.startsWith("DevOrbit chưa được cấu hình dịch vụ AI")
+        );
+    }
+
     private String generateOfflineFallback(String userMessage) {
+        return generateOfflineFallback(userMessage, false);
+    }
+
+    private String generateOfflineFallback(String userMessage, boolean providerFailed) {
+        if (providerFailed) {
+            return "Dịch vụ AI đang phản hồi không ổn định. "
+                + "DevOrbit chưa nhận được câu trả lời từ mô hình trong thời gian cho phép; "
+                + "bạn hãy thử lại sau hoặc hỏi câu ngắn hơn, kèm mã môn cụ thể.";
+        }
         String normalized = userMessage.toLowerCase();
         if (normalized.contains("giải tích") || normalized.contains("calculus") || normalized.contains("ma006")) {
             return "### Kinh nghiệm học tốt môn Đại cương Giải tích tại UIT:\n\n" +
@@ -256,6 +302,7 @@ public class OpenCodeAiService {
                    "   - Học chắc các khái niệm giới hạn (limits), đạo hàm (derivatives) và tích phân (integrals) trước khi chuyển sang chuỗi hàm.\n" +
                    "3. **Ôn thi:** Truy cập **Giasuplus** để tải đề thi UIT các năm trước. Hãy giải ít nhất 3 đề thi gần nhất để biết dạng cấu trúc ra đề thi của UIT. Bạn có thể tự học qua các video trên **Khan Academy** hoặc giải bài tập khó bằng **Microsoft Math Solver**.";
         }
-        return "Chào bạn! Mình là cố vấn học tập AI của DevOrbit. Hiện tại hệ thống đang chạy ở chế độ offline, vui lòng cấu hình API Key OpenCode Go để mở khóa toàn bộ tính năng hỏi đáp thông minh.";
+        return "DevOrbit chưa được cấu hình dịch vụ AI. "
+            + "Vui lòng cấu hình API key để sử dụng đầy đủ tính năng hỏi đáp.";
     }
 }

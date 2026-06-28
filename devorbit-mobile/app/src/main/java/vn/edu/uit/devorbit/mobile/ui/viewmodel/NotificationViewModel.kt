@@ -55,7 +55,7 @@ class NotificationViewModel @Inject constructor(
     }
 
     fun loadNotifications() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _loading.value = true
             _error.value = null
             try {
@@ -72,7 +72,7 @@ class NotificationViewModel @Inject constructor(
 
     private fun startPolling() {
         pollingJob?.cancel()
-        pollingJob = viewModelScope.launch {
+        pollingJob = viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             while (true) {
                 delay(15_000)
                 try {
@@ -83,7 +83,7 @@ class NotificationViewModel @Inject constructor(
     }
 
     fun markAsRead(id: Long) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             try {
                 apiService.markNotificationRead(id)
                 val current = _unreadCount.value
@@ -96,7 +96,7 @@ class NotificationViewModel @Inject constructor(
     }
 
     fun markAllAsRead() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             try {
                 apiService.markAllNotificationsRead()
                 _unreadCount.value = 0
@@ -108,7 +108,7 @@ class NotificationViewModel @Inject constructor(
     }
 
     fun acceptInvite(notificationId: Long, planId: Long) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _actionLoadingId.value = notificationId
             try {
                 apiService.respondInvite(planId, RespondInviteRequest("accept"))
@@ -121,7 +121,7 @@ class NotificationViewModel @Inject constructor(
     }
 
     fun declineInvite(notificationId: Long, planId: Long) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _actionLoadingId.value = notificationId
             try {
                 apiService.respondInvite(planId, RespondInviteRequest("decline"))
@@ -134,7 +134,7 @@ class NotificationViewModel @Inject constructor(
     }
 
     fun approveDelete(notificationId: Long, taskId: Long) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _actionLoadingId.value = notificationId
             try {
                 apiService.approveDeleteTask(taskId, ApproveDeleteRequest("APPROVE"))
@@ -147,7 +147,7 @@ class NotificationViewModel @Inject constructor(
     }
 
     fun rejectDelete(notificationId: Long, taskId: Long) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _actionLoadingId.value = notificationId
             try {
                 apiService.approveDeleteTask(taskId, ApproveDeleteRequest("REJECT"))
@@ -159,7 +159,7 @@ class NotificationViewModel @Inject constructor(
         }
     }
     fun approvePlanDelete(notificationId: Long, planId: Long) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _actionLoadingId.value = notificationId
             try {
                 apiService.approveDeletePlan(planId, ApproveDeleteRequest("APPROVE"))
@@ -172,7 +172,7 @@ class NotificationViewModel @Inject constructor(
     }
 
     fun rejectPlanDelete(notificationId: Long, planId: Long) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _actionLoadingId.value = notificationId
             try {
                 apiService.approveDeletePlan(planId, ApproveDeleteRequest("REJECT"))
@@ -185,3 +185,4 @@ class NotificationViewModel @Inject constructor(
     }
 
 }
+

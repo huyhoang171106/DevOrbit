@@ -67,6 +67,8 @@ fun DashboardScreen(
     onNavigateToProfile: () -> Unit = {},
     unreadCount: Int = 0,
     avatarUrl: String? = null,
+    showRegistrationOnboarding: Boolean = false,
+    onRegistrationOnboardingCompleted: () -> Unit = {},
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -139,7 +141,7 @@ fun DashboardScreen(
                                 if (unreadCount > 0) {
                                     Badge(
                                         containerColor = CosmicTheme.colors.plasma,
-                                        contentColor = Color.Black
+                                        contentColor = Color.White
                                     ) {
                                         Text(
                                             text = if (unreadCount > 99) "99+" else unreadCount.toString(),
@@ -158,37 +160,50 @@ fun DashboardScreen(
                         }
                     }
 
-                    // Avatar
-                    if (avatarUrl != null) {
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(avatarUrl)
-                                .crossfade(true)
-                                .build(),
-                            contentDescription = "Avatar",
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .clickable { onNavigateToProfile() },
-                            contentScale = ContentScale.Crop
+                    Surface(
+                        modifier = Modifier.clickable(onClick = onNavigateToProfile),
+                        shape = RoundedCornerShape(20.dp),
+                        color = CosmicTheme.colors.nebula,
+                        border = androidx.compose.foundation.BorderStroke(
+                            1.dp,
+                            CosmicTheme.colors.glassBorder
                         )
-                    } else {
-                        Surface(
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clickable { onNavigateToProfile() },
-                            shape = CircleShape,
-                            color = CosmicTheme.colors.plasma.copy(alpha = 0.2f),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.plasma.copy(alpha = 0.5f))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(start = 4.dp, end = 10.dp, top = 4.dp, bottom = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.Rounded.Person,
-                                    contentDescription = "Cá nhân",
-                                    tint = CosmicTheme.colors.plasma,
-                                    modifier = Modifier.size(20.dp)
+                            if (avatarUrl != null) {
+                                AsyncImage(
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data(avatarUrl)
+                                        .crossfade(true)
+                                        .build(),
+                                    contentDescription = "Mở trang cá nhân",
+                                    modifier = Modifier.size(32.dp).clip(CircleShape),
+                                    contentScale = ContentScale.Crop
                                 )
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .background(CosmicTheme.colors.plasma.copy(alpha = 0.15f), CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Person,
+                                        contentDescription = null,
+                                        tint = CosmicTheme.colors.plasma,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
                             }
+                            Text(
+                                text = "Cá nhân",
+                                style = CosmicTheme.typography.label.copy(fontWeight = FontWeight.SemiBold),
+                                color = CosmicTheme.colors.textSecondary
+                            )
                         }
                     }
                 }
@@ -326,7 +341,154 @@ fun DashboardScreen(
                 }
             )
         }
+
+        if (showRegistrationOnboarding) {
+            RegistrationOnboardingDialog(
+                allCourses = state.allCourses,
+                allTechStacks = state.allTechStacks,
+                isSaving = state.isSavingOnboarding,
+                onSave = { courseIds, techStacks ->
+                    viewModel.saveOnboardingPreferences(
+                        courseIds = courseIds,
+                        techStackNames = techStacks,
+                        onSuccess = onRegistrationOnboardingCompleted
+                    )
+                }
+            )
+        }
     }
+}
+
+@Composable
+private fun RegistrationOnboardingDialog(
+    allCourses: List<CourseEntity>,
+    allTechStacks: List<String>,
+    isSaving: Boolean,
+    onSave: (Set<Long>, Set<String>) -> Unit
+) {
+    var selectedCourseIds by remember { mutableStateOf(emptySet<Long>()) }
+    var selectedTechStacks by remember { mutableStateOf(emptySet<String>()) }
+    var courseQuery by remember { mutableStateOf("") }
+    var stackQuery by remember { mutableStateOf("") }
+
+    val visibleCourses = remember(allCourses, courseQuery) {
+        allCourses.filter {
+            courseQuery.isBlank() ||
+                it.maMH.contains(courseQuery, ignoreCase = true) ||
+                it.tenMH.contains(courseQuery, ignoreCase = true)
+        }
+    }
+    val visibleStacks = remember(allTechStacks, stackQuery) {
+        allTechStacks.filter { stackQuery.isBlank() || it.contains(stackQuery, ignoreCase = true) }
+    }
+
+    AlertDialog(
+        onDismissRequest = {},
+        shape = RoundedCornerShape(20.dp),
+        containerColor = CosmicTheme.colors.nebula,
+        title = {
+            Column {
+                Text(
+                    "Thiết lập gợi ý của bạn",
+                    style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold)
+                )
+                Text(
+                    "Chọn môn học kỳ này và công nghệ bạn quan tâm. DevOrbit sẽ báo khi có repo phù hợp được duyệt.",
+                    style = CosmicTheme.typography.label,
+                    color = CosmicTheme.colors.textSecondary
+                )
+            }
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text("Môn học kỳ này", fontWeight = FontWeight.SemiBold)
+                OutlinedTextField(
+                    value = courseQuery,
+                    onValueChange = { courseQuery = it },
+                    placeholder = { Text("Tìm theo mã hoặc tên môn") },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                LazyColumn(modifier = Modifier.heightIn(max = 180.dp)) {
+                    items(visibleCourses, key = { it.id }) { course ->
+                        val selected = course.id in selectedCourseIds
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    selectedCourseIds = if (selected) {
+                                        selectedCourseIds - course.id
+                                    } else {
+                                        selectedCourseIds + course.id
+                                    }
+                                }
+                                .padding(vertical = 2.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Checkbox(checked = selected, onCheckedChange = null)
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("${course.maMH} · ${course.tenMH}", style = CosmicTheme.typography.label)
+                                Text(
+                                    "${course.repoCount} repo",
+                                    style = CosmicTheme.typography.label,
+                                    color = CosmicTheme.colors.textTertiary
+                                )
+                            }
+                        }
+                    }
+                }
+
+                HorizontalDivider(color = CosmicTheme.colors.glassBorder)
+                Text("Tech stack", fontWeight = FontWeight.SemiBold)
+                OutlinedTextField(
+                    value = stackQuery,
+                    onValueChange = { stackQuery = it },
+                    placeholder = { Text("Tìm công nghệ") },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                LazyColumn(modifier = Modifier.heightIn(max = 140.dp)) {
+                    items(visibleStacks, key = { it }) { stack ->
+                        val selected = stack in selectedTechStacks
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    selectedTechStacks = if (selected) {
+                                        selectedTechStacks - stack
+                                    } else {
+                                        selectedTechStacks + stack
+                                    }
+                                }
+                                .padding(vertical = 2.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Checkbox(checked = selected, onCheckedChange = null)
+                            Text(stack, style = CosmicTheme.typography.label)
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onSave(selectedCourseIds, selectedTechStacks) },
+                enabled = selectedCourseIds.isNotEmpty() && selectedTechStacks.isNotEmpty() && !isSaving
+            ) {
+                if (isSaving) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Text("Lưu lựa chọn")
+                }
+            }
+        }
+    )
 }
 
 // ── Section 1: Greeting ──────────────────────────────────────────
@@ -569,7 +731,7 @@ private fun AddCourseDialog(
                         modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
-                            unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
+                            unfocusedBorderColor = CosmicTheme.colors.glassBorder,
                             cursorColor = CosmicTheme.colors.plasma,
                             focusedTextColor = CosmicTheme.colors.textPrimary,
                             unfocusedTextColor = CosmicTheme.colors.textPrimary
@@ -728,7 +890,7 @@ private fun DaySquare(day: WeekDay) {
                     when {
                         day.isToday -> CosmicTheme.colors.plasma
                         day.qualifiesForStreak -> Color(0xFF2E7D32).copy(alpha = 0.5f)
-                        else -> Color.White.copy(alpha = 0.06f)
+                        else -> CosmicTheme.colors.glassBorder
                     },
                     RoundedCornerShape(6.dp)
                 ),
@@ -882,7 +1044,7 @@ private fun AddTechStackDialog(
                     modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
-                        unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
+                        unfocusedBorderColor = CosmicTheme.colors.glassBorder,
                         cursorColor = CosmicTheme.colors.plasma,
                         focusedTextColor = CosmicTheme.colors.textPrimary,
                         unfocusedTextColor = CosmicTheme.colors.textPrimary

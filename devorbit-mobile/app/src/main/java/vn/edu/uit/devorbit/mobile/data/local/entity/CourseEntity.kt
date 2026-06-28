@@ -12,5 +12,6 @@ data class CourseEntity(
     val description: String?,
     val semester: Int? = null,
     val loaiMonHoc: String? = null,
+    val repoCount: Int = 0,
     val lastUpdated: Long = System.currentTimeMillis()
 )

@@ -43,6 +43,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
             if (jwtService.isTokenValid(token)) {
+                // Reject REFRESH tokens — only ACCESS tokens are accepted for API calls
+                String tokenKind = jwtService.extractTokenKind(token);
+                if ("REFRESH".equals(tokenKind)) {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\": \"Refresh tokens are not accepted for API access\"}");
+                    return;
+                }
+
                 String jti = jwtService.extractJti(token);
                 if (revokedTokenStore.isRevoked(jti)) {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

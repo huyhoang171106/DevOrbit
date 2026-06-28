@@ -5,7 +5,8 @@ data class AdminLoginRequest(
     val password: String
 )
 
-/** Backend returns only { token }. No username in response. */
+/** Backend returns token + refreshToken pair on login. */
 data class AdminLoginResponse(
-    val token: String
+    val token: String,
+    val refreshToken: String
 )

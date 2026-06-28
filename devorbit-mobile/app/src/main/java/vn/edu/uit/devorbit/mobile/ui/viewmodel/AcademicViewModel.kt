@@ -28,9 +28,10 @@ class AcademicViewModel @Inject constructor(
     }
 
     fun refreshData() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             repository.refreshCourses()
             repository.refreshRelationships()
         }
     }
 }
+

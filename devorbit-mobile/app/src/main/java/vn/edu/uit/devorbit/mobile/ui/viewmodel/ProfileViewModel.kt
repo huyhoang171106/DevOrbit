@@ -38,22 +38,22 @@ class ProfileViewModel @Inject constructor(
     val state: StateFlow<ProfileUiState> = _state.asStateFlow()
 
     init {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             settingsDataStore.studentName.collect { name ->
                 _state.update { it.copy(studentName = name ?: "", isLoggedIn = !name.isNullOrBlank()) }
             }
         }
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             settingsDataStore.studentCode.collect { code ->
                 _state.update { it.copy(studentCode = code ?: "") }
             }
         }
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             settingsDataStore.darkMode.collect { mode ->
                 _state.update { it.copy(darkMode = mode) }
             }
         }
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             bookmarkRepository.getAllBookmarks()
                 .catch { emit(emptyList()) }
                 .collect { bookmarks ->
@@ -64,7 +64,7 @@ class ProfileViewModel @Inject constructor(
     }
 
     private fun loadProfile() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             val result = authRepository.getProfile()
             result.onSuccess { profile ->
                 _state.update { 
@@ -80,7 +80,7 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun uploadAvatar(uri: Uri) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _state.update { it.copy(isUploadingAvatar = true, error = null) }
             val result = authRepository.uploadAvatar(uri)
             result.onSuccess { avatarUrl ->
@@ -101,7 +101,7 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun updateFullName(fullName: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _state.update { it.copy(isUpdatingName = true, error = null) }
             val result = authRepository.updateFullName(fullName)
             result.onSuccess { profile ->
@@ -122,7 +122,7 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun changePassword(currentPassword: String, newPassword: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _state.update { it.copy(isChangingPassword = true, error = null) }
             val result = authRepository.changePassword(currentPassword, newPassword)
             result.onSuccess {
@@ -146,19 +146,20 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun removeBookmark(id: Long) {
-        viewModelScope.launch { bookmarkRepository.removeBookmark(id) }
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) { bookmarkRepository.removeBookmark(id) }
     }
 
     fun toggleDarkMode() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             settingsDataStore.setDarkMode(!_state.value.darkMode)
         }
     }
 
     fun logout() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             authRepository.logout()
             _state.update { it.copy(studentName = "", studentCode = "", avatar = null, isLoggedIn = false) }
         }
     }
 }
+

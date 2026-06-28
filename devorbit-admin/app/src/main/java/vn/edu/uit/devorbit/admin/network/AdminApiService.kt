@@ -12,6 +12,9 @@ interface AdminApiService {
     @POST("/api/admin/auth/logout")
     suspend fun logout(@Header("Authorization") authHeader: String): Map<String, String>
 
+    @POST("/api/auth/refresh")
+    suspend fun refreshAccessToken(@Body request: RefreshTokenRequest): TokenPairResponse
+
     // ── Dashboard Stats ───────────────────────────────────────────────────────
     @GET("/api/admin/stats")
     suspend fun getStats(@Query("sortBy") sortBy: String = "bookmarks"): AdminStatsResponse
@@ -147,6 +150,15 @@ interface AdminApiService {
     @DELETE("/api/admin/github/scan-logs")
     suspend fun clearScanLogs()
 
+    @GET("/api/admin/github/automation-status")
+    suspend fun getGithubAutomationStatus(): GithubAutomationStatus
+
+    @GET("/api/admin/github/auto-approvals")
+    suspend fun getAutoApprovedRepos(): List<RepoCandidateResponse>
+
+    @POST("/api/admin/github/auto-approve")
+    suspend fun runAutoApproval(): AutoApprovalRun
+
     // ── Community ─────────────────────────────────────────────────────────────
     @GET("/api/admin/community/channels")
     suspend fun getChannels(): List<ChatChannel>
@@ -194,3 +206,7 @@ interface AdminApiService {
     @PUT("/api/admin/notifications/read-all")
     suspend fun markAllNotificationsRead()
 }
+
+data class RefreshTokenRequest(val refreshToken: String)
+
+data class TokenPairResponse(val accessToken: String, val refreshToken: String, val tokenType: String)

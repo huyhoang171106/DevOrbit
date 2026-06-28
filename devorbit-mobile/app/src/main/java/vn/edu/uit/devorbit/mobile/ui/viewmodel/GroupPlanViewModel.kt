@@ -62,8 +62,11 @@ class GroupPlanViewModel @Inject constructor(
     private val _detail = MutableStateFlow(GroupPlanDetailState())
     val detail: StateFlow<GroupPlanDetailState> = _detail.asStateFlow()
 
+    private val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    private val minDate: LocalDate = LocalDate.now().minusMonths(6).with(java.time.temporal.TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+
     init {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             val code = settingsDataStore.studentCode.first().orEmpty()
             _detail.update { it.copy(currentUserCode = code) }
         }
@@ -71,7 +74,7 @@ class GroupPlanViewModel @Inject constructor(
     }
 
     fun loadMyPlans() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _plansLoading.value = true
             try {
                 _myPlans.value = apiService.getMyGroupPlans()
@@ -81,7 +84,7 @@ class GroupPlanViewModel @Inject constructor(
     }
 
     fun loadPlan(planId: Long) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _detail.update { it.copy(loading = true, error = null) }
             try {
                 val currentUserCode = settingsDataStore.studentCode.first().orEmpty()
@@ -100,7 +103,7 @@ class GroupPlanViewModel @Inject constructor(
     }
 
     fun addTask(planId: Long, title: String, description: String?, assignedTo: String?, deadline: String?, onSuccess: () -> Unit = {}) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _detail.update { it.copy(actionLoading = true, actionError = null) }
             try {
                 val created = apiService.addGroupTask(planId, AddGroupTaskRequest(title, description, assignedTo, deadline))
@@ -113,7 +116,7 @@ class GroupPlanViewModel @Inject constructor(
     }
 
     fun updateTask(taskId: Long, title: String, description: String?, assignedTo: String?, deadline: String?, onSuccess: () -> Unit = {}) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _detail.update { it.copy(actionLoading = true, actionError = null) }
             try {
                 apiService.updateGroupTask(taskId, UpdateGroupTaskRequest(title, description, assignedTo, deadline, null))
@@ -128,7 +131,7 @@ class GroupPlanViewModel @Inject constructor(
     }
 
     fun toggleTask(taskId: Long, completed: Boolean) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             try {
                 apiService.updateGroupTask(taskId, UpdateGroupTaskRequest(null, null, null, null, completed))
                 val planId = _detail.value.plan?.id ?: return@launch
@@ -141,7 +144,7 @@ class GroupPlanViewModel @Inject constructor(
     }
 
     fun inviteMember(planId: Long, studentCode: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _detail.update { it.copy(inviteLoading = true, inviteError = null) }
             try {
                 apiService.inviteMember(planId, InviteMemberRequest(studentCode))
@@ -203,7 +206,7 @@ class GroupPlanViewModel @Inject constructor(
     }
 
     fun requestDeleteTask(taskId: Long) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _detail.update { it.copy(actionLoading = true, actionError = null) }
             try {
                 apiService.requestDeleteTask(taskId)
@@ -217,7 +220,7 @@ class GroupPlanViewModel @Inject constructor(
     }
 
     fun respondToInvite(planId: Long, action: String) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _detail.update { it.copy(actionLoading = true) }
             try {
                 apiService.respondInvite(planId, RespondInviteRequest(action))
@@ -230,7 +233,7 @@ class GroupPlanViewModel @Inject constructor(
     }
 
     fun removeMember(planId: Long, memberId: Long) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _detail.update { it.copy(actionLoading = true, actionError = null) }
             try {
                 apiService.removeMember(planId, memberId)
@@ -249,7 +252,7 @@ class GroupPlanViewModel @Inject constructor(
     }
 
     fun leavePlan(planId: Long, onSuccess: () -> Unit) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _detail.update { it.copy(actionLoading = true, actionError = null) }
             try {
                 apiService.leavePlan(planId)
@@ -262,7 +265,7 @@ class GroupPlanViewModel @Inject constructor(
         }
     }
     fun deletePlan(planId: Long, onSuccess: () -> Unit) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _detail.update { it.copy(actionLoading = true, actionError = null) }
             try {
                 apiService.deleteGroupPlan(planId)
@@ -284,7 +287,7 @@ class GroupPlanViewModel @Inject constructor(
     }
 
     fun transferOwnership(planId: Long, newOwnerCode: String, onSuccess: () -> Unit) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _detail.update { it.copy(transferLoading = true, actionError = null) }
             try {
                 apiService.transferOwnership(planId, TransferOwnershipRequest(newOwnerCode))
@@ -298,7 +301,7 @@ class GroupPlanViewModel @Inject constructor(
     }
 
     fun requestDeletePlan(planId: Long) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _detail.update { it.copy(actionLoading = true, actionError = null) }
             try {
                 apiService.requestDeletePlan(planId)
@@ -320,7 +323,7 @@ class GroupPlanViewModel @Inject constructor(
     }
 
     fun approveDeletePlan(planId: Long, approved: Boolean, onSuccess: () -> Unit) {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _detail.update { it.copy(actionLoading = true, actionError = null) }
             try {
                 apiService.approveDeletePlan(planId, ApproveDeleteRequest(if (approved) "APPROVE" else "REJECT"))
@@ -333,8 +336,6 @@ class GroupPlanViewModel @Inject constructor(
         }
     }
 
-    private val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    private val minDate: LocalDate = LocalDate.now().minusMonths(6).with(java.time.temporal.TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
 
     private fun computeMaxWeekOffset(): Int {
         val now = LocalDate.now()
@@ -366,7 +367,7 @@ class GroupPlanViewModel @Inject constructor(
     }
 
     private fun loadWeekDays() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             val offset = _detail.value.currentWeekOffset
             val maxOffset = computeMaxWeekOffset()
             var date = LocalDate.now().minusWeeks(offset.toLong()).with(java.time.temporal.TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
@@ -397,3 +398,4 @@ class GroupPlanViewModel @Inject constructor(
         }
     }
 }
+

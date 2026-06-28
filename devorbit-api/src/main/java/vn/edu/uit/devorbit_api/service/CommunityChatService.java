@@ -34,6 +34,7 @@ public class CommunityChatService {
 
     private final AtomicBoolean syncDone = new AtomicBoolean(false);
 
+    @Transactional(readOnly = true)
     public List<ChatChannelResponse> getChannels() {
         if (syncDone.compareAndSet(false, true)) {
             syncChannels();
@@ -82,6 +83,7 @@ public class CommunityChatService {
                 .build());
     }
 
+    @Transactional(readOnly = true)
     public Page<ChatMessageResponse> getMessages(Long channelId, int page, int size) {
         if (!channelRepository.existsById(channelId)) {
             throw new NotFoundException("Channel not found");

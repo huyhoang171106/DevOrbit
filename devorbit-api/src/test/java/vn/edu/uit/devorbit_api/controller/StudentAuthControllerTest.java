@@ -44,7 +44,7 @@ class StudentAuthControllerTest {
 
     @Test
     void shouldLoginSuccessfully() throws Exception {
-        StudentAuthResponse response = new StudentAuthResponse("student-jwt-token", 1L, "24520554", "Nguyen Van A", "24520554@gm.uit.edu.vn", null);
+        StudentAuthResponse response = new StudentAuthResponse("student-jwt-token", 1L, "24520554", "Nguyen Van A", "24520554@gm.uit.edu.vn", null, "refresh-token");
         when(studentAuthService.login(any(), any())).thenReturn(response);
 
         mockMvc.perform(post("/api/student/login")
@@ -82,7 +82,7 @@ class StudentAuthControllerTest {
 
     @Test
     void shouldVerifyOtpSuccessfully() throws Exception {
-        StudentAuthResponse response = new StudentAuthResponse("student-jwt-token", 1L, "24520554", "Nguyen Van A", "24520554@gm.uit.edu.vn", null);
+        StudentAuthResponse response = new StudentAuthResponse("student-jwt-token", 1L, "24520554", "Nguyen Van A", "24520554@gm.uit.edu.vn", null, "refresh-token");
         when(studentAuthService.verifyOtp(any())).thenReturn(response);
 
         mockMvc.perform(post("/api/student/verify-otp")
@@ -132,7 +132,7 @@ class StudentAuthControllerTest {
 
     @Test
     void shouldResetPasswordSuccessfully() throws Exception {
-        StudentAuthResponse response = new StudentAuthResponse("student-jwt-token", 1L, "24520554", "Nguyen Van A", "24520554@gm.uit.edu.vn", null);
+        StudentAuthResponse response = new StudentAuthResponse("student-jwt-token", 1L, "24520554", "Nguyen Van A", "24520554@gm.uit.edu.vn", null, "refresh-token");
         when(studentAuthService.resetPassword(any())).thenReturn(response);
 
         mockMvc.perform(post("/api/student/reset-password")

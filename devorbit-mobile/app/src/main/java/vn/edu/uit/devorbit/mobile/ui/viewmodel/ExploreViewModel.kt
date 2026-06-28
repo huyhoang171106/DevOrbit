@@ -42,7 +42,7 @@ class ExploreViewModel @Inject constructor(
 
     init {
         load()
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             settingsDataStore.studentCode.collect { code ->
                 currentStudentCode = code.orEmpty()
             }
@@ -51,7 +51,7 @@ class ExploreViewModel @Inject constructor(
 
 
     fun load() {
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _state.value = _state.value.copy(loading = true, error = null)
             try {
                 val recentRepos = discoveryRepository.getRecentRepos()
@@ -76,7 +76,7 @@ class ExploreViewModel @Inject constructor(
     fun updateSearch(query: String) {
         val nextFilter = _state.value.filterState.updateQuery(query)
         _state.value = _state.value.copy(filterState = nextFilter)
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _state.value = _state.value.copy(loading = true, error = null)
             try {
                 val repos = if (nextFilter.normalizedQuery == null) {
@@ -124,3 +124,4 @@ class ExploreViewModel @Inject constructor(
         )
     }
 }
+

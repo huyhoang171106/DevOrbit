@@ -12,6 +12,9 @@ import retrofit2.http.PUT
 import retrofit2.http.PATCH
 import vn.edu.uit.devorbit.mobile.data.remote.dto.*
 import okhttp3.MultipartBody
+import okhttp3.ResponseBody
+import retrofit2.Response
+import retrofit2.http.Streaming
 
 interface ApiService {
     @GET("/api/courses")
@@ -70,6 +73,10 @@ interface ApiService {
 
     @POST("/api/student/logout")
     suspend fun studentLogout(): Map<String, Any>
+
+    // Token Refresh
+    @POST("/api/auth/refresh")
+    suspend fun refreshAccessToken(@Body request: RefreshTokenRequest): TokenPairResponse
 
     @GET("/api/student/me")
     suspend fun getStudentProfile(): Map<String, Any>
@@ -143,6 +150,10 @@ interface ApiService {
 
     @POST("/api/ai/subject-qa/query")
     suspend fun querySubjectQa(@Body body: SubjectQaRequest): SubjectQaResponse
+
+    @Streaming
+    @POST("/api/ai/subject-qa/stream")
+    suspend fun streamSubjectQa(@Body body: SubjectQaRequest): Response<ResponseBody>
 
     @POST("/api/ai/generate-roadmap")
     suspend fun generateRoadmap(@Body body: RoadmapGenerationRequest): RoadmapRecommendationResponse

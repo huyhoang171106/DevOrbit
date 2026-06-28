@@ -176,7 +176,7 @@ public class RepoCandidateService {
     }
 
     private void evictReposCache() {
-        for (String name : new String[]{"allRepos", "reposByCourse", "repoById"}) {
+        for (String name : new String[]{"allRepos", "reposByCourse", "repoById", "courses", "knowledgeGraph"}) {
             org.springframework.cache.Cache cache = cacheManager.getCache(name);
             if (cache != null) cache.clear();
         }

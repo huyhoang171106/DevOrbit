@@ -671,7 +671,7 @@ private fun FormField(
         ),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
-            unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
+            unfocusedBorderColor = CosmicTheme.colors.glassBorder,
             cursorColor = CosmicTheme.colors.plasma,
             focusedTextColor = CosmicTheme.colors.textPrimary,
             unfocusedTextColor = CosmicTheme.colors.textPrimary
@@ -718,7 +718,7 @@ private fun PasswordField(
         keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus(); onDone?.invoke() }),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = CosmicTheme.colors.plasma.copy(alpha = 0.5f),
-            unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
+            unfocusedBorderColor = CosmicTheme.colors.glassBorder,
             cursorColor = CosmicTheme.colors.plasma,
             focusedTextColor = CosmicTheme.colors.textPrimary,
             unfocusedTextColor = CosmicTheme.colors.textPrimary
@@ -772,12 +772,12 @@ private fun DigitInput(
     val borderColor = when {
         filled -> CosmicTheme.colors.plasma.copy(alpha = 0.5f)
         isFocused -> CosmicTheme.colors.plasma.copy(alpha = 0.5f)
-        else -> Color.White.copy(alpha = 0.1f)
+        else -> CosmicTheme.colors.glassBorder
     }
 
     val bgColor = when {
         filled -> CosmicTheme.colors.plasma.copy(alpha = 0.05f)
-        else -> Color.White.copy(alpha = 0.05f)
+        else -> Color.Black.copy(alpha = 0.03f)
     }
 
     Box(

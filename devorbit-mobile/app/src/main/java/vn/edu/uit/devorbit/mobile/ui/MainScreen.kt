@@ -2,17 +2,17 @@ package vn.edu.uit.devorbit.mobile.ui
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Chat
+import androidx.compose.material.icons.automirrored.rounded.Chat
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Notifications
-import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.Book
 import androidx.compose.material.icons.rounded.AutoAwesome
@@ -21,21 +21,21 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.navArgument
 import vn.edu.uit.devorbit.mobile.ui.components.CosmicBackground
-import vn.edu.uit.devorbit.mobile.ui.navigation.Screen
 import vn.edu.uit.devorbit.mobile.ui.screen.courses.CourseHubScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.dashboard.DashboardScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.dashboard.TaskManagementScreen
@@ -44,10 +44,8 @@ import vn.edu.uit.devorbit.mobile.ui.screen.knowledge.KnowledgeTabView
 import vn.edu.uit.devorbit.mobile.ui.screen.notification.NotificationScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.plan.GroupPlanDetailScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.plan.GroupPlanListScreen
-import vn.edu.uit.devorbit.mobile.ui.screen.community.CommunityScreen
-import vn.edu.uit.devorbit.mobile.ui.screen.plan.StudyPlannerScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.plan.SubjectQaScreen
-import vn.edu.uit.devorbit.mobile.domain.repository.Bookmark
+import vn.edu.uit.devorbit.mobile.ui.screen.community.CommunityScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.profile.ProfileScreen
 import vn.edu.uit.devorbit.mobile.ui.screen.profile.ProfileDetailScreen
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
@@ -57,78 +55,99 @@ import vn.edu.uit.devorbit.mobile.ui.viewmodel.ProfileViewModel
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.StudyPlanViewModel
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.SubjectQaViewModel
 
-
 @Composable
 fun MainScreen(
     academicVm: AcademicViewModel = hiltViewModel(),
     notificationVm: NotificationViewModel = hiltViewModel(),
     profileVm: ProfileViewModel = hiltViewModel(),
     studyPlanVm: StudyPlanViewModel = hiltViewModel(),
-    subjectQaVm: SubjectQaViewModel = hiltViewModel()
+    subjectQaVm: SubjectQaViewModel = hiltViewModel(),
+    showRegistrationOnboarding: Boolean = false,
+    onRegistrationOnboardingCompleted: () -> Unit = {}
 ) {
-    var currentScreen by remember { mutableStateOf<Screen>(Screen.Dashboard) }
-    var showPopup by remember { mutableStateOf(false) }
+    val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
     var showProfileDetail by remember { mutableStateOf(false) }
     var pendingCourseId by remember { mutableStateOf<Long?>(null) }
     var pendingRepoId by remember { mutableStateOf<Long?>(null) }
+
     val unreadCount by notificationVm.unreadCount.collectAsStateWithLifecycle()
     val profileState by profileVm.state.collectAsStateWithLifecycle()
 
-    val navItemColors = NavigationBarItemDefaults.colors(
-        selectedIconColor = CosmicTheme.colors.plasma,
-        unselectedIconColor = CosmicTheme.colors.textTertiary,
-        indicatorColor = CosmicTheme.colors.plasma.copy(alpha = 0.1f)
+    val navigateToTopLevel: (String) -> Unit = { route ->
+        navController.navigate(route) {
+            popUpTo(navController.graph.findStartDestination().id) {
+                saveState = false
+            }
+            launchSingleTop = true
+            restoreState = false
+        }
+    }
+
+    val showBottomBar = currentRoute in listOf(
+        "dashboard", "subjects", "tutor", "plan", "community", "profile"
     )
 
     Box(modifier = Modifier.fillMaxSize()) {
         CosmicBackground {
             Scaffold(
                 bottomBar = {
-                    NavigationBar(
-                        containerColor = Color.Transparent,
-                        tonalElevation = 0.dp,
-                        modifier = Modifier.height(80.dp)
-                    ) {
-                        // 1. Dashboard (Hôm nay)
-                        NavigationBarItem(
-                            selected = currentScreen == Screen.Dashboard,
-                            onClick = { currentScreen = Screen.Dashboard; showPopup = false },
-                            icon = { Icon(Icons.Rounded.Home, contentDescription = "Hôm nay") },
-                            label = { Text("Hôm nay", fontSize = 10.sp) },
-                            colors = navItemColors
-                        )
-                        // 2. Subjects (Môn học)
-                        NavigationBarItem(
-                            selected = currentScreen == Screen.Subjects,
-                            onClick = { currentScreen = Screen.Subjects; showPopup = false },
-                            icon = { Icon(Icons.Rounded.Book, contentDescription = "Môn học") },
-                            label = { Text("Môn học", fontSize = 10.sp) },
-                            colors = navItemColors
-                        )
-                        // 3. Tutor (AI Tutor)
-                        NavigationBarItem(
-                            selected = currentScreen == Screen.Tutor,
-                            onClick = { currentScreen = Screen.Tutor; showPopup = false },
-                            icon = { Icon(Icons.Rounded.AutoAwesome, contentDescription = "AI Tutor") },
-                            label = { Text("AI Tutor", fontSize = 10.sp) },
-                            colors = navItemColors
-                        )
-                        // 4. Plan (Kế hoạch)
-                        NavigationBarItem(
-                            selected = currentScreen == Screen.Plan,
-                            onClick = { currentScreen = Screen.Plan; showPopup = false },
-                            icon = { Icon(Icons.Rounded.DateRange, contentDescription = "Kế hoạch") },
-                            label = { Text("Kế hoạch", fontSize = 10.sp) },
-                            colors = navItemColors
-                        )
-                        // 5. Community (Cộng đồng)
-                        NavigationBarItem(
-                            selected = currentScreen == Screen.Community,
-                            onClick = { currentScreen = Screen.Community; showPopup = false },
-                            icon = { Icon(Icons.Rounded.Chat, contentDescription = "Cộng đồng") },
-                            label = { Text("Cộng đồng", fontSize = 10.sp) },
-                            colors = navItemColors
-                        )
+                    if (showBottomBar) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .navigationBarsPadding()
+                                .padding(horizontal = 24.dp, vertical = 12.dp)
+                        ) {
+                            Surface(
+                                shape = RoundedCornerShape(24.dp),
+                                color = CosmicTheme.colors.nebula, // WarmWhite
+                                border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder),
+                                shadowElevation = 6.dp,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(64.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxSize(),
+                                    horizontalArrangement = Arrangement.SpaceEvenly,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    FloatingNavItem(
+                                        selected = currentRoute == "dashboard",
+                                        onClick = { navigateToTopLevel("dashboard") },
+                                        icon = Icons.Rounded.Home,
+                                        label = "Hôm nay"
+                                    )
+                                    FloatingNavItem(
+                                        selected = currentRoute == "subjects",
+                                        onClick = { navigateToTopLevel("subjects") },
+                                        icon = Icons.Rounded.Book,
+                                        label = "Môn học"
+                                    )
+                                    FloatingNavItem(
+                                        selected = currentRoute == "tutor",
+                                        onClick = { navigateToTopLevel("tutor") },
+                                        icon = Icons.Rounded.AutoAwesome,
+                                        label = "AI Tutor"
+                                    )
+                                    FloatingNavItem(
+                                        selected = currentRoute == "plan",
+                                        onClick = { navigateToTopLevel("plan") },
+                                        icon = Icons.Rounded.DateRange,
+                                        label = "Kế hoạch"
+                                    )
+                                     FloatingNavItem(
+                                        selected = currentRoute == "community",
+                                        onClick = { navigateToTopLevel("community") },
+                                        icon = Icons.AutoMirrored.Rounded.Chat,
+                                        label = "Cộng đồng"
+                                     )
+                                }
+                            }
+                        }
                     }
                 },
                 containerColor = Color.Transparent
@@ -136,75 +155,48 @@ fun MainScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(padding)
+                        .padding(bottom = if (showBottomBar) 88.dp else 0.dp)
                 ) {
-                    AnimatedContent(
-                        targetState = currentScreen,
-                        transitionSpec = {
-                            fadeIn(animationSpec = tween(200)).togetherWith(
-                                fadeOut(animationSpec = tween(150))
-                            )
-                        },
-                        label = "ScreenTransition"
-                    ) { screen ->
-                        when (screen) {
-                            Screen.Dashboard -> DashboardScreen(
+                    NavHost(
+                        navController = navController,
+                        startDestination = "dashboard",
+                        modifier = Modifier.fillMaxSize(),
+                        enterTransition = { fadeIn(animationSpec = tween(220)) },
+                        exitTransition = { fadeOut(animationSpec = tween(180)) },
+                        popEnterTransition = { fadeIn(animationSpec = tween(220)) },
+                        popExitTransition = { fadeOut(animationSpec = tween(180)) }
+                    ) {
+                        composable("dashboard") {
+                            DashboardScreen(
                                 onNavigateToCourse = { courseId ->
-                                    currentScreen = Screen.Subjects
-                                    showPopup = false
+                                    pendingCourseId = courseId
+                                    navController.navigate("subjects")
                                 },
                                 onNavigateToCreateTask = {
-                                    currentScreen = Screen.Plan
-                                    showPopup = false
+                                    navigateToTopLevel("plan")
                                 },
                                 onNavigateToTaskManagement = {
-                                    currentScreen = Screen.Plan
-                                    showPopup = false
+                                    navigateToTopLevel("plan")
                                 },
                                 onNavigateToGroupPlan = { planId ->
-                                    currentScreen = Screen.GroupPlanDetail(planId)
-                                    showPopup = false
+                                    navController.navigate("group_plan_detail/$planId")
                                 },
                                 onNavigateToNotifications = {
-                                    currentScreen = Screen.Notifications
-                                    showPopup = false
+                                    navController.navigate("notifications")
                                 },
                                 onNavigateToProfile = {
-                                    currentScreen = Screen.Profile
-                                    showPopup = false
+                                    navController.navigate("profile")
                                 },
                                 unreadCount = unreadCount,
-                                avatarUrl = profileState.avatar
+                                avatarUrl = profileState.avatar,
+                                showRegistrationOnboarding = showRegistrationOnboarding,
+                                onRegistrationOnboardingCompleted = onRegistrationOnboardingCompleted
                             )
-                            Screen.TaskManagement -> TaskManagementScreen(
-                                onNavigateBack = {
-                                    currentScreen = Screen.Dashboard
-                                },
-                                onNavigateToGroupPlan = { planId ->
-                                    currentScreen = Screen.GroupPlanDetail(planId)
-                                }
-                            )
-                            is Screen.GroupPlanDetail -> GroupPlanDetailScreen(
-                                planId = screen.planId,
-                                onNavigateBack = {
-                                    currentScreen = Screen.Plan
-                                },
-                                onNavigateLeave = {
-                                    currentScreen = Screen.Plan
-                                }
-                            )
-                            Screen.GroupPlanList -> GroupPlanListScreen(
-                                onNavigateToPlan = { planId ->
-                                    currentScreen = Screen.GroupPlanDetail(planId)
-                                },
-                                onNavigateBack = {
-                                    currentScreen = Screen.Dashboard
-                                }
-                            )
-                            Screen.Subjects -> CourseHubScreen(
+                        }
+                        composable("subjects") {
+                            CourseHubScreen(
                                 onCreatePlan = {
-                                    currentScreen = Screen.Plan
-                                    showPopup = false
+                                    navController.navigate("plan")
                                 },
                                 pendingCourseId = pendingCourseId,
                                 pendingRepoId = pendingRepoId,
@@ -213,111 +205,74 @@ fun MainScreen(
                                     pendingRepoId = null
                                 }
                             )
-                            Screen.Tutor -> SubjectQaScreen(viewModel = subjectQaVm)
-                            Screen.Plan -> TaskManagementScreen(
+                        }
+                        composable("tutor") {
+                            SubjectQaScreen(viewModel = subjectQaVm)
+                        }
+                        composable("plan") {
+                            BackHandler {
+                                navigateToTopLevel("dashboard")
+                            }
+                            TaskManagementScreen(
                                 onNavigateBack = {
-                                    currentScreen = Screen.Dashboard
+                                    navigateToTopLevel("dashboard")
                                 },
                                 onNavigateToGroupPlan = { planId ->
-                                    currentScreen = Screen.GroupPlanDetail(planId)
+                                    navController.navigate("group_plan_detail/$planId")
                                 }
                             )
-                            Screen.Knowledge -> KnowledgeTabView()
-                            Screen.Explore -> ExploreScreen()
-                            Screen.Notifications -> NotificationScreen(
+                        }
+                        composable("community") {
+                            CommunityScreen()
+                        }
+                        composable("notifications") {
+                            NotificationScreen(
                                 viewModel = notificationVm,
                                 onNavigateToGroupPlan = { planId ->
-                                    currentScreen = Screen.GroupPlanDetail(planId)
+                                    navController.navigate("group_plan_detail/$planId")
                                 }
                             )
-                            Screen.Profile -> ProfileScreen(
-                                onNavigateToDetail = { showProfileDetail = true },
+                        }
+                        composable("profile") {
+                            ProfileScreen(
+                                viewModel = profileVm,
+                                onNavigateToDetail = {
+                                    showProfileDetail = true
+                                },
                                 onBookmarkClick = { bookmark ->
-                                    currentScreen = Screen.Subjects
-                                    showPopup = false
                                     if (bookmark.targetType == "COURSE") {
                                         pendingCourseId = bookmark.targetId
                                     } else if (bookmark.targetType == "REPO") {
                                         pendingRepoId = bookmark.targetId
                                     }
+                                    navController.navigate("subjects")
                                 }
                             )
-                            Screen.Community -> CommunityScreen()
-                            else -> {}
                         }
-                    }
-                }
-            }
-        }
-
-        AnimatedVisibility(
-            visible = showPopup,
-            enter = scaleIn(
-                animationSpec = spring(dampingRatio = 0.7f, stiffness = 300f),
-                initialScale = 0.85f
-            ) + fadeIn(animationSpec = tween(200)),
-            exit = scaleOut(
-                animationSpec = tween(150),
-                targetScale = 0.85f
-            ) + fadeOut(animationSpec = tween(150)),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.55f))
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) { showPopup = false }
-            ) {
-                val screenWidthDp = LocalConfiguration.current.screenWidthDp
-                Card(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .offset(x = (-0.125f * screenWidthDp).dp)
-                        .padding(bottom = 88.dp)
-                        .widthIn(min = 200.dp, max = 260.dp)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) { },
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = CosmicTheme.colors.nebula
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    ) {
-                        PopupText("Môn học") {
-                            currentScreen = Screen.Subjects
-                            showPopup = false
+                        composable("group_plan_list") {
+                            GroupPlanListScreen(
+                                onNavigateToPlan = { planId ->
+                                    navController.navigate("group_plan_detail/$planId")
+                                },
+                                onNavigateBack = {
+                                    navController.popBackStack()
+                                }
+                            )
                         }
-                        HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            color = CosmicTheme.colors.glassBorder.copy(alpha = 0.3f)
-                        )
-                        PopupText("Khám phá") {
-                            currentScreen = Screen.Explore
-                            showPopup = false
-                        }
-                        HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            color = CosmicTheme.colors.glassBorder.copy(alpha = 0.3f)
-                        )
-                        PopupText("Kế hoạch nhóm") {
-                            currentScreen = Screen.GroupPlanList
-                            showPopup = false
-                        }
-                        HorizontalDivider(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            color = CosmicTheme.colors.glassBorder.copy(alpha = 0.3f)
-                        )
-                        PopupText("Kiến thức") {
-                            currentScreen = Screen.Knowledge
-                            showPopup = false
+                        composable(
+                            route = "group_plan_detail/{planId}",
+                            arguments = listOf(navArgument("planId") { type = NavType.LongType })
+                        ) { backStackEntry ->
+                            val planId = backStackEntry.arguments?.getLong("planId") ?: 0L
+                            GroupPlanDetailScreen(
+                                planId = planId,
+                                onNavigateBack = {
+                                    navController.popBackStack()
+                                },
+                                onNavigateLeave = {
+                                    navController.popBackStack()
+                                }
+                            )
                         }
                     }
                 }
@@ -326,33 +281,52 @@ fun MainScreen(
 
         // Profile detail overlay
         if (showProfileDetail) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.55f))
-            ) {
-                ProfileDetailScreen(
-                    onBack = { showProfileDetail = false }
-                )
-            }
+            ProfileDetailScreen(
+                viewModel = profileVm,
+                onBack = { showProfileDetail = false }
+            )
         }
-
     }
 }
 
 @Composable
-private fun PopupText(text: String, onClick: () -> Unit) {
-    Text(
-        text = text,
+private fun RowScope.FloatingNavItem(
+    selected: Boolean,
+    onClick: () -> Unit,
+    icon: ImageVector,
+    label: String
+) {
+    val activeColor = CosmicTheme.colors.plasma // UIT Blue
+    val inactiveColor = CosmicTheme.colors.textTertiary
+
+    Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 32.dp, vertical = 16.dp),
-        color = CosmicTheme.colors.textPrimary,
-        fontSize = 16.sp,
-        fontWeight = FontWeight.Medium,
-        textAlign = TextAlign.Center
-    )
+            .weight(1f)
+            .fillMaxHeight()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                tint = if (selected) activeColor else inactiveColor,
+                modifier = Modifier.size(22.dp)
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = label,
+                fontSize = 10.sp,
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+                color = if (selected) activeColor else inactiveColor
+            )
+        }
+    }
 }
-
-

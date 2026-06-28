@@ -18,6 +18,14 @@ data class SubjectQaResponse(
     val type: String? = null
 )
 
+data class SubjectQaStreamEventResponse(
+    val type: String,
+    val stage: String? = null,
+    val message: String? = null,
+    val content: String? = null,
+    val response: SubjectQaResponse? = null
+)
+
 data class RoadmapGenerationRequest(
     val learningGoals: String,
     val careerPath: String

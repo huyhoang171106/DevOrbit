@@ -61,7 +61,8 @@ public class OpenCodeAiService {
                         Map.of("role", "system", "content", systemPrompt),
                         Map.of("role", "user", "content", userMessage)
                     ),
-                    "temperature", 0.3
+                    "temperature", 0.3,
+                    "thinking", Map.of("type", "disabled")
                 );
 
                 Map<String, Object> response = webClient.post()
@@ -117,14 +118,14 @@ public class OpenCodeAiService {
         if (!aiConfig.isLlmEnabled()) {
             return Mono.just(generateOfflineFallback(userMessage));
         }
-
         Map<String, Object> requestBody = Map.of(
             "model", aiConfig.getModel(),
             "messages", List.of(
                 Map.of("role", "system", "content", systemPrompt),
                 Map.of("role", "user", "content", userMessage)
             ),
-            "temperature", 0.3
+            "temperature", 0.3,
+            "thinking", Map.of("type", "disabled")
         );
 
         return webClient.post()
@@ -170,7 +171,6 @@ public class OpenCodeAiService {
             log.debug("LLM not enabled, returning offline fallback as single delta");
             return Flux.just(generateOfflineFallback(userMessage));
         }
-
         Map<String, Object> requestBody = Map.of(
             "model", aiConfig.getModel(),
             "messages", List.of(
@@ -178,7 +178,8 @@ public class OpenCodeAiService {
                 Map.of("role", "user", "content", userMessage)
             ),
             "temperature", 0.3,
-            "stream", true
+            "stream", true,
+            "thinking", Map.of("type", "disabled")
         );
 
         // Streaming needs longer timeout — use 3x the base timeout for total stream

@@ -220,11 +220,18 @@ private fun CourseDetailLoading(
 }
 
 private val MAJOR_OPTIONS = listOf(
-    "SE" to "Kỹ thuật Phần mềm",
-    "CS" to "Khoa học Máy tính",
-    "DS" to "Khoa học Dữ liệu",
+    "IT" to "Công nghệ Thông tin",
     "IS" to "Hệ thống Thông tin",
-    "CE" to "Kỹ thuật Máy tính"
+    "CS" to "Khoa học Máy tính",
+    "SE" to "Kỹ thuật Phần mềm",
+    "AI" to "Trí tuệ Nhân tạo",
+    "CE" to "Kỹ thuật Máy tính",
+    "IC" to "Thiết kế Vi mạch",
+    "MM" to "Truyền thông Đa phương tiện",
+    "NT" to "Mạng máy tính",
+    "ATTT" to "An toàn Thông tin",
+    "EC" to "Thương mại Điện tử",
+    "DS" to "Khoa học Dữ liệu"
 )
 
 @Composable

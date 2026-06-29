@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collect
 import vn.edu.uit.devorbit.mobile.data.datastore.SettingsDataStore
 import vn.edu.uit.devorbit.mobile.data.repository.StreakTracker
+import vn.edu.uit.devorbit.mobile.data.local.CurriculumLoader
 import vn.edu.uit.devorbit.mobile.data.local.dao.SemesterCourseDao
 import vn.edu.uit.devorbit.mobile.data.local.entity.CourseEntity
 import vn.edu.uit.devorbit.mobile.data.local.entity.SemesterCourseEntity
@@ -43,7 +44,8 @@ class CourseViewModel @Inject constructor(
     private val bookmarkRepository: BookmarkRepository,
     private val streakTracker: StreakTracker,
     private val settingsDataStore: SettingsDataStore,
-    private val semesterCourseDao: SemesterCourseDao
+    private val semesterCourseDao: SemesterCourseDao,
+    private val curriculumLoader: CurriculumLoader
 ) : ViewModel() {
 
     val courses: StateFlow<List<CourseEntity>> = repository.allCourses
@@ -211,24 +213,62 @@ class CourseViewModel @Inject constructor(
     fun loadGraph(major: String? = null) {
         viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _graphLoading.value = true
+            _graphNodes.value = emptyList()
+            _graphLinks.value = emptyList()
+            _prerequisiteMap.value = emptyMap()
+            _semesterPlan.value = emptyMap()
+            _graphError.value = null
+            semesterCourseDao.clearAll()
+
             try {
                 val majorCode = major ?: _currentMajor.value
                 _currentMajor.value = majorCode
                 settingsDataStore.saveCurrentMajor(majorCode)
-                val kg = repository.getCourseGraph(majorCode)
-                _graphNodes.value = kg.nodes
-                _graphLinks.value = kg.links
-                _prerequisiteMap.value = buildPrerequisiteMap(kg.nodes, kg.links)
-                _graphError.value = null
-                _semesterPlan.value = kg.nodes
-                    .filter { it.semester != null && it.semester in 1..8 }
-                    .groupBy { it.semester!! }
-                    .toSortedMap()
-                semesterCourseDao.clearAll()
-                for (node in kg.nodes) {
-                    val sem = node.semester ?: continue
-                    if (sem !in 1..8) continue
-                    semesterCourseDao.addCourse(SemesterCourseEntity(courseId = node.id, semester = sem))
+
+                val curriculum = curriculumLoader.load(majorCode)
+                if (curriculum != null) {
+                    val courseMap = courses.value.associateBy { it.maMH }
+                    val plan = mutableMapOf<Int, MutableList<GraphNode>>()
+                    var nextId = -1L
+
+                    for (sd in curriculum.semesters) {
+                        val nodes = mutableListOf<GraphNode>()
+                        for (code in sd.courses) {
+                            val dbCourse = courseMap[code]
+                            val id = dbCourse?.id ?: nextId--
+                            val credits = if (dbCourse != null) dbCourse.credits else 0
+                            nodes.add(GraphNode(
+                                id = id,
+                                name = dbCourse?.tenMH ?: code,
+                                code = code,
+                                description = null,
+                                level = 0,
+                                impactScore = 0.0,
+                                semester = sd.semester
+                            ))
+                            if (dbCourse != null) {
+                                semesterCourseDao.addCourse(
+                                    SemesterCourseEntity(courseId = dbCourse.id, semester = sd.semester)
+                                )
+                            }
+                        }
+                        plan[sd.semester] = nodes
+                    }
+                    _semesterPlan.value = plan.toSortedMap()
+                } else {
+                    val kg = repository.getCourseGraph(majorCode)
+                    _graphNodes.value = kg.nodes
+                    _graphLinks.value = kg.links
+                    _prerequisiteMap.value = buildPrerequisiteMap(kg.nodes, kg.links)
+                    _semesterPlan.value = kg.nodes
+                        .filter { it.semester != null && it.semester in 1..8 }
+                        .groupBy { it.semester!! }
+                        .toSortedMap()
+                    for (node in kg.nodes) {
+                        val sem = node.semester ?: continue
+                        if (sem !in 1..8) continue
+                        semesterCourseDao.addCourse(SemesterCourseEntity(courseId = node.id, semester = sem))
+                    }
                 }
             } catch (e: Exception) {
                 _graphError.value = e.message ?: "Không thể tải kế hoạch"

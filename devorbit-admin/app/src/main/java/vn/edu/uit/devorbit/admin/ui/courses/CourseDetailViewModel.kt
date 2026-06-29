@@ -226,4 +226,22 @@ class CourseDetailViewModel @Inject constructor(
             )
         }
     }
+
+    fun deleteRepo(repoId: Long) {
+        viewModelScope.launch {
+            adminRepository.deleteRepo(repoId).fold(
+                onSuccess = { loadCourse(_state.value.courseId) },
+                onFailure = { _state.value = _state.value.copy(error = it.message) }
+            )
+        }
+    }
+
+    fun syncRepos(courseId: Long) {
+        viewModelScope.launch {
+            adminRepository.syncCourseRepos(courseId).fold(
+                onSuccess = { loadCourse(courseId) },
+                onFailure = { _state.value = _state.value.copy(error = it.message) }
+            )
+        }
+    }
 }

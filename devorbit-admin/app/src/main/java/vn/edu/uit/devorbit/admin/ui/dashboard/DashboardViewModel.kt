@@ -25,13 +25,15 @@ class DashboardViewModel @Inject constructor(
     private val _state = MutableStateFlow(DashboardUiState())
     val state: StateFlow<DashboardUiState> = _state.asStateFlow()
 
-    init { loadStats() }
+    init {
+        loadStats()
+    }
 
     fun loadStats() {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true, error = null)
             adminRepository.getStats().fold(
-                onSuccess = { _state.value = DashboardUiState(stats = it, isLoading = false) },
+                onSuccess = { _state.value = _state.value.copy(stats = it, isLoading = false) },
                 onFailure = { _state.value = _state.value.copy(isLoading = false, error = it.message) }
             )
         }

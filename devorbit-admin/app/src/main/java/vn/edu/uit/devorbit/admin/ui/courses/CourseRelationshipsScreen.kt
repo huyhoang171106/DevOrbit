@@ -30,6 +30,7 @@ fun CourseRelationshipsScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     var showCreateDialog by remember { mutableStateOf(false) }
     var deleteId by remember { mutableStateOf<Long?>(null) }
+    var searchQuery by remember { mutableStateOf("") }
 
     Column(Modifier.fillMaxSize()) {
         TopAppBar(
@@ -43,58 +44,76 @@ fun CourseRelationshipsScreen(
             colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
         )
 
+        val filtered = state.relationships.filter {
+            searchQuery.isBlank() ||
+            it.courseCode?.contains(searchQuery, ignoreCase = true) == true ||
+            it.courseName?.contains(searchQuery, ignoreCase = true) == true ||
+            it.relatedCourseCode?.contains(searchQuery, ignoreCase = true) == true ||
+            it.relatedCourseName?.contains(searchQuery, ignoreCase = true) == true
+        }
+        ObsidianSearchBar(
+            query = searchQuery,
+            onQueryChange = { searchQuery = it },
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            placeholder = "Tìm theo mã hoặc tên môn..."
+        )
         when {
             state.isLoading && state.relationships.isEmpty() -> ObsidianLoadingBox()
             state.relationships.isEmpty() -> ObsidianEmptyState(
                 message = "Chưa có quan hệ nào",
                 subtitle = "Nhấn + để thêm quan hệ giữa các môn học"
             )
+            filtered.isEmpty() -> ObsidianEmptyState(
+                message = "Không tìm thấy kết quả",
+                subtitle = "Thử từ khóa khác",
+                icon = Icons.Rounded.Search
+            )
             else -> {
-                LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(state.relationships, key = { it.id }) { rel ->
-                        Card(
-                            shape = ObsidianShape.md,
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                    LazyColumn(
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(filtered, key = { it.id }) { rel ->
+                            Card(
+                                shape = ObsidianShape.md,
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                             ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(rel.courseCode ?: "", style = ObsidianType.titleSmall, color = MaterialTheme.colorScheme.primary)
-                                        Spacer(Modifier.width(4.dp))
-                                        Text(rel.courseName ?: "", style = ObsidianType.bodySmall)
-                                    }
-                                    Spacer(Modifier.height(4.dp))
-                                    ObsidianBadge(
-                                        text = relationTypeLabel(rel.relationType),
-                                        color = when (rel.relationType) {
-                                            "PREREQUISITE" -> ObsidianPalette.Amber500
-                                            "COMPLEMENTARY" -> ObsidianPalette.Green500
-                                            "COREQUISITE" -> ObsidianPalette.Blue500
-                                            else -> MaterialTheme.colorScheme.primary
+                                Row(
+                                    modifier = Modifier.padding(16.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text(rel.courseCode ?: "", style = ObsidianType.titleSmall, color = MaterialTheme.colorScheme.primary)
+                                            Spacer(Modifier.width(4.dp))
+                                            Text(rel.courseName ?: "", style = ObsidianType.bodySmall)
                                         }
-                                    )
-                                    Spacer(Modifier.height(4.dp))
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(Icons.Rounded.ArrowForward, null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                                        Spacer(Modifier.width(4.dp))
-                                        Text(rel.relatedCourseCode ?: "", style = ObsidianType.titleSmall, color = MaterialTheme.colorScheme.primary)
-                                        Spacer(Modifier.width(4.dp))
-                                        Text(rel.relatedCourseName ?: "", style = ObsidianType.bodySmall)
+                                        Spacer(Modifier.height(4.dp))
+                                        ObsidianBadge(
+                                            text = relationTypeLabel(rel.relationType),
+                                            color = when (rel.relationType) {
+                                                "PREREQUISITE" -> ObsidianPalette.Amber500
+                                                "COMPLEMENTARY" -> ObsidianPalette.Green500
+                                                "COREQUISITE" -> ObsidianPalette.Blue500
+                                                else -> MaterialTheme.colorScheme.primary
+                                            }
+                                        )
+                                        Spacer(Modifier.height(4.dp))
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(Icons.Rounded.ArrowForward, null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                            Spacer(Modifier.width(4.dp))
+                                            Text(rel.relatedCourseCode ?: "", style = ObsidianType.titleSmall, color = MaterialTheme.colorScheme.primary)
+                                            Spacer(Modifier.width(4.dp))
+                                            Text(rel.relatedCourseName ?: "", style = ObsidianType.bodySmall)
+                                        }
                                     }
-                                }
-                                IconButton(onClick = { deleteId = rel.id }) {
-                                    Icon(Icons.Rounded.Delete, contentDescription = "Xoá", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
+                                    IconButton(onClick = { deleteId = rel.id }) {
+                                        Icon(Icons.Rounded.Delete, contentDescription = "Xoá", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
+                                    }
                                 }
                             }
                         }
                     }
-                }
             }
         }
     }
@@ -195,8 +214,8 @@ private fun CreateRelationshipDialog(
             Button(
                 onClick = { selectedSource?.let { s -> selectedTarget?.let { t -> onCreate(s, t, relationType) } } },
                 enabled = selectedSource != null && selectedTarget != null
-            ) { Text("Tạo") }
+            ) { ObsidianButtonText("Tạo") }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Huỷ") } }
+        dismissButton = { TextButton(onClick = onDismiss) { ObsidianButtonText("Huỷ") } }
     )
 }

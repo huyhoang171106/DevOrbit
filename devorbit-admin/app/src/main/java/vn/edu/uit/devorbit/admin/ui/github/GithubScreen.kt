@@ -1,5 +1,6 @@
 package vn.edu.uit.devorbit.admin.ui.github
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -27,7 +28,10 @@ fun GithubScreen(
     viewModel: GithubViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    var courseIdInput by remember { mutableStateOf("") }
+    var selectedCourseId by remember { mutableStateOf<Long?>(null) }
+    var selectedCourseName by remember { mutableStateOf("") }
+    var courseSearchQuery by remember { mutableStateOf("") }
+    var showCourseDropdown by remember { mutableStateOf(false) }
     var queryInput by remember { mutableStateOf("") }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -44,15 +48,14 @@ fun GithubScreen(
             action = {
                 Button(
                     onClick = {
-                        val courseId = courseIdInput.toLongOrNull() ?: return@Button
-                        if (queryInput.isNotBlank()) {
+                        val courseId = selectedCourseId
+                        if (courseId != null && queryInput.isNotBlank()) {
                             viewModel.scan(courseId, queryInput.trim())
                         }
                     },
                     enabled = !state.isScanning &&
-                        courseIdInput.isNotBlank() &&
+                        selectedCourseId != null &&
                         queryInput.isNotBlank(),
-                    shape = ObsidianShape.sm,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary
                     )
@@ -66,12 +69,13 @@ fun GithubScreen(
                     } else {
                         Icon(Icons.Rounded.Search, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(4.dp))
-                        Text("Quét", style = ObsidianType.labelMedium)
+                        ObsidianButtonText("Quét", style = ObsidianType.labelMedium)
                     }
                 }
             }
         )
 
+        // Course picker
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -79,17 +83,62 @@ fun GithubScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            OutlinedTextField(
-                value = courseIdInput,
-                onValueChange = { courseIdInput = it.filter { c -> c.isDigit() } },
-                label = { Text("Mã môn học") },
-                placeholder = { Text("123") },
-                modifier = Modifier.width(120.dp),
-                shape = ObsidianShape.sm,
-                textStyle = ObsidianType.bodyMedium,
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-            )
+            Box(modifier = Modifier.width(200.dp)) {
+                OutlinedTextField(
+                    value = if (selectedCourseId != null) selectedCourseName else courseSearchQuery,
+                    onValueChange = {
+                        courseSearchQuery = it
+                        selectedCourseId = null
+                        selectedCourseName = ""
+                        showCourseDropdown = true
+                    },
+                    label = { Text("Môn học") },
+                    placeholder = { Text("Tìm mã hoặc tên môn") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = ObsidianShape.sm,
+                    textStyle = ObsidianType.bodyMedium,
+                    singleLine = true,
+                    trailingIcon = {
+                        IconButton(onClick = { showCourseDropdown = !showCourseDropdown }) {
+                            Icon(Icons.Rounded.ArrowDropDown, contentDescription = null)
+                        }
+                    }
+                )
+                if (showCourseDropdown) {
+                    val filtered = state.courses.filter {
+                        courseSearchQuery.isBlank() ||
+                        it.code?.contains(courseSearchQuery, ignoreCase = true) == true ||
+                        it.name?.contains(courseSearchQuery, ignoreCase = true) == true
+                    }
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 200.dp)
+                            .padding(top = 4.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                        shape = ObsidianShape.sm
+                    ) {
+                        LazyColumn {
+                            items(filtered.take(20), key = { it.id }) { course ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            selectedCourseId = course.id
+                                            selectedCourseName = "${course.code ?: ""} - ${course.name ?: ""}"
+                                            courseSearchQuery = ""
+                                            showCourseDropdown = false
+                                        }
+                                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                                ) {
+                                    Text(course.code ?: "", style = ObsidianType.labelMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.width(60.dp))
+                                    Text(course.name ?: "", style = ObsidianType.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             OutlinedTextField(
                 value = queryInput,
                 onValueChange = { queryInput = it },
@@ -119,7 +168,8 @@ fun GithubScreen(
                 modifier = Modifier.weight(1f),
                 shape = ObsidianShape.sm,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = ObsidianPalette.Blue500
+                    containerColor = ObsidianPalette.Blue500,
+                    contentColor = androidx.compose.ui.graphics.Color.White
                 )
             ) {
                 if (state.isScanning) {
@@ -129,11 +179,11 @@ fun GithubScreen(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                     Spacer(Modifier.width(8.dp))
-                    Text("Đang quét...", style = ObsidianType.labelMedium)
+                    ObsidianButtonText("Đang quét...", style = ObsidianType.labelMedium)
                 } else {
                     Icon(Icons.Rounded.PlayArrow, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(6.dp))
-                    Text("Quét tất cả", style = ObsidianType.labelMedium)
+                    ObsidianButtonText("Quét tất cả", style = ObsidianType.labelMedium)
                 }
             }
 
@@ -147,7 +197,7 @@ fun GithubScreen(
             ) {
                 Icon(Icons.Rounded.DeleteSweep, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(4.dp))
-                Text("Xoá log", style = ObsidianType.labelMedium)
+                ObsidianButtonText("Xoá log", style = ObsidianType.labelMedium)
             }
         }
 

@@ -1,6 +1,7 @@
 package vn.edu.uit.devorbit_api.controller;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -74,7 +75,7 @@ class PublicCourseControllerTest {
         var graphLinks = List.of(
             new KnowledgeGraphResponse.GraphLink(1L, 2L, CourseRelationType.PREREQUISITE)
         );
-        when(knowledgeGraphService.getGraph()).thenReturn(
+        when(knowledgeGraphService.getGraph(ArgumentMatchers.isNull())).thenReturn(
             new KnowledgeGraphResponse(graphNodes, graphLinks)
         );
 

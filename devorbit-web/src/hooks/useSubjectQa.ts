@@ -81,12 +81,29 @@ export async function streamSubjectQa(
 
     if (!response.ok) {
         const body = await response.text().catch(() => '')
-        let message = body || `Yêu cầu thất bại (${response.status})`
+        const knownErrors: Record<string, string> = {
+            'Invalid username or password': 'Sai tên đăng nhập hoặc mật khẩu',
+            'Refresh token has already been used': 'Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại',
+            'Internal server error': 'Máy chủ gặp lỗi, vui lòng thử lại sau',
+        }
+        const statusMessages: Record<number, string> = {
+            400: 'Dữ liệu gửi lên không hợp lệ',
+            401: 'Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại',
+            403: 'Bạn không có quyền thực hiện thao tác này',
+            404: 'Không tìm thấy dữ liệu yêu cầu',
+            429: 'Quá nhiều yêu cầu, vui lòng thử lại sau',
+            500: 'Máy chủ gặp lỗi, vui lòng thử lại sau',
+        }
+        let message: string
         try {
             const parsed = JSON.parse(body)
-            if (parsed.error) message = parsed.error
-            if (parsed.detail) message = parsed.detail
-        } catch {}
+            const raw = parsed.error || parsed.detail || body
+            message = knownErrors[raw] || raw
+        } catch {
+            message = body
+                ? (body.length < 200 ? body : 'Máy chủ trả về lỗi, vui lòng thử lại sau')
+                : (statusMessages[response.status] || `Yêu cầu thất bại (mã lỗi ${response.status})`)
+        }
         throw new Error(message)
     }
 

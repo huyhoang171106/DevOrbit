@@ -8,7 +8,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Person
-import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -40,16 +39,6 @@ fun StudentsScreen(
             title = "Sinh viên",
             subtitle = if (!state.isLoading && state.students.isNotEmpty())
                 "${state.students.size} sinh viên" else null,
-            actions = {
-                IconButton(onClick = { viewModel.loadStudents() }) {
-                    Icon(
-                        Icons.Rounded.Refresh,
-                        contentDescription = "Làm mới",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
         )
 
         ObsidianDivider()

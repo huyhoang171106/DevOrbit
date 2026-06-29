@@ -37,24 +37,6 @@ fun CourseDetailScreen(
         TopAppBar(
             title = { Text(state.course?.name ?: "Chi tiết môn học", style = ObsidianType.headlineSmall) },
             navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Rounded.ArrowBack, contentDescription = "Quay lại") } },
-            actions = {
-                state.course?.let { course ->
-                    var showEditDialog by remember { mutableStateOf(false) }
-                    IconButton(onClick = { showEditDialog = true }) {
-                        Icon(Icons.Rounded.Edit, contentDescription = "Sửa")
-                    }
-                    if (showEditDialog) {
-                        EditCourseDialog(
-                            course = course,
-                            onDismiss = { showEditDialog = false },
-                            onSave = { request ->
-                                viewModel.updateCourse(request)
-                                showEditDialog = false
-                            }
-                        )
-                    }
-                }
-            },
             colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
         )
 
@@ -63,7 +45,7 @@ fun CourseDetailScreen(
             state.error != null -> ObsidianEmptyState(message = state.error!!, icon = Icons.Rounded.Warning)
             state.course != null -> {
                 val course = state.course!!
-                val tabs = listOf("Thông tin", "Hướng dẫn", "Danh sách phát", "Bài viết")
+                val tabs = listOf("Thông tin", "Kho repo")
 
                 TabRow(selectedTabIndex = state.selectedTab) {
                     tabs.forEachIndexed { i, title ->
@@ -72,55 +54,35 @@ fun CourseDetailScreen(
                 }
 
                 when (state.selectedTab) {
-                    0 -> CourseInfoTab(course)
-                    1 -> ResourcesTab(
-                        items = state.tutorials,
-                        itemLabel = { it.title },
-                        itemSubtitle = { it.description },
-                        itemField2 = { it.url },
-                        onAdd = { /* tutorial dialog */ },
-                        onEdit = { item, title, url -> viewModel.updateTutorial(item, title, url) },
-                        onDelete = { viewModel.deleteTutorial(it.id) },
-                        addDialogTitle = "Thêm hướng dẫn",
-                        addLabel1 = "Tiêu đề",
-                        addLabel2 = "URL",
-                        addFn = { t, u -> viewModel.addTutorial(t, u) },
-                        editDialogTitle = "Sửa hướng dẫn",
-                        editLabel1 = "Tiêu đề",
-                        editLabel2 = "URL"
-                    )
-                    2 -> ResourcesTab(
-                        items = state.playlists,
-                        itemLabel = { it.title },
-                        itemSubtitle = { it.channelName },
-                        itemField2 = { it.url },
-                        onAdd = { /* playlist dialog */ },
-                        onEdit = { item, title, url -> viewModel.updatePlaylist(item, title, url) },
-                        onDelete = { viewModel.deletePlaylist(it.id) },
-                        addDialogTitle = "Thêm danh sách phát",
-                        addLabel1 = "Tiêu đề",
-                        addLabel2 = "URL",
-                        addFn = { t, u -> viewModel.addPlaylist(t, u) },
-                        editDialogTitle = "Sửa danh sách phát",
-                        editLabel1 = "Tiêu đề",
-                        editLabel2 = "URL"
-                    )
-                    3 -> ResourcesTab(
-                        items = state.articles,
-                        itemLabel = { it.title },
-                        itemSubtitle = { it.author },
-                        itemField2 = { it.url },
-                        onAdd = { /* article dialog */ },
-                        onEdit = { item, title, url -> viewModel.updateArticle(item, title, url) },
-                        onDelete = { viewModel.deleteArticle(it.id) },
-                        addDialogTitle = "Thêm bài viết",
-                        addLabel1 = "Tiêu đề",
-                        addLabel2 = "URL",
-                        addFn = { t, u -> viewModel.addArticle(t, u) },
-                        editDialogTitle = "Sửa bài viết",
-                        editLabel1 = "Tiêu đề",
-                        editLabel2 = "URL"
-                    )
+                    0 -> CourseInfoTab(course, onEdit = { viewModel.updateCourse(it) })
+                    1 -> {
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                                horizontalArrangement = Arrangement.End
+                            ) {
+                                IconButton(onClick = { viewModel.syncRepos(courseId) }) {
+                                    Icon(Icons.Rounded.Refresh, contentDescription = "Đồng bộ repo")
+                                }
+                            }
+                            LazyColumn(contentPadding = PaddingValues(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                items(course.repos, key = { it.id }) { repo ->
+                                    Card(shape = ObsidianShape.sm, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+                                        Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Text(repo.displayName, style = ObsidianType.titleSmall)
+                                                repo.primaryLanguage?.let { ObsidianBadge(text = it, modifier = Modifier.padding(top = 4.dp)) }
+                                            }
+                                            repo.stars?.let { Text("$it ★", style = ObsidianType.labelSmall, color = ObsidianPalette.Amber500) }
+                                            IconButton(onClick = { viewModel.deleteRepo(repo.id) }) {
+                                                Icon(Icons.Rounded.Delete, contentDescription = "Xóa repo", tint = MaterialTheme.colorScheme.error)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -128,7 +90,8 @@ fun CourseDetailScreen(
 }
 
 @Composable
-private fun CourseInfoTab(course: CourseDetailResponse) {
+private fun CourseInfoTab(course: CourseDetailResponse, onEdit: (AdminCourseUpsertRequest) -> Unit) {
+    var showEditDialog by remember { mutableStateOf(false) }
     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         item {
             Card(shape = ObsidianShape.md, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
@@ -143,25 +106,23 @@ private fun CourseInfoTab(course: CourseDetailResponse) {
                     ObsidianDataRow(label = "Trạng thái", value = if (course.isOpen) "Đang mở" else "Đã đóng")
                 }
             }
-        }
-
-        if (course.repos.isNotEmpty()) {
-            item {
-                Spacer(Modifier.height(8.dp))
-                ObsidianSectionHeader(title = "Kho liên kết (${course.repos.size})")
-            }
-            items(course.repos, key = { it.id }) { repo ->
-                Card(shape = ObsidianShape.sm, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
-                    Row(modifier = Modifier.padding(12.dp)) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(repo.displayName, style = ObsidianType.titleSmall)
-                            repo.primaryLanguage?.let { ObsidianBadge(text = it, modifier = Modifier.padding(top = 4.dp)) }
-                        }
-                        repo.stars?.let { Text("$it ★", style = ObsidianType.labelSmall, color = ObsidianPalette.Amber500) }
-                    }
+            Spacer(Modifier.height(8.dp))
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                IconButton(onClick = { showEditDialog = true }) {
+                    Icon(Icons.Rounded.Edit, contentDescription = "Sửa")
                 }
             }
         }
+    }
+    if (showEditDialog) {
+        EditCourseDialog(
+            course = course,
+            onDismiss = { showEditDialog = false },
+            onSave = { request ->
+                onEdit(request)
+                showEditDialog = false
+            }
+        )
     }
 }
 
@@ -239,8 +200,8 @@ private fun <T> ResourcesTab(
                     OutlinedTextField(value = editV2, onValueChange = { editV2 = it }, label = { Text(editLabel2) }, singleLine = true, shape = ObsidianShape.sm, textStyle = ObsidianType.bodyMedium)
                 }
             },
-            confirmButton = { Button(onClick = { onEdit?.invoke(item, editV1, editV2); editItem = null }, enabled = editV1.isNotBlank() && editV2.isNotBlank()) { Text("Lưu") } },
-            dismissButton = { TextButton(onClick = { editItem = null }) { Text("Huỷ") } }
+            confirmButton = { Button(onClick = { onEdit?.invoke(item, editV1, editV2); editItem = null }, enabled = editV1.isNotBlank() && editV2.isNotBlank()) { ObsidianButtonText("Lưu") } },
+            dismissButton = { TextButton(onClick = { editItem = null }) { ObsidianButtonText("Huỷ") } }
         )
     }
 
@@ -326,9 +287,9 @@ private fun EditCourseDialog(
                     )
                 },
                 enabled = code.isNotBlank() && name.isNotBlank()
-            ) { Text("Lưu") }
+            ) { ObsidianButtonText("Lưu") }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Huỷ") } }
+        dismissButton = { TextButton(onClick = onDismiss) { ObsidianButtonText("Huỷ") } }
     )
 }
 
@@ -352,7 +313,7 @@ private fun AddResourceDialog(
                 OutlinedTextField(value = v2, onValueChange = { v2 = it }, label = { Text(label2) }, singleLine = true, shape = ObsidianShape.sm, textStyle = ObsidianType.bodyMedium)
             }
         },
-        confirmButton = { Button(onClick = { onSubmit(v1, v2) }, enabled = v1.isNotBlank() && v2.isNotBlank()) { Text("Thêm") } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Huỷ") } }
+        confirmButton = { Button(onClick = { onSubmit(v1, v2) }, enabled = v1.isNotBlank() && v2.isNotBlank()) { ObsidianButtonText("Thêm") } },
+        dismissButton = { TextButton(onClick = onDismiss) { ObsidianButtonText("Huỷ") } }
     )
 }

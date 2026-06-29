@@ -40,10 +40,10 @@ class CoursesViewModel @Inject constructor(
         }
     }
 
-    fun deleteCourse(id: Long) {
+    fun deleteCourse(id: Long, onSuccess: (() -> Unit)? = null) {
         viewModelScope.launch {
             adminRepository.deleteCourse(id).fold(
-                onSuccess = { loadCourses() },
+                onSuccess = { loadCourses(); onSuccess?.invoke() },
                 onFailure = { _state.value = _state.value.copy(error = it.message) }
             )
         }

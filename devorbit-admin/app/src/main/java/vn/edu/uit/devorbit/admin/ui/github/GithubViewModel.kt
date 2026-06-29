@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import vn.edu.uit.devorbit.admin.data.remote.dto.CourseSummaryResponse
 import vn.edu.uit.devorbit.admin.data.remote.dto.GithubScanRequest
 import vn.edu.uit.devorbit.admin.data.remote.dto.RepoCandidateResponse
 import vn.edu.uit.devorbit.admin.domain.repository.AdminRepository
@@ -15,6 +16,7 @@ import javax.inject.Inject
 data class GithubUiState(
     val scanLogs: List<String> = emptyList(),
     val scanResult: List<RepoCandidateResponse>? = null,
+    val courses: List<CourseSummaryResponse> = emptyList(),
     val isLoading: Boolean = false,
     val isScanning: Boolean = false,
     val error: String? = null,
@@ -29,7 +31,15 @@ class GithubViewModel @Inject constructor(
     private val _state = MutableStateFlow(GithubUiState())
     val state: StateFlow<GithubUiState> = _state.asStateFlow()
 
-    init { loadLogs() }
+    init {
+        loadLogs()
+        loadCourses()
+    }
+    private fun loadCourses() {
+        viewModelScope.launch {
+            adminRepository.getAllCourses().onSuccess { _state.value = _state.value.copy(courses = it) }
+        }
+    }
 
     private fun loadLogs() {
         viewModelScope.launch {

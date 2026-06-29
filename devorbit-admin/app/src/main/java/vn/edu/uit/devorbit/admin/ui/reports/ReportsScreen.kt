@@ -25,23 +25,34 @@ fun ReportsScreen(
     viewModel: ReportsViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-
+    var selectedTab by remember { mutableIntStateOf(0) }
+    val tabs = listOf("Top yêu thích", "Top lượt xem")
     Column(Modifier.fillMaxSize()) {
         ObsidianPageHeader(
             title = "Báo cáo",
-            subtitle = "Top kho theo lượt yêu thích và lượt xem",
-            actions = {
-                IconButton(onClick = { viewModel.loadStats() }) {
-                    Icon(
-                        Icons.Rounded.Refresh,
-                        contentDescription = "Làm mới",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
+            subtitle = tabs[selectedTab]
         )
 
+        TabRow(
+            selectedTabIndex = selectedTab,
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.primary,
+            divider = { ObsidianDivider() }
+        ) {
+            tabs.forEachIndexed { index, title ->
+                Tab(
+                    selected = selectedTab == index,
+                    onClick = { selectedTab = index },
+                    text = {
+                        Text(
+                            title,
+                            style = if (selectedTab == index) ObsidianType.labelLarge else ObsidianType.bodyMedium,
+                            color = if (selectedTab == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                )
+            }
+        }
         when {
             state.isLoading -> ObsidianLoadingBox(modifier = Modifier.weight(1f))
             state.error != null -> ObsidianEmptyState(
@@ -51,41 +62,31 @@ fun ReportsScreen(
             )
             state.stats != null -> {
                 val stats = state.stats!!
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    // ── Top Favorited ───────────────────────────────────
-                    item {
-                        Text(
-                            "Top yêu thích",
-                            style = ObsidianType.titleMedium,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                    if (stats.topFavoritedRepos.isEmpty()) {
-                        item { ObsidianEmptyState(message = "Chưa có dữ liệu", icon = Icons.Rounded.FavoriteBorder) }
-                    } else {
-                        items(stats.topFavoritedRepos, key = { "fav-${it.repoId}" }) { repo ->
-                            RepoStatsCard(repo, rank = stats.topFavoritedRepos.indexOf(repo) + 1, metricLabel = "Yêu thích", metricValue = "${repo.bookmarkCount}")
+                when (selectedTab) {
+                    0 -> LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        if (stats.topFavoritedRepos.isEmpty()) {
+                            item { ObsidianEmptyState(message = "Chưa có dữ liệu", icon = Icons.Rounded.FavoriteBorder) }
+                        } else {
+                            items(stats.topFavoritedRepos, key = { "fav-${it.repoId}" }) { repo ->
+                                RepoStatsCard(repo, rank = stats.topFavoritedRepos.indexOf(repo) + 1, metricLabel = "Yêu thích", metricValue = "${repo.bookmarkCount}")
+                            }
                         }
                     }
-
-                    // ── Top Viewed ──────────────────────────────────────
-                    item {
-                        Spacer(Modifier.height(8.dp))
-                        Text(
-                            "Top lượt xem",
-                            style = ObsidianType.titleMedium,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                    if (stats.topViewedRepos.isEmpty()) {
-                        item { ObsidianEmptyState(message = "Chưa có dữ liệu", icon = Icons.Rounded.Visibility) }
-                    } else {
-                        items(stats.topViewedRepos, key = { "view-${it.repoId}" }) { repo ->
-                            RepoStatsCard(repo, rank = stats.topViewedRepos.indexOf(repo) + 1, metricLabel = "Lượt xem", metricValue = "${repo.viewCount}")
+                    1 -> LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        if (stats.topViewedRepos.isEmpty()) {
+                            item { ObsidianEmptyState(message = "Chưa có dữ liệu", icon = Icons.Rounded.Visibility) }
+                        } else {
+                            items(stats.topViewedRepos, key = { "view-${it.repoId}" }) { repo ->
+                                RepoStatsCard(repo, rank = stats.topViewedRepos.indexOf(repo) + 1, metricLabel = "Lượt xem", metricValue = "${repo.viewCount}")
+                            }
                         }
                     }
                 }

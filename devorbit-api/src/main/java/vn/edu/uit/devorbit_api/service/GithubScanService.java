@@ -298,29 +298,31 @@ public class GithubScanService {
 
     public JsonNode fetchRepoMetadata(String owner, String repo) {
         try {
-            return webClient.get()
+            String json = webClient.get()
                 .uri("/repos/{owner}/{repo}", owner, repo)
                 .retrieve()
-                .bodyToMono(JsonNode.class)
+                .bodyToMono(String.class)
                 .block(Duration.ofSeconds(8));
+            return json != null ? objectMapper.readTree(json) : null;
         } catch (Exception ignored) {
             return null;
         }
     }
-
     private String fetchLatestCommitDate(String owner, String repo, String defaultBranch) {
         try {
             String commitsPath = "/repos/" + owner + "/" + repo + "/commits"
                 + (defaultBranch != null && !defaultBranch.isBlank()
                     ? "?sha=" + URLEncoder.encode(defaultBranch, StandardCharsets.UTF_8) + "&per_page=1"
                     : "?per_page=1");
-            JsonNode commits = webClient.get()
+            String json = webClient.get()
                 .uri(commitsPath)
                 .retrieve()
-                .bodyToMono(JsonNode.class)
+                .bodyToMono(String.class)
                 .block(Duration.ofSeconds(8));
+            if (json == null) return null;
+            JsonNode commits = objectMapper.readTree(json);
 
-            if (commits == null || !commits.isArray() || commits.size() == 0) return null;
+            if (!commits.isArray() || commits.size() == 0) return null;
             JsonNode commit = commits.get(0).path("commit");
             String committerDate = readText(commit.path("committer"), "date");
             if (committerDate != null) return committerDate;
@@ -338,14 +340,16 @@ public class GithubScanService {
 
     private String fetchReadmeExcerpt(String owner, String repo) {
         try {
-            String readme = webClient.get()
+            String json = webClient.get()
                     .uri("/repos/{owner}/{repo}/readme", owner, repo)
                     .retrieve()
-                    .bodyToMono(JsonNode.class)
-                    .map(node -> node.path("content").asText(null))
+                    .bodyToMono(String.class)
                     .block(Duration.ofSeconds(5));
-            if (readme == null || readme.isBlank()) return null;
-            String decoded = new String(java.util.Base64.getMimeDecoder().decode(readme))
+            if (json == null) return null;
+            JsonNode node = objectMapper.readTree(json);
+            String content = node.path("content").asText(null);
+            if (content == null || content.isBlank()) return null;
+            String decoded = new String(java.util.Base64.getMimeDecoder().decode(content))
                 .replaceAll("\\s+", " ")
                 .trim();
             return truncate(decoded, MAX_README_EXCERPT_LENGTH);
@@ -356,17 +360,19 @@ public class GithubScanService {
 
     private String fetchFileTree(String owner, String repo) {
         try {
-            JsonNode root = webClient.get()
+            String json = webClient.get()
                 .uri(uriBuilder -> uriBuilder
                     .path("/repos/{owner}/{repo}/git/trees/HEAD")
                     .queryParam("recursive", 1)
                     .build(owner, repo))
                 .retrieve()
-                .bodyToMono(JsonNode.class)
+                .bodyToMono(String.class)
                 .block(Duration.ofSeconds(8));
+            if (json == null) return null;
+            JsonNode root = objectMapper.readTree(json);
 
-            JsonNode tree = root == null ? null : root.path("tree");
-            if (tree == null || !tree.isArray()) return null;
+            JsonNode tree = root.path("tree");
+            if (!tree.isArray()) return null;
 
             List<String> paths = StreamSupport.stream(tree.spliterator(), false)
                 .map(node -> node.path("path").asText(null))

@@ -44,12 +44,25 @@ fun AutoApprovalScreen(viewModel: AutoApprovalViewModel = hiltViewModel()) {
                     }
                     Text("03:00 UTC · Thứ Bảy hàng tuần", style = ObsidianType.bodyMedium)
                     Text("Repo không có bằng chứng UIT vẫn nằm ở Duyệt kho để xử lý thủ công.", style = ObsidianType.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Button(onClick = viewModel::runNow, enabled = !state.running) {
-                        if (state.running) CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
-                        else Text("Chạy duyệt tự động ngay")
+                    Button(
+                        onClick = viewModel::runNow,
+                        enabled = !state.running,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                            disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                            disabledContentColor = MaterialTheme.colorScheme.onPrimary
+                        )
+                    ) {
+                        if (state.running) CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
+                        else ObsidianButtonText("Chạy duyệt tự động ngay", style = ObsidianType.labelMedium)
                     }
                     state.lastRun?.let {
-                        Text("Đã kiểm tra ${it.checked}, duyệt ${it.approved}, chờ tay ${it.leftForManualReview}", style = ObsidianType.labelMedium)
+                        Text(
+                            "Đã kiểm tra ${it.checked}, duyệt ${it.approved}, chờ tay ${it.leftForManualReview}",
+                            style = ObsidianType.labelMedium,
+                            color = TextPrimary
+                        )
                     }
                 }
             }

@@ -80,7 +80,19 @@ export function StudentProfilePage() {
       
       if (!response.ok) {
         const body = await response.json().catch(() => ({}))
-        throw new Error(body.error || `Tải lên thất bại (${response.status})`)
+        const knownErrors: Record<string, string> = {
+          'Invalid username or password': 'Sai tên đăng nhập hoặc mật khẩu',
+          'Internal server error': 'Máy chủ gặp lỗi, vui lòng thử lại sau',
+        }
+        const statusMessages: Record<number, string> = {
+          401: 'Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại',
+          403: 'Bạn không có quyền thực hiện thao tác này',
+          404: 'Không tìm thấy dữ liệu',
+          413: 'Dữ liệu tải lên quá lớn',
+          500: 'Máy chủ gặp lỗi, vui lòng thử lại sau',
+        }
+        const raw = body.error || body.detail || ''
+        throw new Error(knownErrors[raw] || raw || statusMessages[response.status] || `Tải lên thất bại (mã lỗi ${response.status})`)
       }
       
       const updated = await response.json()

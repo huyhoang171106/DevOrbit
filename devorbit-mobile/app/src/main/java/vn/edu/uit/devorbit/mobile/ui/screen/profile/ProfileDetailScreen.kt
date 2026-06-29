@@ -282,7 +282,10 @@ fun ProfileDetailScreen(
                         .fillMaxWidth()
                         .height(48.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = CosmicTheme.colors.plasma)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = CosmicTheme.colors.plasma,
+                        contentColor = CosmicTheme.colors.void
+                    )
                 ) {
                     if (state.isUpdatingName || state.isChangingPassword) {
                         CircularProgressIndicator(

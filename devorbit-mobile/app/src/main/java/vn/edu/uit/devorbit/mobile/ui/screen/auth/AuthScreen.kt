@@ -193,7 +193,10 @@ private fun LoginForm(
             enabled = !state.isLoading,
             modifier = Modifier.fillMaxWidth().height(50.dp),
             shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = CosmicTheme.colors.plasma)
+            colors = ButtonDefaults.buttonColors(
+                containerColor = CosmicTheme.colors.plasma,
+                contentColor = CosmicTheme.colors.void
+            )
         ) {
             if (state.isLoading) {
                 CircularProgressIndicator(
@@ -311,7 +314,10 @@ private fun RegisterForm(
             enabled = !state.isLoading,
             modifier = Modifier.fillMaxWidth().height(50.dp),
             shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = CosmicTheme.colors.plasma)
+            colors = ButtonDefaults.buttonColors(
+                containerColor = CosmicTheme.colors.plasma,
+                contentColor = CosmicTheme.colors.void
+            )
         ) {
             if (state.isLoading) {
                 CircularProgressIndicator(
@@ -393,7 +399,10 @@ private fun RegisterOtpForm(
             enabled = !state.isLoading && state.otpDigits.joinToString("").length == 6,
             modifier = Modifier.fillMaxWidth().height(50.dp),
             shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = CosmicTheme.colors.plasma)
+            colors = ButtonDefaults.buttonColors(
+                containerColor = CosmicTheme.colors.plasma,
+                contentColor = CosmicTheme.colors.void
+            )
         ) {
             if (state.isLoading) {
                 CircularProgressIndicator(
@@ -452,7 +461,10 @@ private fun ForgotForm(
             enabled = !state.isLoading,
             modifier = Modifier.fillMaxWidth().height(50.dp),
             shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = CosmicTheme.colors.plasma)
+            colors = ButtonDefaults.buttonColors(
+                containerColor = CosmicTheme.colors.plasma,
+                contentColor = CosmicTheme.colors.void
+            )
         ) {
             if (state.isLoading) {
                 CircularProgressIndicator(
@@ -545,7 +557,10 @@ private fun ResetForm(
             enabled = !state.isLoading && state.otpDigits.joinToString("").length == 6,
             modifier = Modifier.fillMaxWidth().height(50.dp),
             shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = CosmicTheme.colors.plasma)
+            colors = ButtonDefaults.buttonColors(
+                containerColor = CosmicTheme.colors.plasma,
+                contentColor = CosmicTheme.colors.void
+            )
         ) {
             if (state.isLoading) {
                 CircularProgressIndicator(
@@ -576,7 +591,10 @@ private fun RegisterSuccess(onSwitchToLogin: () -> Unit) {
             onClick = onSwitchToLogin,
             modifier = Modifier.fillMaxWidth().height(50.dp),
             shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = CosmicTheme.colors.plasma)
+            colors = ButtonDefaults.buttonColors(
+                containerColor = CosmicTheme.colors.plasma,
+                contentColor = CosmicTheme.colors.void
+            )
         ) {
             Text("Đăng nhập", fontWeight = FontWeight.Bold, fontSize = 15.sp)
         }

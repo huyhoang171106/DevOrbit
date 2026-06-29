@@ -41,7 +41,7 @@ public class AdminStatsResponse {
     /** Total number of registered students on the platform. */
     private long totalStudents;
 
-    /** Total number of courses in the system (active + inactive). */
+    /** Total number of active (open) courses in the system. */
     private long totalCourses;
 
     /** Total number of approved GitHub repositories. */

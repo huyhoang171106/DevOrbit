@@ -30,7 +30,7 @@ fun CommunityScreen(
     viewModel: CommunityViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val tabs = listOf("Kênh", "Tin nhắn", "Hỗ trợ")
+    val tabs = listOf("Kênh", "Tin nhắn", "AI Chat")
     var sessionDetail by remember { mutableStateOf<ChatSessionAdminResponse?>(null) }
 
     Column(Modifier.fillMaxSize()) {
@@ -59,7 +59,10 @@ fun CommunityScreen(
             tabs.forEachIndexed { index, title ->
                 Tab(
                     selected = state.selectedTab == index,
-                    onClick = { viewModel.selectTab(index) },
+                    onClick = {
+                        if (index == 1 && state.selectedChannel != null) viewModel.selectChannel(null)
+                        viewModel.selectTab(index)
+                    },
                     text = {
                         Text(
                             title,
@@ -84,9 +87,17 @@ fun CommunityScreen(
                 icon = Icons.Rounded.Chat
             )
             else -> when (state.selectedTab) {
-                0 -> ChannelsTab(state.channels)
+                0 -> ChannelsTab(
+                    channels = state.channels,
+                    messages = state.messages,
+                    onChannelClick = { name ->
+                        viewModel.selectChannel(name)
+                        viewModel.selectTab(1)
+                    }
+                )
                 1 -> MessagesTab(
                     messages = state.messages,
+                    selectedChannel = state.selectedChannel,
                     onDelete = viewModel::deleteMessage
                 )
                 2 -> ChatSessionsTab(
@@ -115,72 +126,91 @@ fun CommunityScreen(
 // ══════════════════════════════════════════════════════════════════════════════
 // CHANNELS TAB
 // ══════════════════════════════════════════════════════════════════════════════
-
 @Composable
-private fun ChannelsTab(channels: List<ChatChannel>) {
-    if (channels.isEmpty()) {
-        ObsidianEmptyState(
-            message = "Không có kênh nào",
-            subtitle = "Kênh sẽ xuất hiện khi được tạo từ hệ thống",
-            icon = Icons.Rounded.Forum
+private fun ChannelsTab(channels: List<ChatChannel>, messages: List<CommunityMessageAdminResponse>, onChannelClick: (String) -> Unit) {
+    var searchQuery by remember { mutableStateOf("") }
+    val messageCountMap = messages.groupingBy { it.channelName }.eachCount()
+    val filtered = channels.filter {
+        searchQuery.isBlank() || it.name?.contains(searchQuery, ignoreCase = true) == true
+    }.sortedByDescending { messageCountMap[it.name] ?: 0 }
+    Column(Modifier.fillMaxSize()) {
+        ObsidianSearchBar(
+            query = searchQuery,
+            onQueryChange = { searchQuery = it },
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            placeholder = "Tìm kênh..."
         )
-    } else {
-        LazyColumn(
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(channels, key = { it.id }) { channel ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = ObsidianShape.md,
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+        if (filtered.isEmpty()) {
+            ObsidianEmptyState(
+                message = if (channels.isEmpty()) "Không có kênh nào" else "Không tìm thấy kênh",
+                subtitle = if (channels.isEmpty()) "Kênh sẽ xuất hiện khi được tạo từ hệ thống" else "Thử từ khóa khác",
+                icon = Icons.Rounded.Forum
+            )
+        } else {
+            LazyColumn(
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(filtered, key = { it.id }) { channel ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = ObsidianShape.md,
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
-                        ObsidianAvatar(
-                            name = channel.name,
-                            size = 36,
-                            icon = when (channel.type) {
-                                "GENERAL" -> Icons.Rounded.Forum
-                                "COURSE" -> Icons.Rounded.Chat
-                                else -> Icons.Rounded.SupportAgent
-                            }
-                        )
-                        Spacer(Modifier.width(12.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                channel.name,
-                                style = ObsidianType.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            ObsidianAvatar(
+                                name = channel.name,
+                                size = 36,
+                                icon = when (channel.type) {
+                                    "GENERAL" -> Icons.Rounded.Forum
+                                    "COURSE" -> Icons.Rounded.Chat
+                                    else -> Icons.Rounded.SupportAgent
+                                }
                             )
-                            Spacer(Modifier.height(2.dp))
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                ObsidianBadge(
-                                    text = channelTypeLabel(channel.type),
-                                    color = when (channel.type) {
-                                        "GENERAL" -> MaterialTheme.colorScheme.primary
-                                        "COURSE" -> ObsidianPalette.Green500
-                                        "TECH_STACK" -> ObsidianPalette.Amber500
-                                        else -> MaterialTheme.colorScheme.onSurfaceVariant
-                                    }
+                            Spacer(Modifier.width(12.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    channel.name,
+                                    style = ObsidianType.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.clickable { onChannelClick(channel.name) }
                                 )
-                                if (channel.active) {
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     ObsidianBadge(
-                                        text = "Hoạt động",
-                                        color = ObsidianPalette.Green500
+                                        text = channelTypeLabel(channel.type),
+                                        color = when (channel.type) {
+                                            "GENERAL" -> MaterialTheme.colorScheme.primary
+                                            "COURSE" -> ObsidianPalette.Green500
+                                            "TECH_STACK" -> ObsidianPalette.Amber500
+                                            else -> MaterialTheme.colorScheme.onSurfaceVariant
+                                        }
                                     )
-                                } else {
-                                    ObsidianBadge(
-                                        text = "Vô hiệu",
-                                        color = ObsidianPalette.Red500
-                                    )
+                                    if (channel.active) {
+                                        ObsidianBadge(
+                                            text = "Hoạt động",
+                                            color = ObsidianPalette.Green500
+                                        )
+                                    } else {
+                                        ObsidianBadge(
+                                            text = "Vô hiệu",
+                                            color = ObsidianPalette.Red500
+                                        )
+                                    }
+                                    val count = messageCountMap[channel.name] ?: 0
+                                    if (count > 0) {
+                                        ObsidianBadge(
+                                            text = "$count tin nhắn",
+                                            color = MaterialTheme.colorScheme.secondaryContainer
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -198,84 +228,105 @@ private fun ChannelsTab(channels: List<ChatChannel>) {
 @Composable
 private fun MessagesTab(
     messages: List<CommunityMessageAdminResponse>,
+    selectedChannel: String?,
     onDelete: (Long) -> Unit
 ) {
+    val channelFiltered = if (selectedChannel != null) {
+        messages.filter { it.channelName == selectedChannel }
+    } else messages
+    var searchQuery by remember { mutableStateOf("") }
+    val filteredMessages = channelFiltered.filter {
+        searchQuery.isBlank() ||
+        it.studentName.contains(searchQuery, ignoreCase = true) ||
+        it.content.contains(searchQuery, ignoreCase = true)
+    }
+    val sortedMessages = filteredMessages.sortedByDescending { it.createdAt }
     var deleteTarget by remember { mutableStateOf<Long?>(null) }
 
-    if (messages.isEmpty()) {
-        ObsidianEmptyState(
-            message = "Không có tin nhắn nào",
-            subtitle = "Tin nhắn sẽ xuất hiện khi sinh viên gửi",
-            icon = Icons.Rounded.Chat
+    Column(Modifier.fillMaxSize()) {
+        ObsidianSearchBar(
+            query = searchQuery,
+            onQueryChange = { searchQuery = it },
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            placeholder = "Tìm theo tên hoặc nội dung..."
         )
-    } else {
-        LazyColumn(
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(messages, key = { it.id }) { msg ->
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = ObsidianShape.md,
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
+
+        if (sortedMessages.isEmpty()) {
+            ObsidianEmptyState(
+                message = if (channelFiltered.isEmpty()) "Không có tin nhắn nào" else "Không tìm thấy tin nhắn",
+                subtitle = if (channelFiltered.isEmpty()) "Tin nhắn sẽ xuất hiện khi sinh viên gửi" else "Thử từ khóa khác",
+                icon = Icons.Rounded.Chat
+            )
+        } else {
+            Text("${sortedMessages.size} tin nhắn", style = ObsidianType.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
+            LazyColumn(
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(sortedMessages, key = { it.id }) { msg ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = ObsidianShape.md,
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
                         ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    msg.studentName,
-                                    style = ObsidianType.titleMedium,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Spacer(Modifier.height(2.dp))
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    msg.channelName?.let { name ->
-                                        ObsidianBadge(
-                                            text = name,
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-                                    }
-                                    msg.createdAt?.let { date ->
-                                        Text(
-                                            date,
-                                            style = ObsidianType.labelSmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        msg.studentName,
+                                        style = ObsidianType.titleMedium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Spacer(Modifier.height(2.dp))
+                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        msg.channelName?.let { name ->
+                                            ObsidianBadge(
+                                                text = name,
+                                                color = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
+                                        msg.createdAt?.let { date ->
+                                            Text(
+                                                date,
+                                                style = ObsidianType.labelSmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
                                     }
                                 }
+                                IconButton(
+                                    onClick = { deleteTarget = msg.id },
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Rounded.Delete,
+                                        contentDescription = "Xoá",
+                                        tint = MaterialTheme.colorScheme.error,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
                             }
-                            IconButton(
-                                onClick = { deleteTarget = msg.id },
-                                modifier = Modifier.size(32.dp)
-                            ) {
-                                Icon(
-                                    Icons.Rounded.Delete,
-                                    contentDescription = "Xoá",
-                                    tint = MaterialTheme.colorScheme.error,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
+                            Spacer(Modifier.height(8.dp))
+                            ObsidianDivider()
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                msg.content,
+                                style = ObsidianType.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                maxLines = 3
+                            )
                         }
-                        Spacer(Modifier.height(8.dp))
-                        ObsidianDivider()
-                        Spacer(Modifier.height(8.dp))
-                        Text(
-                            msg.content,
-                            style = ObsidianType.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            maxLines = 3
-                        )
                     }
                 }
             }
@@ -302,75 +353,89 @@ private fun ChatSessionsTab(
     sessions: List<ChatSessionAdminResponse>,
     onSelect: (ChatSessionAdminResponse) -> Unit
 ) {
-    if (sessions.isEmpty()) {
-        ObsidianEmptyState(
-            message = "Không có phiên hỗ trợ nào",
-            subtitle = "Phiên chat sẽ xuất hiện khi sinh viên bắt đầu",
-            icon = Icons.Rounded.SupportAgent
+    var searchQuery by remember { mutableStateOf("") }
+    val filtered = sessions.filter {
+        searchQuery.isBlank() ||
+        it.studentName?.contains(searchQuery, ignoreCase = true) == true ||
+        it.title?.contains(searchQuery, ignoreCase = true) == true
+    }
+    Column(Modifier.fillMaxSize()) {
+        ObsidianSearchBar(
+            query = searchQuery,
+            onQueryChange = { searchQuery = it },
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            placeholder = "Tìm theo tên sinh viên..."
         )
-    } else {
-        LazyColumn(
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(sessions, key = { it.id }) { session ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onSelect(session) },
-                    shape = ObsidianShape.md,
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-                ) {
-                    Row(
+        if (filtered.isEmpty()) {
+            ObsidianEmptyState(
+                message = if (sessions.isEmpty()) "Không có phiên hỗ trợ nào" else "Không tìm thấy phiên",
+                subtitle = if (sessions.isEmpty()) "Phiên chat sẽ xuất hiện khi sinh viên bắt đầu" else "Thử từ khóa khác",
+                icon = Icons.Rounded.SupportAgent
+            )
+        } else {
+            LazyColumn(
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(filtered, key = { it.id }) { session ->
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .clickable { onSelect(session) },
+                        shape = ObsidianShape.md,
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                     ) {
-                        ObsidianAvatar(
-                            name = session.studentName,
-                            size = 40
-                        )
-                        Spacer(Modifier.width(12.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                session.studentName,
-                                style = ObsidianType.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            ObsidianAvatar(
+                                name = session.studentName,
+                                size = 40
                             )
-                            session.title?.let {
-                                Spacer(Modifier.height(2.dp))
+                            Spacer(Modifier.width(12.dp))
+                            Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    it,
-                                    style = ObsidianType.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    session.studentName,
+                                    style = ObsidianType.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
-                            }
-                            Spacer(Modifier.height(4.dp))
-                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Text(
-                                    "${session.messageCount} tin nhắn",
-                                    style = ObsidianType.labelSmall,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                session.createdAt?.let {
+                                session.title?.let {
+                                    Spacer(Modifier.height(2.dp))
                                     Text(
                                         it,
-                                        style = ObsidianType.labelSmall,
+                                        style = ObsidianType.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
+                                Spacer(Modifier.height(4.dp))
+                                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    Text(
+                                        "${session.messageCount} tin nhắn",
+                                        style = ObsidianType.labelSmall,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    session.createdAt?.let {
+                                        Text(
+                                            it,
+                                            style = ObsidianType.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
                             }
+                            Icon(
+                                Icons.Rounded.Chat,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
-                        Icon(
-                            Icons.Rounded.Chat,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                            modifier = Modifier.size(20.dp)
-                        )
                     }
                 }
             }

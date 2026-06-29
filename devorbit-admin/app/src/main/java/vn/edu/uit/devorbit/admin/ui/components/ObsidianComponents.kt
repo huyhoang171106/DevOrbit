@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -105,14 +106,39 @@ fun ObsidianBadge(
     color: Color = MaterialTheme.colorScheme.primary,
     modifier: Modifier = Modifier
 ) {
+    val useSolidBackground = color == MaterialTheme.colorScheme.primary ||
+        color == ObsidianPalette.Blue500 ||
+        color == ObsidianPalette.Blue700 ||
+        color == ObsidianPalette.Green500 ||
+        color == ObsidianPalette.Red500 ||
+        color == Info ||
+        color == MaterialTheme.colorScheme.onSurfaceVariant ||
+        color == ObsidianPalette.Gray500
+    val backgroundColor = if (useSolidBackground) color else color.copy(alpha = 0.12f)
+    val contentColor = if (useSolidBackground) Color.White else color
+
     Box(
         modifier = modifier
             .clip(ObsidianShape.full)
-            .background(color.copy(alpha = 0.12f))
+            .background(backgroundColor)
             .padding(horizontal = 8.dp, vertical = 3.dp)
     ) {
-        Text(text, style = ObsidianType.labelSmall, color = color)
+        Text(text, style = ObsidianType.labelSmall, color = contentColor)
     }
+}
+
+@Composable
+fun ObsidianButtonText(
+    text: String,
+    modifier: Modifier = Modifier,
+    style: TextStyle = ObsidianType.labelMedium
+) {
+    Text(
+        text = text,
+        modifier = modifier,
+        style = style,
+        color = LocalContentColor.current
+    )
 }
 
 // ── Avatar ───────────────────────────────────────────────────────────────────

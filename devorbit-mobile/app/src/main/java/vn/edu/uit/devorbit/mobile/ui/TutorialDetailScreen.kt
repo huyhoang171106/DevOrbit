@@ -106,7 +106,10 @@ fun TutorialDetailScreen(
                 },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = CosmicTheme.colors.plasma)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = CosmicTheme.colors.plasma,
+                    contentColor = CosmicTheme.colors.void
+                )
             ) {
                 Icon(Icons.Filled.OpenInNew, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))

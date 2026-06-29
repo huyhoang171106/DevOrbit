@@ -98,7 +98,7 @@ public class AdminStatsController {
             .cacheControl(CacheControl.noCache().mustRevalidate())
             .body(AdminStatsResponse.builder()
                 .totalStudents(studentRepo.count())
-                .totalCourses(courseRepo.count())
+                .totalCourses(courseRepo.countByIsOpenTrue())
                 .totalRepos(githubRepoRepo.countByActiveTrue())
                 .pendingCandidates(repoCandidateRepo.countByStatus(RepoCandidateStatus.NEW))
                 .recentStudents(recentStudents)

@@ -110,6 +110,8 @@ interface AdminApiService {
 
     @POST("/api/admin/repos/evaluate-all")
     suspend fun evaluateAllRepos()
+    @POST("/api/admin/courses/{courseId}/repos/sync")
+    suspend fun syncCourseRepos(@Path("courseId") courseId: Long)
 
     // ── Repo Candidates ───────────────────────────────────────────────────────
     @GET("/api/admin/repo-candidates")

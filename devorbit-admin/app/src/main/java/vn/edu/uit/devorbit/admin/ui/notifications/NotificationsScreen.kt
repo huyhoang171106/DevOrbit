@@ -65,10 +65,11 @@ fun NotificationsScreen(
                     onClick = { viewModel.markAllRead() },
                     shape = ObsidianShape.sm,
                     colors = ButtonDefaults.filledTonalButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
                     )
                 ) {
-                    Text("Đọc tất cả", style = ObsidianType.labelLarge)
+                    ObsidianButtonText("Đọc tất cả", style = ObsidianType.labelLarge)
                 }
             }
         }

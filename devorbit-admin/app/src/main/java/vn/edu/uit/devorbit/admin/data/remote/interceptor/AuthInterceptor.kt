@@ -22,6 +22,9 @@ class AuthInterceptor @Inject constructor() : Interceptor {
     var refreshToken: String? = null
         private set
 
+    private val lock = Any()
+    private var refreshing = false
+
     fun updateTokens(newToken: String?, newRefreshToken: String?) {
         token = newToken
         refreshToken = newRefreshToken
@@ -44,9 +47,50 @@ class AuthInterceptor @Inject constructor() : Interceptor {
 
         val response = chain.proceed(request)
 
-        // Auto-refresh on 401 (try once)
-        if (response.code == 401 && currentToken != null && !refreshToken.isNullOrBlank()) {
+        // Auto-refresh on 401 (single-flight)
+        if (response.code == 401 && currentToken != null) {
             response.close()
+
+            synchronized(lock) {
+                // Another thread already refreshed — retry with the new token
+                if (token != currentToken) {
+                    val newAccess = token
+                    if (newAccess != null) {
+                        val retryRequest = chain.request().newBuilder()
+                            .header("Authorization", "Bearer $newAccess")
+                            .build()
+                        return chain.proceed(retryRequest)
+                    }
+                    return response
+                }
+                // Wait for an ongoing refresh from another thread
+                while (refreshing) {
+                    try { @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN") (lock as java.lang.Object).wait() } catch (e: InterruptedException) {
+                        Thread.currentThread().interrupt()
+                        return response
+                    }
+                }
+                // Token may have been updated while we waited
+                if (token != currentToken) {
+                    val newAccess = token
+                    if (newAccess != null) {
+                        val retryRequest = chain.request().newBuilder()
+                            .header("Authorization", "Bearer $newAccess")
+                            .build()
+                        return chain.proceed(retryRequest)
+                    }
+                    return response
+                }
+                // No refresh token available — can't recover
+                if (refreshToken.isNullOrBlank()) return response
+                // Become the refresh leader
+                refreshing = true
+            }
+
+            // Perform actual refresh outside the lock so waiters don't block on HTTP
+            var success = false
+            var newAccess: String? = null
+            var newRefresh: String? = null
             try {
                 val baseUrl = BuildConfig.API_BASE_URL.trimEnd('/')
                 val rt = refreshToken!!
@@ -57,29 +101,39 @@ class AuthInterceptor @Inject constructor() : Interceptor {
                     .post(jsonBody.toString().toRequestBody("application/json".toMediaType()))
                     .build()
 
-                // Use a basic client without interceptors (avoids circularity with this interceptor)
-                val client = OkHttpClient.Builder().build()
-                val refreshResponse = client.newCall(refreshRequest).execute()
+                // Use a clean client without interceptors (avoids circular refresh)
+                val cleanClient = OkHttpClient.Builder().build()
+                val refreshResponse = cleanClient.newCall(refreshRequest).execute()
 
                 if (refreshResponse.isSuccessful) {
                     val body = refreshResponse.body?.string()
                     if (body != null) {
                         val json = JSONObject(body)
-                        token = json.getString("accessToken")
-                        refreshToken = json.getString("refreshToken")
-
-                        // Retry original request with new token
-                        val retryRequest = chain.request().newBuilder()
-                            .header("Authorization", "Bearer $token")
-                            .build()
-                        return chain.proceed(retryRequest)
+                        newAccess = json.getString("accessToken")
+                        newRefresh = json.getString("refreshToken")
+                        success = true
                     }
                 }
+            } catch (e: Exception) { /* fall through to release */ }
 
-                // Refresh failed — clear everything
-                clear()
-            } catch (_: Exception) {
-                clear()
+            synchronized(lock) {
+                if (success) {
+                    token = newAccess
+                    refreshToken = newRefresh
+                } else {
+                    token = null
+                    refreshToken = null
+                }
+                refreshing = false
+                @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+                (lock as java.lang.Object).notifyAll()
+            }
+
+            if (success) {
+                val retryRequest = chain.request().newBuilder()
+                    .header("Authorization", "Bearer $newAccess")
+                    .build()
+                return chain.proceed(retryRequest)
             }
         }
 

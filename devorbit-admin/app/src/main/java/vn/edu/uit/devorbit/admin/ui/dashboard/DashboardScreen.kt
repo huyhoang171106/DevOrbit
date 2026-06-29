@@ -30,6 +30,8 @@ fun DashboardScreen(
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    var selectedTab by remember { mutableIntStateOf(0) }
+    val tabs = listOf("Sinh viên mới nhất", "Đánh giá gần đây", "Repo cần duyệt")
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -40,17 +42,7 @@ fun DashboardScreen(
         item {
             ObsidianPageHeader(
                 title = "Tổng quan",
-                subtitle = "Bảng điều khiển quản trị",
-                actions = {
-                    IconButton(onClick = viewModel::loadStats) {
-                        Icon(
-                            Icons.Rounded.Refresh,
-                            contentDescription = "Làm mới",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
+                subtitle = "Bảng điều khiển quản trị"
             )
         }
 
@@ -84,7 +76,7 @@ fun DashboardScreen(
                     )
                     Spacer(Modifier.height(12.dp))
                     TextButton(onClick = viewModel::loadStats) {
-                        Text("Thử lại", style = ObsidianType.labelMedium)
+                        ObsidianButtonText("Thử lại", style = ObsidianType.labelMedium)
                     }
                 }
             }
@@ -140,37 +132,73 @@ fun DashboardScreen(
                     )
                 }
             }
-
-            // ── Recent Students ───────────────────────────────────────
-            if (stats.recentStudents.isNotEmpty()) {
-                item {
-                    Spacer(Modifier.height(16.dp))
-                    ObsidianSectionHeader(title = "Sinh viên mới nhất")
-                }
-                items(stats.recentStudents.take(5), key = { "student_${it.id}" }) { student ->
-                    StudentRow(student)
+            // ── Tabs ───────────────────────────────────────────────────
+            item {
+                Spacer(Modifier.height(16.dp))
+                TabRow(
+                    selectedTabIndex = selectedTab,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.primary,
+                    divider = { ObsidianDivider() }
+                ) {
+                    tabs.forEachIndexed { index, title ->
+                        Tab(
+                            selected = selectedTab == index,
+                            onClick = { selectedTab = index },
+                            text = {
+                                Text(
+                                    title,
+                                    style = if (selectedTab == index) ObsidianType.labelLarge else ObsidianType.bodyMedium,
+                                    color = if (selectedTab == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        )
+                    }
                 }
             }
 
-            // ── Recent Reviews ─────────────────────────────────────────
-            if (stats.recentCourseReviews.isNotEmpty()) {
-                item {
-                    Spacer(Modifier.height(8.dp))
-                    ObsidianSectionHeader(title = "Đánh giá gần đây")
+            when (selectedTab) {
+                0 -> {
+                    // ── Recent Students ───────────────────────────────
+                    if (stats.recentStudents.isNotEmpty()) {
+                        item {
+                            Spacer(Modifier.height(8.dp))
+                            ObsidianSectionHeader(title = "Sinh viên mới nhất")
+                        }
+                        items(stats.recentStudents.take(10), key = { "student_${it.id}" }) { student ->
+                            StudentRow(student)
+                        }
+                    } else {
+                        item { ObsidianEmptyState(message = "Chưa có sinh viên") }
+                    }
                 }
-                items(stats.recentCourseReviews.take(5), key = { "review_${it.id}" }) { review ->
-                    ReviewRow(review)
+                1 -> {
+                    // ── Recent Reviews ────────────────────────────────
+                    if (stats.recentCourseReviews.isNotEmpty()) {
+                        item {
+                            Spacer(Modifier.height(8.dp))
+                            ObsidianSectionHeader(title = "Đánh giá gần đây")
+                        }
+                        items(stats.recentCourseReviews.take(10), key = { "review_${it.id}" }) { review ->
+                            ReviewRow(review)
+                        }
+                    } else {
+                        item { ObsidianEmptyState(message = "Chưa có đánh giá") }
+                    }
                 }
-            }
-
-            // ── Recent Submissions ─────────────────────────────────────
-            if (stats.recentSubmissions.isNotEmpty()) {
-                item {
-                    Spacer(Modifier.height(8.dp))
-                    ObsidianSectionHeader(title = "Bài nộp gần đây")
-                }
-                items(stats.recentSubmissions.take(5), key = { "submission_${it.id}" }) { submission ->
-                    SubmissionRow(submission)
+                2 -> {
+                    // ── Repo cần duyệt ────────────────────────────────
+                    if (stats.recentSubmissions.isNotEmpty()) {
+                        item {
+                            Spacer(Modifier.height(8.dp))
+                            ObsidianSectionHeader(title = "Repo cần duyệt")
+                        }
+                        items(stats.recentSubmissions.take(10), key = { "submission_${it.id}" }) { submission ->
+                            SubmissionRow(submission)
+                        }
+                    } else {
+                        item { ObsidianEmptyState(message = "Không có repo chờ duyệt") }
+                    }
                 }
             }
         }

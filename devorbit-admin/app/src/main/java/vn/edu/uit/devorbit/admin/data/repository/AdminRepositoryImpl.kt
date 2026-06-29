@@ -1,8 +1,10 @@
 package vn.edu.uit.devorbit.admin.data.repository
 
+import java.io.IOException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 import vn.edu.uit.devorbit.admin.data.datastore.AdminSettingsDataStore
+import vn.edu.uit.devorbit.admin.data.remote.HttpErrorMapper
 import vn.edu.uit.devorbit.admin.data.remote.dto.*
 import vn.edu.uit.devorbit.admin.data.remote.interceptor.AuthInterceptor
 import vn.edu.uit.devorbit.admin.domain.repository.AdminAuthResult
@@ -10,6 +12,7 @@ import vn.edu.uit.devorbit.admin.domain.repository.AdminRepository
 import vn.edu.uit.devorbit.admin.network.AdminApiService
 import javax.inject.Inject
 import javax.inject.Singleton
+
 
 @Singleton
 class AdminRepositoryImpl @Inject constructor(
@@ -169,6 +172,9 @@ class AdminRepositoryImpl @Inject constructor(
     override suspend fun syncRepo(repoId: Long): Result<RepoSummaryResponse> = safeApiCall {
         apiService.syncRepo(repoId)
     }
+    override suspend fun syncCourseRepos(courseId: Long): Result<Unit> = safeApiCall {
+        apiService.syncCourseRepos(courseId)
+    }
 
     override suspend fun evaluateAllRepos(): Result<Unit> = safeApiCall {
         apiService.evaluateAllRepos()
@@ -290,14 +296,14 @@ class AdminRepositoryImpl @Inject constructor(
         apiService.markAllNotificationsRead()
     }
 
-    /** Wraps an API call with proper cancellation propagation. */
+    /** Wraps an API call with proper cancellation propagation and user-friendly error messages. */
     private suspend fun <T> safeApiCall(block: suspend () -> T): Result<T> {
         return try {
             Result.success(block())
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(IOException(HttpErrorMapper.toUserMessage(e), e))
         }
     }
 }

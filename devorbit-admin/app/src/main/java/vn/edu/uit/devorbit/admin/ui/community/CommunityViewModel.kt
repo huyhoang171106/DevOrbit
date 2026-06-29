@@ -17,6 +17,7 @@ data class CommunityUiState(
     val chatSessions: List<ChatSessionAdminResponse> = emptyList(),
     val chatMessages: List<ChatMessageAdminResponse> = emptyList(),
     val selectedTab: Int = 0,
+    val selectedChannel: String? = null,
     val isLoading: Boolean = false,
     val error: String? = null
 )
@@ -45,6 +46,8 @@ class CommunityViewModel @Inject constructor(
     }
 
     fun selectTab(index: Int) { _state.value = _state.value.copy(selectedTab = index) }
+
+    fun selectChannel(name: String?) { _state.value = _state.value.copy(selectedChannel = name) }
 
     fun deleteMessage(id: Long) {
         viewModelScope.launch {

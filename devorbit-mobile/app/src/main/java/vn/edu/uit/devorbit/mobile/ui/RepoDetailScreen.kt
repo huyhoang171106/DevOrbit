@@ -282,7 +282,10 @@ fun RepoDetailScreen(
                 },
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = CosmicTheme.colors.plasma)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = CosmicTheme.colors.plasma,
+                    contentColor = CosmicTheme.colors.void
+                )
             ) {
                 Icon(Icons.Rounded.OpenInNew, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
@@ -495,7 +498,10 @@ fun RepoDetailScreen(
                             },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(10.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = CosmicTheme.colors.plasma)
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = CosmicTheme.colors.plasma,
+                                contentColor = CosmicTheme.colors.void
+                            )
                         ) { Text("Gửi đánh giá") }
                     }
                 }

@@ -69,8 +69,20 @@ export function useAiRoadmap() {
             })
 
             if (!response.ok) {
-                const errorText = await response.text().catch(() => 'Unknown error')
-                throw new Error(`Lỗi từ máy chủ: ${response.status}. ${errorText}`)
+                const errorText = await response.text().catch(() => '')
+                let message: string
+                try {
+                    const parsed = JSON.parse(errorText)
+                    const knownErrors: Record<string, string> = {
+                        'Invalid username or password': 'Sai tên đăng nhập hoặc mật khẩu',
+                        'Internal server error': 'Máy chủ gặp lỗi, vui lòng thử lại sau',
+                    }
+                    const raw = parsed.error || parsed.detail || `Lỗi từ máy chủ (mã lỗi ${response.status})`
+                    message = knownErrors[raw] || raw
+                } catch {
+                    message = `Lỗi từ máy chủ (mã lỗi ${response.status})`
+                }
+                throw new Error(message)
             }
 
             return response.json()

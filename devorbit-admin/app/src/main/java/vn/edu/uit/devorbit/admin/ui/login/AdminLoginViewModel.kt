@@ -46,7 +46,9 @@ class AdminLoginViewModel @Inject constructor(
             _state.value = s.copy(isLoading = true, error = null)
             adminRepository.login(s.username, s.password).fold(
                 onSuccess = { _state.value = _state.value.copy(isLoading = false, isLoggedIn = true) },
-                onFailure = { _state.value = _state.value.copy(isLoading = false, error = it.message ?: "Đăng nhập thất bại") }
+                onFailure = {
+                    _state.value = _state.value.copy(isLoading = false, error = it.message ?: "Đăng nhập thất bại")
+                }
             )
         }
     }

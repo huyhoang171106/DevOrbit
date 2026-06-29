@@ -20,7 +20,8 @@ public class GithubClientConfig {
 
         WebClient.Builder builder = WebClient.builder()
             .baseUrl(baseUrl)
-            .defaultHeader(HttpHeaders.USER_AGENT, userAgent);
+            .defaultHeader(HttpHeaders.USER_AGENT, userAgent)
+            .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(10 * 1024 * 1024));
 
         if (token == null || token.isBlank()) {
             logger.warn("WARNING: GITHUB_TOKEN is not set. GitHub API scan will be unavailable.");

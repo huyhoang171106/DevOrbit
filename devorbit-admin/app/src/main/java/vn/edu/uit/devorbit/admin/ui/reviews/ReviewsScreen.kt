@@ -27,6 +27,17 @@ fun ReviewsScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val tabs = listOf("Môn học", "Kho")
     var deleteReviewId by remember { mutableStateOf<Pair<Long, Boolean>?>(null) } // (id, isCourse)
+    var searchQuery by remember { mutableStateOf("") }
+    val filteredCourseReviews = state.courseReviews.filter {
+        searchQuery.isBlank() ||
+        it.studentName.contains(searchQuery, ignoreCase = true) ||
+        it.courseName.contains(searchQuery, ignoreCase = true)
+    }
+    val filteredRepoReviews = state.repoReviews.filter {
+        searchQuery.isBlank() ||
+        it.studentName.contains(searchQuery, ignoreCase = true) ||
+        it.repoName.contains(searchQuery, ignoreCase = true)
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         ObsidianPageHeader(
@@ -72,6 +83,12 @@ fun ReviewsScreen(
                 )
             }
         }
+        ObsidianSearchBar(
+            query = searchQuery,
+            onQueryChange = { searchQuery = it },
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            placeholder = "Tìm theo tên sinh viên, môn học hoặc kho..."
+        )
 
         if (state.isLoading) {
             ObsidianLoadingBox()
@@ -84,11 +101,11 @@ fun ReviewsScreen(
         } else {
             when (state.selectedTab) {
                 0 -> CourseReviewsList(
-                    reviews = state.courseReviews,
+                    reviews = filteredCourseReviews,
                     onDelete = { id -> deleteReviewId = id to true }
                 )
                 1 -> RepoReviewsList(
-                    reviews = state.repoReviews,
+                    reviews = filteredRepoReviews,
                     onDelete = { id -> deleteReviewId = id to false }
                 )
             }
@@ -191,14 +208,14 @@ private fun ReviewCard(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            // Header: student avatar + name + date
+        Column(modifier = Modifier.padding(10.dp)) {
+            // Header: student avatar + name + rating badge + date
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 ObsidianAvatar(name = studentName)
-                Spacer(Modifier.width(12.dp))
+                Spacer(Modifier.width(10.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = studentName,
@@ -212,7 +229,26 @@ private fun ReviewCard(
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
+                rating?.let { r ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        repeat(5) { index ->
+                            Icon(
+                                imageVector = if (index < r) Icons.Rounded.Star else Icons.Rounded.StarOutline,
+                                contentDescription = null,
+                                tint = if (index < r) ObsidianPalette.Amber500 else ObsidianPalette.Gray300,
+                                modifier = Modifier.size(14.dp)
+                            )
+                        }
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            text = "$r/5",
+                            style = ObsidianType.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
                 createdAt?.let {
+                    Spacer(Modifier.width(8.dp))
                     Text(
                         text = it.take(10),
                         style = ObsidianType.labelSmall,
@@ -220,43 +256,19 @@ private fun ReviewCard(
                     )
                 }
             }
-
-            Spacer(Modifier.height(10.dp))
-
-            // Rating stars
-            rating?.let { r ->
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    repeat(5) { index ->
-                        Icon(
-                            imageVector = if (index < r) Icons.Rounded.Star else Icons.Rounded.StarOutline,
-                            contentDescription = null,
-                            tint = if (index < r) ObsidianPalette.Amber500 else ObsidianPalette.Gray300,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(Modifier.width(2.dp))
-                    }
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = "$r/5",
-                        style = ObsidianType.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
             // Comment
             comment?.takeIf { it.isNotBlank() }?.let {
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(4.dp))
                 Text(
                     text = it,
                     style = ObsidianType.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 4,
+                    maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
             }
 
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(6.dp))
             ObsidianDivider()
 
             // Delete action
@@ -272,7 +284,7 @@ private fun ReviewCard(
                 ) {
                     Icon(Icons.Rounded.Delete, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text("Xoá", style = ObsidianType.labelMedium)
+                    ObsidianButtonText("Xoá", style = ObsidianType.labelMedium)
                 }
             }
         }

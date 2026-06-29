@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Code
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,6 +28,7 @@ fun TechStackScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     var showCreateDialog by remember { mutableStateOf(false) }
     var deleteId by remember { mutableStateOf<Long?>(null) }
+    var searchQuery by remember { mutableStateOf("") }
 
     Column(Modifier.fillMaxSize()) {
         ObsidianPageHeader(
@@ -37,7 +39,8 @@ fun TechStackScreen(
                     onClick = { showCreateDialog = true },
                     shape = ObsidianShape.sm,
                     colors = ButtonDefaults.filledTonalButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
                     )
                 ) {
                     Icon(
@@ -46,13 +49,22 @@ fun TechStackScreen(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(Modifier.width(6.dp))
-                    Text("Thêm", style = ObsidianType.labelLarge)
+                    ObsidianButtonText("Thêm", style = ObsidianType.labelLarge)
                 }
             }
         )
 
         ObsidianDivider()
 
+        val filtered = state.items.filter {
+            searchQuery.isBlank() || it.name?.contains(searchQuery, ignoreCase = true) == true
+        }
+        ObsidianSearchBar(
+            query = searchQuery,
+            onQueryChange = { searchQuery = it },
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            placeholder = "Tìm công nghệ..."
+        )
         when {
             state.isLoading -> ObsidianLoadingBox()
             state.error != null -> ObsidianEmptyState(
@@ -64,8 +76,13 @@ fun TechStackScreen(
                 subtitle = "Thêm công nghệ để bắt đầu",
                 icon = Icons.Rounded.Code
             )
+            filtered.isEmpty() -> ObsidianEmptyState(
+                message = "Không tìm thấy kết quả",
+                subtitle = "Thử từ khóa khác",
+                icon = Icons.Rounded.Search
+            )
             else -> TechStackList(
-                items = state.items,
+                items = filtered,
                 onDelete = { deleteId = it }
             )
         }

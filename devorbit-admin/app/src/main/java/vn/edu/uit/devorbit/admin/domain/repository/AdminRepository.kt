@@ -52,6 +52,7 @@ interface AdminRepository {
     suspend fun updateRepo(repoId: Long, request: ApprovedRepoUpdateRequest): Result<RepoSummaryResponse>
     suspend fun deleteRepo(repoId: Long): Result<Unit>
     suspend fun syncRepo(repoId: Long): Result<RepoSummaryResponse>
+    suspend fun syncCourseRepos(courseId: Long): Result<Unit>
     suspend fun evaluateAllRepos(): Result<Unit>
 
     // Candidates

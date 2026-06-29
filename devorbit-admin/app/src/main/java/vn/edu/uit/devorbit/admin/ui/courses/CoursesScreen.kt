@@ -20,6 +20,8 @@ import vn.edu.uit.devorbit.admin.ui.components.*
 import vn.edu.uit.devorbit.admin.ui.theme.ObsidianShape
 import vn.edu.uit.devorbit.admin.ui.theme.ObsidianType
 import vn.edu.uit.devorbit.admin.ui.theme.subjectTypeLabel
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun CoursesScreen(
@@ -31,21 +33,25 @@ fun CoursesScreen(
     var showCreateDialog by remember { mutableStateOf(false) }
     var deleteId by remember { mutableStateOf<Long?>(null) }
     var searchQuery by remember { mutableStateOf("") }
+    val context = LocalContext.current
 
     Column(Modifier.fillMaxSize()) {
         ObsidianPageHeader(
             title = "Môn học",
             subtitle = "${state.courses.size} môn học",
             actions = {
-                OutlinedButton(onClick = onRelationshipsClick) {
+                OutlinedButton(
+                    onClick = onRelationshipsClick,
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary)
+                ) {
                     Icon(Icons.Rounded.Share, null, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text("Quan hệ")
+                    ObsidianButtonText("Quan hệ", style = ObsidianType.labelMedium)
                 }
                 Button(onClick = { showCreateDialog = true }) {
                     Icon(Icons.Rounded.Add, null, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text("Thêm")
+                    ObsidianButtonText("Thêm", style = ObsidianType.labelMedium)
                 }
             }
         )
@@ -98,7 +104,12 @@ fun CoursesScreen(
         ObsidianConfirmDialog(
             title = "Xoá môn học",
             message = "Bạn có chắc muốn xoá môn học này?",
-            onConfirm = { viewModel.deleteCourse(id); deleteId = null },
+            onConfirm = {
+                deleteId = null
+                viewModel.deleteCourse(id) {
+                    Toast.makeText(context, "Đã xoá môn học thành công", Toast.LENGTH_SHORT).show()
+                }
+            },
             onDismiss = { deleteId = null },
             isDestructive = true
         )
@@ -161,15 +172,85 @@ private fun CreateCourseDialog(
         title = { Text("Thêm môn học", style = ObsidianType.headlineSmall) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(value = code, onValueChange = { code = it }, label = { Text("Mã môn học") }, singleLine = true, shape = ObsidianShape.sm, textStyle = ObsidianType.bodyMedium)
-                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Tên môn học") }, singleLine = true, shape = ObsidianShape.sm, textStyle = ObsidianType.bodyMedium)
-                OutlinedTextField(value = credits, onValueChange = { credits = it }, label = { Text("Số tín chỉ") }, singleLine = true, shape = ObsidianShape.sm, textStyle = ObsidianType.bodyMedium)
+                OutlinedTextField(
+                    value = code,
+                    onValueChange = { code = it },
+                    label = { Text("Mã môn học") },
+                    singleLine = true,
+                    shape = ObsidianShape.sm,
+                    textStyle = ObsidianType.bodyMedium,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        cursorColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Tên môn học") },
+                    singleLine = true,
+                    shape = ObsidianShape.sm,
+                    textStyle = ObsidianType.bodyMedium,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        cursorColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+                OutlinedTextField(
+                    value = credits,
+                    onValueChange = { credits = it },
+                    label = { Text("Số tín chỉ") },
+                    singleLine = true,
+                    shape = ObsidianShape.sm,
+                    textStyle = ObsidianType.bodyMedium,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        cursorColor = MaterialTheme.colorScheme.primary
+                    )
+                )
                 Text(subjectTypeLabel(subjectType), style = ObsidianType.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Selection(listOf("DAI_CUONG", "CO_SO", "CHUYEN_NGANH"), subjectType) { subjectType = it }
                 }
-                OutlinedTextField(value = managementUnit, onValueChange = { managementUnit = it }, label = { Text("Đơn vị quản lý") }, singleLine = true, shape = ObsidianShape.sm, textStyle = ObsidianType.bodyMedium)
-                OutlinedTextField(value = description, onValueChange = { description = it }, label = { Text("Mô tả") }, maxLines = 3, shape = ObsidianShape.sm, textStyle = ObsidianType.bodyMedium)
+                OutlinedTextField(
+                    value = managementUnit,
+                    onValueChange = { managementUnit = it },
+                    label = { Text("Đơn vị quản lý") },
+                    singleLine = true,
+                    shape = ObsidianShape.sm,
+                    textStyle = ObsidianType.bodyMedium,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        cursorColor = MaterialTheme.colorScheme.primary
+                    )
+                )
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("Mô tả") },
+                    maxLines = 3,
+                    shape = ObsidianShape.sm,
+                    textStyle = ObsidianType.bodyMedium,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        cursorColor = MaterialTheme.colorScheme.primary
+                    )
+                )
             }
         },
         confirmButton = {
@@ -179,7 +260,7 @@ private fun CreateCourseDialog(
                     onCreate(AdminCourseUpsertRequest(code = code, name = name, credits = credits.toInt(), subjectType = subjectType, managementUnit = managementUnit.ifBlank { null }, description = description.ifBlank { null }, isOpen = true))
                 },
                 enabled = isValid && !isSubmitting
-            ) { Text("Tạo") }
+            ) { Text("Tạo", color = MaterialTheme.colorScheme.onPrimary) }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Huỷ") } }
     )
@@ -191,7 +272,7 @@ private fun Selection(options: List<String>, selected: String, onSelect: (String
         FilterChip(
             selected = opt == selected,
             onClick = { onSelect(opt) },
-            label = { Text(subjectTypeLabel(opt), style = ObsidianType.labelSmall) }
+            label = { Text(subjectTypeLabel(opt), style = ObsidianType.labelSmall, color = MaterialTheme.colorScheme.onSurface) }
         )
     }
 }

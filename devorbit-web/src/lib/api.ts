@@ -43,12 +43,39 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
       clearStudentToken()
       window.location.href = '/student/login'
     }
-    let message = body || `Yêu cầu thất bại (${response.status})`
+
+    // Parse backend JSON error body, then fall back to status-code-specific message
+    const knownErrors: Record<string, string> = {
+      'Invalid username or password': 'Sai tên đăng nhập hoặc mật khẩu',
+      'Account is deactivated': 'Tài khoản đã bị vô hiệu hoá',
+      'Too many login attempts. Try again later.': 'Quá nhiều lần đăng nhập thất bại, vui lòng thử lại sau',
+      'Refresh token has already been used': 'Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại',
+      'Internal server error': 'Máy chủ gặp lỗi, vui lòng thử lại sau',
+    }
+    const statusMessages: Record<number, string> = {
+      400: 'Dữ liệu gửi lên không hợp lệ',
+      401: 'Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại',
+      403: 'Bạn không có quyền thực hiện thao tác này',
+      404: 'Không tìm thấy dữ liệu yêu cầu',
+      409: 'Dữ liệu đã bị thay đổi, vui lòng tải lại và thử lại',
+      422: 'Dữ liệu gửi lên không hợp lệ',
+      429: 'Quá nhiều yêu cầu, vui lòng thử lại sau',
+      500: 'Máy chủ gặp lỗi, vui lòng thử lại sau',
+      502: 'Máy chủ tạm thời không hoạt động, vui lòng thử lại sau',
+      503: 'Dịch vụ tạm thời ngừng hoạt động, vui lòng thử lại sau',
+      504: 'Máy chủ quá thời gian phản hồi, vui lòng thử lại sau',
+    }
+
+    let message: string
     try {
       const parsed = JSON.parse(body)
-      if (parsed.error) message = parsed.error
-      if (parsed.detail) message = parsed.detail
-    } catch { /* ignore */ }
+      const raw = parsed.error || parsed.detail || body
+      message = knownErrors[raw] || raw
+    } catch {
+      message = body
+        ? (body.length < 200 ? body : 'Máy chủ trả về lỗi, vui lòng thử lại sau')
+        : (statusMessages[response.status] || `Yêu cầu thất bại (mã lỗi ${response.status})`)
+    }
     throw new Error(message)
   }
 
@@ -84,7 +111,17 @@ export const apiUpload = <T>(path: string, formData: FormData): Promise<T> => {
     method: 'POST',
     body: formData,
   }).then(async (res) => {
-    if (!res.ok) throw new Error(`Tải lên thất bại (${res.status})`)
+    if (!res.ok) {
+      const body = await res.text().catch(() => '')
+      let msg: string
+      try {
+        const parsed = JSON.parse(body)
+        msg = parsed.error || parsed.detail || `Tải lên thất bại (mã lỗi ${res.status})`
+      } catch {
+        msg = body && body.length < 200 ? body : `Tải lên thất bại (mã lỗi ${res.status})`
+      }
+      throw new Error(msg)
+    }
     return (await res.json()) as T
   })
 }

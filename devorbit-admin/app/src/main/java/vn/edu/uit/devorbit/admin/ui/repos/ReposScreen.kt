@@ -9,7 +9,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -17,47 +16,78 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import vn.edu.uit.devorbit.admin.data.remote.dto.ApprovedRepoUpdateRequest
 import vn.edu.uit.devorbit.admin.data.remote.dto.RepoSummaryResponse
 import vn.edu.uit.devorbit.admin.ui.components.*
-import vn.edu.uit.devorbit.admin.ui.theme.ObsidianPalette
-import vn.edu.uit.devorbit.admin.ui.theme.ObsidianShape
-import vn.edu.uit.devorbit.admin.ui.theme.ObsidianType
+import vn.edu.uit.devorbit.admin.ui.github.AutoApprovalScreen
+import vn.edu.uit.devorbit.admin.ui.github.GithubScreen
+import vn.edu.uit.devorbit.admin.ui.theme.*
 
 @Composable
 fun ReposScreen(
-    viewModel: ReposViewModel = hiltViewModel()
+    reposViewModel: ReposViewModel = hiltViewModel()
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    var editingRepo by remember { mutableStateOf<RepoSummaryResponse?>(null) }
-    var deleteId by remember { mutableStateOf<Long?>(null) }
+    var selectedTab by remember { mutableIntStateOf(2) } // Default to "Danh sách repo"
+    val tabs = listOf("Quét GitHub", "Duyệt kho", "Danh sách repo")
 
     Column(Modifier.fillMaxSize()) {
         ObsidianPageHeader(
             title = "Kho lưu trữ",
-            subtitle = "${state.repos.size} kho",
-            actions = {
-                OutlinedButton(onClick = { viewModel.evaluateAll() }) {
-                    Icon(Icons.Rounded.Refresh, null, modifier = Modifier.size(16.dp))
-                    Spacer(Modifier.width(4.dp))
-                    Text("Đánh giá")
-                }
-            }
+            subtitle = tabs[selectedTab]
         )
 
-        when {
-            state.isLoading && state.repos.isEmpty() -> ObsidianLoadingBox()
-            state.repos.isEmpty() -> ObsidianEmptyState(message = "Chưa có kho nào")
-            else -> {
-                LazyColumn(
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(state.repos, key = { it.id }) { repo ->
-                        RepoCard(
-                            repo = repo,
-                            onSync = { viewModel.syncRepo(repo.id) },
-                            onEdit = { editingRepo = repo },
-                            onDelete = { deleteId = repo.id }
+        TabRow(
+            selectedTabIndex = selectedTab,
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.primary,
+            divider = { ObsidianDivider() }
+        ) {
+            tabs.forEachIndexed { index, title ->
+                Tab(
+                    selected = selectedTab == index,
+                    onClick = { selectedTab = index },
+                    text = {
+                        Text(
+                            title,
+                            style = if (selectedTab == index) ObsidianType.labelLarge else ObsidianType.bodyMedium,
+                            color = if (selectedTab == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
+                )
+            }
+        }
+
+        when (selectedTab) {
+            0 -> GithubScreen()
+            1 -> AutoApprovalScreen()
+            2 -> RepoListTab(reposViewModel)
+        }
+    }
+}
+
+
+// ══════════════════════════════════════════════════════════════════════════════
+// TAB 2: DANH SÁCH REPO
+// ══════════════════════════════════════════════════════════════════════════════
+
+@Composable
+private fun RepoListTab(viewModel: ReposViewModel) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    var editingRepo by remember { mutableStateOf<RepoSummaryResponse?>(null) }
+    var deleteId by remember { mutableStateOf<Long?>(null) }
+
+    when {
+        state.isLoading && state.repos.isEmpty() -> ObsidianLoadingBox()
+        state.repos.isEmpty() -> ObsidianEmptyState(message = "Chưa có kho nào")
+        else -> {
+            LazyColumn(
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(state.repos, key = { it.id }) { repo ->
+                    RepoCard(
+                        repo = repo,
+                        onSync = { viewModel.syncRepo(repo.id) },
+                        onEdit = { editingRepo = repo },
+                        onDelete = { deleteId = repo.id }
+                    )
                 }
             }
         }
@@ -135,10 +165,13 @@ private fun RepoCard(
                 FilledTonalButton(onClick = onSync) {
                     Icon(Icons.Rounded.Refresh, null, modifier = Modifier.size(14.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text("Đồng bộ", style = ObsidianType.labelMedium)
+                    ObsidianButtonText("Đồng bộ", style = ObsidianType.labelMedium)
                 }
-                OutlinedButton(onClick = onEdit) { Text("Sửa", style = ObsidianType.labelMedium) }
-                TextButton(onClick = onDelete) { Text("Xoá", color = MaterialTheme.colorScheme.error, style = ObsidianType.labelMedium) }
+                OutlinedButton(onClick = onEdit) { ObsidianButtonText("Sửa", style = ObsidianType.labelMedium) }
+                TextButton(
+                    onClick = onDelete,
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) { ObsidianButtonText("Xoá", style = ObsidianType.labelMedium) }
             }
         }
     }
@@ -173,8 +206,8 @@ private fun EditRepoDialog(
                     onSave(ApprovedRepoUpdateRequest(displayName = displayName, description = description.ifBlank { null }, stars = stars.toIntOrNull()))
                 },
                 enabled = displayName.isNotBlank() && !isSubmitting
-            ) { Text("Lưu") }
+            ) { ObsidianButtonText("Lưu") }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Huỷ") } }
+        dismissButton = { TextButton(onClick = onDismiss) { ObsidianButtonText("Huỷ") } }
     )
 }

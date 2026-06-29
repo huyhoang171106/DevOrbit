@@ -1,7 +1,9 @@
 package vn.edu.uit.devorbit_api.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -31,6 +33,7 @@ public class GithubAutoApprovalService {
     private final RepoCandidateService repoCandidateService;
     private final GithubScanService githubScanService;
     private final WebClient githubWebClient;
+    private final ObjectMapper objectMapper;
 
     public record AutoApprovalRun(int checked, int approved, int leftForManualReview) {}
 
@@ -87,33 +90,40 @@ public class GithubAutoApprovalService {
         return cached.isBlank() ? null : cached;
     }
 
+    @SneakyThrows
     private String inspectOwner(String owner) {
         try {
-            JsonNode profile = githubWebClient.get()
+            String profileJson = githubWebClient.get()
                 .uri("/users/{owner}", owner)
                 .retrieve()
-                .bodyToMono(JsonNode.class)
+                .bodyToMono(String.class)
                 .block(Duration.ofSeconds(8));
-            if (profile != null && containsUit(profile.path("bio").asText(null))) {
-                return "GitHub bio contains UIT";
+            if (profileJson != null) {
+                JsonNode profile = objectMapper.readTree(profileJson);
+                if (containsUit(profile.path("bio").asText(null))) {
+                    return "GitHub bio contains UIT";
+                }
             }
 
-            JsonNode repos = githubWebClient.get()
+            String reposJson = githubWebClient.get()
                 .uri(uriBuilder -> uriBuilder.path("/users/{owner}/repos")
                     .queryParam("per_page", 100)
                     .queryParam("sort", "updated")
                     .build(owner))
                 .retrieve()
-                .bodyToMono(JsonNode.class)
+                .bodyToMono(String.class)
                 .block(Duration.ofSeconds(12));
-            if (repos != null && repos.isArray()) {
-                for (JsonNode repo : repos) {
-                    List<String> values = new ArrayList<>();
-                    values.add(repo.path("name").asText(null));
-                    values.add(repo.path("description").asText(null));
-                    repo.path("topics").forEach(topic -> values.add(topic.asText(null)));
-                    if (containsUit(values.toArray(String[]::new))) {
-                        return "another owner repo contains UIT: " + repo.path("name").asText("unknown");
+            if (reposJson != null) {
+                JsonNode repos = objectMapper.readTree(reposJson);
+                if (repos.isArray()) {
+                    for (JsonNode repo : repos) {
+                        List<String> values = new ArrayList<>();
+                        values.add(repo.path("name").asText(null));
+                        values.add(repo.path("description").asText(null));
+                        repo.path("topics").forEach(topic -> values.add(topic.asText(null)));
+                        if (containsUit(values.toArray(String[]::new))) {
+                            return "another owner repo contains UIT: " + repo.path("name").asText("unknown");
+                        }
                     }
                 }
             }

@@ -91,7 +91,10 @@ fun CommunityScreen(
                 )
                 Button(
                     onClick = viewModel::retryLoadChannels,
-                    colors = ButtonDefaults.buttonColors(containerColor = CosmicTheme.colors.plasma)
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = CosmicTheme.colors.plasma,
+                        contentColor = CosmicTheme.colors.void
+                    )
                 ) {
                     Text("Thử lại")
                 }

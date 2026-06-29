@@ -84,19 +84,4 @@ class ReposViewModel @Inject constructor(
             }
         }
     }
-
-    fun evaluateAll() {
-        if (submitting) return
-        submitting = true
-        viewModelScope.launch {
-            try {
-                adminRepository.evaluateAllRepos().fold(
-                    onSuccess = { loadRepos() },
-                    onFailure = { _state.value = _state.value.copy(error = it.message) }
-                )
-            } finally {
-                submitting = false
-            }
-        }
-    }
 }

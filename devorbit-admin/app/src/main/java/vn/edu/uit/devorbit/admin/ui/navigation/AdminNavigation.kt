@@ -56,7 +56,6 @@ sealed class AdminScreen(val route: String, val label: String, val icon: ImageVe
     object Notifications : AdminScreen(AdminRoutes.NOTIFICATIONS, "Thông báo", Icons.Rounded.Notifications, "Hệ thống")
 
     companion object {
-        val primaryTabs = listOf(Dashboard, Students, Courses, Repos)
-        val secondaryScreens = listOf(Candidates, Reviews, Github, AutoApproval, Community, TechStack, Reports, Notes, Notifications)
+        val secondaryScreens = listOf(Candidates, Community, Reviews, Github, TechStack, Reports)
     }
 }

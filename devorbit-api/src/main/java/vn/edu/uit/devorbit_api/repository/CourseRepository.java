@@ -99,4 +99,6 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             ORDER BY COUNT(r) DESC
             """)
     List<CourseSummaryResponse> findActiveWithRepoCountSortedByRepoCount();
+    /** Count only active (open) courses. */
+    long countByIsOpenTrue();
 }

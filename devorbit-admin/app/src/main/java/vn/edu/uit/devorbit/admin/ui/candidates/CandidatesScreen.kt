@@ -305,20 +305,20 @@ private fun CandidateRow(
                     ) {
                         Icon(Icons.Rounded.OpenInNew, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(4.dp))
-                        Text("GitHub", style = ObsidianType.labelMedium)
+                        ObsidianButtonText("GitHub", style = ObsidianType.labelMedium)
                     }
                 }
                 OutlinedButton(
                     onClick = onReject,
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = ObsidianPalette.Red500)
                 ) {
-                    Text("Từ chối", style = ObsidianType.labelMedium)
+                    ObsidianButtonText("Từ chối", style = ObsidianType.labelMedium)
                 }
                 Button(
                     onClick = onApprove,
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Text("Duyệt", style = ObsidianType.labelMedium)
+                    ObsidianButtonText("Duyệt", style = ObsidianType.labelMedium)
                 }
             }
         }
@@ -447,15 +447,16 @@ private fun ApproveCandidateDialog(
                     onConfirm(desc, techs, note)
                 },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = ObsidianPalette.Blue500
+                    containerColor = ObsidianPalette.Blue500,
+                    contentColor = androidx.compose.ui.graphics.Color.White
                 )
             ) {
-                Text("Duyệt", style = ObsidianType.labelMedium)
+                ObsidianButtonText("Duyệt", style = ObsidianType.labelMedium)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Huỷ", style = ObsidianType.labelMedium)
+                ObsidianButtonText("Huỷ", style = ObsidianType.labelMedium)
             }
         }
     )

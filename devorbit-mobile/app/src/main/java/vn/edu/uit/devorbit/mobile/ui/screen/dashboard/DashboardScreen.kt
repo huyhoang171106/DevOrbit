@@ -65,6 +65,7 @@ fun DashboardScreen(
     onNavigateToGroupPlan: (Long) -> Unit = {},
     onNavigateToNotifications: () -> Unit = {},
     onNavigateToProfile: () -> Unit = {},
+    onNavigateToPlanner: () -> Unit = {},
     unreadCount: Int = 0,
     avatarUrl: String? = null,
     showRegistrationOnboarding: Boolean = false,
@@ -296,6 +297,16 @@ fun DashboardScreen(
                 maxWeekOffset = state.maxWeekOffset,
                 onPrevWeek = { viewModel.navigateWeek(1) },
                 onNextWeek = { viewModel.navigateWeek(-1) }
+            )
+        }
+
+        item {
+            PlanSummarySection(
+                majorName = state.planActiveMajor,
+                totalCourses = state.planTotalCourses,
+                totalCredits = state.planTotalCredits,
+                semesterCount = state.planSemesterCount,
+                onNavigateToPlanner = onNavigateToPlanner
             )
         }
 
@@ -618,7 +629,6 @@ private fun SemesterCoursesSection(
                 courses.forEach { course ->
                     CourseChip(
                         course = course,
-                        onRemove = { onRemoveCourse(course.id) },
                         onClick = { onCourseClick(course.id) }
                     )
                 }
@@ -642,7 +652,6 @@ private fun SemesterCoursesSection(
 @Composable
 private fun CourseChip(
     course: CourseEntity,
-    onRemove: () -> Unit,
     onClick: () -> Unit
 ) {
     Surface(
@@ -668,20 +677,50 @@ private fun CourseChip(
                     color = CosmicTheme.colors.textSecondary
                 )
             }
-            IconButton(
-                onClick = onRemove,
-                modifier = Modifier.size(28.dp)
+        }
+    }
+    Spacer(modifier = Modifier.height(6.dp))
+}
+
+@Composable
+private fun PlanSummarySection(
+    majorName: String,
+    totalCourses: Int,
+    totalCredits: Int,
+    semesterCount: Int,
+    onNavigateToPlanner: () -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        color = CosmicTheme.colors.nebula,
+        border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    Icons.Default.Close,
-                    contentDescription = "Xoá",
-                    tint = CosmicTheme.colors.textTertiary,
-                    modifier = Modifier.size(16.dp)
+                Text(
+                    text = majorName.ifBlank { "Lộ trình học tập" },
+                    style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold),
+                    color = CosmicTheme.colors.textPrimary
+                )
+                TextButton(onClick = onNavigateToPlanner) {
+                    Text("Điều chỉnh lộ trình", color = CosmicTheme.colors.plasma)
+                }
+            }
+            if (totalCourses > 0) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "$totalCourses môn · $totalCredits tín chỉ · $semesterCount học kỳ",
+                    style = CosmicTheme.typography.label,
+                    color = CosmicTheme.colors.textTertiary
                 )
             }
         }
     }
-    Spacer(modifier = Modifier.height(6.dp))
 }
 
 @Composable

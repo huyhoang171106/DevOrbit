@@ -250,6 +250,7 @@ class CourseViewModel @Inject constructor(
             try {
                 _currentMajor.value = majorCode
                 settingsDataStore.saveCurrentMajor(majorCode)
+                settingsDataStore.savePlanActiveMajor(majorCode)
 
                 val curriculum = curriculumLoader.load(majorCode)
                 if (curriculum != null) {
@@ -319,6 +320,7 @@ class CourseViewModel @Inject constructor(
 
             val majorCode = _currentMajor.value
             semesterCourseDao.clearByMajor(majorCode)
+            settingsDataStore.savePlanActiveMajor(majorCode)
 
             try {
                 val curriculum = curriculumLoader.load(majorCode)

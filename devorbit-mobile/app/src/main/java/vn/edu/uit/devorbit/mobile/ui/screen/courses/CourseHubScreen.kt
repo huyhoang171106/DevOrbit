@@ -323,7 +323,7 @@ private fun SemesterGraphView(viewModel: CourseViewModel) {
                     shape = RoundedCornerShape(10.dp),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                 ) {
-                    Text("Tạo kế hoạch")
+                    Text("Tạo lộ trình")
                 }
                 if (hasData) {
                     TextButton(
@@ -364,7 +364,7 @@ private fun SemesterGraphView(viewModel: CourseViewModel) {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        "Chọn ngành và bấm \"Tạo kế hoạch\"",
+                        "Chọn ngành và bấm \"Tạo lộ trình\"",
                         color = CosmicTheme.colors.textTertiary,
                         style = CosmicTheme.typography.body
                     )

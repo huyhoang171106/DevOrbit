@@ -53,7 +53,11 @@ data class DashboardUiState(
     val currentMonth: Int = 6,
     val isLoading: Boolean = false,
     val isSavingOnboarding: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val planActiveMajor: String = "",
+    val planTotalCourses: Int = 0,
+    val planTotalCredits: Int = 0,
+    val planSemesterCount: Int = 0
 )
 
 enum class TaskFilter { TODAY, WEEK, ALL }
@@ -93,6 +97,21 @@ class DashboardViewModel @Inject constructor(
         val diff = monday.toEpochDay() - minDate.toEpochDay()
         return if (diff < 0) 0 else (diff / 7).toInt()
     }
+
+    private val MAJOR_OPTIONS = listOf(
+        "IT" to "Công nghệ Thông tin",
+        "IS" to "Hệ thống Thông tin",
+        "CS" to "Khoa học Máy tính",
+        "SE" to "Kỹ thuật Phần mềm",
+        "AI" to "Trí tuệ Nhân tạo",
+        "CE" to "Kỹ thuật Máy tính",
+        "IC" to "Thiết kế Vi mạch",
+        "MM" to "Truyền thông Đa phương tiện",
+        "NT" to "Mạng máy tính",
+        "ATTT" to "An toàn Thông tin",
+        "EC" to "Thương mại Điện tử",
+        "DS" to "Khoa học Dữ liệu"
+    )
 
     private var currentStudentCode: String = ""
     private val dailyUpdateMutex = Mutex()
@@ -166,17 +185,33 @@ class DashboardViewModel @Inject constructor(
 
     private fun observeSemesterCourses() {
         viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
-            settingsDataStore.currentMajor.first().let { major ->
+            settingsDataStore.planActiveMajor.first().let { major ->
+                val majorLabel = MAJOR_OPTIONS.firstOrNull { it.first == major }?.second ?: major
                 combine(
                     semesterCourseDao.getSemesterCoursesByMajor(major),
                     courseDao.getAllCourses()
                 ) { semesterCourses, allCourses ->
                     val courseIds = semesterCourses.map { it.courseId }
                     if (courseIds.isEmpty()) {
-                        _state.update { it.copy(semesterCourses = emptyList()) }
+                        _state.update { it.copy(
+                            semesterCourses = emptyList(),
+                            planActiveMajor = majorLabel,
+                            planTotalCourses = 0,
+                            planTotalCredits = 0,
+                            planSemesterCount = 0
+                        ) }
                     } else {
                         val selected = allCourses.filter { it.id in courseIds }
-                        _state.update { it.copy(semesterCourses = selected) }
+                        val bySemester = semesterCourses.groupBy { it.semester }
+                        val semCount = bySemester.size
+                        val totalCredits = selected.sumOf { it.credits }
+                        _state.update { it.copy(
+                            semesterCourses = selected,
+                            planActiveMajor = majorLabel,
+                            planTotalCourses = selected.size,
+                            planTotalCredits = totalCredits,
+                            planSemesterCount = semCount
+                        ) }
                     }
                 }.collect()
             }

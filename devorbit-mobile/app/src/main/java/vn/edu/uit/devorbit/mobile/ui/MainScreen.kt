@@ -172,6 +172,9 @@ fun MainScreen(
                                     pendingCourseId = courseId
                                     navController.navigate("subjects")
                                 },
+                                onNavigateToPlanner = {
+                                    navController.navigate("subjects")
+                                },
                                 onNavigateToCreateTask = {
                                     navigateToTopLevel("plan")
                                 },

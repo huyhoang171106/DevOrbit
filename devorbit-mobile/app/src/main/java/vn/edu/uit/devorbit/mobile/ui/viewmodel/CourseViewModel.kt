@@ -80,6 +80,9 @@ class CourseViewModel @Inject constructor(
     private val _semesterPlan = MutableStateFlow<Map<Int, List<GraphNode>>>(emptyMap())
     val semesterPlan: StateFlow<Map<Int, List<GraphNode>>> = _semesterPlan.asStateFlow()
 
+    private val _totalProgramCredits = MutableStateFlow(0)
+    val totalProgramCredits: StateFlow<Int> = _totalProgramCredits.asStateFlow()
+
     private fun CourseEntity.toGraphNode(semester: Int) = GraphNode(
         id = this.id,
         name = this.tenMH,
@@ -210,6 +213,13 @@ class CourseViewModel @Inject constructor(
         refreshCourses()
     }
 
+    fun selectMajor(major: String) {
+        _currentMajor.value = major
+        viewModelScope.launch {
+            settingsDataStore.saveCurrentMajor(major)
+        }
+    }
+
     fun loadGraph(major: String? = null) {
         viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _graphLoading.value = true
@@ -227,6 +237,7 @@ class CourseViewModel @Inject constructor(
 
                 val curriculum = curriculumLoader.load(majorCode)
                 if (curriculum != null) {
+                    _totalProgramCredits.value = curriculum.courseCatalog.sumOf { it.credits }
                     val courseMap = courses.value.associateBy { it.maMH }
                     val plan = mutableMapOf<Int, MutableList<GraphNode>>()
                     var nextId = -1L
@@ -256,6 +267,7 @@ class CourseViewModel @Inject constructor(
                     }
                     _semesterPlan.value = plan.toSortedMap()
                 } else {
+                    _totalProgramCredits.value = 0
                     val kg = repository.getCourseGraph(majorCode)
                     _graphNodes.value = kg.nodes
                     _graphLinks.value = kg.links

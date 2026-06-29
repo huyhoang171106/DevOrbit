@@ -250,6 +250,7 @@ private fun SemesterGraphView(viewModel: CourseViewModel) {
     }
 
     val currentMajor by viewModel.currentMajor.collectAsState()
+    val totalProgramCredits by viewModel.totalProgramCredits.collectAsState()
     val hasData = semesterPlan.values.any { it.isNotEmpty() }
 
     val creditMap = remember(allCourses) {
@@ -297,7 +298,7 @@ private fun SemesterGraphView(viewModel: CourseViewModel) {
                         MAJOR_OPTIONS.forEach { (code, name) ->
                             DropdownMenuItem(
                                 text = { Text("$code — $name") },
-                                onClick = { viewModel.loadGraph(code); majorExpanded = false }
+                                onClick = { viewModel.selectMajor(code); majorExpanded = false }
                             )
                         }
                     }
@@ -355,7 +356,7 @@ private fun SemesterGraphView(viewModel: CourseViewModel) {
                     ) {
                         item {
                             Text(
-                                text = "$totalCourses môn · ${semesterPlan.size} học kỳ",
+                                text = "$totalCourses môn · $totalProgramCredits tín chỉ · ${semesterPlan.size} học kỳ",
                                 style = CosmicTheme.typography.label,
                                 color = CosmicTheme.colors.textTertiary
                             )

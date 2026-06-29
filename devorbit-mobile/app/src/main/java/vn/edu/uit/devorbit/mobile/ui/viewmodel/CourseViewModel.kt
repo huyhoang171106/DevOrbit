@@ -215,6 +215,23 @@ class CourseViewModel @Inject constructor(
         _currentMajor.value = major
         viewModelScope.launch {
             settingsDataStore.saveCurrentMajor(major)
+
+            val curriculum = curriculumLoader.load(major)
+            if (curriculum != null) {
+                _courseCatalogCredits.value = curriculum.courseCatalog.associate { it.code to it.credits }
+                _totalProgramCredits.value = curriculum.courseCatalog.sumOf { it.credits }
+            }
+
+            val semesterCourses = semesterCourseDao.getSemesterCoursesByMajor(major).first()
+            if (semesterCourses.isNotEmpty()) {
+                val courseMap = courses.value.associateBy { it.id }
+                val plan = mutableMapOf<Int, MutableList<GraphNode>>()
+                for (sc in semesterCourses) {
+                    val course = courseMap[sc.courseId] ?: continue
+                    plan.getOrPut(sc.semester) { mutableListOf() }.add(course.toGraphNode(sc.semester))
+                }
+                _semesterPlan.value = plan.toSortedMap()
+            }
         }
     }
 

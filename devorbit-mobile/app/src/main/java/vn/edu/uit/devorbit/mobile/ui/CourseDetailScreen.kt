@@ -1,7 +1,6 @@
 package vn.edu.uit.devorbit.mobile.ui
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.OpenInNew
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,6 +32,7 @@ fun CourseDetailScreen(
     onCreatePlan: () -> Unit = {}
 ) {
     var descExpanded by remember { mutableStateOf(false) }
+    val tabs = listOf("Repos (${repos.size})")
     var selectedTechStack by remember(repos) { mutableStateOf<String?>(null) }
     val repoFilterState = remember(repos, selectedTechStack) {
         RepoFilterState(repos = repos, selectedTechStack = selectedTechStack)
@@ -108,54 +109,6 @@ fun CourseDetailScreen(
     }
 }
 
-@Composable
-private fun RepoListItem(repo: RepoSummary, bookmarked: Boolean, onClick: () -> Unit) {
-    Surface(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
-        shape = RoundedCornerShape(14.dp),
-        color = CosmicTheme.colors.nebula,
-        border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(repo.displayName.orEmpty(), style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
-                    color = CosmicTheme.colors.textPrimary, modifier = Modifier.weight(1f))
-                if (bookmarked) Icon(Icons.Rounded.Star, contentDescription = "Da luu", tint = CosmicTheme.colors.plasma, modifier = Modifier.size(16.dp))
-            }
-            if (!repo.description.isNullOrBlank()) {
-                Spacer(Modifier.height(4.dp))
-                Text(repo.description, style = CosmicTheme.typography.label, color = CosmicTheme.colors.textSecondary, maxLines = 2)
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.padding(top = 8.dp)) {
-                if (!repo.primaryLanguage.isNullOrBlank()) {
-                    Surface(shape = RoundedCornerShape(6.dp), color = CosmicTheme.colors.plasma.copy(alpha = 0.12f)) {
-                        Text(repo.primaryLanguage, modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp), style = CosmicTheme.typography.label, color = CosmicTheme.colors.plasma)
-                    }
-                }
-                repo.techStacks.filter { it.name != repo.primaryLanguage }.take(2).forEach { stack ->
-                    if (!stack.name.isNullOrBlank()) {
-                        Surface(shape = RoundedCornerShape(6.dp), color = CosmicTheme.colors.nebula, border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)) {
-                            Text(stack.name, modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp), style = CosmicTheme.typography.label, color = CosmicTheme.colors.textSecondary)
-                        }
-                    }
-                }
-                val avg = repo.averageRating
-                val rCount = repo.reviewCount
-                if (avg != null && avg > 0) {
-                    Surface(shape = RoundedCornerShape(6.dp), color = CosmicTheme.colors.supernova.copy(alpha = 0.12f)) {
-                        Text("\u2605 ${"%.1f".format(avg)}", modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp), style = CosmicTheme.typography.label, color = CosmicTheme.colors.supernova)
-                    }
-                }
-                if (rCount != null && rCount > 0) {
-                    Surface(shape = RoundedCornerShape(6.dp), color = CosmicTheme.colors.plasma.copy(alpha = 0.12f)) {
-                        Text("$rCount reviews", modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp), style = CosmicTheme.typography.label, color = CosmicTheme.colors.plasma)
-                    }
-                }
-            }
-        }
-    }
-}
-
 
 
 fun String.cleanFormatting(): String {
@@ -167,4 +120,71 @@ fun String.cleanFormatting(): String {
                 .replace(Regex("\\s+"), " ")
                 .trim()
         }
+}
+
+@Composable
+private fun RepoListItem(repo: RepoSummary, bookmarked: Boolean, onClick: () -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick,
+        shape = RoundedCornerShape(12.dp),
+        color = CosmicTheme.colors.nebula,
+        border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp).fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Rounded.Star,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = if (bookmarked) CosmicTheme.colors.plasma else CosmicTheme.colors.textTertiary.copy(alpha = 0.4f)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        text = repo.displayName,
+                        style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Medium),
+                        color = CosmicTheme.colors.textPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                if (!repo.description.isNullOrBlank()) {
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = repo.description.cleanFormatting(),
+                        style = CosmicTheme.typography.label,
+                        color = CosmicTheme.colors.textSecondary,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                Spacer(Modifier.height(6.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    if (!repo.primaryLanguage.isNullOrBlank()) {
+                        Surface(shape = RoundedCornerShape(6.dp), color = CosmicTheme.colors.plasma.copy(alpha = 0.08f)) {
+                            Text(repo.primaryLanguage, modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp), style = CosmicTheme.typography.label, color = CosmicTheme.colors.plasma)
+                        }
+                    }
+                    repo.techStacks.filter { it.name != repo.primaryLanguage }.take(2).forEach { stack ->
+                        if (!stack.name.isNullOrBlank()) {
+                            Surface(shape = RoundedCornerShape(6.dp), color = CosmicTheme.colors.nebula, border = BorderStroke(1.dp, CosmicTheme.colors.glassBorder)) {
+                                Text(stack.name, modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp), style = CosmicTheme.typography.label, color = CosmicTheme.colors.textSecondary)
+                            }
+                        }
+                    }
+                }
+            }
+            Icon(
+                Icons.Rounded.OpenInNew,
+                contentDescription = null,
+                tint = CosmicTheme.colors.textTertiary,
+                modifier = Modifier.size(16.dp)
+            )
+        }
+    }
 }

@@ -10,6 +10,7 @@ import java.util.Optional;
 @Repository
 public interface StudentCourseSelectionRepository extends JpaRepository<StudentCourseSelection, Long> {
 
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"course"})
     List<StudentCourseSelection> findByStudentIdOrderByCreatedAtDesc(Long studentId);
 
     Optional<StudentCourseSelection> findByStudentIdAndCourseId(Long studentId, Long courseId);

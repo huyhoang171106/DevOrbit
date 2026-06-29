@@ -96,7 +96,11 @@ class TaskManagementViewModel @Inject constructor(
                     TaskFilter.WEEK -> "week"
                     TaskFilter.ALL -> "all"
                 }
-                var tasks = apiService.getPersonalTasks(filterParam).map { it.toTaskItem() }
+                val personalTasks = apiService.getPersonalTasks(filterParam).map { it.toTaskItem() }
+                val assignedGroupTasks = try {
+                    apiService.getAssignedGroupTasks().map { it.toTaskItem() }
+                } catch (_: Exception) { emptyList() }
+                var tasks = (personalTasks + assignedGroupTasks).distinctBy { it.id to it.isGroupTask }
                 if (searchQuery.isNotBlank()) {
                     tasks = tasks.filter { it.title.contains(searchQuery, ignoreCase = true) }
                 }

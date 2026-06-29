@@ -17,6 +17,7 @@ data class ProfileUiState(
     val email: String = "",
     val isLoggedIn: Boolean = false,
     val bookmarks: List<Bookmark> = emptyList(),
+    val votes: List<vn.edu.uit.devorbit.mobile.data.remote.dto.StudentVoteResponse> = emptyList(),
     val darkMode: Boolean = true,
     val isUploadingAvatar: Boolean = false,
     val avatarUploadSuccess: Boolean = false,
@@ -31,6 +32,7 @@ data class ProfileUiState(
 class ProfileViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val bookmarkRepository: BookmarkRepository,
+    private val apiService: vn.edu.uit.devorbit.mobile.network.ApiService,
     private val settingsDataStore: SettingsDataStore
 ) : ViewModel() {
 
@@ -60,7 +62,15 @@ class ProfileViewModel @Inject constructor(
                     _state.update { it.copy(bookmarks = bookmarks) }
                 }
         }
-        loadProfile()
+
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            val votes = try {
+                apiService.getVotes()
+            } catch (_: Exception) {
+                emptyList()
+            }
+            _state.update { it.copy(votes = votes) }
+        }
     }
 
     private fun loadProfile() {

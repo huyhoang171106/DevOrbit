@@ -345,7 +345,27 @@ class DashboardViewModel @Inject constructor(
 
     fun loadAllCourses() {
         viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
-            val courses = courseDao.getAllCourses().first()
+            var courses = courseDao.getAllCourses().first()
+            if (courses.isEmpty()) {
+                try {
+                    val remoteCourses = apiService.getCourses()
+                    val entities = remoteCourses.map {
+                        CourseEntity(
+                            id = it.id,
+                            maMH = it.code,
+                            tenMH = it.name,
+                            credits = it.credits,
+                            description = it.description.orEmpty(),
+                            semester = it.semester,
+                            loaiMonHoc = it.loaiMonHoc,
+                            repoCount = it.repoCount
+                        )
+                    }
+                    courseDao.deleteAll()
+                    courseDao.upsertCourses(entities)
+                    courses = courseDao.getAllCourses().first()
+                } catch (_: Exception) { }
+            }
             _state.update { it.copy(allCourses = courses) }
         }
     }

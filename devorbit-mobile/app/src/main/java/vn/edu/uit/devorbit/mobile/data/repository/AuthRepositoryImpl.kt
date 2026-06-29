@@ -130,7 +130,8 @@ class AuthRepositoryImpl @Inject constructor(
         }
         inputStream.close()
 
-        val requestBody = tempFile.asRequestBody("image/*".toMediaTypeOrNull())
+        val mimeType = context.contentResolver.getType(uri) ?: "image/jpeg"
+        val requestBody = tempFile.asRequestBody(mimeType.toMediaTypeOrNull())
         val multipart = MultipartBody.Part.createFormData("file", tempFile.name, requestBody)
 
         val response = apiService.uploadAvatar(multipart)

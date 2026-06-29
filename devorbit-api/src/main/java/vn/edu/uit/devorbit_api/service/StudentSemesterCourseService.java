@@ -25,6 +25,7 @@ public class StudentSemesterCourseService {
     private final StudentUserRepository studentUserRepository;
     private final CourseRepository courseRepository;
 
+    @org.springframework.cache.annotation.Cacheable(value = "semesterCourses", key = "#studentCode")
     public List<SemesterCourseResponse> getSelections(String studentCode) {
         StudentUser student = studentUserRepository.findByStudentCode(studentCode)
                 .orElseThrow(() -> new NotFoundException("Student not found"));
@@ -36,6 +37,7 @@ public class StudentSemesterCourseService {
     }
 
     @Transactional
+    @org.springframework.cache.annotation.CacheEvict(value = "semesterCourses", key = "#studentCode")
     public SemesterCourseResponse addSelection(String studentCode, SemesterCourseRequest request) {
         StudentUser student = studentUserRepository.findByStudentCode(studentCode)
                 .orElseThrow(() -> new NotFoundException("Student not found"));
@@ -58,6 +60,7 @@ public class StudentSemesterCourseService {
     }
 
     @Transactional
+    @org.springframework.cache.annotation.CacheEvict(value = "semesterCourses", key = "#studentCode")
     public void removeSelection(String studentCode, Long courseId) {
         StudentUser student = studentUserRepository.findByStudentCode(studentCode)
                 .orElseThrow(() -> new NotFoundException("Student not found"));

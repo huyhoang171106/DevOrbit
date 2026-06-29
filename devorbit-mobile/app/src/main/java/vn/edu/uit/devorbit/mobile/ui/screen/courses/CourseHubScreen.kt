@@ -48,6 +48,7 @@ fun CourseHubScreen(
     onPendingCleared: () -> Unit = {}
 ) {
     var viewMode by remember { mutableStateOf(ViewMode.LIST) }
+    var selectedTutorial by remember { mutableStateOf<vn.edu.uit.devorbit.mobile.data.remote.dto.CourseTutorial?>(null) }
     val courses by viewModel.courses.collectAsStateWithLifecycle()
     val selectedCourse by viewModel.selectedCourse.collectAsStateWithLifecycle()
     val selectedRepo by viewModel.selectedRepo.collectAsStateWithLifecycle()
@@ -195,11 +196,7 @@ fun CourseHubScreen(
                 }
                 }
 
-                if (viewMode == ViewMode.LIST) {
-                    CourseListScreen(viewModel = viewModel, onCourseClick = { viewModel.openCourse(it) })
-                } else {
-                    SemesterGraphView(viewModel = viewModel)
-                }
+                CourseListScreen(viewModel = viewModel, onCourseClick = { viewModel.openCourse(it) })
             }
         }
     }

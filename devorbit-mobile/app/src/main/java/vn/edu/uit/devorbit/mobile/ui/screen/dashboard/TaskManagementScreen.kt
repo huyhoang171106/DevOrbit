@@ -725,7 +725,6 @@ private fun RecurrenceDropdown(
                             checked = isKhongLap,
                             onCheckedChange = {
                                 onRecurrenceChange(if (isKhongLap) "WEEKLY" else null)
-                                expanded = false
                             },
                             colors = CheckboxDefaults.colors(checkedColor = CosmicTheme.colors.plasma)
                         )
@@ -735,7 +734,6 @@ private fun RecurrenceDropdown(
                 },
                 onClick = {
                     onRecurrenceChange(if (isKhongLap) "WEEKLY" else null)
-                    expanded = false
                 }
             )
             DropdownMenuItem(
@@ -745,7 +743,6 @@ private fun RecurrenceDropdown(
                             checked = isMoiNgay,
                             onCheckedChange = {
                                 onRecurrenceChange(if (isMoiNgay) "WEEKLY" else "DAILY")
-                                expanded = false
                             },
                             colors = CheckboxDefaults.colors(checkedColor = CosmicTheme.colors.plasma)
                         )
@@ -755,7 +752,6 @@ private fun RecurrenceDropdown(
                 },
                 onClick = {
                     onRecurrenceChange(if (isMoiNgay) "WEEKLY" else "DAILY")
-                    expanded = false
                 }
             )
             HorizontalDivider()
@@ -768,7 +764,10 @@ private fun RecurrenceDropdown(
                             Checkbox(
                                 checked = isSelected,
                                 onCheckedChange = {
-                                    if (!isDayDisabled) onDayToggle(day)
+                                    if (!isDayDisabled) {
+                                        onDayToggle(day)
+                                        expanded = false
+                                    }
                                 },
                                 enabled = !isDayDisabled,
                                 colors = CheckboxDefaults.colors(checkedColor = CosmicTheme.colors.plasma)
@@ -778,7 +777,10 @@ private fun RecurrenceDropdown(
                         }
                     },
                     onClick = {
-                        if (!isDayDisabled) onDayToggle(day)
+                        if (!isDayDisabled) {
+                            onDayToggle(day)
+                            expanded = false
+                        }
                     },
                     enabled = !isDayDisabled
                 )

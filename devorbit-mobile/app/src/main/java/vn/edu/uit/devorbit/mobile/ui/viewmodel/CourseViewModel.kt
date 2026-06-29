@@ -190,8 +190,7 @@ class CourseViewModel @Inject constructor(
             val filter = _courseSearchFilterState.value
             repository.refreshCourses(
                 query = filter.normalizedQuery,
-                subjectType = filter.subjectType,
-                semester = filter.semester
+                subjectType = filter.subjectType
             )
         }
     }

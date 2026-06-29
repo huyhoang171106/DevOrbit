@@ -208,6 +208,36 @@ fun ProfileScreen(
             }
         }
 
+        // Votes
+        val votes = state.votes.filter { it.voteValue != 0 }
+
+        item { Spacer(Modifier.height(8.dp)) }
+        item {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Filled.ThumbUp, contentDescription = null, tint = CosmicTheme.colors.plasma, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Repo đã vote (${votes.size})", style = CosmicTheme.typography.command, color = CosmicTheme.colors.textTertiary)
+            }
+        }
+        if (votes.isEmpty()) {
+            item {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    color = CosmicTheme.colors.nebula,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+                ) {
+                    Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Chưa vote repo nào", style = CosmicTheme.typography.label, color = CosmicTheme.colors.textTertiary)
+                    }
+                }
+            }
+        } else {
+            items(votes, key = { it.repoId }) { vote ->
+                VoteRow(vote = vote)
+            }
+        }
+
         // Logout
         if (state.isLoggedIn) {
             item {
@@ -256,6 +286,44 @@ private fun BookmarkRow(bookmark: Bookmark, onClick: () -> Unit = {}, onRemove: 
             IconButton(onClick = onRemove) {
                 Icon(Icons.Filled.Favorite, contentDescription = "Bỏ lưu", tint = CosmicTheme.colors.plasma, modifier = Modifier.size(20.dp))
             }
+        }
+    }
+}
+
+@Composable
+private fun VoteRow(vote: vn.edu.uit.devorbit.mobile.data.remote.dto.StudentVoteResponse) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = CosmicTheme.colors.nebula,
+        border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                Icon(
+                    imageVector = if (vote.voteValue > 0) Icons.Filled.ThumbUp else Icons.Filled.ThumbDown,
+                    contentDescription = null,
+                    tint = if (vote.voteValue > 0) CosmicTheme.colors.aurora else CosmicTheme.colors.supernova,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = vote.repoName,
+                    style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Medium),
+                    color = CosmicTheme.colors.textPrimary,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
+            }
+            Text(
+                text = if (vote.voteValue > 0) "Đã upvote" else "Đã downvote",
+                style = CosmicTheme.typography.label,
+                color = if (vote.voteValue > 0) CosmicTheme.colors.aurora else CosmicTheme.colors.supernova
+            )
         }
     }
 }

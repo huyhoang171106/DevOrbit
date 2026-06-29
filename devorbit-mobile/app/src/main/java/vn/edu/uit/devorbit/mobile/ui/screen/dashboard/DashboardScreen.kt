@@ -847,6 +847,19 @@ private fun DaySquare(day: WeekDay) {
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.width(36.dp)
     ) {
+        // Add date number
+        val dayNumber = try {
+            java.time.LocalDate.parse(day.date).dayOfMonth
+        } catch (_: Exception) { null }
+        if (dayNumber != null) {
+            Text(
+                text = dayNumber.toString(),
+                style = CosmicTheme.typography.label.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
+                color = if (day.isToday) CosmicTheme.colors.plasma else CosmicTheme.colors.textSecondary,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+        }
         Text(
             text = day.label,
             style = CosmicTheme.typography.label.copy(fontSize = 9.sp),

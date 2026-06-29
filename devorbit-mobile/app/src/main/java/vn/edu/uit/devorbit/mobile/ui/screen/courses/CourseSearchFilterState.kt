@@ -9,24 +9,16 @@ data class CourseSemesterFilter(
     val label: String,
     val value: Int?
 )
-
 data class CourseSearchFilterState(
     val query: String = "",
-    val subjectType: String? = null,
-    val semester: Int? = null
+    val subjectType: String? = null
 ) {
     val normalizedQuery: String?
         get() = query.trim().takeIf { it.isNotBlank() }
 
+    fun selectSubjectType(value: String?): CourseSearchFilterState = copy(subjectType = if (value == subjectType) null else value)
+    fun selectSemester(semester: Int?): CourseSearchFilterState = this
     fun updateQuery(value: String): CourseSearchFilterState = copy(query = value)
-
-    fun selectSubjectType(value: String?): CourseSearchFilterState {
-        return copy(subjectType = if (value == subjectType) null else value)
-    }
-
-    fun selectSemester(value: Int?): CourseSearchFilterState {
-        return copy(semester = if (value == semester) null else value)
-    }
 
     companion object {
         val subjectFilters = listOf(

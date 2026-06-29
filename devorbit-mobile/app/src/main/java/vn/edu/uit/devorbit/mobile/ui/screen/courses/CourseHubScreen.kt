@@ -44,6 +44,7 @@ fun CourseHubScreen(
     onCreatePlan: () -> Unit = {},
     pendingCourseId: Long? = null,
     pendingRepoId: Long? = null,
+    pendingGalaxy: Boolean = false,
     onPendingCleared: () -> Unit = {}
 ) {
     var viewMode by remember { mutableStateOf(ViewMode.LIST) }
@@ -88,6 +89,13 @@ fun CourseHubScreen(
             processedCourseId = pid
             pendingUnopenedCourseId = null
             viewModel.openCourse(course)
+            onPendingCleared()
+        }
+    }
+
+    LaunchedEffect(pendingGalaxy) {
+        if (pendingGalaxy) {
+            viewMode = ViewMode.GALAXY
             onPendingCleared()
         }
     }

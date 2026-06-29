@@ -46,8 +46,7 @@ data class CourseSearchFilterState(
             CourseSemesterFilter("HK 5", 5),
             CourseSemesterFilter("HK 6", 6),
             CourseSemesterFilter("HK 7", 7),
-            CourseSemesterFilter("HK 8", 8),
-            CourseSemesterFilter("HK 9", 9)
+            CourseSemesterFilter("HK 8", 8)
         )
     }
 }

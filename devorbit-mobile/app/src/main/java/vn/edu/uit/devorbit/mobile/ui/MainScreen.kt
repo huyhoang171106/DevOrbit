@@ -72,6 +72,7 @@ fun MainScreen(
     var showProfileDetail by remember { mutableStateOf(false) }
     var pendingCourseId by remember { mutableStateOf<Long?>(null) }
     var pendingRepoId by remember { mutableStateOf<Long?>(null) }
+    var pendingGalaxy by remember { mutableStateOf(false) }
 
     val unreadCount by notificationVm.unreadCount.collectAsStateWithLifecycle()
     val profileState by profileVm.state.collectAsStateWithLifecycle()
@@ -173,6 +174,7 @@ fun MainScreen(
                                     navController.navigate("subjects")
                                 },
                                 onNavigateToPlanner = {
+                                    pendingGalaxy = true
                                     navController.navigate("subjects")
                                 },
                                 onNavigateToCreateTask = {
@@ -203,9 +205,11 @@ fun MainScreen(
                                 },
                                 pendingCourseId = pendingCourseId,
                                 pendingRepoId = pendingRepoId,
+                                pendingGalaxy = pendingGalaxy,
                                 onPendingCleared = {
                                     pendingCourseId = null
                                     pendingRepoId = null
+                                    pendingGalaxy = false
                                 }
                             )
                         }

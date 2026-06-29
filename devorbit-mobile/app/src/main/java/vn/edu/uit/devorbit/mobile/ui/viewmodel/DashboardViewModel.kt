@@ -183,38 +183,40 @@ class DashboardViewModel @Inject constructor(
         ) }
     }
 
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     private fun observeSemesterCourses() {
         viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
-            settingsDataStore.planActiveMajor.first().let { major ->
-                val majorLabel = MAJOR_OPTIONS.firstOrNull { it.first == major }?.second ?: major
-                combine(
-                    semesterCourseDao.getSemesterCoursesByMajor(major),
-                    courseDao.getAllCourses()
-                ) { semesterCourses, allCourses ->
-                    val courseIds = semesterCourses.map { it.courseId }
-                    if (courseIds.isEmpty()) {
-                        _state.update { it.copy(
-                            semesterCourses = emptyList(),
-                            planActiveMajor = majorLabel,
-                            planTotalCourses = 0,
-                            planTotalCredits = 0,
-                            planSemesterCount = 0
-                        ) }
-                    } else {
-                        val selected = allCourses.filter { it.id in courseIds }
-                        val bySemester = semesterCourses.groupBy { it.semester }
-                        val semCount = bySemester.size
-                        val totalCredits = selected.sumOf { it.credits }
-                        _state.update { it.copy(
-                            semesterCourses = selected,
-                            planActiveMajor = majorLabel,
-                            planTotalCourses = selected.size,
-                            planTotalCredits = totalCredits,
-                            planSemesterCount = semCount
-                        ) }
+            settingsDataStore.planActiveMajor
+                .flatMapLatest { major ->
+                    val majorLabel = MAJOR_OPTIONS.firstOrNull { it.first == major }?.second ?: major
+                    combine(
+                        semesterCourseDao.getSemesterCoursesByMajor(major),
+                        courseDao.getAllCourses()
+                    ) { semesterCourses, allCourses ->
+                        val courseIds = semesterCourses.map { it.courseId }
+                        if (courseIds.isEmpty()) {
+                            _state.update { it.copy(
+                                semesterCourses = emptyList(),
+                                planActiveMajor = majorLabel,
+                                planTotalCourses = 0,
+                                planTotalCredits = 0,
+                                planSemesterCount = 0
+                            ) }
+                        } else {
+                            val selected = allCourses.filter { it.id in courseIds }
+                            val bySemester = semesterCourses.groupBy { it.semester }
+                            val semCount = bySemester.size
+                            val totalCredits = selected.sumOf { it.credits }
+                            _state.update { it.copy(
+                                semesterCourses = selected,
+                                planActiveMajor = majorLabel,
+                                planTotalCourses = selected.size,
+                                planTotalCredits = totalCredits,
+                                planSemesterCount = semCount
+                            ) }
+                        }
                     }
                 }.collect()
-            }
         }
     }
 

@@ -301,22 +301,14 @@ fun DashboardScreen(
         }
 
         item {
-            PlanSummarySection(
+            SemesterCoursesSection(
                 majorName = state.planActiveMajor,
+                courses = state.semesterCourses,
                 totalCourses = state.planTotalCourses,
                 totalCredits = state.planTotalCredits,
                 semesterCount = state.planSemesterCount,
+                onCourseClick = onNavigateToCourse,
                 onNavigateToPlanner = onNavigateToPlanner
-            )
-        }
-
-        item {
-            SemesterCoursesSection(
-                courses = state.semesterCourses,
-                allCourses = state.allCourses,
-                onAddCourse = { viewModel.addSemesterCourse(it) },
-                onRemoveCourse = { viewModel.removeSemesterCourse(it) },
-                onCourseClick = onNavigateToCourse
             )
         }
 
@@ -576,14 +568,14 @@ private fun StatBadge(value: String, label: String, color: Color) {
 
 @Composable
 private fun SemesterCoursesSection(
+    majorName: String,
     courses: List<CourseEntity>,
-    allCourses: List<CourseEntity>,
-    onAddCourse: (Long) -> Unit,
-    onRemoveCourse: (Long) -> Unit,
-    onCourseClick: (Long) -> Unit
+    totalCourses: Int,
+    totalCredits: Int,
+    semesterCount: Int,
+    onCourseClick: (Long) -> Unit,
+    onNavigateToPlanner: () -> Unit
 ) {
-    var showDialog by remember { mutableStateOf(false) }
-
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -597,33 +589,29 @@ private fun SemesterCoursesSection(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Môn học kỳ này",
-                    style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
+                    text = majorName.ifBlank { "Lộ trình học tập" },
+                    style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold),
                     color = CosmicTheme.colors.textPrimary
                 )
-                TextButton(onClick = { showDialog = true }) {
-                    Icon(
-                        Icons.Default.Add,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = CosmicTheme.colors.plasma
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    Text("Thêm", color = CosmicTheme.colors.plasma)
+                TextButton(onClick = onNavigateToPlanner) {
+                    Text("Điều chỉnh lộ trình", color = CosmicTheme.colors.plasma)
                 }
             }
+            if (totalCourses > 0) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "$totalCourses môn · $totalCredits tín chỉ · $semesterCount học kỳ",
+                    style = CosmicTheme.typography.label,
+                    color = CosmicTheme.colors.textTertiary
+                )
+            }
+            Spacer(Modifier.height(12.dp))
             if (courses.isEmpty()) {
                 Text(
                     text = "Bạn chưa có môn học nào",
                     style = CosmicTheme.typography.label,
                     color = CosmicTheme.colors.textTertiary,
                     modifier = Modifier.padding(vertical = 4.dp)
-                )
-                Text(
-                    text = "Nhấn + Thêm để bắt đầu",
-                    style = CosmicTheme.typography.label,
-                    color = CosmicTheme.colors.plasma,
-                    modifier = Modifier.padding(bottom = 12.dp)
                 )
             } else {
                 courses.forEach { course ->
@@ -634,18 +622,6 @@ private fun SemesterCoursesSection(
                 }
             }
         }
-    }
-
-    if (showDialog) {
-        AddCourseDialog(
-            allCourses = allCourses,
-            selectedIds = courses.map { it.id }.toSet(),
-            onAdd = { id ->
-                onAddCourse(id)
-                showDialog = false
-            },
-            onDismiss = { showDialog = false }
-        )
     }
 }
 
@@ -680,47 +656,6 @@ private fun CourseChip(
         }
     }
     Spacer(modifier = Modifier.height(6.dp))
-}
-
-@Composable
-private fun PlanSummarySection(
-    majorName: String,
-    totalCourses: Int,
-    totalCredits: Int,
-    semesterCount: Int,
-    onNavigateToPlanner: () -> Unit
-) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        color = CosmicTheme.colors.nebula,
-        border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = majorName.ifBlank { "Lộ trình học tập" },
-                    style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold),
-                    color = CosmicTheme.colors.textPrimary
-                )
-                TextButton(onClick = onNavigateToPlanner) {
-                    Text("Điều chỉnh lộ trình", color = CosmicTheme.colors.plasma)
-                }
-            }
-            if (totalCourses > 0) {
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = "$totalCourses môn · $totalCredits tín chỉ · $semesterCount học kỳ",
-                    style = CosmicTheme.typography.label,
-                    color = CosmicTheme.colors.textTertiary
-                )
-            }
-        }
-    }
 }
 
 @Composable

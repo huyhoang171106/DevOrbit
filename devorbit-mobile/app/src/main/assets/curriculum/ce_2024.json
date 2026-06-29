@@ -1,0 +1,68 @@
+{
+  "major": "CE",
+  "version": "2024",
+  "semesters": [
+    { "semester": 1, "courses": ["CE005", "IT001", "MA006", "MA003", "SS007", "ENG01"] },
+    { "semester": 2, "courses": ["IT002", "PH002", "MA005", "MA004", "ENG02"] },
+    { "semester": 3, "courses": ["IT003", "IT005", "IT006", "CE119", "SS003", "ENG03"] },
+    { "semester": 4, "courses": ["CE103", "IT007", "CE122", "SS009", "SS010"] },
+    { "semester": 5, "courses": ["IT004", "CE124", "CE224", "CE118", "SS008"] },
+    { "semester": 6, "courses": ["CE212", "CE201", "SS006"] },
+    { "semester": 7, "courses": ["CE502", "CE206", "SS004"] },
+    { "semester": 8, "courses": [] }
+  ],
+  "courseCatalog": [
+    { "code": "CE005", "name": "Giới thiệu ngành Kỹ thuật Máy tính", "credits": 1, "prerequisites": [] },
+    { "code": "CE103", "name": "Vi xử lý – Vi điều khiển", "credits": 4, "prerequisites": [] },
+    { "code": "CE118", "name": "Thiết kế luận lý số", "credits": 4, "prerequisites": [] },
+    { "code": "CE119", "name": "Thực hành Kiến trúc máy tính", "credits": 1, "prerequisites": [] },
+    { "code": "CE122", "name": "Phân tích mạch kỹ thuật", "credits": 4, "prerequisites": [] },
+    { "code": "CE124", "name": "Các thiết bị và mạch điện tử", "credits": 4, "prerequisites": [] },
+    { "code": "CE201", "name": "Đồ án 1", "credits": 2, "prerequisites": [] },
+    { "code": "CE206", "name": "Đồ án 2", "credits": 2, "prerequisites": [] },
+    { "code": "CE212", "name": "Điều khiển tự động", "credits": 4, "prerequisites": [] },
+    { "code": "CE224", "name": "Thiết kế hệ thống nhúng", "credits": 4, "prerequisites": [] },
+    { "code": "CE502", "name": "Thực tập doanh nghiệp", "credits": 2, "prerequisites": [] },
+    { "code": "ENG01", "name": "Anh văn 1", "credits": 4, "prerequisites": [] },
+    { "code": "ENG02", "name": "Anh văn 2", "credits": 4, "prerequisites": ["ENG01"] },
+    { "code": "ENG03", "name": "Anh văn 3", "credits": 4, "prerequisites": ["ENG02"] },
+    { "code": "IT001", "name": "Nhập môn Lập trình", "credits": 4, "prerequisites": [] },
+    { "code": "IT002", "name": "Lập trình hướng đối tượng", "credits": 4, "prerequisites": ["IT001"] },
+    { "code": "IT003", "name": "Cấu trúc dữ liệu và giải thuật", "credits": 4, "prerequisites": ["IT001"] },
+    { "code": "IT004", "name": "Cơ sở dữ liệu", "credits": 4, "prerequisites": ["IT002"] },
+    { "code": "IT005", "name": "Nhập môn mạng máy tính", "credits": 4, "prerequisites": [] },
+    { "code": "IT006", "name": "Kỹ thuật số", "credits": 3, "prerequisites": [] },
+    { "code": "IT007", "name": "Hệ điều hành", "credits": 4, "prerequisites": [] },
+    { "code": "MA003", "name": "Đại số tuyến tính", "credits": 3, "prerequisites": [] },
+    { "code": "MA004", "name": "Cấu trúc rời rạc", "credits": 4, "prerequisites": [] },
+    { "code": "MA005", "name": "Xác suất thống kê", "credits": 3, "prerequisites": [] },
+    { "code": "MA006", "name": "Giải tích", "credits": 4, "prerequisites": [] },
+    { "code": "PH002", "name": "Nhập môn mạch số", "credits": 4, "prerequisites": [] },
+    { "code": "SS003", "name": "Chủ nghĩa xã hội khoa học", "credits": 2, "prerequisites": [] },
+    { "code": "SS004", "name": "Tư tưởng Hồ Chí Minh", "credits": 2, "prerequisites": [] },
+    { "code": "SS006", "name": "Lịch sử Đảng Cộng sản Việt Nam", "credits": 2, "prerequisites": [] },
+    { "code": "SS007", "name": "Triết học Mác - Lênin", "credits": 3, "prerequisites": [] },
+    { "code": "SS008", "name": "Kinh tế chính trị Mác - Lênin", "credits": 2, "prerequisites": [] },
+    { "code": "SS009", "name": "Pháp luật đại cương", "credits": 2, "prerequisites": [] },
+    { "code": "SS010", "name": "Kỹ năng mềm", "credits": 2, "prerequisites": [] }
+  ],
+  "electiveGroups": [
+    {
+      "id": "chuyen_nganh",
+      "name": "chuyen_nganh",
+      "minCredits": 8,
+      "courseCodes": []
+    },
+    {
+      "id": "tu_chon_tu_do",
+      "name": "tu_chon_tu_do",
+      "minCredits": 6,
+      "courseCodes": []
+    }
+  ],
+  "rules": {
+    "maxCreditsPerSemester": 24,
+    "minCreditsPerSemester": 14,
+    "totalSemesters": 8
+  }
+}

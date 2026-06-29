@@ -83,9 +83,10 @@ public class PublicCourseController {
      * Used by the interactive knowledge graph visualization on the frontend.
      */
     @GetMapping("/graph")
-    public KnowledgeGraphResponse getGraph() {
-        log.info("Fetching knowledge graph data...");
-        KnowledgeGraphResponse response = knowledgeGraphService.getGraph();
+    public KnowledgeGraphResponse getGraph(
+            @RequestParam(required = false) String major) {
+        log.info("Fetching knowledge graph data for major: {}...", major);
+        KnowledgeGraphResponse response = knowledgeGraphService.getGraph(major);
         log.info("Knowledge graph data fetched: {} nodes, {} links",
             response.nodes().size(), response.links().size());
         return response;

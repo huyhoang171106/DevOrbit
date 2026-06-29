@@ -26,28 +26,43 @@ public class KnowledgeGraphService {
 
 
 
-    @Cacheable(value = "knowledgeGraph", unless = "#result.nodes.isEmpty()")
     public KnowledgeGraphResponse getGraph() {
-        log.info("Generating knowledge graph...");
+        return getGraph(null);
+    }
+
+    @Cacheable(value = "knowledgeGraph", unless = "#result.nodes.isEmpty()")
+    public KnowledgeGraphResponse getGraph(String major) {
+        log.info("Generating knowledge graph for major: {}...", major);
         List<CourseSummaryResponse> courses = courseService.getActiveCourseSummaries();
         List<CourseRelationshipResponse> relationships = relationshipService.getAll();
         
         log.info("Loaded {} courses and {} relationships", courses.size(), relationships.size());
 
-        // Filter to only mandatory courses from the KTPM curriculum (Khoá 20-2025)
-        // Elective placeholders (TCN*, CDTN) are handled by LLM separately
+        // Resolve major to course code filter
+        Set<String> mandatoryCodes;
+        Map<String, Integer> semesterMap;
+
+        if (major == null || "SE".equalsIgnoreCase(major) || "KTPM".equalsIgnoreCase(major)) {
+            mandatoryCodes = CurriculumConstants.MANDATORY_CODES;
+            semesterMap = CurriculumConstants.CURRICULUM_SEMESTERS;
+        } else {
+            // Unsupported major — return empty
+            log.warn("Unsupported major: {}, returning empty graph", major);
+            return new KnowledgeGraphResponse(List.of(), List.of());
+        }
+
         List<CourseSummaryResponse> mandatory = courses.stream()
-            .filter(c -> CurriculumConstants.MANDATORY_CODES.contains(c.code()))
+            .filter(c -> mandatoryCodes.contains(c.code()))
             .collect(Collectors.toList());
 
-        log.info("Filtered to {} mandatory KTPM courses", mandatory.size());
+        log.info("Filtered to {} mandatory courses for major {}", mandatory.size(), major);
 
         // Build all nodes
         List<KnowledgeGraphResponse.GraphNode> nodes = new ArrayList<>();
 
         for (CourseSummaryResponse c : mandatory) {
             // Use semester from curriculum plan; fall back to DB value
-            Integer semester = CurriculumConstants.CURRICULUM_SEMESTERS.getOrDefault(c.code(), c.semester());
+            Integer semester = semesterMap.getOrDefault(c.code(), c.semester());
             if (semester == null) semester = 1;
 
             nodes.add(new KnowledgeGraphResponse.GraphNode(

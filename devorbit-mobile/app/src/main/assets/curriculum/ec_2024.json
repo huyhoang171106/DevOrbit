@@ -1,0 +1,63 @@
+{
+  "major": "EC",
+  "version": "2024",
+  "semesters": [
+    { "semester": 1, "courses": ["IT001", "MA006", "MA003", "EC005", "ENG01"] },
+    { "semester": 2, "courses": ["IT002", "IT003", "EC001", "MA004", "MA005", "ENG02"] },
+    { "semester": 3, "courses": ["IT004", "IT005", "IS334", "SS004", "ENG03"] },
+    { "semester": 4, "courses": ["EC101", "IS207", "EC208", "EC201", "SS009"] },
+    { "semester": 5, "courses": ["EC312", "EC204", "EC213", "SS003", "SS006"] },
+    { "semester": 6, "courses": ["IS336", "EC335", "EC229", "SS007"] },
+    { "semester": 7, "courses": ["EC222", "EC337", "SS008", "SS010"] },
+    { "semester": 8, "courses": [] }
+  ],
+  "courseCatalog": [
+    { "code": "EC001", "name": "Kinh tế học đại cương", "credits": 4, "prerequisites": [] },
+    { "code": "EC005", "name": "Giới thiệu ngành Thương mại điện tử", "credits": 1, "prerequisites": [] },
+    { "code": "EC101", "name": "Marketing căn bản", "credits": 3, "prerequisites": [] },
+    { "code": "EC201", "name": "Phân tích thiết kế quy trình nghiệp vụ", "credits": 4, "prerequisites": [] },
+    { "code": "EC204", "name": "Marketing điện tử", "credits": 3, "prerequisites": [] },
+    { "code": "EC208", "name": "Quản trị dự án Thương mại điện tử", "credits": 3, "prerequisites": [] },
+    { "code": "EC213", "name": "Quản trị quan hệ khách hàng", "credits": 3, "prerequisites": [] },
+    { "code": "EC222", "name": "Thực tập doanh nghiệp", "credits": 2, "prerequisites": [] },
+    { "code": "EC229", "name": "Pháp luật trong thương mại điện tử", "credits": 2, "prerequisites": [] },
+    { "code": "EC312", "name": "Thiết kế hệ thống thương mại điện tử", "credits": 3, "prerequisites": [] },
+    { "code": "EC335", "name": "An toàn và bảo mật Thương mại điện tử", "credits": 3, "prerequisites": [] },
+    { "code": "EC337", "name": "Hệ thống thanh toán trực tuyến", "credits": 3, "prerequisites": [] },
+    { "code": "ENG01", "name": "Anh văn 1", "credits": 4, "prerequisites": [] },
+    { "code": "ENG02", "name": "Anh văn 2", "credits": 4, "prerequisites": ["ENG01"] },
+    { "code": "ENG03", "name": "Anh văn 3", "credits": 4, "prerequisites": ["ENG02"] },
+    { "code": "IS207", "name": "Phát triển ứng dụng web", "credits": 4, "prerequisites": [] },
+    { "code": "IS334", "name": "Thương mại điện tử", "credits": 3, "prerequisites": [] },
+    { "code": "IS336", "name": "Hoạch định nguồn lực doanh nghiệp", "credits": 4, "prerequisites": [] },
+    { "code": "IT001", "name": "Nhập môn Lập trình", "credits": 4, "prerequisites": [] },
+    { "code": "IT002", "name": "Lập trình hướng đối tượng", "credits": 4, "prerequisites": ["IT001"] },
+    { "code": "IT003", "name": "Cấu trúc dữ liệu và giải thuật", "credits": 4, "prerequisites": ["IT001"] },
+    { "code": "IT004", "name": "Cơ sở dữ liệu", "credits": 4, "prerequisites": ["IT002"] },
+    { "code": "IT005", "name": "Nhập môn mạng máy tính", "credits": 4, "prerequisites": [] },
+    { "code": "MA003", "name": "Đại số tuyến tính", "credits": 3, "prerequisites": [] },
+    { "code": "MA004", "name": "Cấu trúc rời rạc", "credits": 4, "prerequisites": [] },
+    { "code": "MA005", "name": "Xác suất thống kê", "credits": 3, "prerequisites": [] },
+    { "code": "MA006", "name": "Giải tích", "credits": 4, "prerequisites": [] },
+    { "code": "SS003", "name": "Chủ nghĩa xã hội khoa học", "credits": 2, "prerequisites": [] },
+    { "code": "SS004", "name": "Tư tưởng Hồ Chí Minh", "credits": 2, "prerequisites": [] },
+    { "code": "SS006", "name": "Lịch sử Đảng Cộng sản Việt Nam", "credits": 2, "prerequisites": [] },
+    { "code": "SS007", "name": "Triết học Mác - Lênin", "credits": 3, "prerequisites": [] },
+    { "code": "SS008", "name": "Kinh tế chính trị Mác - Lênin", "credits": 2, "prerequisites": [] },
+    { "code": "SS009", "name": "Pháp luật đại cương", "credits": 2, "prerequisites": [] },
+    { "code": "SS010", "name": "Kỹ năng mềm", "credits": 2, "prerequisites": [] }
+  ],
+  "electiveGroups": [
+    {
+      "id": "tu_chon_tu_do",
+      "name": "tu_chon_tu_do",
+      "minCredits": 9,
+      "courseCodes": []
+    }
+  ],
+  "rules": {
+    "maxCreditsPerSemester": 24,
+    "minCreditsPerSemester": 14,
+    "totalSemesters": 8
+  }
+}

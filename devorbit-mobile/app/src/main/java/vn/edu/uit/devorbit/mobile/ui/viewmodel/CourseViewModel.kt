@@ -13,21 +13,23 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collect
 import vn.edu.uit.devorbit.mobile.data.datastore.SettingsDataStore
 import vn.edu.uit.devorbit.mobile.data.repository.StreakTracker
+import vn.edu.uit.devorbit.mobile.data.local.CurriculumLoader
+import vn.edu.uit.devorbit.mobile.data.local.dao.SemesterCourseDao
 import vn.edu.uit.devorbit.mobile.data.local.entity.CourseEntity
+import vn.edu.uit.devorbit.mobile.data.local.entity.SemesterCourseEntity
 import vn.edu.uit.devorbit.mobile.data.repository.AcademicRepository
 import vn.edu.uit.devorbit.mobile.data.remote.dto.AiResponse
-import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseArticle
-import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseTutorial
-import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseYoutubePlaylist
 import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSocialInfoResponse
 import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSummary
 import vn.edu.uit.devorbit.mobile.data.remote.dto.ReviewResponse
+import vn.edu.uit.devorbit.mobile.domain.engine.SemesterValidationService
 import vn.edu.uit.devorbit.mobile.domain.model.GraphNode
 import vn.edu.uit.devorbit.mobile.domain.model.GraphLink
 import vn.edu.uit.devorbit.mobile.domain.repository.Bookmark
 import vn.edu.uit.devorbit.mobile.domain.repository.BookmarkRepository
 import vn.edu.uit.devorbit.mobile.ui.screen.courses.CourseHubNavigationState
 import vn.edu.uit.devorbit.mobile.ui.screen.courses.CourseSearchFilterState
+import android.util.Log
 import java.net.HttpURLConnection
 import java.net.URL
 import javax.inject.Inject
@@ -39,17 +41,73 @@ class CourseViewModel @Inject constructor(
     private val repository: AcademicRepository,
     private val bookmarkRepository: BookmarkRepository,
     private val streakTracker: StreakTracker,
-    private val settingsDataStore: SettingsDataStore
+    private val settingsDataStore: SettingsDataStore,
+    private val semesterCourseDao: SemesterCourseDao,
+    private val curriculumLoader: CurriculumLoader
 ) : ViewModel() {
 
     val courses: StateFlow<List<CourseEntity>> = repository.allCourses
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    private val validationService = SemesterValidationService()
+
+    private val _currentMajor = MutableStateFlow("SE")
+    val currentMajor: StateFlow<String> = _currentMajor.asStateFlow()
+
+    private val _prerequisiteMap = MutableStateFlow<Map<String, List<String>>>(emptyMap())
+    val prerequisiteMap: StateFlow<Map<String, List<String>>> = _prerequisiteMap.asStateFlow()
+
+    private fun buildPrerequisiteMap(nodes: List<GraphNode>, links: List<GraphLink>): Map<String, List<String>> {
+        val idToCode = nodes.associate { it.id to it.code }
+        val prereqMap = mutableMapOf<String, MutableList<String>>()
+        for (link in links) {
+            if (link.type != "PREREQUISITE") continue
+            val targetCode = idToCode[link.targetId] ?: continue
+            val sourceCode = idToCode[link.sourceId] ?: continue
+            prereqMap.getOrPut(targetCode) { mutableListOf() }.add(sourceCode)
+        }
+        return prereqMap
+    }
 
     private val _graphNodes = MutableStateFlow<List<GraphNode>>(emptyList())
     val graphNodes: StateFlow<List<GraphNode>> = _graphNodes.asStateFlow()
 
     private val _graphLinks = MutableStateFlow<List<GraphLink>>(emptyList())
     val graphLinks: StateFlow<List<GraphLink>> = _graphLinks.asStateFlow()
+
+    private val _semesterPlan = MutableStateFlow<Map<Int, List<GraphNode>>>(emptyMap())
+    val semesterPlan: StateFlow<Map<Int, List<GraphNode>>> = _semesterPlan.asStateFlow()
+
+    private val _totalProgramCredits = MutableStateFlow(0)
+    val totalProgramCredits: StateFlow<Int> = _totalProgramCredits.asStateFlow()
+
+    private val _courseCatalogCredits = MutableStateFlow<Map<String, Int>>(emptyMap())
+    val courseCatalogCredits: StateFlow<Map<String, Int>> = _courseCatalogCredits.asStateFlow()
+
+    private fun CourseEntity.toGraphNode(semester: Int) = GraphNode(
+        id = this.id,
+        name = this.tenMH,
+        code = this.maMH,
+        description = this.description,
+        level = 0,
+        impactScore = 0.0,
+        semester = semester
+    )
+
+    private suspend fun loadFromRoom() {
+        val majorCode = _currentMajor.value
+        val semesterCourses = semesterCourseDao.getSemesterCoursesByMajor(majorCode).first()
+        if (semesterCourses.isEmpty()) return
+        val courseMap = courses.value.associateBy { it.id }
+        val plan = mutableMapOf<Int, MutableList<GraphNode>>()
+        for (sc in semesterCourses) {
+            val course = courseMap[sc.courseId] ?: continue
+            plan.getOrPut(sc.semester) { mutableListOf() }.add(course.toGraphNode(sc.semester))
+        }
+        if (plan.isNotEmpty()) {
+            _semesterPlan.value = plan.toSortedMap()
+        }
+    }
 
     private val _graphLoading = MutableStateFlow(false)
     val graphLoading: StateFlow<Boolean> = _graphLoading.asStateFlow()
@@ -71,15 +129,6 @@ class CourseViewModel @Inject constructor(
 
     private val _detailRepos = MutableStateFlow<List<RepoSummary>>(emptyList())
     val detailRepos: StateFlow<List<RepoSummary>> = _detailRepos.asStateFlow()
-
-    private val _detailTutorials = MutableStateFlow<List<CourseTutorial>>(emptyList())
-    val detailTutorials: StateFlow<List<CourseTutorial>> = _detailTutorials.asStateFlow()
-
-    private val _detailVideos = MutableStateFlow<List<CourseYoutubePlaylist>>(emptyList())
-    val detailVideos: StateFlow<List<CourseYoutubePlaylist>> = _detailVideos.asStateFlow()
-
-    private val _detailArticles = MutableStateFlow<List<CourseArticle>>(emptyList())
-    val detailArticles: StateFlow<List<CourseArticle>> = _detailArticles.asStateFlow()
 
     private val _detailLoading = MutableStateFlow(false)
     val detailLoading: StateFlow<Boolean> = _detailLoading.asStateFlow()
@@ -117,12 +166,22 @@ class CourseViewModel @Inject constructor(
     private var currentStudentCode: String = ""
     init {
         refreshCourses()
-        loadGraph()
         loadAllBookmarkState()
         viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             settingsDataStore.studentCode.collect { code ->
                 currentStudentCode = code.orEmpty()
             }
+        }
+        viewModelScope.launch {
+            settingsDataStore.currentMajor.first().let { saved ->
+                _currentMajor.value = saved
+                // Load curriculum credits for display even when restoring from Room
+                val curriculum = curriculumLoader.load(saved)
+                if (curriculum != null) {
+                    _courseCatalogCredits.value = curriculum.courseCatalog.associate { it.code to it.credits }
+                }
+            }
+            loadFromRoom()
         }
     }
 
@@ -152,20 +211,253 @@ class CourseViewModel @Inject constructor(
         refreshCourses()
     }
 
-    fun loadGraph() {
+    fun selectMajor(major: String) {
+        _currentMajor.value = major
+        viewModelScope.launch {
+            settingsDataStore.saveCurrentMajor(major)
+
+            val curriculum = curriculumLoader.load(major)
+            if (curriculum != null) {
+                _courseCatalogCredits.value = curriculum.courseCatalog.associate { it.code to it.credits }
+                _totalProgramCredits.value = curriculum.courseCatalog.sumOf { it.credits }
+            }
+
+            val semesterCourses = semesterCourseDao.getSemesterCoursesByMajor(major).first()
+            if (semesterCourses.isNotEmpty()) {
+                val courseMap = courses.value.associateBy { it.id }
+                val plan = mutableMapOf<Int, MutableList<GraphNode>>()
+                for (sc in semesterCourses) {
+                    val course = courseMap[sc.courseId] ?: continue
+                    plan.getOrPut(sc.semester) { mutableListOf() }.add(course.toGraphNode(sc.semester))
+                }
+                _semesterPlan.value = plan.toSortedMap()
+            }
+        }
+    }
+
+    fun loadGraph(major: String? = null) {
         viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _graphLoading.value = true
+            _graphNodes.value = emptyList()
+            _graphLinks.value = emptyList()
+            _prerequisiteMap.value = emptyMap()
+            _semesterPlan.value = emptyMap()
             _graphError.value = null
+
+            val majorCode = major ?: _currentMajor.value
+            semesterCourseDao.clearByMajor(majorCode)
+
             try {
-                val kg = repository.getCourseGraph()
-                _graphNodes.value = kg.nodes
-                _graphLinks.value = kg.links
+                _currentMajor.value = majorCode
+                settingsDataStore.saveCurrentMajor(majorCode)
+                settingsDataStore.savePlanActiveMajor(majorCode)
+
+                val curriculum = curriculumLoader.load(majorCode)
+                if (curriculum != null) {
+                    _totalProgramCredits.value = curriculum.courseCatalog.sumOf { it.credits }
+                    val catalogCredits = curriculum.courseCatalog.associate { it.code to it.credits }
+                    _courseCatalogCredits.value = catalogCredits
+                    val courseMap = courses.value.associateBy { it.maMH }
+                    val plan = mutableMapOf<Int, MutableList<GraphNode>>()
+                    var nextId = -1L
+
+                    for (sd in curriculum.semesters) {
+                        val nodes = mutableListOf<GraphNode>()
+                        for (code in sd.courses) {
+                            if (code !in catalogCredits) {
+                                Log.w("CourseViewModel", "loadGraph: course $code not found in curriculum courseCatalog")
+                            }
+                            val dbCourse = courseMap[code]
+                            val id = dbCourse?.id ?: nextId--
+                            nodes.add(GraphNode(
+                                id = id,
+                                name = dbCourse?.tenMH ?: code,
+                                code = code,
+                                description = null,
+                                level = 0,
+                                impactScore = 0.0,
+                                semester = sd.semester
+                            ))
+                            if (dbCourse != null) {
+                                semesterCourseDao.addCourse(
+                                    SemesterCourseEntity(courseId = dbCourse.id, majorCode = majorCode, semester = sd.semester)
+                                )
+                            }
+                        }
+                        plan[sd.semester] = nodes
+                    }
+                    _semesterPlan.value = plan.toSortedMap()
+                } else {
+                    _totalProgramCredits.value = 0
+                    _courseCatalogCredits.value = emptyMap()
+                    val kg = repository.getCourseGraph(majorCode)
+                    _graphNodes.value = kg.nodes
+                    _graphLinks.value = kg.links
+                    _prerequisiteMap.value = buildPrerequisiteMap(kg.nodes, kg.links)
+                    _semesterPlan.value = kg.nodes
+                        .filter { it.semester != null && it.semester in 1..8 }
+                        .groupBy { it.semester!! }
+                        .toSortedMap()
+                    for (node in kg.nodes) {
+                        val sem = node.semester ?: continue
+                        if (sem !in 1..8) continue
+                        semesterCourseDao.addCourse(SemesterCourseEntity(courseId = node.id, majorCode = majorCode, semester = sem))
+                    }
+                }
             } catch (e: Exception) {
-                _graphError.value = e.message ?: "Failed to load graph"
+                _graphError.value = e.message ?: "Không thể tải kế hoạch"
             } finally {
                 _graphLoading.value = false
             }
         }
+    }
+
+    fun resetPlan() {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            _graphLoading.value = true
+            _semesterPlan.value = emptyMap()
+            _graphError.value = null
+
+            val majorCode = _currentMajor.value
+            semesterCourseDao.clearByMajor(majorCode)
+            settingsDataStore.savePlanActiveMajor(majorCode)
+
+            try {
+                val curriculum = curriculumLoader.load(majorCode)
+                if (curriculum != null) {
+                    _totalProgramCredits.value = curriculum.courseCatalog.sumOf { it.credits }
+                    val catalogCredits = curriculum.courseCatalog.associate { it.code to it.credits }
+                    _courseCatalogCredits.value = catalogCredits
+                    val courseMap = courses.value.associateBy { it.maMH }
+                    val plan = mutableMapOf<Int, MutableList<GraphNode>>()
+                    var nextId = -1L
+
+                    for (sd in curriculum.semesters) {
+                        val nodes = mutableListOf<GraphNode>()
+                        for (code in sd.courses) {
+                            if (code !in catalogCredits) {
+                                Log.w("CourseViewModel", "resetPlan: course $code not found in curriculum courseCatalog")
+                            }
+                            val dbCourse = courseMap[code]
+                            val id = dbCourse?.id ?: nextId--
+                            nodes.add(GraphNode(
+                                id = id,
+                                name = dbCourse?.tenMH ?: code,
+                                code = code,
+                                description = null,
+                                level = 0,
+                                impactScore = 0.0,
+                                semester = sd.semester
+                            ))
+                            if (dbCourse != null) {
+                                semesterCourseDao.addCourse(
+                                    SemesterCourseEntity(courseId = dbCourse.id, majorCode = majorCode, semester = sd.semester)
+                                )
+                            }
+                        }
+                        plan[sd.semester] = nodes
+                    }
+                    _semesterPlan.value = plan.toSortedMap()
+                }
+            } catch (e: Exception) {
+                _graphError.value = e.message ?: "Không thể reset kế hoạch"
+            } finally {
+                _graphLoading.value = false
+            }
+        }
+    }
+
+    fun clearGraphError() {
+        _graphError.value = null
+    }
+
+    fun addCourseToSemester(semester: Int, courseCode: String) {
+        val result = validationService.validateAddCourse(
+            semester, courseCode, courses.value, _semesterPlan.value, _prerequisiteMap.value
+        )
+        if (!result.isValid) {
+            _graphError.value = result.errors.joinToString("\n")
+            return
+        }
+        val existing = courses.value.find { it.maMH == courseCode } ?: return
+        _semesterPlan.value = _semesterPlan.value.toMutableMap().also { map ->
+            val current = map[semester]?.toMutableList() ?: mutableListOf()
+            current.add(existing.toGraphNode(semester))
+            map[semester] = current
+        }
+        val majorCode = _currentMajor.value
+        viewModelScope.launch {
+            if (!semesterCourseDao.isCourseAdded(existing.id, majorCode)) {
+                semesterCourseDao.addCourse(SemesterCourseEntity(courseId = existing.id, majorCode = majorCode, semester = semester))
+            }
+        }
+    }
+
+    fun removeCourseFromSemester(semester: Int, courseCode: String) {
+        val existing = courses.value.find { it.maMH == courseCode }
+        val course = existing ?: return
+        val result = validationService.validateRemoveCourse(
+            semester, courseCode, courses.value, _semesterPlan.value
+        )
+        _semesterPlan.value = _semesterPlan.value.toMutableMap().also { map ->
+            map[semester] = (map[semester] ?: emptyList()).filter { it.code != courseCode }
+        }
+        if (result.warnings.isNotEmpty()) {
+            _graphError.value = result.warnings.joinToString("\n")
+        }
+        val majorCode = _currentMajor.value
+        viewModelScope.launch {
+            semesterCourseDao.removeCourse(course.id, majorCode)
+        }
+    }
+
+    fun moveCourse(fromSemester: Int, toSemester: Int, courseCode: String) {
+        val course = courses.value.find { it.maMH == courseCode } ?: return
+        val currentPlan = _semesterPlan.value
+        val targetNodes = currentPlan[toSemester].orEmpty()
+        if (targetNodes.any { it.code == courseCode }) {
+            _graphError.value = "Môn $courseCode đã tồn tại ở học kỳ $toSemester"
+            return
+        }
+        val targetCredits = targetNodes.sumOf { node ->
+            courses.value.find { it.maMH == node.code }?.credits ?: 0
+        }
+        if (targetCredits + course.credits > SemesterValidationService.MAX_CREDITS_PER_SEMESTER) {
+            _graphError.value = "Học kỳ $toSemester đã đạt tối đa ${SemesterValidationService.MAX_CREDITS_PER_SEMESTER} tín chỉ"
+            return
+        }
+        val prereqs = _prerequisiteMap.value[courseCode].orEmpty()
+        if (prereqs.isNotEmpty()) {
+            val plannedBefore = currentPlan.entries
+                .filter { it.key < toSemester }
+                .flatMap { it.value.map { n -> n.code } }
+                .toSet()
+            val missing = prereqs.filter { it !in plannedBefore }
+            if (missing.isNotEmpty()) {
+                _graphError.value = "Không thể chuyển: thiếu môn tiên quyết ${missing.joinToString(", ")}"
+                return
+            }
+        }
+        _semesterPlan.value = currentPlan.toMutableMap().also { map ->
+            map[fromSemester] = (map[fromSemester] ?: emptyList()).filter { it.code != courseCode }
+            val updated = map[toSemester]?.toMutableList() ?: mutableListOf()
+            updated.add(course.toGraphNode(toSemester))
+            map[toSemester] = updated
+        }
+        val majorCode = _currentMajor.value
+        viewModelScope.launch {
+            semesterCourseDao.moveCourse(course.id, toSemester, majorCode)
+        }
+    }
+
+    fun getAvailableCourses(query: String = ""): List<CourseEntity> {
+        val plannedCodes = _semesterPlan.value.values.flatten().map { it.code }.toSet()
+        return courses.value
+            .filter { it.maMH !in plannedCodes }
+            .filter {
+                query.isBlank() || it.maMH.contains(query, ignoreCase = true) || it.tenMH.contains(query, ignoreCase = true)
+            }
+            .sortedBy { it.maMH }
     }
 
     fun getNodesGroupedBySemester(): Map<Int, List<GraphNode>> {
@@ -265,9 +557,6 @@ class CourseViewModel @Inject constructor(
         _selectedRepo.value = null
         _courseHubNavigationState.value = CourseHubNavigationState()
         _detailRepos.value = emptyList()
-        _detailTutorials.value = emptyList()
-        _detailVideos.value = emptyList()
-        _detailArticles.value = emptyList()
         _detailError.value = null
     }
 
@@ -278,15 +567,9 @@ class CourseViewModel @Inject constructor(
             try {
                 val detail = repository.loadCourseDetail(courseId)
                 _detailRepos.value = detail.repos
-                _detailTutorials.value = detail.tutorials
-                _detailVideos.value = detail.videos
-                _detailArticles.value = detail.articles
             } catch (e: Exception) {
                 _detailError.value = e.message ?: "Failed to load course detail"
                 _detailRepos.value = emptyList()
-                _detailTutorials.value = emptyList()
-                _detailVideos.value = emptyList()
-                _detailArticles.value = emptyList()
             } finally {
                 _detailLoading.value = false
             }

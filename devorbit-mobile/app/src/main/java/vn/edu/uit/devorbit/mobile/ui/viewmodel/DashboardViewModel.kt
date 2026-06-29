@@ -53,7 +53,11 @@ data class DashboardUiState(
     val currentMonth: Int = 6,
     val isLoading: Boolean = false,
     val isSavingOnboarding: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val planActiveMajor: String = "",
+    val planTotalCourses: Int = 0,
+    val planTotalCredits: Int = 0,
+    val planSemesterCount: Int = 0
 )
 
 enum class TaskFilter { TODAY, WEEK, ALL }
@@ -93,6 +97,21 @@ class DashboardViewModel @Inject constructor(
         val diff = monday.toEpochDay() - minDate.toEpochDay()
         return if (diff < 0) 0 else (diff / 7).toInt()
     }
+
+    private val MAJOR_OPTIONS = listOf(
+        "IT" to "Công nghệ Thông tin",
+        "IS" to "Hệ thống Thông tin",
+        "CS" to "Khoa học Máy tính",
+        "SE" to "Kỹ thuật Phần mềm",
+        "AI" to "Trí tuệ Nhân tạo",
+        "CE" to "Kỹ thuật Máy tính",
+        "IC" to "Thiết kế Vi mạch",
+        "MM" to "Truyền thông Đa phương tiện",
+        "NT" to "Mạng máy tính",
+        "ATTT" to "An toàn Thông tin",
+        "EC" to "Thương mại Điện tử",
+        "DS" to "Khoa học Dữ liệu"
+    )
 
     private var currentStudentCode: String = ""
     private val dailyUpdateMutex = Mutex()
@@ -164,37 +183,58 @@ class DashboardViewModel @Inject constructor(
         ) }
     }
 
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     private fun observeSemesterCourses() {
         viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
-            combine(
-                semesterCourseDao.getAllSemesterCourses(),
-                courseDao.getAllCourses()
-            ) { semesterCourses, allCourses ->
-                val courseIds = semesterCourses.map { it.courseId }
-                if (courseIds.isEmpty()) {
-                    _state.update { it.copy(semesterCourses = emptyList()) }
-                } else {
-                    val selected = allCourses.filter { it.id in courseIds }
-                    _state.update { it.copy(semesterCourses = selected) }
-                }
-            }.collect()
+            settingsDataStore.planActiveMajor
+                .flatMapLatest { major ->
+                    val majorLabel = MAJOR_OPTIONS.firstOrNull { it.first == major }?.second ?: major
+                    combine(
+                        semesterCourseDao.getSemesterCoursesByMajor(major),
+                        courseDao.getAllCourses()
+                    ) { semesterCourses, allCourses ->
+                        val courseIds = semesterCourses.map { it.courseId }
+                        if (courseIds.isEmpty()) {
+                            _state.update { it.copy(
+                                semesterCourses = emptyList(),
+                                planActiveMajor = majorLabel,
+                                planTotalCourses = 0,
+                                planTotalCredits = 0,
+                                planSemesterCount = 0
+                            ) }
+                        } else {
+                            val selected = allCourses.filter { it.id in courseIds }
+                            val bySemester = semesterCourses.groupBy { it.semester }
+                            val semCount = bySemester.size
+                            val totalCredits = selected.sumOf { it.credits }
+                            _state.update { it.copy(
+                                semesterCourses = selected,
+                                planActiveMajor = majorLabel,
+                                planTotalCourses = selected.size,
+                                planTotalCredits = totalCredits,
+                                planSemesterCount = semCount
+                            ) }
+                        }
+                    }
+                }.collect()
         }
     }
 
     private fun syncSemesterCourses() {
         viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             try {
+                val major = settingsDataStore.currentMajor.first()
                 val remote = apiService.getSemesterCourses()
-                val localIds = semesterCourseDao.getSemesterCourseIds().toSet()
+                val localIds = semesterCourseDao.getSemesterCourseIds(major).toSet()
                 val remoteIds = remote.map { it.courseId }.toSet()
                 for (r in remote) {
                     if (r.courseId !in localIds) {
-                        semesterCourseDao.addCourse(SemesterCourseEntity(courseId = r.courseId))
+                        semesterCourseDao.addCourse(SemesterCourseEntity(courseId = r.courseId, majorCode = major))
                     }
                 }
                 for (lid in localIds) {
                     if (lid !in remoteIds) {
-                        semesterCourseDao.removeCourse(lid)
+                        semesterCourseDao.removeCourse(lid, major)
                     }
                 }
             } catch (_: Exception) {
@@ -313,8 +353,9 @@ class DashboardViewModel @Inject constructor(
     fun addSemesterCourse(courseId: Long) {
         viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             try {
+                val major = settingsDataStore.currentMajor.first()
                 apiService.addSemesterCourse(mapOf("courseId" to courseId))
-                semesterCourseDao.addCourse(SemesterCourseEntity(courseId = courseId))
+                semesterCourseDao.addCourse(SemesterCourseEntity(courseId = courseId, majorCode = major))
                 loadWeekDays()
             } catch (_: Exception) {
                 _state.update { it.copy(error = "Không thể đồng bộ môn học lên server") }
@@ -325,8 +366,9 @@ class DashboardViewModel @Inject constructor(
     fun removeSemesterCourse(courseId: Long) {
         viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             try {
+                val major = settingsDataStore.currentMajor.first()
                 apiService.removeSemesterCourse(courseId)
-                semesterCourseDao.removeCourse(courseId)
+                semesterCourseDao.removeCourse(courseId, major)
             } catch (_: Exception) {
                 _state.update { it.copy(error = "Không thể đồng bộ môn học lên server") }
             }
@@ -346,10 +388,11 @@ class DashboardViewModel @Inject constructor(
         viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             _state.update { it.copy(isSavingOnboarding = true, error = null) }
             try {
+                val major = settingsDataStore.currentMajor.first()
                 val existingCourseIds = _state.value.semesterCourses.mapTo(mutableSetOf()) { it.id }
                 for (courseId in courseIds - existingCourseIds) {
                     apiService.addSemesterCourse(mapOf("courseId" to courseId))
-                    semesterCourseDao.addCourse(SemesterCourseEntity(courseId = courseId))
+                    semesterCourseDao.addCourse(SemesterCourseEntity(courseId = courseId, majorCode = major))
                 }
 
                 val existingStacks = _state.value.techStacks.mapTo(mutableSetOf()) { it.name }

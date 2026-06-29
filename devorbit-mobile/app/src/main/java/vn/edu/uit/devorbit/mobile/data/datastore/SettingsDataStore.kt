@@ -28,6 +28,8 @@ class SettingsDataStore @Inject constructor(
         val STUDENT_ID = intPreferencesKey("student_id")
         val DARK_MODE = booleanPreferencesKey("dark_mode")
         val REFRESH_TOKEN = stringPreferencesKey("refresh_token")
+        val CURRENT_MAJOR = stringPreferencesKey("current_major")
+        val PLAN_ACTIVE_MAJOR = stringPreferencesKey("plan_active_major")
     }
 
     val token: Flow<String?> = context.settingsStore.data.map { it[Keys.JWT_TOKEN] }
@@ -68,6 +70,18 @@ class SettingsDataStore @Inject constructor(
 
     suspend fun setDarkMode(enabled: Boolean) {
         context.settingsStore.edit { it[Keys.DARK_MODE] = enabled }
+    }
+
+    val currentMajor: Flow<String> = context.settingsStore.data.map { it[Keys.CURRENT_MAJOR] ?: "SE" }
+
+    suspend fun saveCurrentMajor(major: String) {
+        context.settingsStore.edit { it[Keys.CURRENT_MAJOR] = major }
+    }
+
+    val planActiveMajor: Flow<String> = context.settingsStore.data.map { it[Keys.PLAN_ACTIVE_MAJOR] ?: "SE" }
+
+    suspend fun savePlanActiveMajor(major: String) {
+        context.settingsStore.edit { it[Keys.PLAN_ACTIVE_MAJOR] = major }
     }
 
     suspend fun clearAll() {

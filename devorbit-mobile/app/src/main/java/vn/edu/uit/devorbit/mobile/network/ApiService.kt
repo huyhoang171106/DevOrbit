@@ -50,7 +50,9 @@ interface ApiService {
     suspend fun getCourseRelationships(@Path("courseId") courseId: Long): List<CourseRelationshipResponse>
 
     @GET("/api/courses/graph")
-    suspend fun getKnowledgeGraph(): GraphResponse
+    suspend fun getKnowledgeGraph(
+        @Query("major") major: String? = null
+    ): GraphResponse
 
     // Student Auth
     @POST("/api/student/login")

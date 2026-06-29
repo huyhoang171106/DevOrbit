@@ -10,9 +10,6 @@ import vn.edu.uit.devorbit.mobile.data.local.entity.CourseRelationshipEntity
 import vn.edu.uit.devorbit.mobile.data.local.entity.RepoEntity
 import vn.edu.uit.devorbit.mobile.data.remote.dto.GraphNodeDto
 import vn.edu.uit.devorbit.mobile.data.remote.dto.GraphLinkDto
-import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseArticle
-import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseTutorial
-import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseYoutubePlaylist
 import vn.edu.uit.devorbit.mobile.data.remote.dto.AiResponse
 import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSocialInfoResponse
 import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSummary
@@ -25,10 +22,7 @@ import vn.edu.uit.devorbit.mobile.network.ApiService
 import javax.inject.Inject
 
 data class CourseDetailData(
-    val repos: List<RepoSummary>,
-    val tutorials: List<CourseTutorial>,
-    val videos: List<CourseYoutubePlaylist>,
-    val articles: List<CourseArticle>
+    val repos: List<RepoSummary>
 )
 
 class AcademicRepository @Inject constructor(
@@ -125,12 +119,7 @@ class AcademicRepository @Inject constructor(
             }
         }
 
-        return CourseDetailData(
-            repos = repos,
-            tutorials = runCatching { apiService.getTutorials(courseId) }.getOrDefault(emptyList()),
-            videos = runCatching { apiService.getVideos(courseId) }.getOrDefault(emptyList()),
-            articles = runCatching { apiService.getArticles(courseId) }.getOrDefault(emptyList())
-        )
+        return CourseDetailData(repos = repos)
     }
 
     suspend fun refreshRelationships() {
@@ -150,8 +139,8 @@ class AcademicRepository @Inject constructor(
         }
     }
 
-    suspend fun getCourseGraph(): vn.edu.uit.devorbit.mobile.domain.model.KnowledgeGraph {
-        val response = apiService.getKnowledgeGraph()
+    suspend fun getCourseGraph(major: String? = null): vn.edu.uit.devorbit.mobile.domain.model.KnowledgeGraph {
+        val response = apiService.getKnowledgeGraph(major)
         val nodes = response.nodes.map { dto ->
             vn.edu.uit.devorbit.mobile.domain.model.GraphNode(
                 id = dto.id, name = dto.name, code = dto.code,

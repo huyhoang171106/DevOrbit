@@ -65,6 +65,7 @@ fun DashboardScreen(
     onNavigateToGroupPlan: (Long) -> Unit = {},
     onNavigateToNotifications: () -> Unit = {},
     onNavigateToProfile: () -> Unit = {},
+    onNavigateToPlanner: () -> Unit = {},
     unreadCount: Int = 0,
     avatarUrl: String? = null,
     showRegistrationOnboarding: Boolean = false,
@@ -301,11 +302,13 @@ fun DashboardScreen(
 
         item {
             SemesterCoursesSection(
+                majorName = state.planActiveMajor,
                 courses = state.semesterCourses,
-                allCourses = state.allCourses,
-                onAddCourse = { viewModel.addSemesterCourse(it) },
-                onRemoveCourse = { viewModel.removeSemesterCourse(it) },
-                onCourseClick = onNavigateToCourse
+                totalCourses = state.planTotalCourses,
+                totalCredits = state.planTotalCredits,
+                semesterCount = state.planSemesterCount,
+                onCourseClick = onNavigateToCourse,
+                onNavigateToPlanner = onNavigateToPlanner
             )
         }
 
@@ -565,14 +568,14 @@ private fun StatBadge(value: String, label: String, color: Color) {
 
 @Composable
 private fun SemesterCoursesSection(
+    majorName: String,
     courses: List<CourseEntity>,
-    allCourses: List<CourseEntity>,
-    onAddCourse: (Long) -> Unit,
-    onRemoveCourse: (Long) -> Unit,
-    onCourseClick: (Long) -> Unit
+    totalCourses: Int,
+    totalCredits: Int,
+    semesterCount: Int,
+    onCourseClick: (Long) -> Unit,
+    onNavigateToPlanner: () -> Unit
 ) {
-    var showDialog by remember { mutableStateOf(false) }
-
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -586,21 +589,23 @@ private fun SemesterCoursesSection(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Môn học kỳ này",
-                    style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
+                    text = majorName.ifBlank { "Lộ trình học tập" },
+                    style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold),
                     color = CosmicTheme.colors.textPrimary
                 )
-                TextButton(onClick = { showDialog = true }) {
-                    Icon(
-                        Icons.Default.Add,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = CosmicTheme.colors.plasma
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    Text("Thêm", color = CosmicTheme.colors.plasma)
+                TextButton(onClick = onNavigateToPlanner) {
+                    Text("Điều chỉnh lộ trình", color = CosmicTheme.colors.plasma)
                 }
             }
+            if (totalCourses > 0) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "$totalCourses môn · $totalCredits tín chỉ · $semesterCount học kỳ",
+                    style = CosmicTheme.typography.label,
+                    color = CosmicTheme.colors.textTertiary
+                )
+            }
+            Spacer(Modifier.height(12.dp))
             if (courses.isEmpty()) {
                 Text(
                     text = "Bạn chưa có môn học nào",
@@ -608,41 +613,21 @@ private fun SemesterCoursesSection(
                     color = CosmicTheme.colors.textTertiary,
                     modifier = Modifier.padding(vertical = 4.dp)
                 )
-                Text(
-                    text = "Nhấn + Thêm để bắt đầu",
-                    style = CosmicTheme.typography.label,
-                    color = CosmicTheme.colors.plasma,
-                    modifier = Modifier.padding(bottom = 12.dp)
-                )
             } else {
                 courses.forEach { course ->
                     CourseChip(
                         course = course,
-                        onRemove = { onRemoveCourse(course.id) },
                         onClick = { onCourseClick(course.id) }
                     )
                 }
             }
         }
     }
-
-    if (showDialog) {
-        AddCourseDialog(
-            allCourses = allCourses,
-            selectedIds = courses.map { it.id }.toSet(),
-            onAdd = { id ->
-                onAddCourse(id)
-                showDialog = false
-            },
-            onDismiss = { showDialog = false }
-        )
-    }
 }
 
 @Composable
 private fun CourseChip(
     course: CourseEntity,
-    onRemove: () -> Unit,
     onClick: () -> Unit
 ) {
     Surface(
@@ -666,17 +651,6 @@ private fun CourseChip(
                     text = course.maMH,
                     style = CosmicTheme.typography.label,
                     color = CosmicTheme.colors.textSecondary
-                )
-            }
-            IconButton(
-                onClick = onRemove,
-                modifier = Modifier.size(28.dp)
-            ) {
-                Icon(
-                    Icons.Default.Close,
-                    contentDescription = "Xoá",
-                    tint = CosmicTheme.colors.textTertiary,
-                    modifier = Modifier.size(16.dp)
                 )
             }
         }

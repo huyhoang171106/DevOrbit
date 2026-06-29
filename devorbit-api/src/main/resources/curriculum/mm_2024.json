@@ -1,0 +1,63 @@
+{
+  "major": "MM",
+  "version": "2024",
+  "semesters": [
+    { "semester": 1, "courses": ["IT001", "MM101", "MM008", "MM006", "ENG01"] },
+    { "semester": 2, "courses": ["SS007", "MA005", "MM007", "IT004", "ENG02"] },
+    { "semester": 3, "courses": ["MM005", "MM103", "MM110", "MM102", "MM104", "ENG03"] },
+    { "semester": 4, "courses": ["SS006", "MM105", "MM106", "SS008"] },
+    { "semester": 5, "courses": ["MM107", "MM108", "SS009", "SS010"] },
+    { "semester": 6, "courses": ["SS004", "SS003"] },
+    { "semester": 7, "courses": ["MM301", "MM302"] },
+    { "semester": 8, "courses": [] }
+  ],
+  "courseCatalog": [
+    { "code": "ENG01", "name": "Anh văn 1", "credits": 4, "prerequisites": [] },
+    { "code": "ENG02", "name": "Anh văn 2", "credits": 4, "prerequisites": ["ENG01"] },
+    { "code": "ENG03", "name": "Anh văn 3", "credits": 4, "prerequisites": ["ENG02"] },
+    { "code": "IT001", "name": "Nhập môn Lập trình", "credits": 4, "prerequisites": [] },
+    { "code": "IT004", "name": "Cơ sở dữ liệu", "credits": 4, "prerequisites": [] },
+    { "code": "MA005", "name": "Xác suất thống kê", "credits": 3, "prerequisites": [] },
+    { "code": "MM005", "name": "Nhập môn marketing", "credits": 2, "prerequisites": [] },
+    { "code": "MM006", "name": "Tâm lý học đại cương", "credits": 2, "prerequisites": [] },
+    { "code": "MM007", "name": "Tư duy sáng tạo và xu hướng thiết kế", "credits": 2, "prerequisites": [] },
+    { "code": "MM008", "name": "Kỹ năng truyền thông giao tiếp", "credits": 2, "prerequisites": [] },
+    { "code": "MM101", "name": "Giới thiệu ngành Truyền thông Đa phương tiện", "credits": 1, "prerequisites": [] },
+    { "code": "MM102", "name": "Lý luận truyền thông đại chúng", "credits": 3, "prerequisites": [] },
+    { "code": "MM103", "name": "Cơ sở tạo hình và nguyên lý thị giác", "credits": 2, "prerequisites": [] },
+    { "code": "MM104", "name": "Viết nội dung đa phương tiện", "credits": 3, "prerequisites": [] },
+    { "code": "MM105", "name": "Nhập môn kỹ thuật sản xuất nội dung", "credits": 4, "prerequisites": [] },
+    { "code": "MM106", "name": "Thu thập và phân tích dữ liệu Truyền thông Đa phương tiện", "credits": 4, "prerequisites": [] },
+    { "code": "MM107", "name": "Học máy ứng dụng trong Truyền thông Đa phương tiện", "credits": 4, "prerequisites": [] },
+    { "code": "MM108", "name": "Tiếp thị số", "credits": 4, "prerequisites": [] },
+    { "code": "MM110", "name": "Màu sắc và tâm lý thị giác", "credits": 2, "prerequisites": [] },
+    { "code": "MM301", "name": "Đồ án Truyền thông Đa phương tiện", "credits": 2, "prerequisites": [] },
+    { "code": "MM302", "name": "Thực tập doanh nghiệp", "credits": 2, "prerequisites": [] },
+    { "code": "SS003", "name": "Chủ nghĩa xã hội khoa học", "credits": 2, "prerequisites": [] },
+    { "code": "SS004", "name": "Tư tưởng Hồ Chí Minh", "credits": 2, "prerequisites": [] },
+    { "code": "SS006", "name": "Lịch sử Đảng Cộng sản Việt Nam", "credits": 2, "prerequisites": [] },
+    { "code": "SS007", "name": "Triết học Mác - Lênin", "credits": 3, "prerequisites": [] },
+    { "code": "SS008", "name": "Kinh tế chính trị Mác - Lênin", "credits": 2, "prerequisites": [] },
+    { "code": "SS009", "name": "Pháp luật đại cương", "credits": 2, "prerequisites": [] },
+    { "code": "SS010", "name": "Kỹ năng mềm", "credits": 2, "prerequisites": [] }
+  ],
+  "electiveGroups": [
+    {
+      "id": "chuyen_nganh_ttdpt",
+      "name": "chuyen_nganh_ttdpt",
+      "minCredits": 20,
+      "courseCodes": []
+    },
+    {
+      "id": "tu_chon_tu_do",
+      "name": "tu_chon_tu_do",
+      "minCredits": 6,
+      "courseCodes": []
+    }
+  ],
+  "rules": {
+    "maxCreditsPerSemester": 24,
+    "minCreditsPerSemester": 14,
+    "totalSemesters": 8
+  }
+}

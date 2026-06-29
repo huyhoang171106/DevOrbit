@@ -2,9 +2,9 @@
   "major": "SE",
   "version": "2024",
   "semesters": [
-    { "semester": 1, "courses": ["MA006", "MA003", "ENG01", "SE005", "IT001", "IT007"] },
+    { "semester": 1, "courses": ["MA006", "MA003", "ENG01", "SE005", "IT001"] },
     { "semester": 2, "courses": ["IT002", "IT003", "MA004", "MA005", "ENG02"] },
-    { "semester": 3, "courses": ["IT004", "IT005", "IT012", "IT008", "ENG03"] },
+    { "semester": 3, "courses": ["IT004", "IT005", "IT012", "IT008", "IT007", "ENG03"] },
     { "semester": 4, "courses": ["SE104", "SS007", "SS008", "SS004"] },
     { "semester": 5, "courses": ["SS009", "SS010", "SE100"] },
     { "semester": 6, "courses": ["SS006", "SS003", "SE503"] },

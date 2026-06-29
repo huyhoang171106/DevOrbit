@@ -65,12 +65,29 @@ fun CourseHubScreen(
     // Handle deep-linking from bookmarks
     var processedCourseId by remember { mutableStateOf<Long?>(null) }
     var processedRepoId by remember { mutableStateOf<Long?>(null) }
+    var pendingUnopenedCourseId by remember { mutableStateOf<Long?>(null) }
 
     LaunchedEffect(pendingCourseId) {
         if (pendingCourseId != null && pendingCourseId != processedCourseId) {
-            processedCourseId = pendingCourseId
             val course = courses.find { it.id == pendingCourseId }
-            if (course != null) viewModel.openCourse(course)
+            if (course != null) {
+                processedCourseId = pendingCourseId
+                viewModel.openCourse(course)
+                onPendingCleared()
+            } else {
+                pendingUnopenedCourseId = pendingCourseId
+            }
+        }
+    }
+
+    LaunchedEffect(courses) {
+        val pid = pendingUnopenedCourseId ?: return@LaunchedEffect
+        if (pid == processedCourseId) return@LaunchedEffect
+        val course = courses.find { it.id == pid }
+        if (course != null) {
+            processedCourseId = pid
+            pendingUnopenedCourseId = null
+            viewModel.openCourse(course)
             onPendingCleared()
         }
     }

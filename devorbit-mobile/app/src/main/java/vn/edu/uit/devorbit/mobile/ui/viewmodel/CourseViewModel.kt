@@ -311,6 +311,60 @@ class CourseViewModel @Inject constructor(
         }
     }
 
+    fun resetPlan() {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            _graphLoading.value = true
+            _semesterPlan.value = emptyMap()
+            _graphError.value = null
+
+            val majorCode = _currentMajor.value
+            semesterCourseDao.clearByMajor(majorCode)
+
+            try {
+                val curriculum = curriculumLoader.load(majorCode)
+                if (curriculum != null) {
+                    _totalProgramCredits.value = curriculum.courseCatalog.sumOf { it.credits }
+                    val catalogCredits = curriculum.courseCatalog.associate { it.code to it.credits }
+                    _courseCatalogCredits.value = catalogCredits
+                    val courseMap = courses.value.associateBy { it.maMH }
+                    val plan = mutableMapOf<Int, MutableList<GraphNode>>()
+                    var nextId = -1L
+
+                    for (sd in curriculum.semesters) {
+                        val nodes = mutableListOf<GraphNode>()
+                        for (code in sd.courses) {
+                            if (code !in catalogCredits) {
+                                Log.w("CourseViewModel", "resetPlan: course $code not found in curriculum courseCatalog")
+                            }
+                            val dbCourse = courseMap[code]
+                            val id = dbCourse?.id ?: nextId--
+                            nodes.add(GraphNode(
+                                id = id,
+                                name = dbCourse?.tenMH ?: code,
+                                code = code,
+                                description = null,
+                                level = 0,
+                                impactScore = 0.0,
+                                semester = sd.semester
+                            ))
+                            if (dbCourse != null) {
+                                semesterCourseDao.addCourse(
+                                    SemesterCourseEntity(courseId = dbCourse.id, majorCode = majorCode, semester = sd.semester)
+                                )
+                            }
+                        }
+                        plan[sd.semester] = nodes
+                    }
+                    _semesterPlan.value = plan.toSortedMap()
+                }
+            } catch (e: Exception) {
+                _graphError.value = e.message ?: "Không thể reset kế hoạch"
+            } finally {
+                _graphLoading.value = false
+            }
+        }
+    }
+
     fun clearGraphError() {
         _graphError.value = null
     }

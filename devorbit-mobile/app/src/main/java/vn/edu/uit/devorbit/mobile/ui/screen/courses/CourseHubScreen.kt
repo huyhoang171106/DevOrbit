@@ -263,6 +263,7 @@ private fun SemesterGraphView(viewModel: CourseViewModel) {
     var majorExpanded by remember { mutableStateOf(false) }
     var addTargetSemester by remember { mutableIntStateOf(1) }
     var showAddDialog by remember { mutableStateOf(false) }
+    var showResetDialog by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
     var expandedSemesters by remember { mutableStateOf(setOf<Int>()) }
     var moveTarget by remember { mutableStateOf<Pair<Int, String>?>(null) }
@@ -306,6 +307,16 @@ private fun SemesterGraphView(viewModel: CourseViewModel) {
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                 ) {
                     Text("Tạo kế hoạch")
+                }
+                if (hasData) {
+                    TextButton(
+                        onClick = { showResetDialog = true },
+                        enabled = !loading,
+                        shape = RoundedCornerShape(10.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 12.dp)
+                    ) {
+                        Text("Reset", color = CosmicTheme.colors.supernova)
+                    }
                 }
             }
 
@@ -488,6 +499,28 @@ private fun SemesterGraphView(viewModel: CourseViewModel) {
                     }
                 },
                 confirmButton = { TextButton(onClick = { moveTarget = null }) { Text("Hủy") } }
+            )
+        }
+
+        // Reset confirmation dialog
+        if (showResetDialog) {
+            AlertDialog(
+                onDismissRequest = { showResetDialog = false },
+                title = { Text("Reset kế hoạch", fontWeight = FontWeight.Bold) },
+                text = { Text("Bạn có chắc muốn reset kế hoạch? Toàn bộ môn học sẽ được tạo lại từ chương trình đào tạo.", style = CosmicTheme.typography.body, color = CosmicTheme.colors.textSecondary) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showResetDialog = false
+                        viewModel.resetPlan()
+                    }) {
+                        Text("Xác nhận", color = CosmicTheme.colors.supernova)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showResetDialog = false }) {
+                        Text("Hủy")
+                    }
+                }
             )
         }
 

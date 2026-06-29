@@ -19,9 +19,6 @@ import vn.edu.uit.devorbit.mobile.data.local.entity.CourseEntity
 import vn.edu.uit.devorbit.mobile.data.local.entity.SemesterCourseEntity
 import vn.edu.uit.devorbit.mobile.data.repository.AcademicRepository
 import vn.edu.uit.devorbit.mobile.data.remote.dto.AiResponse
-import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseArticle
-import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseTutorial
-import vn.edu.uit.devorbit.mobile.data.remote.dto.CourseYoutubePlaylist
 import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSocialInfoResponse
 import vn.edu.uit.devorbit.mobile.data.remote.dto.RepoSummary
 import vn.edu.uit.devorbit.mobile.data.remote.dto.ReviewResponse
@@ -32,6 +29,7 @@ import vn.edu.uit.devorbit.mobile.domain.repository.Bookmark
 import vn.edu.uit.devorbit.mobile.domain.repository.BookmarkRepository
 import vn.edu.uit.devorbit.mobile.ui.screen.courses.CourseHubNavigationState
 import vn.edu.uit.devorbit.mobile.ui.screen.courses.CourseSearchFilterState
+import android.util.Log
 import java.net.HttpURLConnection
 import java.net.URL
 import javax.inject.Inject
@@ -83,6 +81,9 @@ class CourseViewModel @Inject constructor(
     private val _totalProgramCredits = MutableStateFlow(0)
     val totalProgramCredits: StateFlow<Int> = _totalProgramCredits.asStateFlow()
 
+    private val _courseCatalogCredits = MutableStateFlow<Map<String, Int>>(emptyMap())
+    val courseCatalogCredits: StateFlow<Map<String, Int>> = _courseCatalogCredits.asStateFlow()
+
     private fun CourseEntity.toGraphNode(semester: Int) = GraphNode(
         id = this.id,
         name = this.tenMH,
@@ -127,15 +128,6 @@ class CourseViewModel @Inject constructor(
 
     private val _detailRepos = MutableStateFlow<List<RepoSummary>>(emptyList())
     val detailRepos: StateFlow<List<RepoSummary>> = _detailRepos.asStateFlow()
-
-    private val _detailTutorials = MutableStateFlow<List<CourseTutorial>>(emptyList())
-    val detailTutorials: StateFlow<List<CourseTutorial>> = _detailTutorials.asStateFlow()
-
-    private val _detailVideos = MutableStateFlow<List<CourseYoutubePlaylist>>(emptyList())
-    val detailVideos: StateFlow<List<CourseYoutubePlaylist>> = _detailVideos.asStateFlow()
-
-    private val _detailArticles = MutableStateFlow<List<CourseArticle>>(emptyList())
-    val detailArticles: StateFlow<List<CourseArticle>> = _detailArticles.asStateFlow()
 
     private val _detailLoading = MutableStateFlow(false)
     val detailLoading: StateFlow<Boolean> = _detailLoading.asStateFlow()
@@ -182,6 +174,11 @@ class CourseViewModel @Inject constructor(
         viewModelScope.launch {
             settingsDataStore.currentMajor.first().let { saved ->
                 _currentMajor.value = saved
+                // Load curriculum credits for display even when restoring from Room
+                val curriculum = curriculumLoader.load(saved)
+                if (curriculum != null) {
+                    _courseCatalogCredits.value = curriculum.courseCatalog.associate { it.code to it.credits }
+                }
             }
             loadFromRoom()
         }
@@ -238,6 +235,8 @@ class CourseViewModel @Inject constructor(
                 val curriculum = curriculumLoader.load(majorCode)
                 if (curriculum != null) {
                     _totalProgramCredits.value = curriculum.courseCatalog.sumOf { it.credits }
+                    val catalogCredits = curriculum.courseCatalog.associate { it.code to it.credits }
+                    _courseCatalogCredits.value = catalogCredits
                     val courseMap = courses.value.associateBy { it.maMH }
                     val plan = mutableMapOf<Int, MutableList<GraphNode>>()
                     var nextId = -1L
@@ -245,9 +244,11 @@ class CourseViewModel @Inject constructor(
                     for (sd in curriculum.semesters) {
                         val nodes = mutableListOf<GraphNode>()
                         for (code in sd.courses) {
+                            if (code !in catalogCredits) {
+                                Log.w("CourseViewModel", "loadGraph: course $code not found in curriculum courseCatalog")
+                            }
                             val dbCourse = courseMap[code]
                             val id = dbCourse?.id ?: nextId--
-                            val credits = if (dbCourse != null) dbCourse.credits else 0
                             nodes.add(GraphNode(
                                 id = id,
                                 name = dbCourse?.tenMH ?: code,
@@ -268,6 +269,7 @@ class CourseViewModel @Inject constructor(
                     _semesterPlan.value = plan.toSortedMap()
                 } else {
                     _totalProgramCredits.value = 0
+                    _courseCatalogCredits.value = emptyMap()
                     val kg = repository.getCourseGraph(majorCode)
                     _graphNodes.value = kg.nodes
                     _graphLinks.value = kg.links
@@ -477,9 +479,6 @@ class CourseViewModel @Inject constructor(
         _selectedRepo.value = null
         _courseHubNavigationState.value = CourseHubNavigationState()
         _detailRepos.value = emptyList()
-        _detailTutorials.value = emptyList()
-        _detailVideos.value = emptyList()
-        _detailArticles.value = emptyList()
         _detailError.value = null
     }
 
@@ -490,15 +489,9 @@ class CourseViewModel @Inject constructor(
             try {
                 val detail = repository.loadCourseDetail(courseId)
                 _detailRepos.value = detail.repos
-                _detailTutorials.value = detail.tutorials
-                _detailVideos.value = detail.videos
-                _detailArticles.value = detail.articles
             } catch (e: Exception) {
                 _detailError.value = e.message ?: "Failed to load course detail"
                 _detailRepos.value = emptyList()
-                _detailTutorials.value = emptyList()
-                _detailVideos.value = emptyList()
-                _detailArticles.value = emptyList()
             } finally {
                 _detailLoading.value = false
             }

@@ -47,14 +47,10 @@ fun CourseHubScreen(
     onPendingCleared: () -> Unit = {}
 ) {
     var viewMode by remember { mutableStateOf(ViewMode.LIST) }
-    var selectedTutorial by remember { mutableStateOf<vn.edu.uit.devorbit.mobile.data.remote.dto.CourseTutorial?>(null) }
     val courses by viewModel.courses.collectAsStateWithLifecycle()
     val selectedCourse by viewModel.selectedCourse.collectAsStateWithLifecycle()
     val selectedRepo by viewModel.selectedRepo.collectAsStateWithLifecycle()
     val repos by viewModel.detailRepos.collectAsStateWithLifecycle()
-    val tutorials by viewModel.detailTutorials.collectAsStateWithLifecycle()
-    val videos by viewModel.detailVideos.collectAsStateWithLifecycle()
-    val articles by viewModel.detailArticles.collectAsStateWithLifecycle()
     val detailLoading by viewModel.detailLoading.collectAsStateWithLifecycle()
     val detailError by viewModel.detailError.collectAsStateWithLifecycle()
     val bookmarkedCourseIds by viewModel.bookmarkedCourseIds.collectAsStateWithLifecycle()
@@ -129,9 +125,6 @@ fun CourseHubScreen(
                     CourseDetailScreen(
                         course = selectedCourse!!,
                         repos = repos,
-                        tutorials = tutorials,
-                        videos = videos,
-                        articles = articles,
                         bookmarked = selectedCourse!!.id in bookmarkedCourseIds,
                         bookmarkedRepoIds = bookmarkedRepoIds,
                         onBack = { viewModel.closeCourseDetail() },
@@ -251,10 +244,13 @@ private fun SemesterGraphView(viewModel: CourseViewModel) {
 
     val currentMajor by viewModel.currentMajor.collectAsState()
     val totalProgramCredits by viewModel.totalProgramCredits.collectAsState()
+    val courseCatalogCredits by viewModel.courseCatalogCredits.collectAsState()
     val hasData = semesterPlan.values.any { it.isNotEmpty() }
 
-    val creditMap = remember(allCourses) {
-        allCourses.associate { it.maMH to it.credits }
+    val creditMap = remember(allCourses, courseCatalogCredits) {
+        val map = allCourses.associate { it.maMH to it.credits }.toMutableMap()
+        map.putAll(courseCatalogCredits)
+        map
     }
     val semesterCredits = remember(semesterPlan, creditMap) {
         semesterPlan.mapValues { (_, nodes) ->

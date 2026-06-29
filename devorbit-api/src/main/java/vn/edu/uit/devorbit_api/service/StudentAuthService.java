@@ -83,8 +83,17 @@ public class StudentAuthService {
     // ───────── REGISTER & VERIFY ─────────
 
     @Transactional
-    public StudentProfileResponse register(StudentRegisterRequest request) {
-        var existingByCode = studentUserRepository.findByStudentCode(request.studentCode());
+    public StudentProfileResponse register(StudentRegisterRequest request, HttpServletRequest httpRequest) {
+        String studentCode = request.studentCode().trim();
+        String email = request.email().trim().toLowerCase();
+        String ip = extractClientIp(httpRequest);
+
+        // Rate limit: prevent registration spam per-IP, per-email, per-studentCode
+        otpRateLimitService.check("REGISTER_IP:" + ip);
+        otpRateLimitService.check("REGISTER_EMAIL:" + email);
+        otpRateLimitService.check("REGISTER_CODE:" + studentCode);
+
+        var existingByCode = studentUserRepository.findByStudentCode(studentCode);
         if (existingByCode.isPresent()) {
             if (existingByCode.get().isActive()) {
                 throw new BadRequestException("Student code already exists");
@@ -94,7 +103,7 @@ public class StudentAuthService {
             studentUserRepository.flush();
         }
 
-        var existingByEmail = studentUserRepository.findByEmail(request.email());
+        var existingByEmail = studentUserRepository.findByEmail(email);
         if (existingByEmail.isPresent()) {
             if (existingByEmail.get().isActive()) {
                 throw new BadRequestException("Email already exists");
@@ -105,27 +114,26 @@ public class StudentAuthService {
         }
 
         StudentUser student = studentUserRepository.save(StudentUser.builder()
-                .studentCode(request.studentCode().trim())
+                .studentCode(studentCode)
                 .fullName(request.fullName().trim())
-                .email(request.email().trim().toLowerCase())
+                .email(email)
                 .passwordHash(passwordEncoder.encode(request.password()))
                 .active(false)
                 .emailVerified(false)
                 .build());
 
-        otpRateLimitService.check("EMAIL_VERIFICATION:" + student.getEmail());
-
         String otpCode = generateOtp();
         otpRepository.save(Otp.builder()
-                .email(student.getEmail())
+                .email(email)
                 .purpose(OtpPurpose.EMAIL_VERIFICATION)
                 .otpCode(otpCode)
                 .expiresAt(LocalDateTime.now().plusMinutes(otpExpirationMinutes))
                 .build());
-        emailService.sendOtp(student.getEmail(), otpCode, otpExpirationMinutes);
+        emailService.sendOtp(email, otpCode, otpExpirationMinutes);
 
         return new StudentProfileResponse(student.getId(), student.getStudentCode(), student.getFullName(), student.getEmail(), student.getAvatar());
     }
+
 
     @Transactional
     public StudentAuthResponse verifyOtp(OtpVerificationRequest request) {

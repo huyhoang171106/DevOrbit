@@ -63,7 +63,8 @@ class StudentAuthControllerTest {
     @Test
     void shouldRegisterSuccessfully() throws Exception {
         StudentProfileResponse response = new StudentProfileResponse(1L, "24520554", "Nguyen Van A", "24520554@gm.uit.edu.vn", null);
-        when(studentAuthService.register(any())).thenReturn(response);
+        when(studentAuthService.register(any(), any())).thenReturn(response);
+
 
         mockMvc.perform(post("/api/student/register")
                         .contentType(MediaType.APPLICATION_JSON)

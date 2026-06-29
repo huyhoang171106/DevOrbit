@@ -9,7 +9,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Circle
 import androidx.compose.material.icons.rounded.DoneAll
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,8 +37,10 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationScreen(
+    onNavigateBack: () -> Unit = {},
     onNavigateToGroupPlan: (Long) -> Unit = {},
     viewModel: NotificationViewModel = hiltViewModel()
 ) {
@@ -65,7 +70,6 @@ fun NotificationScreen(
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
-
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             Row(
@@ -75,6 +79,14 @@ fun NotificationScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                IconButton(onClick = onNavigateBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Quay lại",
+                        tint = CosmicTheme.colors.textPrimary
+                    )
+                }
+
                 Text(
                     text = "Thông báo",
                     color = CosmicTheme.colors.textPrimary,
@@ -121,72 +133,78 @@ fun NotificationScreen(
                     )
                 }
             } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                PullToRefreshBox(
+                    isRefreshing = loading,
+                    onRefresh = { viewModel.loadNotifications() },
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    items(notifications, key = { it.id }) { notification ->
-                        val actionType = NotificationActionType.fromType(notification.type)
-                        val isActionLoading = actionLoadingId == notification.id
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(notifications, key = { it.id }) { notification ->
+                            val actionType = NotificationActionType.fromType(notification.type)
+                            val isActionLoading = actionLoadingId == notification.id
 
-                        NotificationItem(
-                            notification = notification,
-                            actionType = actionType,
-                            actionLoading = isActionLoading,
-                            onClick = {
-                                viewModel.markAsRead(notification.id)
-                                val isGroupPlanType = actionType in listOf(
-                                    NotificationActionType.GROUP_TASK_ADDED,
-                                    NotificationActionType.GROUP_PLAN_INVITE,
-                                    NotificationActionType.GROUP_PLAN_RESPONSE,
-                                    NotificationActionType.GROUP_TASK_DELETE_REQUEST,
-                                    NotificationActionType.GROUP_TASK_DELETE_APPROVED,
-                                    NotificationActionType.GROUP_PLAN_DELETE_REQUEST,
-                                    NotificationActionType.GROUP_PLAN_DELETE_APPROVED
-                                )
-                                if (notification.groupPlanId != null && actionType in listOf(
+                            NotificationItem(
+                                notification = notification,
+                                actionType = actionType,
+                                actionLoading = isActionLoading,
+                                onClick = {
+                                    viewModel.markAsRead(notification.id)
+                                    val isGroupPlanType = actionType in listOf(
                                         NotificationActionType.GROUP_TASK_ADDED,
+                                        NotificationActionType.GROUP_PLAN_INVITE,
                                         NotificationActionType.GROUP_PLAN_RESPONSE,
+                                        NotificationActionType.GROUP_TASK_DELETE_REQUEST,
                                         NotificationActionType.GROUP_TASK_DELETE_APPROVED,
-                                        NotificationActionType.GROUP_PLAN_DELETE_APPROVED,
-                                        NotificationActionType.OTHER
+                                        NotificationActionType.GROUP_PLAN_DELETE_REQUEST,
+                                        NotificationActionType.GROUP_PLAN_DELETE_APPROVED
                                     )
-                                ) {
-                                    onNavigateToGroupPlan(notification.groupPlanId)
-                                } else if (isGroupPlanType && notification.groupPlanId == null) {
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar(
-                                            "Kế hoạch nhóm không tồn tại. Có lẽ người tạo đã xóa kế hoạch nhóm hoặc bạn đã bị xóa khỏi nhóm."
+                                    if (notification.groupPlanId != null && actionType in listOf(
+                                            NotificationActionType.GROUP_TASK_ADDED,
+                                            NotificationActionType.GROUP_PLAN_RESPONSE,
+                                            NotificationActionType.GROUP_TASK_DELETE_APPROVED,
+                                            NotificationActionType.GROUP_PLAN_DELETE_APPROVED,
+                                            NotificationActionType.OTHER
                                         )
+                                    ) {
+                                        onNavigateToGroupPlan(notification.groupPlanId)
+                                    } else if (isGroupPlanType && notification.groupPlanId == null) {
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                "Kế hoạch nhóm không tồn tại. Có lẽ người tạo đã xóa kế hoạch nhóm hoặc bạn đã bị xóa khỏi nhóm."
+                                            )
+                                        }
+                                    }
+                                },
+                                onAccept = {
+                                    if (notification.groupPlanId != null) {
+                                        viewModel.acceptInvite(notification.id, notification.groupPlanId)
+                                    }
+                                },
+                                onDecline = {
+                                    if (notification.groupPlanId != null) {
+                                        viewModel.declineInvite(notification.id, notification.groupPlanId)
+                                    }
+                                },
+                                onApprove = {
+                                    if (actionType == NotificationActionType.GROUP_PLAN_DELETE_REQUEST && notification.groupPlanId != null) {
+                                        viewModel.approvePlanDelete(notification.id, notification.groupPlanId)
+                                    } else if (notification.taskId != null) {
+                                        viewModel.approveDelete(notification.id, notification.taskId)
+                                    }
+                                },
+                                onReject = {
+                                    if (actionType == NotificationActionType.GROUP_PLAN_DELETE_REQUEST && notification.groupPlanId != null) {
+                                        viewModel.rejectPlanDelete(notification.id, notification.groupPlanId)
+                                    } else if (notification.taskId != null) {
+                                        viewModel.rejectDelete(notification.id, notification.taskId)
                                     }
                                 }
-                            },
-                            onAccept = {
-                                if (notification.groupPlanId != null) {
-                                    viewModel.acceptInvite(notification.id, notification.groupPlanId)
-                                }
-                            },
-                            onDecline = {
-                                if (notification.groupPlanId != null) {
-                                    viewModel.declineInvite(notification.id, notification.groupPlanId)
-                                }
-                            },
-                            onApprove = {
-                                if (actionType == NotificationActionType.GROUP_PLAN_DELETE_REQUEST && notification.groupPlanId != null) {
-                                    viewModel.approvePlanDelete(notification.id, notification.groupPlanId)
-                                } else if (notification.taskId != null) {
-                                    viewModel.approveDelete(notification.id, notification.taskId)
-                                }
-                            },
-                            onReject = {
-                                if (actionType == NotificationActionType.GROUP_PLAN_DELETE_REQUEST && notification.groupPlanId != null) {
-                                    viewModel.rejectPlanDelete(notification.id, notification.groupPlanId)
-                                } else if (notification.taskId != null) {
-                                    viewModel.rejectDelete(notification.id, notification.taskId)
-                                }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
             }

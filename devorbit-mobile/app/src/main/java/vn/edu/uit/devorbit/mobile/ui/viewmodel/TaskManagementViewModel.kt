@@ -94,6 +94,7 @@ class TaskManagementViewModel @Inject constructor(
                 val filterParam = when (filter) {
                     TaskFilter.TODAY -> "today"
                     TaskFilter.WEEK -> "week"
+                    TaskFilter.MONTH -> "month"
                     TaskFilter.ALL -> "all"
                 }
                 val personalTasks = apiService.getPersonalTasks(filterParam).map { it.toTaskItem() }
@@ -163,7 +164,16 @@ class TaskManagementViewModel @Inject constructor(
 
     fun updateDeadline(millis: Long?) {
         if (millis != null) {
-            _state.update { it.copy(inputDeadline = millis, showDatePicker = false, showTimePicker = true) }
+            val oldDeadline = _state.value.inputDeadline
+            if (oldDeadline != null) {
+                // Preserve old time, only update the date
+                val oldTime = Instant.ofEpochMilli(oldDeadline).atZone(ZoneId.systemDefault()).toLocalTime()
+                val newDate = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate()
+                val combined = newDate.atTime(oldTime).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                _state.update { it.copy(inputDeadline = combined, showDatePicker = false, showTimePicker = true) }
+            } else {
+                _state.update { it.copy(inputDeadline = millis, showDatePicker = false, showTimePicker = true) }
+            }
         } else {
             _state.update { it.copy(inputDeadline = null, showDatePicker = false) }
         }

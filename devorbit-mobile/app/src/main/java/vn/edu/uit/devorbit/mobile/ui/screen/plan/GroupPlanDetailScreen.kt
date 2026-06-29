@@ -763,7 +763,8 @@ fun GroupPlanDetailScreen(
                     }
                 }
             }
-            TaskFilter.ALL -> {
+            else -> {
+                // MONTH & ALL — month calendar view
                 Box(modifier = Modifier.fillMaxSize()) {
                     if (state.tasks.isEmpty()) {
                         Box(

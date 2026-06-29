@@ -20,8 +20,9 @@ data class TaskItem(
     val recurrenceEndDate: Long?,
     val createdAt: Long,
     val isGroupTask: Boolean = false,
-    val groupPlanId: Long? = null
-)
+    val groupPlanId: Long? = null,
+    val groupPlanTitle: String? = null
+ )
 
 fun PersonalTaskResponse.toTaskItem(): TaskItem {
     return TaskItem(
@@ -51,7 +52,8 @@ fun GroupTaskResponse.toTaskItem(): TaskItem {
         recurrenceEndDate = null,
         createdAt = createdAt?.let { parseIsoToMillis(it) } ?: System.currentTimeMillis(),
         isGroupTask = true,
-        groupPlanId = groupPlanId
+        groupPlanId = groupPlanId,
+        groupPlanTitle = planTitle
     )
 }
 

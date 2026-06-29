@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.first
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
+import org.json.JSONObject
+import retrofit2.HttpException
 import vn.edu.uit.devorbit.mobile.data.datastore.SettingsDataStore
 import vn.edu.uit.devorbit.mobile.data.auth.TokenRefreshManager
 import vn.edu.uit.devorbit.mobile.domain.repository.AuthRepository
@@ -24,11 +26,31 @@ class AuthRepositoryImpl @Inject constructor(
     private val settingsDataStore: SettingsDataStore,
     private val tokenRefreshManager: TokenRefreshManager
 ) : AuthRepository {
+    private suspend fun <T> safeApiCall(block: suspend () -> T): Result<T> {
+        return try {
+            Result.success(block())
+        } catch (e: HttpException) {
+            val msg = try {
+                val body = e.response()?.errorBody()?.string()
+                if (body != null) {
+                    JSONObject(body).optString("error", e.message ?: "Lỗi không xác định")
+                } else {
+                    e.message ?: "Lỗi không xác định"
+                }
+            } catch (_: Exception) {
+                e.message ?: "Lỗi không xác định"
+            }
+            Result.failure(Exception(msg))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
 
     override suspend fun register(
         studentCode: String, fullName: String, email: String,
         password: String
-    ): Result<StudentInfo> = runCatching {
+    ): Result<StudentInfo> = safeApiCall {
         val response = apiService.register(mapOf(
             "studentCode" to studentCode,
             "fullName" to fullName,
@@ -43,7 +65,7 @@ class AuthRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun verifyOtp(email: String, otpCode: String): Result<AuthResult> = runCatching {
+    override suspend fun verifyOtp(email: String, otpCode: String): Result<AuthResult> = safeApiCall {
         val response = apiService.verifyOtp(mapOf("email" to email, "otpCode" to otpCode))
         val token = response["token"] as? String ?: throw Exception("OTP verification failed")
         val studentCode = response["studentCode"] as? String ?: ""
@@ -59,7 +81,7 @@ class AuthRepositoryImpl @Inject constructor(
         AuthResult(token, studentCode, fullName, verifiedEmail, refreshToken)
     }
 
-    override suspend fun login(studentCode: String, password: String): Result<AuthResult> = runCatching {
+    override suspend fun login(studentCode: String, password: String): Result<AuthResult> = safeApiCall {
         val response = apiService.login(mapOf("studentCode" to studentCode, "password" to password))
         val token = response["token"] as? String ?: throw Exception("Login failed")
         val fullName = response["fullName"] as? String ?: ""
@@ -74,14 +96,14 @@ class AuthRepositoryImpl @Inject constructor(
         AuthResult(token, studentCode, fullName, email, refreshToken)
     }
 
-    override suspend fun forgotPassword(studentCode: String): Result<Unit> = runCatching {
+    override suspend fun forgotPassword(studentCode: String): Result<Unit> = safeApiCall {
         apiService.forgotPassword(mapOf("studentCode" to studentCode))
         Unit
     }
 
     override suspend fun resetPassword(
         studentCode: String, otpCode: String, newPassword: String
-    ): Result<AuthResult> = runCatching {
+    ): Result<AuthResult> = safeApiCall {
         val response = apiService.resetPassword(mapOf(
             "studentCode" to studentCode,
             "otpCode" to otpCode,
@@ -100,14 +122,14 @@ class AuthRepositoryImpl @Inject constructor(
         AuthResult(token, studentCode, fullName, email, refreshToken)
     }
 
-    override suspend fun resendOtp(email: String, purpose: String?): Result<Unit> = runCatching {
+    override suspend fun resendOtp(email: String, purpose: String?): Result<Unit> = safeApiCall {
         val body = mutableMapOf("email" to email)
         purpose?.let { body["purpose"] = it }
         apiService.resendOtp(body)
         Unit
     }
 
-    override suspend fun getProfile(): Result<StudentInfo> = runCatching {
+    override suspend fun getProfile(): Result<StudentInfo> = safeApiCall {
         val response = apiService.getStudentProfile()
         val id = response["id"] as? Number
         id?.let { settingsDataStore.saveStudentId(it.toInt()) }
@@ -120,7 +142,7 @@ class AuthRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun uploadAvatar(uri: Uri): Result<String> = runCatching {
+    override suspend fun uploadAvatar(uri: Uri): Result<String> = safeApiCall {
         val inputStream = context.contentResolver.openInputStream(uri)
             ?: throw Exception("Cannot open image")
         
@@ -140,7 +162,7 @@ class AuthRepositoryImpl @Inject constructor(
         response["avatar"] as? String ?: throw Exception("No avatar URL in response")
     }
 
-    override suspend fun updateFullName(fullName: String): Result<StudentInfo> = runCatching {
+    override suspend fun updateFullName(fullName: String): Result<StudentInfo> = safeApiCall {
         val response = apiService.updateFullName(mapOf("fullName" to fullName))
         settingsDataStore.saveStudentName(fullName)
         StudentInfo(
@@ -152,7 +174,7 @@ class AuthRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit> = runCatching {
+    override suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit> = safeApiCall {
         apiService.changePassword(mapOf(
             "currentPassword" to currentPassword,
             "newPassword" to newPassword
@@ -164,7 +186,7 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun logout() {
-        runCatching { apiService.studentLogout() }
+        safeApiCall { apiService.studentLogout(); Unit }
         settingsDataStore.clearToken()
         settingsDataStore.clearRefreshToken()
         tokenRefreshManager.clear()

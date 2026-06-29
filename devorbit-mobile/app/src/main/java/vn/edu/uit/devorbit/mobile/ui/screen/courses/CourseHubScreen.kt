@@ -196,7 +196,13 @@ fun CourseHubScreen(
                 }
                 }
 
-                CourseListScreen(viewModel = viewModel, onCourseClick = { viewModel.openCourse(it) })
+                when (viewMode) {
+                    ViewMode.LIST -> CourseListScreen(
+                        viewModel = viewModel,
+                        onCourseClick = { viewModel.openCourse(it) }
+                    )
+                    ViewMode.GALAXY -> SemesterGraphView(viewModel = viewModel)
+                }
             }
         }
     }

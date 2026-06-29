@@ -46,9 +46,9 @@ fun SubjectQaScreen(
     }
 
     val suggestedPrompts = listOf(
-        "Giải thích thuật toán Dijkstra hoạt động thế nào?",
-        "Làm sao để cấu hình Git Remote cho đồ án nhóm?",
-        "Gợi ý lộ trình ôn tập môn Hệ điều hành?"
+        "Môn Hệ điều hành có repo nào trên DevOrbit không?",
+        "Môn IT007 có bao nhiêu tín chỉ?",
+        "Mình nên học môn nào sau IT001?"
     )
 
     Column(

@@ -34,7 +34,8 @@ import vn.edu.uit.devorbit.mobile.ui.viewmodel.ProfileViewModel
 fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
     onNavigateToDetail: () -> Unit = {},
-    onBookmarkClick: (Bookmark) -> Unit = {}
+    onBookmarkClick: (Bookmark) -> Unit = {},
+    onLogout: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var courseExpanded by remember { mutableStateOf(false) }
@@ -243,7 +244,7 @@ fun ProfileScreen(
             item {
                 Spacer(Modifier.height(4.dp))
                 OutlinedButton(
-                    onClick = { viewModel.logout() },
+                    onClick = { onLogout() },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.supernova.copy(alpha = 0.3f)),

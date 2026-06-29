@@ -3,6 +3,7 @@ package vn.edu.uit.devorbit.mobile.data.remote.dto
 data class GroupTaskResponse(
     val id: Long,
     val groupPlanId: Long,
+    val planTitle: String?,
     val title: String,
     val description: String?,
     val assignedTo: String?,

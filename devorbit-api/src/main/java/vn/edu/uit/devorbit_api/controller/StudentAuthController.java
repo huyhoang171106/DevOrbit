@@ -54,8 +54,9 @@ public class StudentAuthController {
      * Account is inactive until OTP is verified.
      */
     @PostMapping("/register")
-    public StudentProfileResponse register(@RequestBody @Valid StudentRegisterRequest request) {
-        return studentAuthService.register(request);
+    public StudentProfileResponse register(@RequestBody @Valid StudentRegisterRequest request,
+                                           HttpServletRequest httpRequest) {
+        return studentAuthService.register(request, httpRequest);
     }
 
     /**

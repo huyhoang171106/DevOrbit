@@ -187,10 +187,12 @@ interface ApiService {
     suspend fun getUnreadNotificationCount(): UnreadCountResponse
 
     @PUT("/api/student/notifications/{id}/read")
-    suspend fun markNotificationRead(@Path("id") id: Long): Map<String, Any>
+    suspend fun markNotificationRead(@Path("id") id: Long)
+
 
     @PUT("/api/student/notifications/read-all")
-    suspend fun markAllNotificationsRead(): Map<String, Any>
+    suspend fun markAllNotificationsRead()
+
 
     // Group Plans
     @POST("/api/student/group-plans")

@@ -39,6 +39,12 @@ public class PersonalTaskService {
             LocalDateTime start = monday.atStartOfDay();
             LocalDateTime end = monday.plusDays(7).atStartOfDay();
             tasks = personalTaskRepository.findByStudentCodeAndDeadlineBetween(studentCode, start, end);
+        } else if ("month".equalsIgnoreCase(filter)) {
+            LocalDate now = LocalDate.now();
+            LocalDate first = now.withDayOfMonth(1);
+            LocalDateTime start = first.atStartOfDay();
+            LocalDateTime end = first.plusMonths(1).atStartOfDay();
+            tasks = personalTaskRepository.findByStudentCodeAndDeadlineBetween(studentCode, start, end);
         } else {
             tasks = personalTaskRepository.findByStudentCodeOrderByCreatedAtDesc(studentCode);
         }

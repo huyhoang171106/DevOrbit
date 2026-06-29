@@ -63,7 +63,8 @@ fun MainScreen(
     studyPlanVm: StudyPlanViewModel = hiltViewModel(),
     subjectQaVm: SubjectQaViewModel = hiltViewModel(),
     showRegistrationOnboarding: Boolean = false,
-    onRegistrationOnboardingCompleted: () -> Unit = {}
+    onRegistrationOnboardingCompleted: () -> Unit = {},
+    onLogout: () -> Unit = {}
 ) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -235,6 +236,7 @@ fun MainScreen(
                         composable("notifications") {
                             NotificationScreen(
                                 viewModel = notificationVm,
+                                onNavigateBack = { navController.popBackStack() },
                                 onNavigateToGroupPlan = { planId ->
                                     navController.navigate("group_plan_detail/$planId")
                                 }
@@ -253,7 +255,8 @@ fun MainScreen(
                                         pendingRepoId = bookmark.targetId
                                     }
                                     navController.navigate("subjects")
-                                }
+                                },
+                                onLogout = onLogout
                             )
                         }
                         composable("group_plan_list") {

@@ -851,8 +851,8 @@ private fun AddTaskModal(
     } else {
         java.time.LocalTime.of(0, 0)
     }
-    var selectedHour by remember { mutableIntStateOf(initialLocalTime.hour) }
-    var selectedMinute by remember { mutableIntStateOf(initialLocalTime.minute) }
+    var selectedHour by remember(initialLocalTime) { mutableIntStateOf(initialLocalTime.hour) }
+    var selectedMinute by remember(initialLocalTime) { mutableIntStateOf(initialLocalTime.minute) }
 
     var showDeleteConfirm by remember { mutableStateOf(false) }
 
@@ -1565,6 +1565,7 @@ private fun formatDeadlineByFilter(millis: Long, filter: TaskFilter): String {
     return when (filter) {
         TaskFilter.TODAY -> zdt.format(DateTimeFormatter.ofPattern("HH:mm", Locale("vi", "VN")))
         TaskFilter.WEEK -> zdt.format(DateTimeFormatter.ofPattern("EEEE, dd/MM", Locale("vi", "VN")))
+        TaskFilter.MONTH -> zdt.format(DateTimeFormatter.ofPattern("dd/MM", Locale("vi", "VN")))
         TaskFilter.ALL -> zdt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale("vi", "VN")))
     }
 }

@@ -467,6 +467,13 @@ public class SubjectQaService {
         while (matcher.find()) {
             detectedCodes.add(matcher.group(1));
         }
+        // If no course code found via regex, try fuzzy matching against course names
+        if (detectedCodes.isEmpty()) {
+            String nameBasedCode = resolveCourseNameFromMessage(userMessage);
+            if (nameBasedCode != null) {
+                detectedCodes.add(nameBasedCode);
+            }
+        }
 
         List<String> sortedCodes = detectedCodes.stream().sorted().toList();
         sink.emit(SubjectQaStreamEvent.status("analyze",
@@ -1033,14 +1040,51 @@ public class SubjectQaService {
         return text.length() <= maxChars ? text : text.substring(0, maxChars);
     }
 
+
+    /**
+     * Try to infer a course code from the user message by matching against
+     * course Vietnamese/English names (substring match on the normalized message).
+     * Returns null when no course name could be matched.
+     */
+    private String resolveCourseNameFromMessage(String userMessage) {
+        if (userMessage == null || userMessage.isBlank()) return null;
+        String normalized = normalizeForIntent(userMessage);
+        if (normalized.isEmpty()) return null;
+
+        try {
+            List<Course> allCourses = courseRepository.findAll();
+            // Sort longest name first so "Hệ điều hành nâng cao" matches before "Hệ điều hành"
+            allCourses.sort((a, b) -> {
+                int la = a.getTenMH() != null ? a.getTenMH().length() : 0;
+                int lb = b.getTenMH() != null ? b.getTenMH().length() : 0;
+                return Integer.compare(lb, la);
+            });
+            for (Course course : allCourses) {
+                if (course.getTenMH() != null && !course.getTenMH().isBlank()) {
+                    String name = normalizeForIntent(course.getTenMH());
+                    if (normalized.contains(name)) {
+                        return course.getMaMH();
+                    }
+                }
+                if (course.getTenMH_EN() != null && !course.getTenMH_EN().isBlank()) {
+                    String nameEn = normalizeForIntent(course.getTenMH_EN());
+                    if (normalized.contains(nameEn)) {
+                        return course.getMaMH();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Error matching course name to code: {}", e.getMessage());
+        }
+        return null;
+    }
     private boolean asksForInternalResources(String message) {
         String normalized = normalizeForIntent(message);
         return normalized.contains("do an") ||
             normalized.contains("project") ||
             normalized.contains("tai lieu") ||
             normalized.contains("on thi") ||
-            normalized.contains("de thi") ||
-            normalized.contains("repo");
+            normalized.contains("de thi");
     }
 
     private boolean asksForCareerCourseAdvice(String message) {

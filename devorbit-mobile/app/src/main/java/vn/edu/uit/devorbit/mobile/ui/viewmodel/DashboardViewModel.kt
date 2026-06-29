@@ -55,12 +55,13 @@ data class DashboardUiState(
     val isSavingOnboarding: Boolean = false,
     val error: String? = null,
     val planActiveMajor: String = "",
+    val selectedPeriod: TaskFilter = TaskFilter.TODAY,
     val planTotalCourses: Int = 0,
     val planTotalCredits: Int = 0,
     val planSemesterCount: Int = 0
 )
 
-enum class TaskFilter { TODAY, WEEK, ALL }
+enum class TaskFilter { TODAY, WEEK, MONTH, ALL }
 
 data class WeekDay(
     val date: String,
@@ -151,7 +152,7 @@ class DashboardViewModel @Inject constructor(
                     loadWeekDays()
                     loadTodayStudyMinutes()
                     syncStudentTechStacks()
-                    loadTodayTasks()
+                    loadTasksForPeriod(TaskFilter.TODAY)
                 }
             }
         }
@@ -266,11 +267,11 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
-
-    private suspend fun loadTodayTasks() {
-        val personalTasks = apiService.getPersonalTasks("today").map { it.toTaskItem() }
+    private suspend fun loadTasksForPeriod(filter: TaskFilter) {
+        val filterParam = filter.name.lowercase()
+        val personalTasks = apiService.getPersonalTasks(filterParam).map { it.toTaskItem() }
         val allGroupTasks = apiService.getAssignedGroupTasks().map { it.toTaskItem() }
-        val groupTasks = allGroupTasks.filter { isTaskItemToday(it) }
+        val groupTasks = allGroupTasks.filter { isTaskInPeriod(it, filter) }
         val now = System.currentTimeMillis()
         val allTasks = (personalTasks + groupTasks).sortedWith(compareBy<TaskItem> {
             when {
@@ -289,10 +290,24 @@ class DashboardViewModel @Inject constructor(
         recordTaskProgress(allTasks.count { it.completed }, allTasks.size)
     }
 
-    private fun isTaskItemToday(task: TaskItem): Boolean {
+    private fun isTaskInPeriod(task: TaskItem, filter: TaskFilter): Boolean {
         if (task.deadline == null) return false
         val date = Instant.ofEpochMilli(task.deadline).atZone(ZoneId.systemDefault()).toLocalDate()
-        return date == LocalDate.now()
+        val today = LocalDate.now()
+        return when (filter) {
+            TaskFilter.TODAY -> date == today
+            TaskFilter.WEEK -> {
+                val monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+                val sunday = monday.plusDays(6)
+                !date.isBefore(monday) && !date.isAfter(sunday)
+            }
+            TaskFilter.MONTH -> {
+                val first = today.withDayOfMonth(1)
+                val last = first.plusMonths(1).minusDays(1)
+                !date.isBefore(first) && !date.isAfter(last)
+            }
+            else -> false
+        }
     }
 
 
@@ -317,6 +332,20 @@ class DashboardViewModel @Inject constructor(
         updateGreeting(name)
         loadWeekDays()
     }
+    fun refreshData() {
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            _state.update { it.copy(isLoading = true) }
+            try {
+                syncSemesterCourses()
+                syncStudentTechStacks()
+                refreshTasks()
+                loadWeekDays()
+            } finally {
+                _state.update { it.copy(isLoading = false) }
+            }
+        }
+    }
+
 
     fun addTechStack(name: String) {
         viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
@@ -618,11 +647,19 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
+
+    fun setPeriod(filter: TaskFilter) {
+        _state.update { it.copy(selectedPeriod = filter) }
+        viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
+            loadTasksForPeriod(filter)
+        }
+    }
+
     fun clearError() { _state.update { it.copy(error = null) } }
 
     private suspend fun refreshTasks() {
         try {
-            loadTodayTasks()
+            loadTasksForPeriod(_state.value.selectedPeriod)
         } catch (_: Exception) { }
     }
 }

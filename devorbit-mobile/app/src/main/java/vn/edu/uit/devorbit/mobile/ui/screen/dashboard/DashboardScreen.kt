@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,6 +49,7 @@ import vn.edu.uit.devorbit.mobile.domain.model.TaskItem
 
 import vn.edu.uit.devorbit.mobile.ui.theme.CosmicTheme
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.DashboardViewModel
+import vn.edu.uit.devorbit.mobile.ui.viewmodel.TaskFilter
 import vn.edu.uit.devorbit.mobile.ui.viewmodel.WeekDay
 import java.time.Instant
 import java.time.LocalDate
@@ -103,7 +105,11 @@ fun DashboardScreen(
     ) }
 
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    PullToRefreshBox(
+        isRefreshing = state.isLoading,
+        onRefresh = { viewModel.refreshData() },
+        modifier = Modifier.fillMaxSize()
+    ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -220,6 +226,41 @@ fun DashboardScreen(
             )
         }
 
+
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                val periods = listOf(
+                    TaskFilter.TODAY to "Hôm nay",
+                    TaskFilter.WEEK to "Tuần",
+                    TaskFilter.MONTH to "Tháng"
+                )
+                periods.forEach { (filter, label) ->
+                    Surface(
+                        modifier = Modifier.clickable { viewModel.setPeriod(filter) },
+                        shape = RoundedCornerShape(20.dp),
+                        color = if (state.selectedPeriod == filter) CosmicTheme.colors.plasma.copy(alpha = 0.2f)
+                                else CosmicTheme.colors.nebula,
+                        border = androidx.compose.foundation.BorderStroke(
+                            1.dp,
+                            if (state.selectedPeriod == filter) CosmicTheme.colors.plasma
+                            else CosmicTheme.colors.glassBorder
+                        )
+                    ) {
+                        Text(
+                            text = label,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                            color = if (state.selectedPeriod == filter) CosmicTheme.colors.plasma
+                                    else CosmicTheme.colors.textSecondary,
+                            fontSize = 13.sp,
+                            fontWeight = if (state.selectedPeriod == filter) FontWeight.SemiBold else FontWeight.Normal
+                        )
+                    }
+                }
+            }
+        }
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -301,18 +342,6 @@ fun DashboardScreen(
         }
 
         item {
-            SemesterCoursesSection(
-                majorName = state.planActiveMajor,
-                courses = state.semesterCourses,
-                totalCourses = state.planTotalCourses,
-                totalCredits = state.planTotalCredits,
-                semesterCount = state.planSemesterCount,
-                onCourseClick = onNavigateToCourse,
-                onNavigateToPlanner = onNavigateToPlanner
-            )
-        }
-
-        item {
             TechStackSection(
                 techStacks = state.techStacks,
                 allTechStacks = state.allTechStacks,
@@ -320,6 +349,17 @@ fun DashboardScreen(
                 onRemoveTechStack = { viewModel.removeTechStack(it) }
             )
         }
+
+        item {
+            SemesterCoursesSection(
+                courses = state.semesterCourses,
+                allCourses = state.allCourses,
+                onCourseClick = onNavigateToCourse,
+                onAddCourse = { viewModel.addSemesterCourse(it) },
+                onRemoveCourse = { viewModel.removeSemesterCourse(it) }
+            )
+        }
+
         }
         SnackbarHost(
             hostState = snackbarHostState,
@@ -568,14 +608,14 @@ private fun StatBadge(value: String, label: String, color: Color) {
 
 @Composable
 private fun SemesterCoursesSection(
-    majorName: String,
     courses: List<CourseEntity>,
-    totalCourses: Int,
-    totalCredits: Int,
-    semesterCount: Int,
+    allCourses: List<CourseEntity>,
     onCourseClick: (Long) -> Unit,
-    onNavigateToPlanner: () -> Unit
+    onAddCourse: (Long) -> Unit,
+    onRemoveCourse: (Long) -> Unit
 ) {
+    var showDialog by remember { mutableStateOf(false) }
+
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -589,23 +629,21 @@ private fun SemesterCoursesSection(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = majorName.ifBlank { "Lộ trình học tập" },
+                    text = "Môn học",
                     style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.Bold),
                     color = CosmicTheme.colors.textPrimary
                 )
-                TextButton(onClick = onNavigateToPlanner) {
-                    Text("Điều chỉnh lộ trình", color = CosmicTheme.colors.plasma)
+                TextButton(onClick = { showDialog = true }) {
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = CosmicTheme.colors.plasma
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text("Thêm", color = CosmicTheme.colors.plasma)
                 }
             }
-            if (totalCourses > 0) {
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = "$totalCourses môn · $totalCredits tín chỉ · $semesterCount học kỳ",
-                    style = CosmicTheme.typography.label,
-                    color = CosmicTheme.colors.textTertiary
-                )
-            }
-            Spacer(Modifier.height(12.dp))
             if (courses.isEmpty()) {
                 Text(
                     text = "Bạn chưa có môn học nào",
@@ -613,21 +651,43 @@ private fun SemesterCoursesSection(
                     color = CosmicTheme.colors.textTertiary,
                     modifier = Modifier.padding(vertical = 4.dp)
                 )
+                Text(
+                    text = "Nhấn + Thêm để bắt đầu",
+                    style = CosmicTheme.typography.label,
+                    color = CosmicTheme.colors.plasma,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
             } else {
                 courses.forEach { course ->
                     CourseChip(
                         course = course,
+                        onRemove = { onRemoveCourse(course.id) },
                         onClick = { onCourseClick(course.id) }
                     )
                 }
             }
         }
     }
+
+    if (showDialog) {
+        AddCourseDialog(
+            allCourses = allCourses,
+            selectedIds = courses.map { it.id }.toSet(),
+            onAdd = { id ->
+                onAddCourse(id)
+                showDialog = false
+            },
+            onDismiss = { showDialog = false }
+        )
+    }
 }
+
+
 
 @Composable
 private fun CourseChip(
     course: CourseEntity,
+    onRemove: () -> Unit,
     onClick: () -> Unit
 ) {
     Surface(
@@ -653,10 +713,22 @@ private fun CourseChip(
                     color = CosmicTheme.colors.textSecondary
                 )
             }
+            IconButton(
+                onClick = onRemove,
+                modifier = Modifier.size(28.dp)
+            ) {
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = "Xoá",
+                    tint = CosmicTheme.colors.textTertiary,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
         }
     }
     Spacer(modifier = Modifier.height(6.dp))
 }
+
 
 @Composable
 private fun AddCourseDialog(
@@ -772,125 +844,7 @@ private fun AddCourseDialog(
     )
 }
 
-// ── Section 3: Streak ─────────────────────────────────────────────
-
-@Composable
-private fun StreakSection(
-    weekDates: List<WeekDay>,
-    currentWeekOffset: Int,
-    maxWeekOffset: Int,
-    onPrevWeek: () -> Unit,
-    onNextWeek: () -> Unit
-) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        color = CosmicTheme.colors.nebula,
-        border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Streak",
-                    style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
-                    color = CosmicTheme.colors.textPrimary
-                )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (currentWeekOffset < maxWeekOffset) {
-                        IconButton(onClick = onPrevWeek, modifier = Modifier.size(28.dp)) {
-                            Icon(
-                                Icons.Default.KeyboardArrowLeft,
-                                contentDescription = "Tuần trước",
-                                tint = CosmicTheme.colors.textPrimary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                    }
-                    if (currentWeekOffset > 0) {
-                        IconButton(onClick = onNextWeek, modifier = Modifier.size(28.dp)) {
-                            Icon(
-                                Icons.Default.KeyboardArrowRight,
-                                contentDescription = "Tuần sau",
-                                tint = CosmicTheme.colors.textPrimary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                weekDates.forEach { day ->
-                    DaySquare(day = day)
-                }
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Hãy xem 3 repositories để giữ chuỗi nhé!",
-                style = CosmicTheme.typography.label,
-                color = CosmicTheme.colors.textTertiary
-            )
-        }
-    }
-}
-
-@Composable
-private fun DaySquare(day: WeekDay) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.width(36.dp)
-    ) {
-        // Add date number
-        val dayNumber = try {
-            java.time.LocalDate.parse(day.date).dayOfMonth
-        } catch (_: Exception) { null }
-        if (dayNumber != null) {
-            Text(
-                text = dayNumber.toString(),
-                style = CosmicTheme.typography.label.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
-                color = if (day.isToday) CosmicTheme.colors.plasma else CosmicTheme.colors.textSecondary,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-        }
-        Text(
-            text = day.label,
-            style = CosmicTheme.typography.label.copy(fontSize = 9.sp),
-            color = CosmicTheme.colors.textTertiary,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Box(
-            modifier = Modifier
-                .size(28.dp)
-                .clip(RoundedCornerShape(6.dp))
-                .background(Color.Transparent)
-                .border(
-                    1.dp,
-                    when {
-                        day.isToday -> CosmicTheme.colors.plasma
-                        day.qualifiesForStreak -> Color(0xFF2E7D32).copy(alpha = 0.5f)
-                        else -> CosmicTheme.colors.glassBorder
-                    },
-                    RoundedCornerShape(6.dp)
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            if (day.qualifiesForStreak) {
-                Text(text = "\uD83D\uDD25", fontSize = 12.sp)
-            }
-        }
-    }
-}
-
-// ── Section 4: Tech Stack ─────────────────────────────────────────
+// ── Section: Tech Stack ────────────────────────────────────────────
 
 @Composable
 private fun TechStackSection(
@@ -1102,6 +1056,128 @@ private fun AddTechStackDialog(
     )
 }
 
+// ── Section 3: Streak ─────────────────────────────────────────────
+
+@Composable
+private fun StreakSection(
+    weekDates: List<WeekDay>,
+    currentWeekOffset: Int,
+    maxWeekOffset: Int,
+    onPrevWeek: () -> Unit,
+    onNextWeek: () -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        color = CosmicTheme.colors.nebula,
+        border = androidx.compose.foundation.BorderStroke(1.dp, CosmicTheme.colors.glassBorder)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Streak",
+                    style = CosmicTheme.typography.body.copy(fontWeight = FontWeight.SemiBold),
+                    color = CosmicTheme.colors.textPrimary
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (currentWeekOffset < maxWeekOffset) {
+                        IconButton(onClick = onPrevWeek, modifier = Modifier.size(28.dp)) {
+                            Icon(
+                                Icons.Default.KeyboardArrowLeft,
+                                contentDescription = "Tuần trước",
+                                tint = CosmicTheme.colors.textPrimary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                    if (currentWeekOffset > 0) {
+                        IconButton(onClick = onNextWeek, modifier = Modifier.size(28.dp)) {
+                            Icon(
+                                Icons.Default.KeyboardArrowRight,
+                                contentDescription = "Tuần sau",
+                                tint = CosmicTheme.colors.textPrimary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                weekDates.forEach { day ->
+                    DaySquare(day = day)
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Hãy xem 3 repositories để giữ chuỗi nhé!",
+                style = CosmicTheme.typography.label,
+                color = CosmicTheme.colors.textTertiary
+            )
+        }
+    }
+}
+
+@Composable
+private fun DaySquare(day: WeekDay) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.width(36.dp)
+    ) {
+        // Add date number
+        val dayNumber = try {
+            java.time.LocalDate.parse(day.date).dayOfMonth
+        } catch (_: Exception) { null }
+        if (dayNumber != null) {
+            Text(
+                text = dayNumber.toString(),
+                style = CosmicTheme.typography.label.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
+                color = if (day.isToday) CosmicTheme.colors.plasma else CosmicTheme.colors.textSecondary,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+        }
+        Text(
+            text = day.label,
+            style = CosmicTheme.typography.label.copy(fontSize = 9.sp),
+            color = CosmicTheme.colors.textTertiary,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Box(
+            modifier = Modifier
+                .size(28.dp)
+                .clip(RoundedCornerShape(6.dp))
+                .background(Color.Transparent)
+                .border(
+                    1.dp,
+                    when {
+                        day.isToday -> CosmicTheme.colors.plasma
+                        day.qualifiesForStreak -> Color(0xFF2E7D32).copy(alpha = 0.5f)
+                        else -> CosmicTheme.colors.glassBorder
+                    },
+                    RoundedCornerShape(6.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            if (day.qualifiesForStreak) {
+                Text(text = "\uD83D\uDD25", fontSize = 12.sp)
+            }
+        }
+    }
+}
+
+// ── Section 4: Tech Stack ─────────────────────────────────────────
+
+
+
 // ── Section 4: Tasks ─────────────────────────────────────────────
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -1190,12 +1266,25 @@ private fun TaskCard(
                     }
                 }
                 if (task.isGroupTask) {
-                    Text(
-                        text = "Nhóm",
-                        fontSize = 10.sp,
-                        color = CosmicTheme.colors.plasma,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(top = 2.dp)
+                    ) {
+                        Text(
+                            text = "Nhóm",
+                            fontSize = 10.sp,
+                            color = CosmicTheme.colors.plasma,
+                            fontWeight = FontWeight.Medium
+                        )
+                        if (!task.groupPlanTitle.isNullOrBlank()) {
+                            Text(
+                                text = ": ${task.groupPlanTitle}",
+                                fontSize = 10.sp,
+                                color = CosmicTheme.colors.plasma.copy(alpha = 0.8f),
+                                fontWeight = FontWeight.Normal
+                            )
+                        }
+                    }
                 }
                 if (task.deadline != null) {
                     Text(

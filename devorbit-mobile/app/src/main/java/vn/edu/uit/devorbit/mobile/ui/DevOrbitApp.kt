@@ -21,7 +21,8 @@ fun DevOrbitApp() {
         MainScreen(
             academicVm = academicVm,
             showRegistrationOnboarding = loginState.isNewRegistration,
-            onRegistrationOnboardingCompleted = authVm::completeRegistrationOnboarding
+            onRegistrationOnboardingCompleted = authVm::completeRegistrationOnboarding,
+            onLogout = authVm::logout
         )
     } else {
         AuthScreen(

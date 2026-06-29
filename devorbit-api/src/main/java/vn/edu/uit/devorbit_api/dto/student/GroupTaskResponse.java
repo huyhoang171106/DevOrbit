@@ -7,6 +7,7 @@ import java.time.LocalDate;
 public record GroupTaskResponse(
     Long id,
     Long groupPlanId,
+    String planTitle,
     String title,
     String description,
     String assignedTo,
@@ -22,6 +23,7 @@ public record GroupTaskResponse(
         return new GroupTaskResponse(
             t.getId(),
             t.getGroupPlan().getId(),
+            t.getGroupPlan().getTitle(),
             t.getTitle(),
             t.getDescription(),
             t.getAssignedTo(),

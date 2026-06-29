@@ -50,62 +50,6 @@ fun CourseListScreen(
             singleLine = true
         )
 
-        // Subject type dropdown filter
-        var subjectExpanded by remember { mutableStateOf(false) }
-        val selectedSubjectLabel = CourseSearchFilterState.subjectFilters
-            .firstOrNull { it.value == filterState.subjectType }?.label ?: "Tất cả"
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 4.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            ExposedDropdownMenuBox(
-                expanded = subjectExpanded,
-                onExpandedChange = { subjectExpanded = it }
-            ) {
-                OutlinedTextField(
-                    value = selectedSubjectLabel,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Loại môn") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = subjectExpanded) },
-                    modifier = Modifier.fillMaxWidth().menuAnchor(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = CosmicTheme.colors.plasma,
-                        unfocusedBorderColor = CosmicTheme.colors.glassBorder,
-                        focusedLabelColor = CosmicTheme.colors.plasma,
-                        unfocusedLabelColor = CosmicTheme.colors.textTertiary,
-                        cursorColor = CosmicTheme.colors.plasma,
-                        focusedTextColor = CosmicTheme.colors.textPrimary,
-                        unfocusedTextColor = CosmicTheme.colors.textPrimary
-                    ),
-                    shape = RoundedCornerShape(12.dp)
-                )
-                ExposedDropdownMenu(
-                    expanded = subjectExpanded,
-                    onDismissRequest = { subjectExpanded = false }
-                ) {
-                    CourseSearchFilterState.subjectFilters.forEach { option ->
-                        val isSelected = option.value == filterState.subjectType ||
-                            (option.value == null && filterState.subjectType == null)
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    option.label,
-                                    color = if (isSelected) CosmicTheme.colors.plasma else CosmicTheme.colors.textPrimary
-                                )
-                            },
-                            onClick = {
-                                viewModel.selectCourseSubjectType(option.value)
-                                subjectExpanded = false
-                            }
-                        )
-                    }
-                }
-            }
-        }
 
         if (courses.isEmpty()) {
             Box(

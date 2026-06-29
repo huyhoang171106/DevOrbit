@@ -15,6 +15,7 @@ import vn.edu.uit.devorbit.mobile.data.datastore.SettingsDataStore
 import vn.edu.uit.devorbit.mobile.data.repository.StreakTracker
 import vn.edu.uit.devorbit.mobile.data.local.CurriculumLoader
 import vn.edu.uit.devorbit.mobile.data.local.dao.SemesterCourseDao
+import vn.edu.uit.devorbit.mobile.network.ApiService
 import vn.edu.uit.devorbit.mobile.data.local.entity.CourseEntity
 import vn.edu.uit.devorbit.mobile.data.local.entity.SemesterCourseEntity
 import vn.edu.uit.devorbit.mobile.data.repository.AcademicRepository
@@ -43,7 +44,8 @@ class CourseViewModel @Inject constructor(
     private val streakTracker: StreakTracker,
     private val settingsDataStore: SettingsDataStore,
     private val semesterCourseDao: SemesterCourseDao,
-    private val curriculumLoader: CurriculumLoader
+    private val curriculumLoader: CurriculumLoader,
+    private val apiService: ApiService
 ) : ViewModel() {
 
     val courses: StateFlow<List<CourseEntity>> = repository.allCourses
@@ -386,6 +388,9 @@ class CourseViewModel @Inject constructor(
         }
         val majorCode = _currentMajor.value
         viewModelScope.launch {
+            try {
+                apiService.addSemesterCourse(mapOf("courseId" to existing.id))
+            } catch (_: Exception) { /* offline — local save still happens */ }
             if (!semesterCourseDao.isCourseAdded(existing.id, majorCode)) {
                 semesterCourseDao.addCourse(SemesterCourseEntity(courseId = existing.id, majorCode = majorCode, semester = semester))
             }
@@ -406,6 +411,9 @@ class CourseViewModel @Inject constructor(
         }
         val majorCode = _currentMajor.value
         viewModelScope.launch {
+            try {
+                apiService.removeSemesterCourse(course.id)
+            } catch (_: Exception) { /* offline — local remove still happens */ }
             semesterCourseDao.removeCourse(course.id, majorCode)
         }
     }

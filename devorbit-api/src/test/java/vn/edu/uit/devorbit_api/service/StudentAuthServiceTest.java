@@ -73,7 +73,7 @@ class StudentAuthServiceTest {
         when(otpRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         StudentRegisterRequest req = new StudentRegisterRequest("24520554", "Nguyen Van A", "24520554@gm.uit.edu.vn", "password123");
-        service.register(req);
+        service.register(req, httpRequest);
 
         verify(otpRepository).save(otpCaptor.capture());
         assertThat(otpCaptor.getValue().getPurpose()).isEqualTo(OtpPurpose.EMAIL_VERIFICATION);

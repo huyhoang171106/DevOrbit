@@ -74,7 +74,7 @@ class NotificationViewModel @Inject constructor(
         pollingJob?.cancel()
         pollingJob = viewModelScope.launch(kotlinx.coroutines.CoroutineExceptionHandler { _, e -> e.printStackTrace() }) {
             while (true) {
-                delay(15_000)
+                delay(5_000)
                 try {
                     loadNotifications()
                 } catch (_: Exception) { }

@@ -95,7 +95,8 @@ class CourseViewModel @Inject constructor(
     )
 
     private suspend fun loadFromRoom() {
-        val semesterCourses = semesterCourseDao.getAllSemesterCourses().first()
+        val majorCode = _currentMajor.value
+        val semesterCourses = semesterCourseDao.getSemesterCoursesByMajor(majorCode).first()
         if (semesterCourses.isEmpty()) return
         val courseMap = courses.value.associateBy { it.id }
         val plan = mutableMapOf<Int, MutableList<GraphNode>>()
@@ -225,10 +226,11 @@ class CourseViewModel @Inject constructor(
             _prerequisiteMap.value = emptyMap()
             _semesterPlan.value = emptyMap()
             _graphError.value = null
-            semesterCourseDao.clearAll()
+
+            val majorCode = major ?: _currentMajor.value
+            semesterCourseDao.clearByMajor(majorCode)
 
             try {
-                val majorCode = major ?: _currentMajor.value
                 _currentMajor.value = majorCode
                 settingsDataStore.saveCurrentMajor(majorCode)
 
@@ -260,7 +262,7 @@ class CourseViewModel @Inject constructor(
                             ))
                             if (dbCourse != null) {
                                 semesterCourseDao.addCourse(
-                                    SemesterCourseEntity(courseId = dbCourse.id, semester = sd.semester)
+                                    SemesterCourseEntity(courseId = dbCourse.id, majorCode = majorCode, semester = sd.semester)
                                 )
                             }
                         }
@@ -281,7 +283,7 @@ class CourseViewModel @Inject constructor(
                     for (node in kg.nodes) {
                         val sem = node.semester ?: continue
                         if (sem !in 1..8) continue
-                        semesterCourseDao.addCourse(SemesterCourseEntity(courseId = node.id, semester = sem))
+                        semesterCourseDao.addCourse(SemesterCourseEntity(courseId = node.id, majorCode = majorCode, semester = sem))
                     }
                 }
             } catch (e: Exception) {
@@ -310,9 +312,10 @@ class CourseViewModel @Inject constructor(
             current.add(existing.toGraphNode(semester))
             map[semester] = current
         }
+        val majorCode = _currentMajor.value
         viewModelScope.launch {
-            if (!semesterCourseDao.isCourseAdded(existing.id)) {
-                semesterCourseDao.addCourse(SemesterCourseEntity(courseId = existing.id, semester = semester))
+            if (!semesterCourseDao.isCourseAdded(existing.id, majorCode)) {
+                semesterCourseDao.addCourse(SemesterCourseEntity(courseId = existing.id, majorCode = majorCode, semester = semester))
             }
         }
     }
@@ -329,8 +332,9 @@ class CourseViewModel @Inject constructor(
         if (result.warnings.isNotEmpty()) {
             _graphError.value = result.warnings.joinToString("\n")
         }
+        val majorCode = _currentMajor.value
         viewModelScope.launch {
-            semesterCourseDao.removeCourse(course.id)
+            semesterCourseDao.removeCourse(course.id, majorCode)
         }
     }
 
@@ -367,8 +371,9 @@ class CourseViewModel @Inject constructor(
             updated.add(course.toGraphNode(toSemester))
             map[toSemester] = updated
         }
+        val majorCode = _currentMajor.value
         viewModelScope.launch {
-            semesterCourseDao.moveCourse(course.id, toSemester)
+            semesterCourseDao.moveCourse(course.id, toSemester, majorCode)
         }
     }
 

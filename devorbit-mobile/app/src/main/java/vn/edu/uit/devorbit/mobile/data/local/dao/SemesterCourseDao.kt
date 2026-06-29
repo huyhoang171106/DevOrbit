@@ -6,30 +6,30 @@ import vn.edu.uit.devorbit.mobile.data.local.entity.SemesterCourseEntity
 
 @Dao
 interface SemesterCourseDao {
-    @Query("SELECT * FROM semester_courses ORDER BY addedAt ASC")
-    fun getAllSemesterCourses(): Flow<List<SemesterCourseEntity>>
+    @Query("SELECT * FROM semester_courses WHERE majorCode = :majorCode ORDER BY addedAt ASC")
+    fun getSemesterCoursesByMajor(majorCode: String): Flow<List<SemesterCourseEntity>>
 
-    @Query("SELECT courseId FROM semester_courses")
-    suspend fun getSemesterCourseIds(): List<Long>
+    @Query("SELECT courseId FROM semester_courses WHERE majorCode = :majorCode")
+    suspend fun getSemesterCourseIds(majorCode: String): List<Long>
 
-    @Query("SELECT * FROM semester_courses WHERE semester = :semester ORDER BY addedAt ASC")
-    suspend fun getCoursesBySemester(semester: Int): List<SemesterCourseEntity>
+    @Query("SELECT * FROM semester_courses WHERE semester = :semester AND majorCode = :majorCode ORDER BY addedAt ASC")
+    suspend fun getCoursesBySemester(semester: Int, majorCode: String): List<SemesterCourseEntity>
 
     @Upsert
     suspend fun addCourse(course: SemesterCourseEntity)
 
-    @Query("UPDATE semester_courses SET semester = :newSemester WHERE courseId = :courseId")
-    suspend fun moveCourse(courseId: Long, newSemester: Int)
+    @Query("UPDATE semester_courses SET semester = :newSemester WHERE courseId = :courseId AND majorCode = :majorCode")
+    suspend fun moveCourse(courseId: Long, newSemester: Int, majorCode: String)
 
-    @Query("DELETE FROM semester_courses WHERE courseId = :courseId")
-    suspend fun removeCourse(courseId: Long)
+    @Query("DELETE FROM semester_courses WHERE courseId = :courseId AND majorCode = :majorCode")
+    suspend fun removeCourse(courseId: Long, majorCode: String)
 
-    @Query("SELECT EXISTS(SELECT 1 FROM semester_courses WHERE courseId = :courseId)")
-    suspend fun isCourseAdded(courseId: Long): Boolean
+    @Query("SELECT EXISTS(SELECT 1 FROM semester_courses WHERE courseId = :courseId AND majorCode = :majorCode)")
+    suspend fun isCourseAdded(courseId: Long, majorCode: String): Boolean
 
-    @Query("SELECT semester FROM semester_courses WHERE courseId = :courseId")
-    suspend fun getCourseSemester(courseId: Long): Int?
+    @Query("SELECT semester FROM semester_courses WHERE courseId = :courseId AND majorCode = :majorCode")
+    suspend fun getCourseSemester(courseId: Long, majorCode: String): Int?
 
-    @Query("DELETE FROM semester_courses")
-    suspend fun clearAll()
+    @Query("DELETE FROM semester_courses WHERE majorCode = :majorCode")
+    suspend fun clearByMajor(majorCode: String)
 }

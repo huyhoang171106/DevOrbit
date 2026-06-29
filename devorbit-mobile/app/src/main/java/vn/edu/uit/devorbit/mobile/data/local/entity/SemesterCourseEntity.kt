@@ -1,11 +1,11 @@
 package vn.edu.uit.devorbit.mobile.data.local.entity
 
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 
-@Entity(tableName = "semester_courses")
+@Entity(tableName = "semester_courses", primaryKeys = ["courseId", "majorCode"])
 data class SemesterCourseEntity(
-    @PrimaryKey val courseId: Long,
+    val courseId: Long,
+    val majorCode: String,
     val semester: Int = 1,
     val addedAt: Long = System.currentTimeMillis()
 )

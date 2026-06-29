@@ -17,7 +17,7 @@ import vn.edu.uit.devorbit.mobile.data.local.entity.TechStackEntity
 
 @Database(
     entities = [CourseEntity::class, RepoEntity::class, CourseRelationshipEntity::class, DailyActivityEntity::class, SemesterCourseEntity::class, TechStackEntity::class],
-    version = 11,
+    version = 12,
     exportSchema = true
 )
 abstract class DevOrbitDatabase : RoomDatabase() {
